@@ -1,0 +1,54 @@
+name: Publish signed public feed to GitHub Pages
+
+on:
+  push:
+    branches: [release]
+    paths:
+      - 'site/**'
+      - 'keys/tdvp-repo-public.asc'
+      - 'scripts/verify-feed.sh'
+      - 'platforms/tdvp-k230-r1/platform.env'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  validate-and-upload:
+    name: Verify signed feed and upload Pages artifact
+    runs-on: ubuntu-24.04
+    environment: github-pages
+    steps:
+      - name: Check out reviewed release content
+        uses: actions/checkout@v6
+
+      - name: Verify public index and detached signature
+        run: |
+          ./scripts/verify-feed.sh --require-signature --platform tdvp-k230-r1 \
+            site/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload static public feed
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: validate-and-upload
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

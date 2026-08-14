@@ -1,0 +1,3 @@
+#!/bin/sh
+
+echo 'tdvp-hello: public opkg feed ABI gate passed'

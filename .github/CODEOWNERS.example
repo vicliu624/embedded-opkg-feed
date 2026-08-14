@@ -1,0 +1,8 @@
+# Copy this file to .github/CODEOWNERS after replacing the placeholder with a
+# real GitHub user or team. Then require Code Owner approval in branch rules.
+
+/platforms/ @YOUR_GITHUB_ORG/embedded-feed-maintainers
+/scripts/ @YOUR_GITHUB_ORG/embedded-feed-maintainers
+/.github/workflows/ @YOUR_GITHUB_ORG/embedded-feed-maintainers
+/keys/ @YOUR_GITHUB_ORG/embedded-feed-maintainers
+/site/ @YOUR_GITHUB_ORG/embedded-feed-maintainers

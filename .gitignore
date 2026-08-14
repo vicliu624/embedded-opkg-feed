@@ -1,0 +1,10 @@
+dist/
+dist-*/
+.cache/
+*.ipk
+*.tar
+*.tar.gz
+*.tar.xz
+*.sig
+*.asc
+!keys/tdvp-repo-public.asc

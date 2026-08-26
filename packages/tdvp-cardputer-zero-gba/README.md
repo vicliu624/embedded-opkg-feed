@@ -61,3 +61,12 @@ index, or signature.
 `/usr/bin/cardputer-zero-gba` invokes the binary with `--device-profile
 tdvp-k230` and deliberately does not force an SDL video driver. It does not
 write to protected firmware paths.
+
+## Licence notices
+
+The application itself is MIT licensed. The package statically bundles the
+pinned SDL2 and mGBA source revisions, so the payload also installs their
+licence texts as `LICENSE.SDL-zlib.txt` and `LICENSE.mGBA-MPL-2.0.txt` beneath
+`/usr/share/doc/tdvp-cardputer-zero-gba/`. The source locks in `package.env`
+and the source repository's Git submodule commits identify the corresponding
+reviewable dependency revisions.

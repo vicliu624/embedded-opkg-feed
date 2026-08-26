@@ -201,3 +201,7 @@ install -Dm 0644 "$source_root/README.md" \
   "$payload_dir/usr/share/doc/tdvp-cardputer-zero-gba/README.md"
 install -Dm 0644 "$source_root/LICENSE" \
   "$payload_dir/usr/share/doc/tdvp-cardputer-zero-gba/LICENSE"
+install -Dm 0644 "$source_root/extern/SDL/LICENSE.txt" \
+  "$payload_dir/usr/share/doc/tdvp-cardputer-zero-gba/LICENSE.SDL-zlib.txt"
+install -Dm 0644 "$source_root/extern/mgba/LICENSE" \
+  "$payload_dir/usr/share/doc/tdvp-cardputer-zero-gba/LICENSE.mGBA-MPL-2.0.txt"

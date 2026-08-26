@@ -28,8 +28,11 @@ found=0
 while IFS= read -r package_env; do
   found=1
   package_dir=$(dirname -- "$package_env")
-  if [[ -x "$package_dir/build.sh" ]]; then
-    "$package_dir/build.sh" --platform "$platform_slug" --sdk-root "${TDVP_SDK_ROOT:-}"
+  # Invoke recipes through Bash instead of depending on an executable bit.
+  # This keeps a recipe buildable after a Windows checkout, where Git may not
+  # preserve POSIX file modes for newly added shell scripts.
+  if [[ -f "$package_dir/build.sh" ]]; then
+    bash "$package_dir/build.sh" --platform "$platform_slug" --sdk-root "${TDVP_SDK_ROOT:-}"
   fi
   "$script_dir/build-ipk.sh" --platform "$platform_slug" "$package_dir" "$feed_dir"
 done < <(find "$repo_root/packages" -mindepth 2 -maxdepth 2 -name package.env -type f -print | LC_ALL=C sort)

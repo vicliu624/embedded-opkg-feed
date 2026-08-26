@@ -77,9 +77,9 @@ tdvp-hello
 ```text
 开发者 Pull Request
         ↓
-CI 构建并校验候选包
+CI 校验配方、来源锁定和可移植的构建工具
         ↓
-维护者在受控环境测试、离线签名索引
+维护者使用精确 K230 SDK 构建、测试并离线签名索引
         ↓
 GitHub Actions 校验签名并发布到 GitHub Pages
         ↓

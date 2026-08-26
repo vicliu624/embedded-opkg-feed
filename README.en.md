@@ -77,9 +77,9 @@ Submit **reviewable source, build scripts, and package metadata**. Do not submit
 ```text
 Developer Pull Request
         ↓
-CI builds and validates candidate packages
+CI validates recipes, source locks, and portable build tooling
         ↓
-Maintainer tests in a controlled environment and signs the index offline
+Maintainer builds and tests with the exact K230 SDK, then signs the index offline
         ↓
 GitHub Actions validates the signature and publishes GitHub Pages
         ↓

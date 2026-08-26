@@ -1,0 +1,3 @@
+# The K230 payload is generated from the source revision and the exact SDK by
+# build.sh. Release artifacts belong in a signed feed, never in this recipe.
+/root/

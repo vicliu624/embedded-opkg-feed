@@ -35,6 +35,15 @@ target Wayland/EGL/OpenGL ES/XKB headers, pkg-config files, and SONAME-bearing
 libraries. The finished package dynamically uses the base-firmware libraries;
 it does not package or replace them.
 
+The package depends on `tdvp-menu-games`, the ABI-gated platform menu contract
+that contributes the generic `Games` category to the TDVP panel. The emulator
+package itself owns only `tdvp-cardputer-zero-gba.desktop`, which declares
+`Categories=Game;Emulator;` and is discovered by that category rule.
+
+The desktop entry uses the package-owned absolute icon path rather than a
+theme-name lookup. This avoids a generic menu icon when the base firmware's
+pre-generated hicolor icon cache cannot be refreshed by a feed package.
+
 By default the pinned source checkout is expected beside this feed repository:
 
 ```text

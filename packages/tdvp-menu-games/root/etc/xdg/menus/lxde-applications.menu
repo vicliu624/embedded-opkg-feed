@@ -1,0 +1,73 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+ "http://www.freedesktop.org/standards/menu-spec/menu-1.0.dtd">
+<Menu>
+  <Name>Applications</Name>
+
+  <!--
+    wfplug-menu, the maintained Raspberry Pi panel menu, uses the historical
+    lxde-applications.menu lookup name when XDG_MENU_PREFIX is unset. This is
+    a normal freedesktop.org menu definition, not an LXDE dependency.
+  -->
+  <DefaultAppDirs/>
+  <DefaultDirectoryDirs/>
+
+  <!--
+    Existing platform entries remain explicitly owned by the firmware menu.
+    Feed-delivered games join the dedicated Games category below instead of
+    modifying this whitelist per application.
+  -->
+  <Menu>
+    <Name>Accessories</Name>
+    <Directory>tdvp-accessories.directory</Directory>
+    <Include>
+      <Filename>tdvp-pcmanfm.desktop</Filename>
+      <Filename>vpl-logs.desktop</Filename>
+      <Filename>vpl-osk.desktop</Filename>
+      <Filename>foot.desktop</Filename>
+    </Include>
+  </Menu>
+  <Menu>
+    <Name>Sound &amp; Video</Name>
+    <Directory>tdvp-sound-video.directory</Directory>
+    <Include>
+      <Filename>vpl-camera.desktop</Filename>
+    </Include>
+  </Menu>
+  <Menu>
+    <Name>Games</Name>
+    <Directory>tdvp-games.directory</Directory>
+    <Include>
+      <Category>Game</Category>
+    </Include>
+  </Menu>
+  <Menu>
+    <Name>Internet</Name>
+    <Directory>tdvp-internet.directory</Directory>
+    <Include>
+      <Filename>vpl-browser.desktop</Filename>
+    </Include>
+  </Menu>
+  <Menu>
+    <Name>Preferences</Name>
+    <Directory>tdvp-preferences.directory</Directory>
+    <Include>
+      <Filename>vpl-display.desktop</Filename>
+    </Include>
+  </Menu>
+  <Menu>
+    <Name>System</Name>
+    <Directory>tdvp-system.directory</Directory>
+    <Include>
+      <Filename>vpl-power.desktop</Filename>
+      <Filename>vpl-package-manager.desktop</Filename>
+    </Include>
+  </Menu>
+  <Layout>
+    <Menuname>Accessories</Menuname>
+    <Menuname>Sound &amp; Video</Menuname>
+    <Menuname>Games</Menuname>
+    <Menuname>Internet</Menuname>
+    <Menuname>Preferences</Menuname>
+    <Menuname>System</Menuname>
+  </Layout>
+</Menu>

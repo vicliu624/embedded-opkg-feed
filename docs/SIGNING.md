@@ -13,6 +13,15 @@
 Only the public key may be committed. The private release key must not appear
 in Git, GitHub Actions logs, GitHub Actions secrets, the device, or Pages.
 
+The current public release-key fingerprint is:
+
+```text
+2B091A2A8E5810954FB9FD64EA9D1CD5EFC81500
+```
+
+Verify this full fingerprint before embedding
+`keys/tdvp-repo-public.asc` into a firmware image or trusting a copied key.
+
 ## GPG index-signing contract
 
 The skeleton uses detached ASCII-armoured GPG signatures as the initial

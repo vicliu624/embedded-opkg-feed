@@ -14,6 +14,14 @@
 
 只有公开密钥可以提交到 Git。私钥不能出现在 Git、GitHub Actions 日志、GitHub Actions Secrets、设备或 GitHub Pages 中。设备上保存的是公开密钥，不是能创建新签名的私钥。
 
+当前发布公钥的完整指纹为：
+
+```text
+2B091A2A8E5810954FB9FD64EA9D1CD5EFC81500
+```
+
+将 `keys/tdvp-repo-public.asc` 内置到固件或信任一份复制出的公钥前，请先核对这个完整指纹。
+
 ## GPG 索引签名约定
 
 当前仓库骨架采用分离式、ASCII 装甲的 GPG 签名：

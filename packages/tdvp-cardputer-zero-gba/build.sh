@@ -131,13 +131,26 @@ toolchain_sysroot=$(find "$toolchain_host_dir" -type d -name sysroot -print -qui
   echo "could not find the target sysroot beside Buildroot toolchain file: $toolchain_file" >&2
   exit 75
 }
+wayland_sdk_overlay=${TDVP_K230_WAYLAND_SDK_OVERLAY:-}
+[[ -n "$wayland_sdk_overlay" && -d "$wayland_sdk_overlay" ]] || {
+  echo 'TDVP K230 build requires TDVP_K230_WAYLAND_SDK_OVERLAY with the firmware-matched Wayland client development ABI.' >&2
+  exit 78
+}
+[[ -f "$wayland_sdk_overlay/include/wayland-client.h" &&
+   -f "$wayland_sdk_overlay/include/xkbcommon/xkbcommon.h" &&
+   -f "$wayland_sdk_overlay/include/EGL/egl.h" &&
+   -f "$wayland_sdk_overlay/lib/pkgconfig/wayland-client.pc" &&
+   -f "$wayland_sdk_overlay/lib/pkgconfig/xkbcommon.pc" ]] || {
+  echo "invalid TDVP_K230_WAYLAND_SDK_OVERLAY: $wayland_sdk_overlay" >&2
+  exit 79
+}
 strip_tool=${TDVP_K230_STRIP:-"$toolchain_host_dir/bin/riscv64-unknown-linux-gnu-strip"}
 [[ -x "$strip_tool" ]] || {
   echo "could not find the K230 target strip tool: $strip_tool" >&2
   exit 76
 }
 export PKG_CONFIG_SYSROOT_DIR="$toolchain_sysroot"
-export PKG_CONFIG_LIBDIR="$toolchain_sysroot/usr/lib/pkgconfig:$toolchain_sysroot/usr/share/pkgconfig"
+export PKG_CONFIG_LIBDIR="$wayland_sdk_overlay/lib/pkgconfig:$toolchain_sysroot/usr/lib/pkgconfig:$toolchain_sysroot/usr/share/pkgconfig"
 export PKG_CONFIG_PATH=''
 
 for tool in cmake install ninja; do
@@ -166,14 +179,17 @@ cmake -S "$source_root" -B "$build_dir" -G Ninja \
   -DCZ_GBA_SDL_SHARED=OFF \
   -DCZ_GBA_SDL_STATIC=ON \
   -DCZ_GBA_REQUIRE_K230_DRM=ON \
-  -DSDL_WAYLAND=OFF \
+  -DSDL_WAYLAND=ON \
+  -DSDL_WAYLAND_SHARED=ON \
+  -DSDL_WAYLAND_LIBDECOR=OFF \
+  -DSDL_WAYLAND_QT_TOUCH=OFF \
   -DSDL_KMSDRM=OFF \
   -DSDL_X11=OFF \
   -DSDL_VIVANTE=OFF \
   -DSDL_RPI=OFF \
-  -DSDL_VIDEO=OFF \
+  -DSDL_VIDEO=ON \
   -DSDL_OPENGL=OFF \
-  -DSDL_OPENGLES=OFF \
+  -DSDL_OPENGLES=ON \
   -DSDL_VULKAN=OFF \
   -DSDL_DBUS=OFF \
   -DSDL_IBUS=OFF \

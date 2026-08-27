@@ -8,14 +8,14 @@ with a different origin, a different `HEAD`, or uncommitted changes. This makes
 the feed recipe traceable to one reviewable source revision rather than to an
 accidental sibling working directory.
 
-It uses the application's `tdvp-k230` profile: an application-local DRM/KMS
-scanout buffer for a dedicated 410x189 large-screen UI. The canvas is presented
-at a 3x integer scale (1230x567 at `(1,0)`) on the K230's 1232x568 landscape
-panel. It uses `/dev/dri/card0`, never fbdev, and restores the prior KMS CRTC
-state when the application exits.
+It uses the application's `tdvp-k230` profile: a labwc Wayland client for a
+dedicated 410x189 large-screen UI. Labwc retains DRM master, the native KMS
+scanout, and panel orientation, while the application canvas is presented at a
+3x integer scale (1230x567 at `(1,0)`) on the K230's 1232x568 landscape output.
+It never uses fbdev or attempts to modeset the system CRTC.
 
 The GBA source remains a native 240x160 frame. It occupies a 720x480 physical
-viewport after the KMS scale, with expanded application information/control
+viewport after the Wayland scale, with expanded application information/control
 rails and an F1--F5 command bar using the rest of the panel. No fractional
 scaling, stretching, or cropping is used.
 
@@ -27,6 +27,13 @@ explicit `TDVP_K230_TOOLCHAIN_FILE`. It does not download a compiler, prebuilt
 binary, or source archive. The recipe pins `pkg-config` to that target sysroot
 so a WSL or Linux host library cannot enter the RISC-V build, and uses the
 same K230 toolchain's `strip` binary for the release executable.
+
+The K230 SDK currently lacks the Wayland development metadata despite the
+firmware providing the needed runtime libraries. Set
+`TDVP_K230_WAYLAND_SDK_OVERLAY` to a firmware-matched overlay containing the
+target Wayland/EGL/OpenGL ES/XKB headers, pkg-config files, and SONAME-bearing
+libraries. The finished package dynamically uses the base-firmware libraries;
+it does not package or replace them.
 
 By default the pinned source checkout is expected beside this feed repository:
 
@@ -41,6 +48,7 @@ a Linux or WSL checkout, build the complete feed with:
 ```sh
 TDVP_SDK_ROOT=/path/to/tdvp-k230-sdk \
 TDVP_CARDPUTER_ZERO_GBA_SOURCE_DIR=/path/to/cardputer-zero-gameboy-emulator \
+TDVP_K230_WAYLAND_SDK_OVERLAY=/path/to/tdvp-k230-wayland-sdk-overlay \
 ./scripts/build-all.sh --platform tdvp-k230-r1 --output dist
 ```
 
@@ -59,8 +67,8 @@ index, or signature.
 ```
 
 `/usr/bin/cardputer-zero-gba` invokes the binary with `--device-profile
-tdvp-k230` and deliberately does not force an SDL video driver. It does not
-write to protected firmware paths.
+tdvp-k230` and selects SDL's Wayland driver. It does not write to protected
+firmware paths or alter display configuration.
 
 ## Licence notices
 

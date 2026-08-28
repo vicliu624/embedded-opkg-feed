@@ -52,10 +52,10 @@ recipe preserves the normal `-O2` release optimization level and disables only
 that compiler pass for C sources, ensuring reproducible package builds without
 changing the emulator's runtime platform contract.
 
-The package depends on `tdvp-menu-games`, the ABI-gated platform menu contract
-that contributes the generic `Games` category to the TDVP panel. The emulator
-package itself owns only `tdvp-cardputer-zero-gba.desktop`, which declares
-`Categories=Game;Emulator;` and is discovered by that category rule.
+The ABI-matched base firmware owns the generic `Games` category in the TDVP
+panel. The emulator package owns only `tdvp-cardputer-zero-gba.desktop`, which
+declares `Categories=Game;Emulator;` and is discovered by that category rule.
+No feed package replaces `/etc/xdg/menus/lxde-applications.menu`.
 
 The desktop entry uses the package-owned absolute icon path rather than a
 theme-name lookup. This avoids a generic menu icon when the base firmware's
@@ -69,12 +69,24 @@ By default the pinned source checkout is expected beside this feed repository:
 
 Set `TDVP_CARDPUTER_ZERO_GBA_SOURCE_DIR` when it lives elsewhere. It must still
 be a clean checkout of the exact `SOURCE_REVISION` named in `package.env`. From
-a Linux or WSL checkout, build the complete feed with:
+a Linux or WSL checkout, first export the Wayland development overlay from the
+same completed firmware build that will run the package:
+
+```sh
+bash ./scripts/prepare-tdvp-wayland-sdk-overlay.sh \
+  /path/to/tdvp-firmware-output/k230_canmv_t_display_rm69a10_labwc_desktop_defconfig \
+  .tdvp-sdk-overlay
+```
+
+The bridge refuses to replace an existing overlay and records the firmware
+configuration hash in `tdvp-sdk-overlay.manifest`. It copies only headers,
+pkg-config metadata, and link inputs; it never becomes package payload. Build
+the complete feed with:
 
 ```sh
 TDVP_SDK_ROOT=/path/to/tdvp-k230-sdk \
 TDVP_CARDPUTER_ZERO_GBA_SOURCE_DIR=/path/to/cardputer-zero-gameboy-emulator \
-TDVP_K230_WAYLAND_SDK_OVERLAY=/path/to/tdvp-k230-wayland-sdk-overlay \
+TDVP_K230_WAYLAND_SDK_OVERLAY="$PWD/.tdvp-sdk-overlay" \
 ./scripts/build-all.sh --platform tdvp-k230-r1 --output dist
 ```
 
@@ -94,7 +106,7 @@ index, or signature.
 
 `/usr/bin/cardputer-zero-gba` invokes the binary with `--device-profile
 tdvp-k230` and selects SDL's Wayland driver. It does not write to protected
-firmware paths or alter display configuration.
+firmware paths, menu definitions, or display configuration.
 
 ## Licence notices
 

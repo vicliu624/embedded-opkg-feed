@@ -1,6 +1,7 @@
 dist/
 dist-*/
 .cache/
+.tdvp-sdk-overlay/
 *.ipk
 *.tar
 *.tar.gz

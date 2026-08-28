@@ -155,17 +155,27 @@ strip_tool=${TDVP_K230_STRIP:-"$toolchain_host_dir/bin/riscv64-unknown-linux-gnu
   echo "could not find the K230 target strip tool: $strip_tool" >&2
   exit 76
 }
+cmake_tool=${TDVP_K230_CMAKE:-"$toolchain_host_dir/bin/cmake"}
+ninja_tool=${TDVP_K230_NINJA:-"$toolchain_host_dir/bin/ninja"}
+[[ -x "$cmake_tool" ]] || {
+  echo "could not find the SDK host CMake executable: $cmake_tool" >&2
+  exit 77
+}
+[[ -x "$ninja_tool" ]] || {
+  echo "could not find the SDK host Ninja executable: $ninja_tool" >&2
+  exit 80
+}
 export PKG_CONFIG_SYSROOT_DIR="$toolchain_sysroot"
 export PKG_CONFIG_LIBDIR="$wayland_sdk_overlay/lib/pkgconfig:$toolchain_sysroot/usr/lib/pkgconfig:$toolchain_sysroot/usr/share/pkgconfig"
 export PKG_CONFIG_PATH=''
 export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
 export PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 
-for tool in cmake install ninja; do
-  command -v "$tool" >/dev/null || {
-    echo "required build tool is missing: $tool" >&2
-    exit 77
-  }
+for tool in install; do
+	command -v "$tool" >/dev/null || {
+		echo "required build tool is missing: $tool" >&2
+		exit 81
+	}
 done
 
 build_dir=$(mktemp -d)
@@ -180,7 +190,13 @@ mkdir -p -- "$payload_dir"
 # The TDVP GCC 14.1 RISC-V backend can ICE in cfgcleanup while compiling
 # mGBA's generated ARM opcode table at -O2.  Keep normal release optimization
 # and disable only the shrink-wrap pass that triggers that compiler defect.
-cmake -S "$source_root" -B "$build_dir" -G Ninja \
+(
+cd "$build_dir"
+# The K230 SDK is supported on Ubuntu 18.04, whose system CMake is 3.10 and
+# does not implement the newer `cmake -S <source> -B <build>` interface.  Use
+# the SDK-host CMake/Ninja pair and configure from the isolated build directory
+# with the portable positional-source form.
+"$cmake_tool" -G Ninja -DCMAKE_MAKE_PROGRAM="$ninja_tool" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_FLAGS_RELEASE='-O2 -g0 -D_FORTIFY_SOURCE=1 -fno-shrink-wrap' \
   -DCMAKE_TOOLCHAIN_FILE="$toolchain_file" \
@@ -221,8 +237,10 @@ cmake -S "$source_root" -B "$build_dir" -G Ninja \
   -DSDL_HAPTIC=OFF \
   -DSDL_SENSOR=OFF \
   -DCZ_GBA_USE_SYSTEM_MGBA=OFF \
-  -DCZ_GBA_BUNDLE_MGBA=ON
-cmake --build "$build_dir" --target cardputer-zero-gba --parallel
+  -DCZ_GBA_BUNDLE_MGBA=ON \
+  "$source_root"
+)
+"$cmake_tool" --build "$build_dir" --target cardputer-zero-gba --parallel
 "$strip_tool" --strip-unneeded "$build_dir/cardputer-zero-gba"
 
 install -Dm 0755 "$build_dir/cardputer-zero-gba" \

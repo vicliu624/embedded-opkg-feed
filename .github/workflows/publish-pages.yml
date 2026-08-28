@@ -35,6 +35,10 @@ jobs:
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+        with:
+          # The initial TDVP feed publication must create the Pages site;
+          # subsequent runs simply reuse the existing site.
+          enablement: true
 
       - name: Upload static public feed
         uses: actions/upload-pages-artifact@v4

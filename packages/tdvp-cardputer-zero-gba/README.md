@@ -31,9 +31,15 @@ same K230 toolchain's `strip` binary for the release executable.
 The K230 SDK currently lacks the Wayland development metadata despite the
 firmware providing the needed runtime libraries. Set
 `TDVP_K230_WAYLAND_SDK_OVERLAY` to a firmware-matched overlay containing the
-target Wayland/EGL/OpenGL ES/XKB headers, pkg-config files, and SONAME-bearing
+target Wayland/EGL/XKB headers, pkg-config files, and SONAME-bearing
 libraries. The finished package dynamically uses the base-firmware libraries;
-it does not package or replace them.
+it does not package or replace them. SDL creates the Wayland window and handles
+input, while the application attaches CPU-owned `wl_shm` XRGB buffers directly
+to that window's Wayland surface. It intentionally disables SDL OpenGL ES so
+Mesa `swrast` cannot become the presentation path.
+
+The overlay must include the firmware's `libffi.so` link input because the
+target `libwayland-client.so` depends on the matching `libffi.so.8` ABI.
 
 The package depends on `tdvp-menu-games`, the ABI-gated platform menu contract
 that contributes the generic `Games` category to the TDVP panel. The emulator

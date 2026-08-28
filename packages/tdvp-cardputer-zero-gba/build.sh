@@ -140,7 +140,8 @@ wayland_sdk_overlay=${TDVP_K230_WAYLAND_SDK_OVERLAY:-}
    -f "$wayland_sdk_overlay/include/xkbcommon/xkbcommon.h" &&
    -f "$wayland_sdk_overlay/include/EGL/egl.h" &&
    -f "$wayland_sdk_overlay/lib/pkgconfig/wayland-client.pc" &&
-   -f "$wayland_sdk_overlay/lib/pkgconfig/xkbcommon.pc" ]] || {
+   -f "$wayland_sdk_overlay/lib/pkgconfig/xkbcommon.pc" &&
+   -f "$wayland_sdk_overlay/lib/libffi.so" ]] || {
   echo "invalid TDVP_K230_WAYLAND_SDK_OVERLAY: $wayland_sdk_overlay" >&2
   exit 79
 }
@@ -179,6 +180,8 @@ cmake -S "$source_root" -B "$build_dir" -G Ninja \
   -DCZ_GBA_SDL_SHARED=OFF \
   -DCZ_GBA_SDL_STATIC=ON \
   -DCZ_GBA_REQUIRE_K230_DRM=ON \
+  -DCZ_GBA_REQUIRE_K230_WAYLAND_SHM=ON \
+  -DCZ_GBA_TDVP_WAYLAND_SDK_OVERLAY="$wayland_sdk_overlay" \
   -DSDL_WAYLAND=ON \
   -DSDL_WAYLAND_SHARED=ON \
   -DSDL_WAYLAND_LIBDECOR=OFF \
@@ -189,7 +192,7 @@ cmake -S "$source_root" -B "$build_dir" -G Ninja \
   -DSDL_RPI=OFF \
   -DSDL_VIDEO=ON \
   -DSDL_OPENGL=OFF \
-  -DSDL_OPENGLES=ON \
+  -DSDL_OPENGLES=OFF \
   -DSDL_VULKAN=OFF \
   -DSDL_DBUS=OFF \
   -DSDL_IBUS=OFF \

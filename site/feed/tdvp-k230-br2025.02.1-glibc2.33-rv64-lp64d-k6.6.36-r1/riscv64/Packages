@@ -1,0 +1,26 @@
+Package: tdvp-cardputer-zero-gba
+Version: 0.1.0-12
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: Vic Li <vicliu624@users.noreply.github.com>
+Section: applications
+Priority: optional
+Description: Game Boy Advance emulator frontend for the TDVP K230 landscape display
+Filename: tdvp-cardputer-zero-gba_0.1.0-12_riscv64.ipk
+Size: 884684
+MD5Sum: 643aaa9f5060d0bb38f8715d6ae3e857
+SHA256sum: 3068b6ee092175958a6b11cd3508af15bef43d3340008a843ca7bf6d06197f55
+
+Package: tdvp-hello
+Version: 0.1.0-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: applications
+Priority: optional
+Description: Minimal ABI-gated test package for the TDVP K230 public feed
+Filename: tdvp-hello_0.1.0-1_riscv64.ipk
+Size: 708
+MD5Sum: 2b32379576f77db7906709b1435493a9
+SHA256sum: 0a18564608049dbda81bcf4b0632149145b87e6318c998675ec292f2939f5827
+

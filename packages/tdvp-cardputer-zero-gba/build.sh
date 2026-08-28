@@ -139,9 +139,14 @@ wayland_sdk_overlay=${TDVP_K230_WAYLAND_SDK_OVERLAY:-}
 [[ -f "$wayland_sdk_overlay/include/wayland-client.h" &&
    -f "$wayland_sdk_overlay/include/xkbcommon/xkbcommon.h" &&
    -f "$wayland_sdk_overlay/include/EGL/egl.h" &&
+   -f "$wayland_sdk_overlay/include/pulse/pulseaudio.h" &&
+   -f "$wayland_sdk_overlay/include/alsa/asoundlib.h" &&
    -f "$wayland_sdk_overlay/lib/pkgconfig/wayland-client.pc" &&
    -f "$wayland_sdk_overlay/lib/pkgconfig/xkbcommon.pc" &&
-   -f "$wayland_sdk_overlay/lib/libffi.so" ]] || {
+   -f "$wayland_sdk_overlay/lib/pkgconfig/libpulse.pc" &&
+   -f "$wayland_sdk_overlay/lib/libffi.so" &&
+   -f "$wayland_sdk_overlay/lib/libpulse.so" &&
+   -f "$wayland_sdk_overlay/lib/libasound.so" ]] || {
   echo "invalid TDVP_K230_WAYLAND_SDK_OVERLAY: $wayland_sdk_overlay" >&2
   exit 79
 }
@@ -153,6 +158,8 @@ strip_tool=${TDVP_K230_STRIP:-"$toolchain_host_dir/bin/riscv64-unknown-linux-gnu
 export PKG_CONFIG_SYSROOT_DIR="$toolchain_sysroot"
 export PKG_CONFIG_LIBDIR="$wayland_sdk_overlay/lib/pkgconfig:$toolchain_sysroot/usr/lib/pkgconfig:$toolchain_sysroot/usr/share/pkgconfig"
 export PKG_CONFIG_PATH=''
+export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
+export PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 
 for tool in cmake install ninja; do
   command -v "$tool" >/dev/null || {
@@ -170,8 +177,12 @@ trap cleanup EXIT
 rm -rf -- "$payload_dir"
 mkdir -p -- "$payload_dir"
 
+# The TDVP GCC 14.1 RISC-V backend can ICE in cfgcleanup while compiling
+# mGBA's generated ARM opcode table at -O2.  Keep normal release optimization
+# and disable only the shrink-wrap pass that triggers that compiler defect.
 cmake -S "$source_root" -B "$build_dir" -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_FLAGS_RELEASE='-O2 -g0 -D_FORTIFY_SOURCE=1 -fno-shrink-wrap' \
   -DCMAKE_TOOLCHAIN_FILE="$toolchain_file" \
   -DBUILD_TESTING=OFF \
   -DCZ_GBA_FETCH_SDL2=OFF \
@@ -182,6 +193,10 @@ cmake -S "$source_root" -B "$build_dir" -G Ninja \
   -DCZ_GBA_REQUIRE_K230_DRM=ON \
   -DCZ_GBA_REQUIRE_K230_WAYLAND_SHM=ON \
   -DCZ_GBA_TDVP_WAYLAND_SDK_OVERLAY="$wayland_sdk_overlay" \
+  -DCMAKE_LIBRARY_PATH="$wayland_sdk_overlay/lib" \
+  -DCMAKE_SKIP_RPATH=ON \
+  -DALSA_INCLUDE_DIR="$wayland_sdk_overlay/include" \
+  -DALSA_LIBRARY="$wayland_sdk_overlay/lib/libasound.so" \
   -DSDL_WAYLAND=ON \
   -DSDL_WAYLAND_SHARED=ON \
   -DSDL_WAYLAND_LIBDECOR=OFF \
@@ -196,9 +211,11 @@ cmake -S "$source_root" -B "$build_dir" -G Ninja \
   -DSDL_VULKAN=OFF \
   -DSDL_DBUS=OFF \
   -DSDL_IBUS=OFF \
-  -DSDL_PULSEAUDIO=OFF \
+  -DSDL_PULSEAUDIO=ON \
+  -DSDL_PULSEAUDIO_SHARED=ON \
   -DSDL_SNDIO=OFF \
-  -DSDL_ALSA=OFF \
+  -DSDL_ALSA=ON \
+  -DSDL_ALSA_SHARED=ON \
   -DSDL_HIDAPI=OFF \
   -DSDL_JOYSTICK=OFF \
   -DSDL_HAPTIC=OFF \

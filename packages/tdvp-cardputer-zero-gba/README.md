@@ -41,6 +41,17 @@ Mesa `swrast` cannot become the presentation path.
 The overlay must include the firmware's `libffi.so` link input because the
 target `libwayland-client.so` depends on the matching `libffi.so.8` ABI.
 
+It must also include the target `libpulse.so` and `libasound.so` development
+inputs. SDL dynamically loads PulseAudio as the K230 desktop's primary audio
+path and dynamically loads ALSA as a fallback, so those runtime libraries
+remain owned by the base firmware and are not copied into the package.
+
+The TDVP GCC 14.1 RISC-V backend has an internal-compiler-error path while
+compiling mGBA's generated ARM opcode table with shrink-wrap enabled. The
+recipe preserves the normal `-O2` release optimization level and disables only
+that compiler pass for C sources, ensuring reproducible package builds without
+changing the emulator's runtime platform contract.
+
 The package depends on `tdvp-menu-games`, the ABI-gated platform menu contract
 that contributes the generic `Games` category to the TDVP panel. The emulator
 package itself owns only `tdvp-cardputer-zero-gba.desktop`, which declares

@@ -2,6 +2,15 @@
 set -Eeuo pipefail
 IFS=$'\n\t'
 
+# A composable r3 republish changes metadata only.  Reuse the immutable r2
+# payload by default so SDL2 is built once and shared by all future leaves.
+# Set TDVP_REUSE_PUBLISHED_PAYLOADS=0 only for an intentional source rebuild.
+if [[ "${TDVP_REUSE_PUBLISHED_PAYLOADS:-1}" == 1 ]]; then
+  package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+  feed_root=$(cd -- "$package_dir/../.." && pwd)
+  exec "$feed_root/scripts/reuse-published-ipk-payload.sh" "$package_dir"
+fi
+
 if [[ $# -ne 4 || "$1" != '--platform' || "$3" != '--sdk-root' ]]; then
   echo "usage: $0 --platform tdvp-k230-r1 --sdk-root <matching-buildroot-output/host>" >&2
   exit 64

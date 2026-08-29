@@ -63,6 +63,39 @@ if [[ -n "$base_root" ]]; then
   base_root=$(cd -- "$base_root" && pwd)
 fi
 
+# r3 begins the composable-distribution model.  The completed firmware target
+# is an input to the release, not an undeclared provider: all of its non-ABI
+# runtime SONAMEs are copied byte-for-byte into independently versioned feed
+# packages before any leaf application is packaged.
+runtime_catalog_enabled=0
+case "$release" in
+  r[3-9]|r[1-9][0-9]*) runtime_catalog_enabled=1 ;;
+esac
+runtime_owner_map=
+readelf_tool=
+if [[ "$runtime_catalog_enabled" -eq 1 ]]; then
+  [[ -n "$base_root" ]] || {
+    echo 'composable runtime releases require TDVP_FEED_BASE_ROOT or TDVP_SDK_ROOT with a sibling target/' >&2
+    exit 69
+  }
+  readelf_tool=${TDVP_READELF:-}
+  if [[ -z "$readelf_tool" && -n "${TDVP_SDK_ROOT:-}" ]]; then
+    readelf_tool="$TDVP_SDK_ROOT/bin/riscv64-unknown-linux-gnu-readelf"
+  fi
+  [[ -n "$readelf_tool" && -x "$readelf_tool" ]] || {
+    echo 'composable runtime releases require the matching K230 readelf tool' >&2
+    exit 70
+  }
+  TDVP_READELF="$readelf_tool" \
+    "$script_dir/build-runtime-catalog.sh" --platform "$platform_slug" \
+      --target-root "$base_root" --output "$feed_dir"
+  runtime_owner_map="$feed_dir/.tdvp-runtime-owners.tsv"
+  [[ -s "$runtime_owner_map" ]] || {
+    echo "runtime catalogue did not create its owner map: $runtime_owner_map" >&2
+    exit 71
+  }
+fi
+
 staging_root=$(mktemp -d)
 cleanup() { rm -rf -- "$staging_root"; }
 trap cleanup EXIT
@@ -124,7 +157,7 @@ for package in "${selected_packages[@]}"; do
 done
 if [[ "$contains_shared_runtime" -eq 1 && -z "$base_root" ]]; then
   echo 'shared-library releases require TDVP_FEED_BASE_ROOT or TDVP_SDK_ROOT with a sibling target/' >&2
-  exit 69
+  exit 72
 fi
 
 build_package() {
@@ -135,17 +168,17 @@ build_package() {
     done) return 0 ;;
     visiting)
       echo "package build dependency cycle includes: $package" >&2
-      exit 70
+      exit 73
       ;;
     unseen) ;;
     *)
       echo "invalid package build state for $package" >&2
-      exit 71
+      exit 74
       ;;
   esac
   [[ -n "${recipe_dir[$package]:-}" ]] || {
     echo "selected recipe depends on unavailable build package: $package" >&2
-    exit 72
+    exit 75
   }
   build_state[$package]=visiting
   # The script's global IFS intentionally excludes spaces for robust file
@@ -155,7 +188,7 @@ build_package() {
   for dependency in "${build_dependencies[@]}"; do
     [[ -n "${recipe_dir[$dependency]:-}" ]] || {
       echo "$package declares PACKAGE_BUILD_DEPENDS on $dependency, which is not selected for $release" >&2
-      exit 73
+      exit 76
     }
     build_package "$dependency"
   done
@@ -167,6 +200,8 @@ build_package() {
       bash "$package_dir/build.sh" --platform "$platform_slug" --sdk-root "${TDVP_SDK_ROOT:-}"
   fi
   TDVP_FEED_BASE_ROOT="$base_root" \
+  TDVP_RUNTIME_OWNER_MAP="$runtime_owner_map" \
+  TDVP_READELF="$readelf_tool" \
     "$script_dir/build-ipk.sh" --platform "$platform_slug" "$package_dir" "$feed_dir"
   # Package build hooks materialise their payload under an ignored root/
   # directory so build-ipk can stay deliberately simple.  The signed IPK is
@@ -188,4 +223,8 @@ if [[ -n "$base_root" ]]; then
   TDVP_SDK_ROOT="${TDVP_SDK_ROOT:-}" \
     "$script_dir/verify-runtime-closure.sh" --platform "$platform_slug" --base-root "$base_root" "$feed_dir"
 fi
+# Owner-map and path-audit files are build evidence, not feed payload.  They
+# must not be copied to GitHub Pages beside an immutable public index; the
+# normal Packages catalogue is the public inventory.
+rm -f -- "$feed_dir/.tdvp-runtime-owners.tsv" "$feed_dir/.tdvp-runtime-ownership.tsv"
 echo "feed ready for offline signing: $feed_dir"

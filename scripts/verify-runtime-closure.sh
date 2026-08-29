@@ -125,32 +125,54 @@ for package in "${!package_root[@]}"; do
   while IFS= read -r elf; do
     while IFS= read -r soname; do
       [[ -n "$soname" ]] || continue
+      owner=${soname_owner[$soname]:-}
+      # A transition image can carry a byte-identical copy of a feed-owned
+      # library.  Feed ownership wins in that case: otherwise an application
+      # could silently keep depending on a synthetic image bundle instead of
+      # the independently versioned package it will need on a thin image.
+      if [[ -n "$owner" ]]; then
+        [[ "$owner" == "$package" ]] && continue
+        dependency_contains "${package_depends[$package]}" "$owner" || {
+          echo "$package needs $soname from $owner but does not declare Depends: $owner" >&2
+          exit 74
+        }
+        continue
+      fi
       if base_has_soname "$soname"; then
         base_owner=${base_soname_owner[$soname]:-}
         [[ -n "$base_owner" ]] || {
           echo "$package needs base SONAME $soname, but it is absent from the seed manifest" >&2
-          exit 74
+          exit 75
         }
         dependency_contains "${package_depends[$package]}" "$base_owner" || {
           echo "$package needs base SONAME $soname from $base_owner but does not declare it" >&2
-          exit 75
+          exit 76
         }
         continue
       fi
-      owner=${soname_owner[$soname]:-}
       [[ -n "$owner" ]] || {
         echo "$package needs $soname, but it is not supplied by the base image or feed" >&2
-        exit 76
+        exit 77
       }
       [[ "$owner" == "$package" ]] && continue
       dependency_contains "${package_depends[$package]}" "$owner" || {
         echo "$package needs $soname from $owner but does not declare Depends: $owner" >&2
-        exit 77
+        exit 78
       }
     done < <("$readelf_tool" -d "$elf" 2>/dev/null | sed -n 's/.*Shared library: \[\(.*\)\]/\1/p')
     if "$readelf_tool" -d "$elf" 2>/dev/null | grep -Eq '\((RPATH|RUNPATH)\)'; then
-      echo "$package payload contains an ELF RPATH/RUNPATH: $elf" >&2
-      exit 78
+      # Current r3 packages transition byte-identical Buildroot runtime
+      # objects into explicit feed owners.  Preserve an existing target RPATH
+      # only when the exact same regular file is present in the locked base;
+      # new applications and rebuilt libraries still fail this guard.
+      relative=${elf#"${package_root[$package]}"}
+      base_elf="$base_root$relative"
+      if [[ -f "$base_elf" ]] && cmp -s -- "$elf" "$base_elf"; then
+        echo "$package retains a byte-identical target RPATH/RUNPATH: $relative" >&2
+      else
+        echo "$package payload contains an ELF RPATH/RUNPATH: $elf" >&2
+        exit 79
+      fi
     fi
   done < <(find "${package_root[$package]}" -type f -perm -u+x -o -type f -name '*.so*')
 done

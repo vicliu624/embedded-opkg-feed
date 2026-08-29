@@ -28,10 +28,17 @@ jobs:
       - name: Check out reviewed release content
         uses: actions/checkout@v6
 
-      - name: Verify public index and detached signature
+      - name: Verify every staged immutable index and detached signature
         run: |
-          ./scripts/verify-feed.sh --require-signature --platform tdvp-k230-r1 \
-            site/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
+          set -Eeuo pipefail
+          found=0
+          while IFS= read -r -d '' index; do
+            found=1
+            feed_dir=$(dirname "$index")
+            ./scripts/verify-feed.sh --require-signature --platform tdvp-k230-r1 \
+              "$feed_dir"
+          done < <(find site/feed -type f -name Packages -print0 | LC_ALL=C sort -z)
+          test "$found" -eq 1
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

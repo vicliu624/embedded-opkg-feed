@@ -5,6 +5,15 @@
 set -Eeuo pipefail
 IFS=$'\n\t'
 
+# r3 retains the audited r2 application data byte-for-byte and replaces only
+# the historical tdvp-base-* control metadata with the concrete runtime
+# closure.  Set TDVP_REUSE_PUBLISHED_PAYLOADS=0 for a deliberate source build.
+if [[ "${TDVP_REUSE_PUBLISHED_PAYLOADS:-1}" == 1 ]]; then
+  package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+  feed_root=$(cd -- "$package_dir/../.." && pwd)
+  exec "$feed_root/scripts/reuse-published-ipk-payload.sh" "$package_dir"
+fi
+
 if [[ $# -ne 4 || "$1" != '--platform' || "$3" != '--sdk-root' ]]; then
   echo "usage: $0 --platform tdvp-k230-r1 --sdk-root <matching-buildroot-output/host>" >&2
   exit 64

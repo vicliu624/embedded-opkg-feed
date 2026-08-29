@@ -23,12 +23,16 @@ It is not a “works on every RISC-V device” repository. On embedded systems, 
 3. **Feed packages must not replace immutable core system components.** libc, the kernel, system services, the boot chain, `opkg` itself, and the KPU driver belong to the firmware, not this feed.
 
 The intended model is the same division of responsibility used by a normal
-Linux distribution: the base image is a small, hardware-specific bootstrap;
-the feed is the expandable userland catalogue. As the platform grows, common
-libraries, CLI tools, desktop applications, and device-specific applications
-belong here as independent packages with explicit dependencies. It is
-deliberately not an unbounded binary repository for every RISC-V board: each
-feed release is tied to one declared TDVP platform ABI.
+Linux distribution: the base image is a small, hardware-specific bootstrap and
+ABI seed; the feed is the expandable userland catalogue. From r3, **every
+dynamic runtime SONAME other than the dynamic loader, glibc, `libgcc_s`, and
+`libstdc++` has exactly one independently installable IPK owner in the same
+ABI release.** Common libraries, CLI tools, desktop applications, and
+device-specific applications therefore ship as independent packages with exact
+versioned dependencies; leaf applications neither statically bundle libraries
+nor borrow a general-purpose runtime from the base image. It is deliberately
+not an unbounded binary repository for every RISC-V board: each feed release is
+tied to one declared TDVP platform ABI.
 
 ## Currently supported platform
 
@@ -87,9 +91,9 @@ For example:
 ```sh
 TDVP_SDK_ROOT=/path/to/output/host \
 TDVP_FEED_BASE_ROOT=/path/to/output/target \
-./scripts/build-all.sh --platform tdvp-k230-r1 --release r2 --output dist
+./scripts/build-all.sh --platform tdvp-k230-r1 --release r3 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r3/riscv64
 ```
 
 Submit **reviewable source, build scripts, and package metadata**. Do not submit generated `.ipk` files, `Packages`, `Packages.gz`, signatures, or `site/feed/` content. They are release outputs. The full checklist is in [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -116,7 +120,7 @@ The private key never goes into Git, a Pull Request, or GitHub Pages. A release 
 - Generic upstream libraries keep their normal package names, such as `sdl2`, `sdl2-ttf`, and `libmgba`; ABI compatibility comes from the platform dependency and `Architecture`, not a TDVP library-name prefix.
 - Community applications should use `<github-handle>-<app-name>`, for example `alice-status-panel`, to avoid name collisions.
 - A package must declare its supported platforms. The build script adds the platform ABI dependency automatically; it cannot be skipped by hand.
-- `application` packages must not write to or replace `/boot`, `/lib`, `/lib64`, `/usr/lib`, `/usr/lib/systemd`, or `/usr/sbin`. Only a maintainer-reviewed `shared-library` recipe may ship audited `/usr/lib/lib*.so*` files; the builder rejects base-image collisions, protected runtime replacement, duplicate SONAMEs, RPATHs, and undeclared dynamic dependencies.
+- `application` packages must not write to or replace `/boot`, `/lib`, `/lib64`, `/usr/lib`, `/usr/lib/systemd`, or `/usr/sbin`. Only maintainer-reviewed `shared-library` or `runtime` recipes may ship controlled runtime content; the builder rejects protected-runtime replacement, duplicate SONAMEs, undeclared dynamic dependencies, static/private copies of general libraries, and any non-identical base-image overlay.
 
 ## Local development
 

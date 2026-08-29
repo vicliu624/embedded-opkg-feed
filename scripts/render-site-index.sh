@@ -199,7 +199,9 @@ fi
 cat >>"$temporary" <<'EOF'
     <h2>Device use</h2>
     <p>On an ABI-matched TDVP K230 image, refresh the configured source with
-      <code>sudo tdvp-opkg update</code>. Do not disable
+      <code>sudo tdvp-opkg update</code>. The firmware adds
+      <code>/usr/local/sbin</code> to interactive <code>PATH</code>, so there
+      is no need to spell the wrapper's absolute path. Do not disable
       signature verification. The device accepts only the release key embedded
       in its firmware and only packages that depend on its exact ABI package.</p>
   </body>

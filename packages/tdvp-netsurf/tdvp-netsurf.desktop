@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=NetSurf Web Browser
+Comment=Lightweight GTK3 web browser
+TryExec=netsurf-gtk3
+Exec=netsurf-gtk3 %u
+Icon=/usr/share/netsurf/netsurf.png
+Terminal=false
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;application/xml;image/gif;image/jpeg;image/png;
+StartupNotify=true

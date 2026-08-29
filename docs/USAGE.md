@@ -23,12 +23,12 @@ substitute; follow
 
 ## Configure the TDVP K230 r1 feed
 
-The current base image installs this **single, ABI-specific r2 feed** in
-`/etc/opkg/tdvp-feed.conf`. `r2` is the immutable catalogue revision; the
+The current base image installs this **single, ABI-specific r3 feed** in
+`/etc/opkg/tdvp-feed.conf`. `r3` is the immutable catalogue revision; the
 firmware ABI itself remains r1:
 
 ```conf
-src/gz tdvp_apps_r2 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
+src/gz tdvp_apps_r3 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r3/riscv64
 ```
 
 Do not manually alter that file or add generic OpenWrt, Debian, or arbitrary

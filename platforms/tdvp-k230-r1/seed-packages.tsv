@@ -1,5 +1,7 @@
-# Package|Version|Description|ELF SONAMEs supplied by the immutable image
-tdvp-base-runtime|2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1|Image-owned glibc dynamic-loader and C++ runtime|ld-linux-riscv64-lp64d.so.1,libc.so.6,libdl.so.2,libm.so.6,libpthread.so.0,librt.so.1,libgcc_s.so.1,libstdc++.so.6
-tdvp-base-desktop|2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1|Image-owned TDVP GTK Wayland desktop runtime|libwayland-client.so.0,libwayland-cursor.so.0,libwayland-egl.so.1,libEGL.so.1,libepoxy.so.0,libffi.so.8,libglib-2.0.so.0,libgobject-2.0.so.0,libgdk-3.so.0,libgtk-3.so.0,libcairo.so.2,libfreetype.so.6,libharfbuzz.so.0
-tdvp-base-network|2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1|Image-owned NetworkManager TLS and HTTP runtime|libcurl.so.4,libssl.so.1.1,libcrypto.so.1.1
-tdvp-base-audio|2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1|Image-owned PulseAudio and ALSA runtime|libpulse.so.0,libasound.so.2
+# Package|Version|Description|ELF SONAMEs supplied by the immutable platform ABI
+#
+# Everything above this narrow loader/C-library contract must have a real,
+# independently versioned owner in the feed.  A current transitional image
+# may contain byte-identical copies for boot convenience, but it must never be
+# used as an undeclared desktop, network, multimedia, or application runtime.
+tdvp-platform-abi|2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1|K230 glibc dynamic-loader and compiler ABI seed|ld-linux-riscv64-lp64d.so.1,libc.so.6,libdl.so.2,libm.so.6,libpthread.so.0,librt.so.1,libgcc_s.so.1,libstdc++.so.6

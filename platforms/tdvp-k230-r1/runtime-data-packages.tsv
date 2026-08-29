@@ -1,0 +1,19 @@
+# Package|Description|comma-separated paths or selectors owned by this package
+# These paths are intentionally distinct from top-level SONAME packages.  They
+# cover data and dlopen modules needed by a GTK/Wayland desktop after the
+# eventual base-image thinning.  @remaining-* is a reviewable catch-all for
+# paths whose package-specific owner has not been split yet; it still gives
+# every file a single explicit feed owner instead of silently borrowing it.
+gtk3-data|GTK3 themes, input modules, and print backends|/usr/share/gtk-3.0,/usr/lib/gtk-3.0
+gdk-pixbuf-loaders|GDK Pixbuf image loader modules and metadata|/usr/lib/gdk-pixbuf-2.0
+glib-networking|GIO TLS backend modules|/usr/lib/gio/modules
+pulse-modules|PulseAudio runtime modules and default configuration|/usr/lib/pulseaudio,/etc/pulse
+alsa-data|ALSA UCM and profile data|/usr/share/alsa
+mesa-dri-drivers|Mesa DRI software renderer modules|/usr/lib/dri,/usr/share/drirc.d
+openssl-modules|OpenSSL provider modules|/usr/lib/ossl-modules
+ca-certificates|TLS trust store|/etc/ssl
+adwaita-icon-theme|Adwaita icon resources|/usr/share/icons/Adwaita
+hicolor-icon-theme|Hicolor icon resources|/usr/share/icons/hicolor
+shared-mime-info|Shared MIME database|/usr/share/mime
+tdvp-runtime-modules|Remaining non-ABI runtime modules below usr/lib|@remaining-usr-lib
+tdvp-runtime-data|Remaining non-ABI userland data below usr/share|@remaining-usr-share

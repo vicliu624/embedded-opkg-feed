@@ -16,10 +16,10 @@
 
 ## 配置 TDVP K230 r1 软件源
 
-当前基础镜像会在 `/etc/opkg/tdvp-feed.conf` 中安装下面这个**与 ABI 绑定的 r2 软件源**。这里的 r2 是不可变的软件源目录版本；设备的基础 ABI 仍是 r1：
+当前基础镜像会在 `/etc/opkg/tdvp-feed.conf` 中安装下面这个**与 ABI 绑定的 r3 软件源**。这里的 r3 是不可变的软件源目录版本；设备的基础 ABI 仍是 r1：
 
 ```conf
-src/gz tdvp_apps_r2 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
+src/gz tdvp_apps_r3 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r3/riscv64
 ```
 
 不要手工修改该文件，也不要添加通用 OpenWrt、Debian 或任意 `riscv64` 软件源；即使 CPU 架构同为 RISC-V 64 位，它们的系统 ABI 也可能不同。

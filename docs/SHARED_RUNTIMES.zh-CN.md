@@ -2,44 +2,52 @@
 
 [中文（当前）](SHARED_RUNTIMES.zh-CN.md) | [English](SHARED_RUNTIMES.md)
 
-TDVP K230 软件源有两种经审核的包类型：
+TDVP K230 feed 有三种经审核的包类型：
 
 ```text
 application       命令行工具、桌面程序、设备应用、数据和文档
-shared-library    被多个应用复用的运行时 SONAME 库
+shared-library    由 recipe 构建、可被多个程序复用的运行时 SONAME 库
+runtime           从已验证 target 提取的共享运行时、插件或运行时数据
 ```
 
 这不是通用 RISC-V 仓库。每个包均为 `riscv64`，属于一个不可变 TDVP feed revision，并由平台清单自动获得精确的 `tdvp-platform-abi` 依赖。
 
-## 所有权边界
+## r3 的可组合所有权契约
 
-Buildroot 镜像拥有启动和运行桌面所需的组件：动态加载器、glibc、libgcc/libstdc++、内核和驱动栈、GTK/Wayland、NetworkManager、PulseAudio/ALSA 以及它们的基础依赖。它们不得由 opkg 重复安装或升级。
+从 r3 起，这不是“应用 + 若干例外库”的软件源，而是一份可组合的、发行版式用户态 catalogue。基础镜像唯一可以被应用隐式假定的运行时是 ABI seed：动态加载器、glibc 的 `libc/libdl/libm/libpthread/librt`、`libgcc_s`、`libstdc++`，以及内核、驱动与启动链；它们不能由 opkg 升级。
 
-feed 是用户态软件和可复用运行时的发行版目录，例如 `sdl2`、`sdl2-ttf` 和 `libmgba`。它应当像正常 Linux 发行版的软件目录一样逐步扩展：共享库、命令行工具、桌面程序和硬件专属应用都以独立包提供。一份库在同一 ABI/feed release 中只编译一次，任意多个包可通过依赖复用它。固件也会在 opkg 已安装数据库中登记自己的 seed/base package，使依赖图不会把已经存在的桌面运行时当作不可追踪的黑箱。
+**每一个其他动态 SONAME 在同一 ABI/feed release 中必须有且只有一个独立 IPK 所有者。** 当前 r3 例如覆盖 GTK3/GLib、Wayland/EGL/Mesa、ALSA/PulseAudio、SDL2、libmGBA、libcurl、libpng、libjpeg、FFmpeg/MPV 和 NetSurf 所需的库。数据、可加载模块和桌面资源也有明确的 runtime 所有者，例如 `gtk3-data`、`gdk-pixbuf-loaders`、`glib-networking`、`pulse-modules` 与 `shared-mime-info`。如果后续程序需要当前 ABI target 中尚不存在的库（例如 libutf8proc），必须先作为独立库 recipe 进入新的 feed release，不能把它静态塞入应用。
+
+因此 `tdvp-gba`、`tdvp-netsurf`、`tdvp-mpv` 都是叶子应用：它们不携带静态副本，不从基础镜像暗中借用通用库，而是通过精确版本的 `Depends` 取得所有直接运行时需求。镜像可为了首次桌面启动而带有与 r3 字节一致的兼容副本，但这不改变依赖契约：闭包检查把 feed package 而不是 base rootfs 作为非 ABI SONAME 的 provider，安装后该 IPK 是唯一的软件包所有者。
+
+一个库在一个 ABI/feed release 中只构建或提取一次，任意后续程序直接复用相同版本的 IPK；添加应用不会重新编译或静态塞入 SDL、GTK、curl、图像库等基础库。
 
 ## Recipe 元数据
 
 每个 recipe 同时声明构建顺序和安装后的运行时依赖：
 
 ```sh
-PACKAGE_KIND='shared-library'        # 或 application
-PACKAGE_RELEASES='r2'
+PACKAGE_KIND='shared-library'        # 或 application / runtime
+PACKAGE_RELEASES='r3'
 PACKAGE_SECTION='libraries'          # 例如 libraries、utils、desktop、games
 PACKAGE_BUILD_DEPENDS='sdl2'         # 仅构建 staging
 PACKAGE_DEPENDS='sdl2 (= 2.30.11-1)' # opkg 运行时关系
+PACKAGE_AUTO_RUNTIME_DEPENDS=1       # 由 ELF NEEDED 生成其余精确依赖
 ```
 
-`build-all.sh` 为一次 release 创建一个临时 `TDVP_FEED_STAGING_ROOT`。库 recipe 的头文件、CMake 元数据和未版本化 linker symlink 只进入此 staging；最终 `.ipk` 只能包含运行时 `lib*.so*` 和属于该包的许可/文档。应用从同一 staging 动态链接，不能再复制这些库到自身载荷。
+`build-all.sh` 为一次 release 创建一个临时 `TDVP_FEED_STAGING_ROOT`。库 recipe 的头文件、CMake 元数据和未版本化 linker symlink 只进入此 staging；最终 `.ipk` 只能包含运行时 `lib*.so*` 和属于该包的许可/文档。平台 catalog 还会把 target 中所有非 ABI SONAME、模块和运行时数据拆成独立 `runtime` 包，并生成 SONAME → `Package (= Version)` 所有者图。应用从同一 staging 动态链接，不能再复制这些库到自身载荷。
 
 ## 强制发布检查
 
 不可变 feed 签名前，发布构建会验证：
 
-- feed 文件不会替换匹配 target root 中已有文件；
+- 任何非 ABI SONAME 在 feed 中恰好只有一个 provider；
+- 每个应用或模块的直接 `NEEDED` SONAME 都由其精确 `Depends` 覆盖，不能以 target rootfs 作为后门 provider；
+- 允许覆盖基础镜像的内容时，文件字节、权限和 symlink 目标都必须相同，确保这是 package ownership 的接管而不是替换；
 - 共享库不得写入受保护的 loader/glibc/libstdc++ 文件；
 - 两个 feed 包不能导出同一 ELF SONAME；
-- 所有载荷 ELF 均不得携带 RPATH/RUNPATH；
-- 每个直接 `NEEDED` SONAME 必须来自基础 rootfs 或一个已声明的 feed 依赖。
+- 新增载荷 ELF 不得携带 RPATH/RUNPATH；遗留 target ELF 仅可保留经字节一致性审计的 RPATH/RUNPATH；
+- 叶子应用不得静态打包或私自复制通用运行时库。
 
 构建含共享库的 feed 时必须提供 `TDVP_FEED_BASE_ROOT=<匹配的 Buildroot target>`。只看 recipe 元数据不足以签发一个库 release。
 

@@ -1,0 +1,8 @@
+{
+  "platform_slug": "tdvp-k230-r1",
+  "platform_id": "tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1",
+  "feed_release": "r3",
+  "architecture": "riscv64",
+  "index": "Packages.gz",
+  "signature": "Packages.asc"
+}

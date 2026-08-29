@@ -22,7 +22,7 @@
 2. **GitHub Pages 是公开下载地址；签名索引用于证明下载内容确实由仓库维护者发布。**
 3. **仓库包不能替换不可变的系统核心部分。** libc、内核、系统服务、启动链、`opkg` 本身和 KPU 驱动都属于固件责任范围，不从这里升级。
 
-目标模型与正常 Linux 发行版的职责划分一致：基础镜像只保留小而稳定的硬件相关引导与桌面种子，feed 是可扩展的用户态软件目录。后续的通用库、命令行工具、桌面程序和设备专属应用都应作为带有明确依赖的独立包进入这里。它并不是任意 RISC-V 板子都能使用的二进制堆放区；每个 feed release 都严格绑定一个声明过的 TDVP 平台 ABI。
+目标模型与正常 Linux 发行版的职责划分一致：基础镜像只保留小而稳定的硬件相关引导和 ABI seed，feed 是可扩展的用户态软件目录。r3 起，除动态加载器、glibc、`libgcc_s` 和 `libstdc++` 之外，**每一个动态运行时 SONAME 都必须在同一 ABI release 中有且只有一个独立 IPK 所有者**。后续的通用库、命令行工具、桌面程序和设备专属应用都作为带有精确版本依赖的独立包进入这里；叶子应用不静态塞库，也不从基础镜像暗中借用通用库。它并不是任意 RISC-V 板子都能使用的二进制堆放区；每个 feed release 都严格绑定一个声明过的 TDVP 平台 ABI。
 
 ## 当前支持的平台
 
@@ -69,9 +69,9 @@ tdvp-gba
 ```sh
 TDVP_SDK_ROOT=/path/to/output/host \
 TDVP_FEED_BASE_ROOT=/path/to/output/target \
-./scripts/build-all.sh --platform tdvp-k230-r1 --release r2 --output dist
+./scripts/build-all.sh --platform tdvp-k230-r1 --release r3 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r3/riscv64
 ```
 
 开发者只需要提交**可审查的源码、构建脚本和包描述**。不要提交生成的 `.ipk`、`Packages`、`Packages.gz`、签名文件或 `site/feed/` 内容；这些是发布流程的产物。更详细、带检查清单的说明见 [CONTRIBUTING.zh-CN.md](CONTRIBUTING.zh-CN.md)。
@@ -98,7 +98,7 @@ GitHub Actions 校验签名并发布到 GitHub Pages
 - 通用上游库保留它们的正常包名，例如 `sdl2`、`sdl2-ttf`、`libmgba`；ABI 兼容性由平台依赖和 `Architecture` 保障，而不是靠给库名加 TDVP 前缀。
 - 社区应用建议使用 `<github 用户名>-<应用名>`，例如 `alice-status-panel`，以避免重名。
 - 包必须声明支持的平台。构建脚本会自动加入该平台的 ABI 依赖，不能靠手工省略。
-- `application` 包不允许写入或替换 `/boot`、`/lib`、`/lib64`、`/usr/lib`、`/usr/lib/systemd`、`/usr/sbin`。只有维护者审核的 `shared-library` recipe 可安装受控的 `/usr/lib/lib*.so*`，并且构建器会拒绝基础镜像冲突、受保护运行时替换、重复 SONAME、RPATH 和未声明的动态依赖。
+- `application` 包不允许写入或替换 `/boot`、`/lib`、`/lib64`、`/usr/lib`、`/usr/lib/systemd`、`/usr/sbin`。只有维护者审核的 `shared-library` 或 `runtime` recipe 可安装受控运行时；构建器会拒绝受保护运行时替换、重复 SONAME、未声明动态依赖、静态/私有通用库副本，以及非字节一致的基础镜像覆盖。
 
 ## 本地仓库开发
 

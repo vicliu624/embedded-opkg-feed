@@ -1,0 +1,35 @@
+From 5ff1f64aec226cf5304501445ed335f7b1a2c301 Mon Sep 17 00:00:00 2001
+From: TDVP Device Team <devices@example.invalid>
+Date: Fri, 29 Aug 2026 16:00:00 +0800
+Subject: [PATCH] gtk3: preprocess the PNG application icon under the XPM alias
+
+The K230 Buildroot host gdk-pixbuf deliberately ships only GIF, JPEG, PNG and
+SVG loaders.  NetSurf's GTK3 resource generation asks glib-compile-resources
+to decode netsurf.xpm, which therefore fails on the build host before target
+compilation starts.
+
+The package already includes the same application icon as netsurf.png.  Keep
+the resource name consumed by the GTK frontend (`netsurf.xpm`), but generate
+its pixdata from the supported PNG source.  The desktop resource and runtime
+call sites stay unchanged; this only removes an unnecessary host XPM-loader
+build dependency.
+
+Signed-off-by: TDVP Device Team <devices@example.invalid>
+---
+ netsurf/frontends/gtk/res/netsurf.gresource.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/netsurf/frontends/gtk/res/netsurf.gresource.xml b/netsurf/frontends/gtk/res/netsurf.gresource.xml
+index 3a9b5ee..443a8a0 100644
+--- a/netsurf/frontends/gtk/res/netsurf.gresource.xml
++++ b/netsurf/frontends/gtk/res/netsurf.gresource.xml
+@@ -27,6 +27,6 @@
+     <file>warning.gtk2.ui</file>
+     <file preprocess="to-pixdata">favicon.png</file>
+-    <file preprocess="to-pixdata">netsurf.xpm</file>
++    <file alias="netsurf.xpm" preprocess="to-pixdata">netsurf.png</file>
+     <file preprocess="to-pixdata">menu_cursor.png</file>
+     <file preprocess="to-pixdata">throbber/throbber0.png</file>
+     <file preprocess="to-pixdata">throbber/throbber1.png</file>
+--
+2.39.5

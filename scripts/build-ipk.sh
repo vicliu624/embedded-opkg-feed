@@ -43,6 +43,8 @@ source "$package_dir/package.env"
 : "${PACKAGE_RELEASES:=r1}"
 : "${PACKAGE_PROVIDES:=}"
 : "${PACKAGE_SECTION:=}"
+: "${PACKAGE_BASE_OVERLAY:=deny}"
+: "${PACKAGE_AUTO_RUNTIME_DEPENDS:=0}"
 
 if [[ ! "$PACKAGE" =~ ^[a-z0-9][a-z0-9+.-]*$ ]]; then
   echo "invalid lowercase opkg package name: $PACKAGE" >&2
@@ -57,7 +59,7 @@ if [[ " $SUPPORTED_PLATFORMS " != *" $PLATFORM_SLUG "* ]]; then
   exit 70
 fi
 case "$PACKAGE_KIND" in
-  application|shared-library) ;;
+  application|shared-library|runtime) ;;
   *)
     echo "invalid PACKAGE_KIND for $PACKAGE: $PACKAGE_KIND" >&2
     exit 71
@@ -65,7 +67,7 @@ case "$PACKAGE_KIND" in
 esac
 
 if [[ -z "$PACKAGE_SECTION" ]]; then
-  if [[ "$PACKAGE_KIND" == shared-library ]]; then
+  if [[ "$PACKAGE_KIND" == shared-library || "$PACKAGE_KIND" == runtime ]]; then
     PACKAGE_SECTION='libraries'
   else
     PACKAGE_SECTION='applications'
@@ -74,6 +76,13 @@ fi
 
 payload_dir="$package_dir/root"
 [[ -d "$payload_dir" ]] || { echo "missing payload root: $payload_dir" >&2; exit 72; }
+# A build hook may materialise its payload on a POSIX staging filesystem and
+# expose it as root/ through a symlink (the repository itself can live on a
+# Windows drvfs mount, which does not preserve the target executable modes).
+# Resolve that directory before every audit below: find(1) otherwise treats
+# root/ as a terminal symlink, silently skipping both base-overlay checks and
+# ELF-derived runtime dependencies.
+payload_dir=$(cd -- "$payload_dir" && pwd -P)
 for tool in ar find gzip md5sum sha256sum tar; do
   command -v "$tool" >/dev/null || {
     echo "required build tool not found: $tool" >&2
@@ -90,20 +99,45 @@ path_exists() {
   [[ -e "$1" || -L "$1" ]]
 }
 
-assert_no_base_collision() {
+assert_base_overlay_policy() {
   local base_root=${TDVP_FEED_BASE_ROOT:-}
-  local payload_path relative base_path
+  local payload_path relative base_path payload_mode base_mode
   [[ -n "$base_root" ]] || return 0
   [[ -d "$base_root" ]] || {
     echo "TDVP_FEED_BASE_ROOT is not a target root: $base_root" >&2
     exit 75
   }
+  case "$PACKAGE_BASE_OVERLAY" in
+    deny|identical) ;;
+    *)
+      echo "invalid PACKAGE_BASE_OVERLAY for $PACKAGE: $PACKAGE_BASE_OVERLAY" >&2
+      exit 76
+      ;;
+  esac
   while IFS= read -r -d '' payload_path; do
     relative=${payload_path#"$payload_dir"}
     base_path="$base_root$relative"
     if path_exists "$base_path"; then
-      echo "$PACKAGE would replace a base-image path: $relative" >&2
-      exit 76
+      if [[ "$PACKAGE_BASE_OVERLAY" != identical ]]; then
+        echo "$PACKAGE would replace a base-image path: $relative" >&2
+        exit 77
+      fi
+      if [[ -L "$payload_path" && -L "$base_path" ]]; then
+        [[ "$(readlink -- "$payload_path")" == "$(readlink -- "$base_path")" ]] || {
+          echo "$PACKAGE base-overlay symlink differs: $relative" >&2
+          exit 78
+        }
+      elif [[ -f "$payload_path" && -f "$base_path" ]]; then
+        payload_mode=$(stat -c '%a' -- "$payload_path")
+        base_mode=$(stat -c '%a' -- "$base_path")
+        [[ "$payload_mode" == "$base_mode" ]] && cmp -s -- "$payload_path" "$base_path" || {
+          echo "$PACKAGE base-overlay file differs: $relative" >&2
+          exit 79
+        }
+      else
+        echo "$PACKAGE base-overlay file type differs: $relative" >&2
+        exit 80
+      fi
     fi
   done < <(find "$payload_dir" -mindepth 1 \( -type f -o -type l \) -print0)
 }
@@ -127,14 +161,14 @@ assert_shared_library_payload_paths() {
         basename=${payload_path##*/}
         if [[ ! "$basename" =~ ^lib[A-Za-z0-9_+.-]+\.so(\.[A-Za-z0-9_+.-]+)*$ ]]; then
           echo "shared-library payload contains a non-runtime file: $relative" >&2
-          exit 78
+          exit 81
         fi
         ;;
       /usr/share/doc/"$PACKAGE"/*|/usr/share/licenses/"$PACKAGE"/*)
         ;;
       *)
         echo "shared-library payload escapes its permitted paths: $relative" >&2
-        exit 79
+        exit 82
         ;;
     esac
   done < <(find "$payload_dir" -mindepth 1 \( -type f -o -type l \) -print0)
@@ -145,17 +179,42 @@ assert_shared_library_payload_paths() {
     'librt.so*' 'libgcc_s.so*' 'libstdc++.so*'; do
     if find "$payload_dir/usr/lib" -maxdepth 1 -name "$protected_pattern" -print -quit 2>/dev/null | grep -q .; then
       echo "shared-library payload attempts to replace protected runtime: $protected_pattern ($PACKAGE)" >&2
-      exit 80
+      exit 83
     fi
   done
 }
 
-if [[ "$PACKAGE_KIND" == shared-library ]]; then
-  assert_shared_library_payload_paths
-else
-  assert_application_payload_paths
-fi
-assert_no_base_collision
+assert_runtime_payload_paths() {
+  local payload_path relative
+  while IFS= read -r -d '' payload_path; do
+    relative=${payload_path#"$payload_dir"}
+    case "$relative" in
+      /usr/lib/*|/usr/libexec/*|/usr/share/*|/etc/*)
+        ;;
+      *)
+        echo "runtime payload escapes its permitted paths: $relative" >&2
+        exit 84
+        ;;
+    esac
+  done < <(find "$payload_dir" -mindepth 1 \( -type f -o -type l \) -print0)
+
+  local protected_pattern
+  for protected_pattern in \
+    'ld-linux*' 'libc.so*' 'libdl.so*' 'libm.so*' 'libpthread.so*' \
+    'librt.so*' 'libgcc_s.so*' 'libstdc++.so*'; do
+    if find "$payload_dir/usr/lib" -maxdepth 1 -name "$protected_pattern" -print -quit 2>/dev/null | grep -q .; then
+      echo "runtime payload attempts to replace protected ABI runtime: $protected_pattern ($PACKAGE)" >&2
+      exit 85
+    fi
+  done
+}
+
+case "$PACKAGE_KIND" in
+  shared-library) assert_shared_library_payload_paths ;;
+  runtime) assert_runtime_payload_paths ;;
+  application) assert_application_payload_paths ;;
+esac
+assert_base_overlay_policy
 
 work_dir=$(mktemp -d)
 cleanup() { rm -rf -- "$work_dir"; }
@@ -164,10 +223,79 @@ control_dir="$work_dir/control"
 data_dir="$work_dir/data"
 mkdir -p -- "$control_dir" "$data_dir"
 
-depends="$ABI_PACKAGE (= $ABI_VERSION)"
+declare -A declared_dependencies=()
+declare -a dependency_records=()
+
+append_dependency() {
+  local record=$1
+  local name
+  name=$(printf '%s' "$record" | sed -E 's/^[[:space:]]*([^[:space:]<(=]+).*/\1/')
+  [[ -n "$name" ]] || { echo "invalid dependency record for $PACKAGE: $record" >&2; exit 86; }
+  if [[ -z "${declared_dependencies[$name]:-}" ]]; then
+    declared_dependencies[$name]=1
+    dependency_records+=("$record")
+  fi
+}
+
+append_dependency "$ABI_PACKAGE (= $ABI_VERSION)"
 if [[ -n "$PACKAGE_DEPENDS" ]]; then
-  depends+=", $PACKAGE_DEPENDS"
+  IFS=',' read -r -a configured_dependencies <<< "$PACKAGE_DEPENDS"
+  for configured_dependency in "${configured_dependencies[@]}"; do
+    configured_dependency=$(printf '%s' "$configured_dependency" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')
+    [[ -n "$configured_dependency" ]] && append_dependency "$configured_dependency"
+  done
 fi
+
+if [[ "$PACKAGE_AUTO_RUNTIME_DEPENDS" == 1 ]]; then
+  runtime_owner_map=${TDVP_RUNTIME_OWNER_MAP:-}
+  readelf_tool=${TDVP_READELF:-}
+  [[ -s "$runtime_owner_map" ]] || {
+    echo "$PACKAGE enables PACKAGE_AUTO_RUNTIME_DEPENDS but TDVP_RUNTIME_OWNER_MAP is missing" >&2
+    exit 87
+  }
+  [[ -n "$readelf_tool" && -x "$readelf_tool" ]] || {
+    echo "$PACKAGE enables PACKAGE_AUTO_RUNTIME_DEPENDS but TDVP_READELF is missing" >&2
+    exit 88
+  }
+  declare -A payload_sonames=()
+  while IFS= read -r elf; do
+    while IFS= read -r provided_soname; do
+      [[ -n "$provided_soname" ]] && payload_sonames[$provided_soname]=1
+    done < <("$readelf_tool" -d "$elf" 2>/dev/null | sed -n 's/.*SONAME.*\[\(.*\)\]/\1/p')
+  done < <(find "$payload_dir" -type f \( -perm -u+x -o -name '*.so*' \) -print | LC_ALL=C sort)
+  while IFS= read -r elf; do
+    while IFS= read -r soname; do
+      [[ -n "$soname" ]] || continue
+      owner_record=$(awk -F'|' -v soname="$soname" '$1 == soname { print $2 "|" $3; exit }' "$runtime_owner_map")
+      if [[ -z "$owner_record" && -n "${payload_sonames[$soname]:-}" ]]; then
+        # A dlopen-module package can contain a small family of private
+        # helper libraries below /usr/lib.  Its provider is this same IPK;
+        # the global map intentionally only names independently reusable
+        # top-level SONAME packages.
+        continue
+      fi
+      if [[ -z "$owner_record" ]]; then
+        case "$soname" in
+          ld-linux-riscv64-lp64d.so.1|libc.so.6|libdl.so.2|libm.so.6|libpthread.so.0|librt.so.1|libgcc_s.so.1|libstdc++.so.6)
+            continue
+            ;;
+          *)
+            echo "$PACKAGE needs $soname, but the runtime owner map has no provider" >&2
+            exit 89
+            ;;
+        esac
+      fi
+      owner=${owner_record%%|*}
+      owner_version=${owner_record#*|}
+      [[ "$owner" == "$PACKAGE" ]] || append_dependency "$owner (= $owner_version)"
+    done < <("$readelf_tool" -d "$elf" 2>/dev/null | sed -n 's/.*Shared library: \[\(.*\)\]/\1/p')
+  done < <(find "$payload_dir" -type f \( -perm -u+x -o -name '*.so*' \) -print | LC_ALL=C sort)
+elif [[ "$PACKAGE_AUTO_RUNTIME_DEPENDS" != 0 ]]; then
+  echo "PACKAGE_AUTO_RUNTIME_DEPENDS must be 0 or 1 for $PACKAGE" >&2
+  exit 90
+fi
+
+depends=$(IFS=', '; printf '%s' "${dependency_records[*]}")
 
 cat >"$control_dir/control" <<EOF
 Package: $PACKAGE

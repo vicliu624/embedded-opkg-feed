@@ -24,10 +24,11 @@ It is not a “works on every RISC-V device” repository. On embedded systems, 
 
 The intended model is the same division of responsibility used by a normal
 Linux distribution: the base image is a small, hardware-specific bootstrap and
-ABI seed; the feed is the expandable userland catalogue. From r3, **every
-dynamic runtime SONAME other than the dynamic loader, glibc, `libgcc_s`, and
-`libstdc++` has exactly one independently installable IPK owner in the same
-ABI release.** Common libraries, CLI tools, desktop applications, and
+ABI seed; the feed is the expandable userland catalogue. From r4, **every
+dynamic runtime SONAME, plugin, and private runtime helper other than the
+dynamic loaders, glibc, `libgcc_s`, and `libstdc++` has exactly one
+independently installable IPK owner in the same ABI release.** The audit covers
+both `/usr/lib` and `/usr/libexec`. Common libraries, CLI tools, desktop applications, and
 device-specific applications therefore ship as independent packages with exact
 versioned dependencies; leaf applications neither statically bundle libraries
 nor borrow a general-purpose runtime from the base image. It is deliberately
@@ -91,9 +92,9 @@ For example:
 ```sh
 TDVP_SDK_ROOT=/path/to/output/host \
 TDVP_FEED_BASE_ROOT=/path/to/output/target \
-./scripts/build-all.sh --platform tdvp-k230-r1 --release r3 --output dist
+./scripts/build-all.sh --platform tdvp-k230-r1 --release r4 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r3/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r4/riscv64
 ```
 
 Submit **reviewable source, build scripts, and package metadata**. Do not submit generated `.ipk` files, `Packages`, `Packages.gz`, signatures, or `site/feed/` content. They are release outputs. The full checklist is in [CONTRIBUTING.md](CONTRIBUTING.md).

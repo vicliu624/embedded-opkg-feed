@@ -74,7 +74,7 @@ ownership_report="$output_dir/.tdvp-runtime-ownership.tsv"
 
 is_abi_soname() {
   case "$1" in
-    ld-linux-riscv64-lp64d.so.1|libc.so.6|libdl.so.2|libm.so.6|libpthread.so.0|librt.so.1|libgcc_s.so.1|libstdc++.so.6)
+    ld-linux-riscv32-ilp32.so.1|ld-linux-riscv32-ilp32d.so.1|ld-linux-riscv64-lp64.so.1|ld-linux-riscv64-lp64d.so.1|libc.so.6|libdl.so.2|libm.so.6|libpthread.so.0|librt.so.1|libgcc_s.so.1|libstdc++.so.6)
       return 0
       ;;
     *) return 1 ;;
@@ -122,7 +122,10 @@ while IFS= read -r -d '' library; do
   soname_file[$soname]=$library
   soname_package[$soname]=$package
   package_soname[$package]=$soname
-done < <(find "$target_root/usr/lib" -maxdepth 1 -type f -name 'lib*.so*' -print0 | LC_ALL=C sort -z)
+# Do not restrict this to lib*.so*: compatibility dynamic loaders such as
+# ld-linux-riscv32-* also have a SONAME and are non-ABI runtime objects unless
+# explicitly listed in the narrow ABI seed.
+done < <(find "$target_root/usr/lib" -maxdepth 1 -type f -name '*.so*' -print0 | LC_ALL=C sort -z)
 
 [[ ${#soname_file[@]} -gt 0 ]] || { echo 'no non-ABI target SONAMEs found' >&2; exit 72; }
 
@@ -197,6 +200,19 @@ while IFS='|' read -r package description selectors; do
           soname=$(soname_of "$module")
           [[ -n "$soname" ]] && add_owner_map_record "$soname" "$package"
         done < <(find "$target_root/usr/lib" -mindepth 2 -type f -name '*.so*' -print0 | LC_ALL=C sort -z)
+        ;;
+      @remaining-usr-libexec)
+        # Programs below /usr/libexec often load private helper libraries
+        # (sudo's libsudo_util and policy modules are the current examples).
+        # They are runtime objects just as much as a GTK or PulseAudio module,
+        # so register their SONAMEs before automatic Depends are calculated.
+        if [[ -d "$target_root/usr/libexec" ]]; then
+          while IFS= read -r -d '' module; do
+            register_planned_data_file "$module" "$package" 1 || continue
+            soname=$(soname_of "$module")
+            [[ -n "$soname" ]] && add_owner_map_record "$soname" "$package"
+          done < <(find "$target_root/usr/libexec" \( -type f -o -type l \) -print0 | LC_ALL=C sort -z)
+        fi
         ;;
       @remaining-usr-share)
         while IFS= read -r -d '' data_file; do
@@ -316,6 +332,16 @@ copy_selector() {
       claim_path "$source" "$package"
       copy_path "$source" "$root"
     done < <(find "$target_root/usr/lib" -mindepth 2 \( -type f -o -type l \) -print0 | LC_ALL=C sort -z)
+    return 0
+  fi
+  if [[ "$selector" == '@remaining-usr-libexec' ]]; then
+    [[ -d "$target_root/usr/libexec" ]] || return 0
+    while IFS= read -r -d '' source; do
+      relative=${source#"$target_root"}
+      [[ -n "${claimed_paths[$relative]:-}" ]] && continue
+      claim_path "$source" "$package"
+      copy_path "$source" "$root"
+    done < <(find "$target_root/usr/libexec" \( -type f -o -type l \) -print0 | LC_ALL=C sort -z)
     return 0
   fi
   if [[ "$selector" == '@remaining-usr-share' ]]; then

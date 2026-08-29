@@ -16,4 +16,5 @@ adwaita-icon-theme|Adwaita icon resources|/usr/share/icons/Adwaita
 hicolor-icon-theme|Hicolor icon resources|/usr/share/icons/hicolor
 shared-mime-info|Shared MIME database|/usr/share/mime
 tdvp-runtime-modules|Remaining non-ABI runtime modules below usr/lib|@remaining-usr-lib
+tdvp-runtime-libexec|Remaining non-ABI runtime modules and helpers below usr/libexec|@remaining-usr-libexec
 tdvp-runtime-data|Remaining non-ABI userland data below usr/share|@remaining-usr-share

@@ -12,11 +12,11 @@ runtime           从已验证 target 提取的共享运行时、插件或运行
 
 这不是通用 RISC-V 仓库。每个包均为 `riscv64`，属于一个不可变 TDVP feed revision，并由平台清单自动获得精确的 `tdvp-platform-abi` 依赖。
 
-## r3 的可组合所有权契约
+## r4 的可组合所有权契约
 
-从 r3 起，这不是“应用 + 若干例外库”的软件源，而是一份可组合的、发行版式用户态 catalogue。基础镜像唯一可以被应用隐式假定的运行时是 ABI seed：动态加载器、glibc 的 `libc/libdl/libm/libpthread/librt`、`libgcc_s`、`libstdc++`，以及内核、驱动与启动链；它们不能由 opkg 升级。
+从 r4 起，这不是“应用 + 若干例外库”的软件源，而是一份可组合的、发行版式用户态 catalogue。基础镜像唯一可以被应用隐式假定的运行时是 ABI seed：所有目标动态加载器、glibc 的 `libc/libdl/libm/libpthread/librt`、`libgcc_s`、`libstdc++`，以及内核、驱动与启动链；它们不能由 opkg 升级。
 
-**每一个其他动态 SONAME 在同一 ABI/feed release 中必须有且只有一个独立 IPK 所有者。** 当前 r3 例如覆盖 GTK3/GLib、Wayland/EGL/Mesa、ALSA/PulseAudio、SDL2、libmGBA、libcurl、libpng、libjpeg、FFmpeg/MPV 和 NetSurf 所需的库。数据、可加载模块和桌面资源也有明确的 runtime 所有者，例如 `gtk3-data`、`gdk-pixbuf-loaders`、`glib-networking`、`pulse-modules` 与 `shared-mime-info`。如果后续程序需要当前 ABI target 中尚不存在的库（例如 libutf8proc），必须先作为独立库 recipe 进入新的 feed release，不能把它静态塞入应用。
+**每一个其他动态 SONAME 在同一 ABI/feed release 中必须有且只有一个独立 IPK 所有者。** 当前 r4 例如覆盖 GTK3/GLib、Wayland/EGL/Mesa、ALSA/PulseAudio、SDL2、libmGBA、libcurl、libpng、libjpeg、FFmpeg/MPV 和 NetSurf 所需的库。数据、可加载模块和桌面资源也有明确的 runtime 所有者，例如 `gtk3-data`、`gdk-pixbuf-loaders`、`glib-networking`、`pulse-modules`、`tdvp-runtime-libexec` 与 `shared-mime-info`。发布检查同时扫描 `/usr/lib` 和 `/usr/libexec`，所以 sudo 等私有 helper 不会再被留作基础镜像的隐式依赖。如果后续程序需要当前 ABI target 中尚不存在的库（例如 libutf8proc），必须先作为独立库 recipe 进入新的 feed release，不能把它静态塞入应用。
 
 因此 `tdvp-gba`、`tdvp-netsurf`、`tdvp-mpv` 都是叶子应用：它们不携带静态副本，不从基础镜像暗中借用通用库，而是通过精确版本的 `Depends` 取得所有直接运行时需求。镜像可为了首次桌面启动而带有与 r3 字节一致的兼容副本，但这不改变依赖契约：闭包检查把 feed package 而不是 base rootfs 作为非 ABI SONAME 的 provider，安装后该 IPK 是唯一的软件包所有者。
 
@@ -28,7 +28,7 @@ runtime           从已验证 target 提取的共享运行时、插件或运行
 
 ```sh
 PACKAGE_KIND='shared-library'        # 或 application / runtime
-PACKAGE_RELEASES='r3'
+PACKAGE_RELEASES='r4'
 PACKAGE_SECTION='libraries'          # 例如 libraries、utils、desktop、games
 PACKAGE_BUILD_DEPENDS='sdl2'         # 仅构建 staging
 PACKAGE_DEPENDS='sdl2 (= 2.30.11-1)' # opkg 运行时关系
@@ -42,6 +42,7 @@ PACKAGE_AUTO_RUNTIME_DEPENDS=1       # 由 ELF NEEDED 生成其余精确依赖
 不可变 feed 签名前，发布构建会验证：
 
 - 任何非 ABI SONAME 在 feed 中恰好只有一个 provider；
+- 基础目标 `/usr/lib` 与 `/usr/libexec` 内的每一个非 ABI 动态对象都必须有一个字节一致的 feed owner；
 - 每个应用或模块的直接 `NEEDED` SONAME 都由其精确 `Depends` 覆盖，不能以 target rootfs 作为后门 provider；
 - 允许覆盖基础镜像的内容时，文件字节、权限和 symlink 目标都必须相同，确保这是 package ownership 的接管而不是替换；
 - 共享库不得写入受保护的 loader/glibc/libstdc++ 文件；

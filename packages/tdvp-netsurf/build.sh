@@ -5,6 +5,16 @@
 set -Eeuo pipefail
 IFS=$'\n\t'
 
+# A release that changes only the feed runtime graph must not rebuild a leaf
+# browser.  Reuse the published, SHA-256-pinned r3 payload unless an explicit
+# source rebuild is requested; build-ipk.sh still recreates control metadata
+# and validates the exact r4 dynamic dependency closure.
+if [[ "${TDVP_REUSE_PUBLISHED_PAYLOADS:-1}" == 1 ]]; then
+  package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+  feed_root=$(cd -- "$package_dir/../.." && pwd)
+  exec "$feed_root/scripts/reuse-published-ipk-payload.sh" "$package_dir"
+fi
+
 if [[ $# -ne 4 || "$1" != '--platform' || "$3" != '--sdk-root' ]]; then
   echo "usage: $0 --platform tdvp-k230-r1 --sdk-root <buildroot-output/host>" >&2
   exit 64

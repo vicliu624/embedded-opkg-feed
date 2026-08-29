@@ -22,7 +22,7 @@
 2. **GitHub Pages 是公开下载地址；签名索引用于证明下载内容确实由仓库维护者发布。**
 3. **仓库包不能替换不可变的系统核心部分。** libc、内核、系统服务、启动链、`opkg` 本身和 KPU 驱动都属于固件责任范围，不从这里升级。
 
-目标模型与正常 Linux 发行版的职责划分一致：基础镜像只保留小而稳定的硬件相关引导和 ABI seed，feed 是可扩展的用户态软件目录。r3 起，除动态加载器、glibc、`libgcc_s` 和 `libstdc++` 之外，**每一个动态运行时 SONAME 都必须在同一 ABI release 中有且只有一个独立 IPK 所有者**。后续的通用库、命令行工具、桌面程序和设备专属应用都作为带有精确版本依赖的独立包进入这里；叶子应用不静态塞库，也不从基础镜像暗中借用通用库。它并不是任意 RISC-V 板子都能使用的二进制堆放区；每个 feed release 都严格绑定一个声明过的 TDVP 平台 ABI。
+目标模型与正常 Linux 发行版的职责划分一致：基础镜像只保留小而稳定的硬件相关引导和 ABI seed，feed 是可扩展的用户态软件目录。r4 起，除所有动态加载器、glibc、`libgcc_s` 和 `libstdc++` 之外，**每一个动态运行时 SONAME、插件和私有运行时 helper 都必须在同一 ABI release 中有且只有一个独立 IPK 所有者**；校验范围同时覆盖 `/usr/lib` 与 `/usr/libexec`。后续的通用库、命令行工具、桌面程序和设备专属应用都作为带有精确版本依赖的独立包进入这里；叶子应用不静态塞库，也不从基础镜像暗中借用通用库。它并不是任意 RISC-V 板子都能使用的二进制堆放区；每个 feed release 都严格绑定一个声明过的 TDVP 平台 ABI。
 
 ## 当前支持的平台
 
@@ -69,9 +69,9 @@ tdvp-gba
 ```sh
 TDVP_SDK_ROOT=/path/to/output/host \
 TDVP_FEED_BASE_ROOT=/path/to/output/target \
-./scripts/build-all.sh --platform tdvp-k230-r1 --release r3 --output dist
+./scripts/build-all.sh --platform tdvp-k230-r1 --release r4 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r3/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r4/riscv64
 ```
 
 开发者只需要提交**可审查的源码、构建脚本和包描述**。不要提交生成的 `.ipk`、`Packages`、`Packages.gz`、签名文件或 `site/feed/` 内容；这些是发布流程的产物。更详细、带检查清单的说明见 [CONTRIBUTING.zh-CN.md](CONTRIBUTING.zh-CN.md)。

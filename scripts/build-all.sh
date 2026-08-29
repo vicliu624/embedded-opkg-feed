@@ -222,6 +222,8 @@ done
 if [[ -n "$base_root" ]]; then
   TDVP_SDK_ROOT="${TDVP_SDK_ROOT:-}" \
     "$script_dir/verify-runtime-closure.sh" --platform "$platform_slug" --base-root "$base_root" "$feed_dir"
+  TDVP_SDK_ROOT="${TDVP_SDK_ROOT:-}" \
+    "$script_dir/verify-target-runtime-coverage.sh" --platform "$platform_slug" --base-root "$base_root" "$feed_dir"
 fi
 # Owner-map and path-audit files are build evidence, not feed payload.  They
 # must not be copied to GitHub Pages beside an immutable public index; the

@@ -67,9 +67,17 @@ while IFS= read -r -d '' index; do
         <tbody>
 EOF
   awk -v relative="$relative" '
-    function value(prefix, i) {
-      for (i = 1; i <= NF; ++i)
-        if (index($i, prefix) == 1) return substr($i, length(prefix) + 1)
+    function value(prefix, i, result) {
+      for (i = 1; i <= NF; ++i) {
+        if (index($i, prefix) == 1) {
+          result = substr($i, length(prefix) + 1)
+          # Historical r1 indexes were committed with CRLF line endings.
+          # Strip only the record terminator so the filename whitelist remains
+          # strict while the published catalogue can enumerate both releases.
+          sub(/\r$/, "", result)
+          return result
+        }
+      }
       return ""
     }
     function escape_html(text) {

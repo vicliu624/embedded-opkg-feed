@@ -48,6 +48,11 @@ seed_manifest="$repo_root/platforms/$platform_slug/seed-packages.tsv"
   exit 68
 }
 while IFS='|' read -r seed_package seed_version seed_description seed_sonames; do
+  # The first published seed manifest used CRLF line endings.  Normalize the
+  # final field before using its SONAMEs as associative-array keys so a
+  # terminal carriage return cannot make a valid image-owned library appear
+  # absent from the manifest.
+  seed_sonames=${seed_sonames%$'\r'}
   [[ -n "$seed_package" && "$seed_package" != \#* ]] || continue
   [[ -n "$seed_version" && -n "$seed_description" && -n "$seed_sonames" ]] || {
     echo "invalid base seed manifest record: $seed_package" >&2

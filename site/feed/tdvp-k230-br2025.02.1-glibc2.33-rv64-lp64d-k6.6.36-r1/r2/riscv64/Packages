@@ -1,0 +1,65 @@
+Package: libmgba
+Version: 0.10.5-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1), tdvp-base-runtime, tdvp-base-desktop
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: mGBA emulation-core runtime library for ABI-matched TDVP K230 applications
+Filename: libmgba_0.10.5-1_riscv64.ipk
+Size: 429356
+MD5Sum: 390345c43f3d40e7938e6f3ec98855eb
+SHA256sum: d92e81931266c1a9ac12f401dc2b7e6500cc17a99b15f1881c83463e41de02d7
+
+Package: sdl2-ttf
+Version: 2.22.0-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1), sdl2 (= 2.30.11-1), tdvp-base-runtime, tdvp-base-desktop
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: SDL_ttf runtime library for ABI-matched TDVP K230 applications
+Filename: sdl2-ttf_2.22.0-1_riscv64.ipk
+Size: 31914
+MD5Sum: b9dc9d3c545d5c6f3c1d85e36cb8f8ce
+SHA256sum: 30213cde168f2ec5f128191a13ff6f62b602411535ff1b6144ad51eeb7409b16
+
+Package: sdl2
+Version: 2.30.11-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1), tdvp-base-runtime, tdvp-base-desktop, tdvp-base-audio
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: SDL 2 runtime library for ABI-matched TDVP K230 applications
+Filename: sdl2_2.30.11-1_riscv64.ipk
+Size: 593806
+MD5Sum: 57cc89d4f50df7e08b0d0750a2f2b5a8
+SHA256sum: 8d57706e1f4f24dd0502007898e9ae7a0e26b7f4375c31f58d89f13db83efe01
+
+Package: tdvp-gba
+Version: 0.2.0-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1), sdl2 (= 2.30.11-1), sdl2-ttf (= 2.22.0-1), libmgba (= 0.10.5-1), tdvp-base-runtime, tdvp-base-desktop, tdvp-base-audio
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: applications
+Priority: optional
+Description: Game Boy Advance emulator frontend for the TDVP K230 landscape desktop
+Filename: tdvp-gba_0.2.0-1_riscv64.ipk
+Size: 103292
+MD5Sum: 3eeffef12b65f78870916e2a800b559a
+SHA256sum: 3f5273897351b797a2fcc29e2ef7ad5025ee5f2dddc73238362a6c0509c021b4
+
+Package: tdvp-hello
+Version: 0.1.0-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: applications
+Priority: optional
+Description: Minimal ABI-gated test package for the TDVP K230 public feed
+Filename: tdvp-hello_0.1.0-1_riscv64.ipk
+Size: 708
+MD5Sum: 2b32379576f77db7906709b1435493a9
+SHA256sum: 0a18564608049dbda81bcf4b0632149145b87e6318c998675ec292f2939f5827
+

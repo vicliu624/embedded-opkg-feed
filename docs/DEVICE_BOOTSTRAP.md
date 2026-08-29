@@ -62,9 +62,10 @@ live device's status database as a substitute for a release manifest.
 ## 3. Add real signature verification
 
 The r1 base image uses the existing opkg GPG ASCII-armoured backend
-(`signature_type gpg-asc`). That target downloads `Packages.asc` for the
-`Packages.gz` index; the feed also publishes `Packages.gz.asc` as a compatible
-alias of the same detached signature. The image contains only the public key
+(`signature_type gpg-asc`). That target downloads `Packages.asc` and verifies
+the unpacked `Packages` index; the feed additionally publishes
+`Packages.gz.asc`, which separately signs the compressed `Packages.gz` file
+for compatible tooling. The image contains only the public key
 and imports it immediately before an operator invokes `tdvp-opkg`; package
 trust must never delay `greetd` or desktop startup. No private signing material
 belongs in the image.

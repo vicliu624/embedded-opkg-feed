@@ -71,7 +71,7 @@ if [[ "$require_signature" -eq 1 ]]; then
   keyring=$(mktemp)
   trap 'rm -f -- "$keyring"' EXIT
   gpg --batch --yes --dearmor --output "$keyring" "$public_key"
-	 gpgv --keyring "$keyring" "$signature" "$feed_dir/Packages.gz"
+  gpgv --keyring "$keyring" "$signature" "$feed_dir/Packages"
 	 gpgv --keyring "$keyring" "$compatibility_signature" "$feed_dir/Packages.gz"
   rm -f -- "$keyring"
   trap - EXIT

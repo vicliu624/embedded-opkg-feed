@@ -10,15 +10,24 @@ fi
 : "${GPG_KEY_FINGERPRINT:?set the dedicated release key fingerprint}"
 
 feed_dir=$(cd -- "$1" && pwd)
-index="$feed_dir/Packages.gz"
+index="$feed_dir/Packages"
+compressed_index="$feed_dir/Packages.gz"
 signature="$feed_dir/Packages.asc"
 compatibility_signature="$feed_dir/Packages.gz.asc"
 [[ -s "$index" ]] || { echo "missing index: $index" >&2; exit 65; }
-[[ ! -e "$signature" ]] || { echo "refusing to overwrite signature: $signature" >&2; exit 66; }
-[[ ! -e "$compatibility_signature" ]] || { echo "refusing to overwrite signature: $compatibility_signature" >&2; exit 66; }
+[[ -s "$compressed_index" ]] || { echo "missing compressed index: $compressed_index" >&2; exit 65; }
+if [[ -e "$signature" ]]; then
+  [[ ${TDVP_REPLACE_OPKG_PRIMARY_SIGNATURE:-0} == 1 ]] || {
+    echo "refusing to overwrite signature: $signature" >&2; exit 66;
+  }
+  rm -f -- "$signature"
+fi
 command -v gpg >/dev/null || { echo 'gpg not found on signing host' >&2; exit 67; }
 
 gpg --batch --yes --local-user "$GPG_KEY_FINGERPRINT" --armor --detach-sign \
   --output "$signature" "$index"
-cp -- "$signature" "$compatibility_signature"
-echo "created detached index signatures: $signature and $compatibility_signature"
+if [[ ! -e "$compatibility_signature" ]]; then
+  gpg --batch --yes --local-user "$GPG_KEY_FINGERPRINT" --armor --detach-sign \
+    --output "$compatibility_signature" "$compressed_index"
+fi
+echo "created detached primary signature: $signature (Packages)"

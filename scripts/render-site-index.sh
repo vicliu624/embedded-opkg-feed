@@ -108,6 +108,23 @@ cat >"$temporary" <<'EOF'
       signatures. A package is listed here only when it is present in that
       signed index; local recipes and unbuilt candidates are intentionally not
       shown.</p>
+    <h2>Feed directories</h2>
+    <p>Browse the raw, FTP-style HTTP release directories below. Each directory
+      contains the package index, detached signatures, release metadata, and
+      every installable <code>.ipk</code> for that exact ABI and architecture.</p>
+    <ul>
+EOF
+
+while IFS= read -r -d '' directory_index; do
+  directory_relative=${directory_index#"$site_dir/"}
+  directory_relative=${directory_relative%/Packages}
+  printf '      <li><a href="%s/"><code>/%s/</code></a></li>\n' \
+    "$directory_relative" "$directory_relative" >>"$temporary"
+done < <(find "$feed_root" -type f -name Packages -print0 | LC_ALL=C sort -z)
+
+cat >>"$temporary" <<'EOF'
+    </ul>
+    <h2>Package catalogue</h2>
 EOF
 
 found=0

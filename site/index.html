@@ -4,10 +4,39 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>TDVP K230 public opkg feed</title>
+    <style>
+      :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+      body { margin: 2rem auto; max-width: 72rem; padding: 0 1rem; line-height: 1.5; }
+      code { overflow-wrap: anywhere; }
+      table { border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; }
+      th, td { border: 1px solid #8886; padding: .5rem; text-align: left; vertical-align: top; }
+      th { background: #8882; }
+      .muted { color: #666; }
+    </style>
   </head>
   <body>
     <h1>TDVP K230 public opkg feed</h1>
-    <p>This endpoint publishes signed application feeds for explicitly matched TDVP K230 firmware ABI releases.</p>
-    <p>It is not a generic RISC-V package repository.</p>
+    <p>This catalogue lists packages that are already staged in a published,
+      ABI-matched TDVP K230 feed. It is not a generic RISC-V repository.</p>
+    <p>Each feed has an immutable <code>Packages</code> index and detached
+      signatures. A package is listed here only when it is present in that
+      signed index; local recipes and unbuilt candidates are intentionally not
+      shown.</p>
+    <section>
+      <h2><code>tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1</code> / <code>riscv64</code></h2>
+      <p><a href="feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64/Packages">Packages</a> · <a href="feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64/Packages.gz">Packages.gz</a> · <a href="feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64/Packages.asc">Packages signature</a> · <a href="feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64/Packages.gz.asc">Packages.gz signature</a> · <a href="feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64/release.json">release metadata</a></p>
+      <table>
+        <thead><tr><th>Package</th><th>Version</th><th>Description</th><th>ABI dependency</th><th>Download</th></tr></thead>
+        <tbody>
+          <tr><td><code>tdvp-cardputer-zero-gba</code></td><td><code>0.1.0-12</code></td><td>Game Boy Advance emulator frontend for the TDVP K230 landscape display</td><td><code>tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)</code></td><td><a href="feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64/tdvp-cardputer-zero-gba_0.1.0-12_riscv64.ipk">tdvp-cardputer-zero-gba_0.1.0-12_riscv64.ipk</a></td></tr>
+          <tr><td><code>tdvp-hello</code></td><td><code>0.1.0-1</code></td><td>Minimal ABI-gated test package for the TDVP K230 public feed</td><td><code>tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)</code></td><td><a href="feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64/tdvp-hello_0.1.0-1_riscv64.ipk">tdvp-hello_0.1.0-1_riscv64.ipk</a></td></tr>
+        </tbody>
+      </table>
+    </section>
+    <h2>Device use</h2>
+    <p>On an ABI-matched TDVP K230 image, refresh the configured source with
+      <code>sudo /usr/local/sbin/tdvp-opkg update</code>. Do not disable
+      signature verification. The device accepts only the release key embedded
+      in its firmware and only packages that depend on its exact ABI package.</p>
   </body>
 </html>

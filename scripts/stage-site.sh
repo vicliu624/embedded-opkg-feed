@@ -32,4 +32,8 @@ cat >"$target_dir/release.json" <<EOF
   "signature": "Packages.asc"
 }
 EOF
+# A Windows checkout does not reliably preserve an executable bit for a newly
+# added shell script. Invoke the renderer through Bash just as build-all.sh
+# invokes package recipes, so staging remains portable between Windows and WSL.
+bash "$script_dir/render-site-index.sh"
 echo "staged public feed: $target_dir"

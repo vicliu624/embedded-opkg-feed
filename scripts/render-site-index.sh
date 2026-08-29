@@ -21,6 +21,66 @@ temporary=$(mktemp "$site_dir/.index.html.XXXXXX")
 cleanup() { rm -f -- "$temporary"; }
 trap cleanup EXIT
 
+render_release_directory() {
+  local index=$1
+  local directory relative release_output release_temporary filename
+
+  directory=$(dirname -- "$index")
+  relative=${directory#"$site_dir/"}
+  release_output="$directory/index.html"
+  release_temporary=$(mktemp "$directory/.index.html.XXXXXX")
+
+  {
+    cat <<EOF
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TDVP opkg feed files: ${relative}</title>
+    <style>
+      :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+      body { margin: 2rem auto; max-width: 72rem; padding: 0 1rem; line-height: 1.5; }
+      code { overflow-wrap: anywhere; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #8886; padding: .5rem; text-align: left; }
+      th { background: #8882; }
+    </style>
+  </head>
+  <body>
+    <p><a href="/embedded-opkg-feed/">TDVP feed catalogue</a></p>
+    <h1>Feed files</h1>
+    <p><code>${relative}</code></p>
+    <p>This is the immutable HTTP directory used by <code>opkg</code>. Index
+      files must be verified with their detached signatures before installation.</p>
+    <table>
+      <thead><tr><th>File</th><th>Bytes</th><th>Purpose</th></tr></thead>
+      <tbody>
+EOF
+    while IFS= read -r filename; do
+      case "$filename" in
+        Packages) purpose='uncompressed package index' ;;
+        Packages.gz) purpose='compressed package index used by opkg' ;;
+        Packages.asc) purpose='detached signature for Packages' ;;
+        Packages.gz.asc) purpose='detached signature for Packages.gz' ;;
+        release.json) purpose='immutable ABI and release metadata' ;;
+        *.ipk) purpose='installable opkg package' ;;
+        index.html) continue ;;
+        *) continue ;;
+      esac
+      printf '        <tr><td><a href="%s"><code>%s</code></a></td><td>%s</td><td>%s</td></tr>\n' \
+        "$filename" "$filename" "$(wc -c <"$directory/$filename")" "$purpose"
+    done < <(find "$directory" -maxdepth 1 -type f -printf '%f\n' | LC_ALL=C sort)
+    cat <<'EOF'
+      </tbody>
+    </table>
+  </body>
+</html>
+EOF
+  } >"$release_temporary"
+  mv -- "$release_temporary" "$release_output"
+}
+
 cat >"$temporary" <<'EOF'
 <!doctype html>
 <html lang="en">
@@ -57,10 +117,12 @@ while IFS= read -r -d '' index; do
   relative=${index#"$site_dir/"}
   relative=${relative%/Packages}
 
+  render_release_directory "$index"
+
   printf '    <section>\n      <h2><code>%s</code> / <code>%s</code></h2>\n' \
     "$relative" "$arch" >>"$temporary"
-  printf '      <p><a href="%s/Packages">Packages</a> · <a href="%s/Packages.gz">Packages.gz</a> · <a href="%s/Packages.asc">Packages signature</a> · <a href="%s/Packages.gz.asc">Packages.gz signature</a> · <a href="%s/release.json">release metadata</a></p>\n' \
-    "$relative" "$relative" "$relative" "$relative" "$relative" >>"$temporary"
+  printf '      <p><a href="%s/">Browse release files</a> · <a href="%s/Packages">Packages</a> · <a href="%s/Packages.gz">Packages.gz</a> · <a href="%s/Packages.asc">Packages signature</a> · <a href="%s/Packages.gz.asc">Packages.gz signature</a> · <a href="%s/release.json">release metadata</a></p>\n' \
+    "$relative" "$relative" "$relative" "$relative" "$relative" "$relative" >>"$temporary"
   cat >>"$temporary" <<'EOF'
       <table>
         <thead><tr><th>Package</th><th>Type</th><th>Version</th><th>Description</th><th>Runtime dependencies</th><th>Download</th></tr></thead>

@@ -11,11 +11,14 @@ fi
 
 feed_dir=$(cd -- "$1" && pwd)
 index="$feed_dir/Packages.gz"
-signature="$feed_dir/Packages.gz.asc"
+signature="$feed_dir/Packages.asc"
+compatibility_signature="$feed_dir/Packages.gz.asc"
 [[ -s "$index" ]] || { echo "missing index: $index" >&2; exit 65; }
 [[ ! -e "$signature" ]] || { echo "refusing to overwrite signature: $signature" >&2; exit 66; }
+[[ ! -e "$compatibility_signature" ]] || { echo "refusing to overwrite signature: $compatibility_signature" >&2; exit 66; }
 command -v gpg >/dev/null || { echo 'gpg not found on signing host' >&2; exit 67; }
 
 gpg --batch --yes --local-user "$GPG_KEY_FINGERPRINT" --armor --detach-sign \
   --output "$signature" "$index"
-echo "created detached index signature: $signature"
+cp -- "$signature" "$compatibility_signature"
+echo "created detached index signatures: $signature and $compatibility_signature"

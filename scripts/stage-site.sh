@@ -29,7 +29,7 @@ cat >"$target_dir/release.json" <<EOF
   "platform_id": "$PLATFORM_ID",
   "architecture": "$ARCH",
   "index": "Packages.gz",
-  "signature": "Packages.gz.asc"
+  "signature": "Packages.asc"
 }
 EOF
 echo "staged public feed: $target_dir"

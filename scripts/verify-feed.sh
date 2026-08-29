@@ -61,15 +61,18 @@ done < <(
 [[ "$seen" -eq 1 ]] || { echo 'Packages index is empty' >&2; exit 74; }
 
 if [[ "$require_signature" -eq 1 ]]; then
-  signature="$feed_dir/Packages.gz.asc"
-  public_key="$repo_root/keys/tdvp-repo-public.asc"
-  [[ -s "$signature" ]] || { echo "missing signature: $signature" >&2; exit 75; }
+	 signature="$feed_dir/Packages.asc"
+	 compatibility_signature="$feed_dir/Packages.gz.asc"
+	 public_key="$repo_root/keys/tdvp-repo-public.asc"
+	 [[ -s "$signature" ]] || { echo "missing signature: $signature" >&2; exit 75; }
+	 [[ -s "$compatibility_signature" ]] || { echo "missing compatibility signature: $compatibility_signature" >&2; exit 75; }
   [[ -s "$public_key" ]] || { echo "missing committed public key: $public_key" >&2; exit 76; }
   command -v gpg >/dev/null || { echo 'gpg is required to verify the release index' >&2; exit 77; }
   keyring=$(mktemp)
   trap 'rm -f -- "$keyring"' EXIT
   gpg --batch --yes --dearmor --output "$keyring" "$public_key"
-  gpgv --keyring "$keyring" "$signature" "$feed_dir/Packages.gz"
+	 gpgv --keyring "$keyring" "$signature" "$feed_dir/Packages.gz"
+	 gpgv --keyring "$keyring" "$compatibility_signature" "$feed_dir/Packages.gz"
   rm -f -- "$keyring"
   trap - EXIT
 fi

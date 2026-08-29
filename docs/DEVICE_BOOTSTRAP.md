@@ -2,8 +2,8 @@
 
 [中文](DEVICE_BOOTSTRAP.zh-CN.md) | English (current)
 
-This document describes changes for the **next firmware image**, not ad-hoc
-commands to run on a production device.
+This document defines the signed TDVP K230 r1 base-image contract. It is not
+an ad-hoc command list for a production device.
 
 ## 1. Correct the opkg state configuration
 
@@ -27,12 +27,21 @@ arch all 1
 arch noarch 1
 arch riscv64 10
 
-# Add only after index-signature verification is implemented and tested.
-src/gz tdvp_apps_r1 https://YOUR_GITHUB_ID.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
+option check_signature 1
+option signature_type gpg-asc
+option gpg_dir /etc/opkg/gpg
+option gpg_trust_level TrustAny
 ```
 
 Create `/var/lib/opkg/{lists,info}` and the status file in the image build.
-This avoids an untracked root filesystem where opkg cannot know what it owns.
+Install the only source separately in `/etc/opkg/tdvp-feed.conf`:
+
+```conf
+src/gz tdvp_apps_r1 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
+```
+
+This avoids an untracked root filesystem where opkg cannot know what it owns,
+and keeps the signed feed contract independent from the core opkg settings.
 
 ## 2. Register the ABI marker in the image
 
@@ -52,15 +61,13 @@ live device's status database as a substitute for a release manifest.
 
 ## 3. Add real signature verification
 
-The currently shipped libopkg contains signature-related code but has no
-working verifier: it lacks `usign`, `opkg-key`, `gpg`, `gpgv`, and a linked
-GPGME backend. Rebuild the firmware with one selected, tested verification
-backend before enabling `check_signature`.
-
-Preferred low-disruption choice: build the existing opkg line with its GPG
-verification backend, include the minimal verifier runtime, and embed only the
-repository public key. A smaller `usign` path is viable only after an
-end-to-end integration test proves compatibility with this Buildroot opkg.
+The r1 base image uses the existing opkg GPG ASCII-armoured backend
+(`signature_type gpg-asc`). That target downloads `Packages.asc` for the
+`Packages.gz` index; the feed also publishes `Packages.gz.asc` as a compatible
+alias of the same detached signature. The image contains only the public key
+and imports it immediately before an operator invokes `tdvp-opkg`; package
+trust must never delay `greetd` or desktop startup. No private signing material
+belongs in the image.
 
 The acceptance test must prove all four cases:
 

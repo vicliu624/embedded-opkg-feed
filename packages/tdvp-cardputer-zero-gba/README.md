@@ -21,6 +21,12 @@ scaling, stretching, or cropping is used.
 
 ## Build Inputs
 
+The reviewed source checkout may be shared by Windows and WSL. During
+provenance checks, the build hook normalizes only Git's CRLF and executable-bit
+comparison metadata. It still rejects an actual source-content change, staged
+change, missing submodule, or a submodule revision different from the pinned
+source revision.
+
 The build hook requires the exact TDVP Buildroot 2025.02.1 SDK/sysroot. It
 discovers Buildroot's `toolchainfile.cmake` below `--sdk-root`, or accepts an
 explicit `TDVP_K230_TOOLCHAIN_FILE`. It does not download a compiler, prebuilt

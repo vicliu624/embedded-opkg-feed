@@ -40,8 +40,10 @@ cat >"$temporary" <<'EOF'
   </head>
   <body>
     <h1>TDVP K230 public opkg feed</h1>
-    <p>This catalogue lists packages that are already staged in a published,
-      ABI-matched TDVP K230 feed. It is not a generic RISC-V repository.</p>
+    <p>This is the ABI-matched, distribution-style userland catalogue for
+      TDVP K230: shared libraries, command-line tools, desktop programs, and
+      device applications are published here as independent packages. It is
+      not an arbitrary cross-device RISC-V binary repository.</p>
     <p>Each feed has an immutable <code>Packages</code> index and detached
       signatures. A package is listed here only when it is present in that
       signed index; local recipes and unbuilt candidates are intentionally not
@@ -52,16 +54,16 @@ found=0
 while IFS= read -r -d '' index; do
   found=1
   arch=$(basename "$(dirname -- "$index")")
-  platform_id=$(basename "$(dirname -- "$(dirname -- "$index")")")
-  relative="feed/$platform_id/$arch"
+  relative=${index#"$site_dir/"}
+  relative=${relative%/Packages}
 
   printf '    <section>\n      <h2><code>%s</code> / <code>%s</code></h2>\n' \
-    "$platform_id" "$arch" >>"$temporary"
+    "$relative" "$arch" >>"$temporary"
   printf '      <p><a href="%s/Packages">Packages</a> · <a href="%s/Packages.gz">Packages.gz</a> · <a href="%s/Packages.asc">Packages signature</a> · <a href="%s/Packages.gz.asc">Packages.gz signature</a> · <a href="%s/release.json">release metadata</a></p>\n' \
     "$relative" "$relative" "$relative" "$relative" "$relative" >>"$temporary"
   cat >>"$temporary" <<'EOF'
       <table>
-        <thead><tr><th>Package</th><th>Version</th><th>Description</th><th>ABI dependency</th><th>Download</th></tr></thead>
+        <thead><tr><th>Package</th><th>Type</th><th>Version</th><th>Description</th><th>Runtime dependencies</th><th>Download</th></tr></thead>
         <tbody>
 EOF
   awk -v relative="$relative" '
@@ -81,6 +83,7 @@ EOF
     {
       package = value("Package: ")
       version = value("Version: ")
+      section = value("Section: ")
       description = value("Description: ")
       dependency = value("Depends: ")
       filename = value("Filename: ")
@@ -92,7 +95,7 @@ EOF
         printf "unsafe package filename in %s: %s\n", FILENAME, filename > "/dev/stderr"
         exit 1
       }
-      printf "          <tr><td><code>%s</code></td><td><code>%s</code></td><td>%s</td><td><code>%s</code></td><td><a href=\"%s/%s\">%s</a></td></tr>\n", escape_html(package), escape_html(version), escape_html(description), escape_html(dependency), relative, filename, escape_html(filename)
+      printf "          <tr><td><code>%s</code></td><td><code>%s</code></td><td><code>%s</code></td><td>%s</td><td><code>%s</code></td><td><a href=\"%s/%s\">%s</a></td></tr>\n", escape_html(package), escape_html(section), escape_html(version), escape_html(description), escape_html(dependency), relative, filename, escape_html(filename)
     }
   ' "$index" >>"$temporary"
   cat >>"$temporary" <<'EOF'
@@ -100,7 +103,7 @@ EOF
       </table>
     </section>
 EOF
-done < <(find "$feed_root" -mindepth 3 -maxdepth 3 -type f -name Packages -print0 | LC_ALL=C sort -z)
+done < <(find "$feed_root" -type f -name Packages -print0 | LC_ALL=C sort -z)
 
 if [[ "$found" -eq 0 ]]; then
   printf '    <p class="muted">No signed feed has been staged yet.</p>\n' >>"$temporary"

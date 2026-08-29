@@ -12,30 +12,30 @@
 4. 经过实际测试的 opkg 索引签名验证后端；
 5. 用来验证本仓库发布密钥的内置公开密钥。
 
-已检查的 TDVP K230 系统目前不满足第 1、2、4 项。因此它不能直接安全地使用公开软件源；下一版固件构建时应按照 [设备引导说明](DEVICE_BOOTSTRAP.zh-CN.md)完成这些准备。
+已签名发布的 TDVP K230 r1 长期维护基础镜像会提供第 1、2、4、5 项。它的 `tdvp-opkg` 包装器会在每次包管理操作前初始化专用密钥环，因此软件源不在开机路径上。使用者仍需保证网络可用、系统时间正确，以便 HTTPS 正确校验证书。旧镜像不能替代该基础镜像；制作基础镜像时请按 [设备引导说明](DEVICE_BOOTSTRAP.zh-CN.md) 完成这些准备。
 
 ## 配置 TDVP K230 r1 软件源
 
-基础固件准备并刷入后，在设备唯一的 `/etc/opkg/opkg.conf` 中加入下面这个**与 ABI 绑定的单一软件源**：
+当前基础镜像会在 `/etc/opkg/tdvp-feed.conf` 中安装下面这个**与 ABI 绑定的 r2 软件源**。这里的 r2 是不可变的软件源目录版本；设备的基础 ABI 仍是 r1：
 
 ```conf
-src/gz tdvp_apps_r1 https://YOUR_GITHUB_ID.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
+src/gz tdvp_apps_r2 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
 ```
 
-把 `YOUR_GITHUB_ID` 换成发布本仓库的 GitHub 用户名或组织名。不要再添加通用 OpenWrt、Debian 或任意 `riscv64` 软件源；即使 CPU 架构同为 RISC-V 64 位，它们的系统 ABI 也可能不同。
+不要手工修改该文件，也不要添加通用 OpenWrt、Debian 或任意 `riscv64` 软件源；即使 CPU 架构同为 RISC-V 64 位，它们的系统 ABI 也可能不同。
 
 ## 日常安装流程
 
 ```sh
-opkg update
-opkg list 'tdvp-*'
-opkg info tdvp-hello
-opkg install --download-only tdvp-hello
-opkg install tdvp-hello
-tdvp-hello
+sudo tdvp-opkg update
+sudo tdvp-opkg list 'tdvp-*'
+sudo tdvp-opkg info tdvp-gba
+sudo tdvp-opkg install --download-only tdvp-gba
+sudo tdvp-opkg install tdvp-gba
+tdvp-gba
 ```
 
-安装社区应用时，把 `tdvp-hello` 换成它的实际发布名称。不要使用 `--force-depends`、`--force-checksum` 或 `--no-check-certificate`；这些选项会跳过本仓库用来保护设备的检查。
+安装社区应用时，把 `tdvp-gba` 换成它的实际发布名称。`tdvp-gba` 会自动拉取 `sdl2`、`sdl2-ttf` 和 `libmgba`；不要单独强制安装或绕开依赖检查。若设备已安装 r1 的旧 `tdvp-cardputer-zero-gba`，先卸载旧包再安装 `tdvp-gba`，避免两个启动器重叠。不要使用 `--force-depends`、`--force-checksum` 或 `--no-check-certificate`；这些选项会跳过本仓库用来保护设备的检查。
 
 ## 哪些失败是正常且正确的
 
@@ -51,4 +51,4 @@ tdvp-hello
 
 ## 更新应用
 
-只能从本软件源更新应用包。不要对基础固件执行不加选择的 `opkg upgrade`：内核、驱动、libc、网络栈和 KPU 运行时由固件管理，不是这个应用仓库的升级对象。
+只能从本软件源更新由 feed 管理的用户态包：共享库、工具、桌面程序和设备应用。不要对基础固件执行不加选择的 `opkg upgrade`：内核、驱动、libc、动态加载器、桌面基础栈、网络栈和 KPU 运行时由固件管理，不是这个软件发行源的升级对象。

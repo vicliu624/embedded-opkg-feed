@@ -6,7 +6,7 @@
 
 | Key | Location | Purpose |
 | --- | --- | --- |
-| Private release key | Offline signing host, HSM, or protected self-hosted runner | Signs `Packages.gz` |
+| Private release key | Offline signing host, HSM, or protected self-hosted runner | Signs the package-index payloads |
 | Public release key | `keys/tdvp-repo-public.asc` and next base firmware | Verifies releases |
 | GitHub deployment token | Ephemeral GitHub Actions OIDC token | Publishes static, already signed files |
 
@@ -29,6 +29,7 @@ release contract:
 
 ```text
 Packages
+Packages.asc
 Packages.gz
 Packages.gz.asc
 ```
@@ -36,18 +37,20 @@ Packages.gz.asc
 `offline-sign-gpg-index.sh` is intentionally for a protected signing host. It
 does not generate a key and refuses to run without an explicit key fingerprint.
 
-The exact target opkg configuration is deliberately not written here: the
-currently installed target build reports that GPG signature checking is not
-supported. Add `check_signature` and the backend-specific configuration only
-after the new firmware's integration test has validated its expected suffix,
-keyring location, and rejection behaviour.
+The TDVP K230 r1 base image uses this `gpg-asc` contract with
+`check_signature 1`, `/etc/opkg/gpg`, and the lazy `/usr/local/sbin/tdvp-opkg`
+wrapper. The wrapper imports only the embedded public key immediately before
+an operator invokes opkg; it is intentionally not a `greetd` or desktop boot
+service. Firmware verification must prove both expected suffixes, the keyring
+location, and all signature rejection cases before a release is published.
 
 ## Immutable releases
 
 Never overwrite an already published feed directory. A new ABI or firmware
-contract gets a new `PLATFORM_ID`. An application-only release may add packages
-or higher versions to the same feed only after its signed index and all files
-have passed review.
+contract gets a new `PLATFORM_ID`. Even when the ABI is unchanged, adding an
+application, shared runtime, or index requires a new immutable feed revision,
+for example `site/feed/<PLATFORM_ID>/r2/riscv64/`. The published r1 path is
+never re-signed or replaced.
 
 The `release` branch must require review. Publishing directly from `main`
 would allow a build change to become a device update without a release gate.

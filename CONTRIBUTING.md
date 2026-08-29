@@ -1,9 +1,10 @@
-# Contributing an application package
+# Contributing a userland package
 
 [中文](CONTRIBUTING.zh-CN.md) | English (current)
 
-We welcome public application packages through pull requests. This repository
-is not a binary upload site and not a general RISC-V distribution.
+We welcome public userland packages through pull requests: shared libraries,
+command-line tools, desktop programs, and device applications. This repository
+is not a binary upload site and not a general cross-device RISC-V distribution.
 
 ## What a contributor submits
 
@@ -16,9 +17,11 @@ root/                       package payload after a reproducible build
 README.md                   user-facing purpose, license and test instructions
 ```
 
-For native programs, `build.sh` must build against the selected platform's
-pinned SDK/sysroot and populate `root/`. It must not download unpinned tools or
-prebuilt binaries at release time.
+For native programs and libraries, `build.sh` must build against the selected
+platform's pinned SDK/sysroot and populate `root/`. It must not download
+unpinned tools or prebuilt binaries at release time. A normal `application`
+package cannot write `/usr/lib`; an audited `shared-library` recipe may ship
+only runtime SONAME files there. See [the shared-runtime contract](docs/SHARED_RUNTIMES.md).
 
 ## Package metadata
 
@@ -30,6 +33,8 @@ VERSION='1.0.0-1'
 MAINTAINER='Your Name <you@example.com>'
 DESCRIPTION='One-line application description'
 SUPPORTED_PLATFORMS='tdvp-k230-r1'
+PACKAGE_KIND='application' # or shared-library
+PACKAGE_RELEASES='r2'
 PACKAGE_DEPENDS=''
 ```
 
@@ -39,14 +44,15 @@ The packaging script injects the exact ABI dependency. Do not write
 ## Naming and ownership
 
 - First-party names beginning with `tdvp-` are reserved for project maintainers.
-- Community packages use `<github-handle>-<application>`, all lowercase.
+- Generic upstream libraries keep their upstream names (for example `sdl2`),
+  while community applications use `<github-handle>-<application>`, all lowercase.
 - Do not reuse another contributor's prefix or mimic a base-system package.
 - A package must include an OSI-compatible license or an explicit redistribution
   grant for every shipped source and binary asset.
 
 ## PR rules
 
-Do not change these in a normal application PR:
+Do not change these in a normal package PR:
 
 - `site/` or any generated `.ipk`, `Packages`, `Packages.gz`, or signature;
 - `platforms/` ABI manifests;
@@ -65,8 +71,8 @@ On a Linux host with the matching SDK:
 ```sh
 ./scripts/build-all.sh --platform tdvp-k230-r1 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
 ```
 
 The existence of a successful `.ipk` build is not sufficient for acceptance;
-the application must also pass its functional test on the declared platform.
+the package must also pass its functional test on the declared platform.

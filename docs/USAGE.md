@@ -13,33 +13,44 @@ following:
 4. a tested opkg index-signature verification backend;
 5. the embedded public key that verifies this repository's release key.
 
-The currently inspected TDVP K230 image does not meet items 1, 2, or 4. Follow
-[DEVICE_BOOTSTRAP.md](DEVICE_BOOTSTRAP.md) as part of the next firmware build.
+The signed TDVP K230 r1 long-term base image supplies items 1, 2, 4, and 5.
+Its `tdvp-opkg` wrapper initializes the dedicated keyring immediately before
+each package-manager operation, so the feed remains outside the boot path. The
+remaining operator requirements are a working network connection and valid
+time for HTTPS certificate validation. An older image is not an acceptable
+substitute; follow
+[DEVICE_BOOTSTRAP.md](DEVICE_BOOTSTRAP.md) when producing the base image.
 
 ## Configure the TDVP K230 r1 feed
 
-After that firmware is deployed, add this **single, ABI-specific** source to
-its canonical `/etc/opkg/opkg.conf`:
+The current base image installs this **single, ABI-specific r2 feed** in
+`/etc/opkg/tdvp-feed.conf`. `r2` is the immutable catalogue revision; the
+firmware ABI itself remains r1:
 
 ```conf
-src/gz tdvp_apps_r1 https://YOUR_GITHUB_ID.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
+src/gz tdvp_apps_r2 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
 ```
 
-Do not add generic OpenWrt, Debian, or arbitrary `riscv64` feeds.
+Do not manually alter that file or add generic OpenWrt, Debian, or arbitrary
+`riscv64` feeds.
 
 ## Normal operator flow
 
 ```sh
-opkg update
-opkg list 'tdvp-*'
-opkg info tdvp-hello
-opkg install --download-only tdvp-hello
-opkg install tdvp-hello
-tdvp-hello
+sudo tdvp-opkg update
+sudo tdvp-opkg list 'tdvp-*'
+sudo tdvp-opkg info tdvp-gba
+sudo tdvp-opkg install --download-only tdvp-gba
+sudo tdvp-opkg install tdvp-gba
+tdvp-gba
 ```
 
-For a community package, use its exact published name instead. Do not use
-`--force-depends`, `--force-checksum`, or `--no-check-certificate`.
+For a community package, use its exact published name instead. `tdvp-gba`
+automatically pulls `sdl2`, `sdl2-ttf`, and `libmgba`; do not force individual
+dependencies. If the immutable r1 package `tdvp-cardputer-zero-gba` is
+installed, remove it before installing `tdvp-gba` so their launchers cannot
+overlap. Do not use `--force-depends`, `--force-checksum`, or
+`--no-check-certificate`.
 
 ## Expected failure cases
 
@@ -51,8 +62,10 @@ These failures are correct and must block installation:
 - `tdvp-platform-abi` version does not match;
 - package checksum differs from the signed index.
 
-## Updating applications
+## Updating feed-managed userland
 
-Only update application packages from this feed. Do not run blanket
-`opkg upgrade` against the base firmware; kernel, drivers, libc, network stack
-and KPU runtime are firmware-managed components.
+Only update feed-managed userland packages from this feed: shared libraries,
+tools, desktop programs, and device applications. Do not run blanket `opkg
+upgrade` against the base firmware; kernel, drivers, libc, dynamic loader,
+desktop base stack, network stack and KPU runtime are firmware-managed
+components.

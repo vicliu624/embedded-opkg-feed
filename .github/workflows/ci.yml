@@ -20,11 +20,12 @@ jobs:
       - name: Check shell tooling and build the self-contained fixture
         run: |
           for script in scripts/*.sh; do bash -n "$script"; done
-          bash -n packages/tdvp-cardputer-zero-gba/build.sh
+          for recipe in packages/*/build.sh; do bash -n "$recipe"; done
           ./scripts/build-ipk.sh --platform tdvp-k230-r1 packages/tdvp-hello dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
           ./scripts/make-index.sh dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
           ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
             dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
+          bash ./tests/build-shared-package-policy.sh
 
   cardputer-source-lock:
     name: Validate pinned Cardputer Zero source revision
@@ -37,7 +38,7 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          source packages/tdvp-cardputer-zero-gba/package.env
+          source packages/tdvp-gba/package.env
           [[ "$SOURCE_REPOSITORY" == 'https://github.com/vicliu624/cardputer-zero-gameboy-emulator' ]]
           [[ "$SOURCE_REVISION" =~ ^[0-9a-f]{40}$ ]]
           source_dir=$(mktemp -d)
@@ -48,6 +49,6 @@ jobs:
           [[ "$(git -C "$source_dir" rev-parse HEAD)" == "$SOURCE_REVISION" ]]
           git -C "$source_dir" diff --quiet
           test -f "$source_dir/CMakeLists.txt"
-          test -f "$source_dir/packaging/tdvp-k230/cardputer-zero-gba"
+          test -f "$source_dir/packaging/tdvp-k230/tdvp-gba"
           test -f "$source_dir/extern/SDL/CMakeLists.txt"
           test -f "$source_dir/extern/mgba/CMakeLists.txt"

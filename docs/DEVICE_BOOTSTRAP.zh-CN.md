@@ -2,7 +2,7 @@
 
 [中文（当前）](DEVICE_BOOTSTRAP.zh-CN.md) | [English](DEVICE_BOOTSTRAP.md)
 
-本文描述的是**下一版基础固件**必须包含的改动，不是在已经投入使用的设备上临时执行几条命令。临时修改生产设备会让 opkg 的状态和实际文件失去对应关系，后续更难维护。
+本文定义已签名 TDVP K230 r1 基础镜像的约定，不是在已经投入使用的设备上临时执行几条命令。临时修改生产设备会让 opkg 的状态和实际文件失去对应关系，后续更难维护。
 
 ## 1. 修正 opkg 状态配置
 
@@ -26,11 +26,19 @@ arch all 1
 arch noarch 1
 arch riscv64 10
 
-# 只有在索引签名验证已实现并完成测试后，才加入该软件源。
-src/gz tdvp_apps_r1 https://YOUR_GITHUB_ID.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
+option check_signature 1
+option signature_type gpg-asc
+option gpg_dir /etc/opkg/gpg
+option gpg_trust_level TrustAny
 ```
 
-在构建镜像时创建 `/var/lib/opkg/{lists,info}` 和状态文件。这样 opkg 才能知道哪些文件由它管理，不会把根文件系统当成一堆无法追踪的文件。
+在构建镜像时创建 `/var/lib/opkg/{lists,info}` 和状态文件。唯一的软件源应单独安装为 `/etc/opkg/tdvp-feed.conf`：
+
+```conf
+src/gz tdvp_apps_r2 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
+```
+
+这样 opkg 才能知道哪些文件由它管理，不会把根文件系统当成一堆无法追踪的文件；签名软件源约定也不会混入核心 opkg 配置。
 
 ## 2. 在镜像中登记 ABI 标记包
 
@@ -48,9 +56,7 @@ Description: ABI identity for TDVP K230 firmware r1
 
 ## 3. 加入真正可用的签名验证
 
-当前固件中的 libopkg 虽然包含签名相关代码，但没有可用的验证器：系统缺少 `usign`、`opkg-key`、`gpg`、`gpgv`，也没有链接 GPGME 后端。启用 `check_signature` 前，必须选择一种验证后端重新构建固件，并完成实际验证测试。
-
-建议先走影响较小的路径：以 GPG 验证后端构建当前 opkg 分支，带入最小化的验证器运行时，并且只内置仓库公开密钥。`usign` 方案可以更小，但只有在端到端测试证明它与该 Buildroot 版 opkg 兼容后才能采用。
+R1 基础镜像使用现有 opkg 的 GPG ASCII 装甲验证后端（`signature_type gpg-asc`）。镜像只携带公开密钥、`/usr/local/libexec/tdvp-opkg-bootstrap` 和 `/usr/local/sbin/tdvp-opkg`；后者会在每次 opkg 操作前把公钥导入 `/etc/opkg/gpg` 并校验指纹。它有意不是开机服务，网络软件源不能阻塞 `greetd` 或桌面。私钥绝不能进入镜像。
 
 验收测试必须证明以下四种情况：
 

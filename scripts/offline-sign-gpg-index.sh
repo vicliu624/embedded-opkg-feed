@@ -9,6 +9,33 @@ if [[ $# -ne 1 ]]; then
 fi
 : "${GPG_KEY_FINGERPRINT:?set the dedicated release key fingerprint}"
 
+gpg_bin=${TDVP_GPG_BIN:-gpg}
+gpg_homedir=${TDVP_GPG_HOMEDIR:-}
+gpg_windows_paths=${TDVP_GPG_WINDOWS_PATHS:-0}
+gpg_args=()
+if [[ -n $gpg_homedir ]]; then
+  gpg_args+=(--homedir "$gpg_homedir")
+fi
+
+run_gpg() {
+  local argument
+  local converted_args=()
+  for argument in "$@"; do
+    if [[ $gpg_windows_paths == 1 && $argument =~ ^/mnt/([[:alpha:]])/(.*)$ ]]; then
+      converted_args+=("${BASH_REMATCH[1]^^}:/${BASH_REMATCH[2]}")
+    else
+      converted_args+=("$argument")
+    fi
+  done
+  "$gpg_bin" "${gpg_args[@]}" "${converted_args[@]}"
+}
+
+if [[ $gpg_bin == */* ]]; then
+  [[ -x $gpg_bin ]] || { echo "GnuPG executable is not runnable: $gpg_bin" >&2; exit 67; }
+else
+  command -v "$gpg_bin" >/dev/null || { echo "GnuPG executable not found: $gpg_bin" >&2; exit 67; }
+fi
+
 feed_dir=$(cd -- "$1" && pwd)
 index="$feed_dir/Packages"
 compressed_index="$feed_dir/Packages.gz"
@@ -22,12 +49,10 @@ if [[ -e "$signature" ]]; then
   }
   rm -f -- "$signature"
 fi
-command -v gpg >/dev/null || { echo 'gpg not found on signing host' >&2; exit 67; }
-
-gpg --batch --yes --local-user "$GPG_KEY_FINGERPRINT" --armor --detach-sign \
+run_gpg --batch --yes --local-user "$GPG_KEY_FINGERPRINT" --armor --detach-sign \
   --output "$signature" "$index"
 if [[ ! -e "$compatibility_signature" ]]; then
-  gpg --batch --yes --local-user "$GPG_KEY_FINGERPRINT" --armor --detach-sign \
+  run_gpg --batch --yes --local-user "$GPG_KEY_FINGERPRINT" --armor --detach-sign \
     --output "$compatibility_signature" "$compressed_index"
 fi
 echo "created detached primary signature: $signature (Packages)"

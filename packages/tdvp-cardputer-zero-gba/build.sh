@@ -41,7 +41,14 @@ command -v git >/dev/null || {
 
 source_root=${TDVP_CARDPUTER_ZERO_GBA_SOURCE_DIR:-"$feed_root/../cardputer-zero-gameboy-emulator"}
 source_root=$(cd -- "$source_root" && pwd)
-source_top_level=$(git -C "$source_root" rev-parse --show-toplevel 2>/dev/null) || {
+source_git() {
+  # The reviewed source checkout is shared with Windows. Normalize only
+  # line-ending and executable-bit metadata while comparing its content, so a
+  # CRLF checkout does not masquerade as a source modification in WSL.
+  git -C "$source_root" -c core.autocrlf=true -c core.filemode=false "$@"
+}
+
+source_top_level=$(source_git rev-parse --show-toplevel 2>/dev/null) || {
   echo "cardputer-zero-gba source is not a Git checkout: $source_root" >&2
   exit 63
 }
@@ -61,7 +68,7 @@ canonical_repository_url() {
   printf '%s\n' "$url"
 }
 
-source_origin=$(git -C "$source_root" config --get remote.origin.url || true)
+source_origin=$(source_git config --get remote.origin.url || true)
 [[ -n "$source_origin" ]] || {
   echo "source checkout has no origin remote: $source_root" >&2
   exit 65
@@ -70,24 +77,24 @@ source_origin=$(git -C "$source_root" config --get remote.origin.url || true)
   echo "source origin does not match SOURCE_REPOSITORY: $source_origin" >&2
   exit 66
 }
-[[ "$(git -C "$source_root" rev-parse HEAD)" == "$SOURCE_REVISION" ]] || {
+[[ "$(source_git rev-parse HEAD)" == "$SOURCE_REVISION" ]] || {
   echo "source HEAD does not match SOURCE_REVISION: $source_root" >&2
   exit 67
 }
-git -C "$source_root" diff --quiet || {
+source_git diff --quiet || {
   echo "source checkout has unstaged changes: $source_root" >&2
   exit 68
 }
-git -C "$source_root" diff --cached --quiet || {
+source_git diff --cached --quiet || {
   echo "source checkout has staged changes: $source_root" >&2
   exit 69
 }
-if git -C "$source_root" submodule status --recursive | grep -qE '^[+-]'; then
+if source_git submodule status --recursive | grep -qE '^[+-]'; then
   echo 'source checkout has missing or wrong bundled submodules; use git clone --recurse-submodules.' >&2
   exit 70
 fi
-git -C "$source_root" submodule foreach --recursive \
-  'git diff --quiet && git diff --cached --quiet' || {
+source_git submodule foreach --recursive \
+  'git -c core.autocrlf=true -c core.filemode=false diff --quiet && git -c core.autocrlf=true -c core.filemode=false diff --cached --quiet' || {
   echo "source checkout has modified bundled dependencies: $source_root" >&2
   exit 71
 }

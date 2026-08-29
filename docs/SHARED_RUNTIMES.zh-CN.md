@@ -18,7 +18,7 @@ runtime           从已验证 target 提取的共享运行时、插件或运行
 
 **每一个其他动态 SONAME 在同一 ABI/feed release 中必须有且只有一个独立 IPK 所有者。** 当前 r4 例如覆盖 GTK3/GLib、Wayland/EGL/Mesa、ALSA/PulseAudio、SDL2、libmGBA、libcurl、libpng、libjpeg、FFmpeg/MPV 和 NetSurf 所需的库。数据、可加载模块和桌面资源也有明确的 runtime 所有者，例如 `gtk3-data`、`gdk-pixbuf-loaders`、`glib-networking`、`pulse-modules`、`tdvp-runtime-libexec` 与 `shared-mime-info`。发布检查同时扫描 `/usr/lib` 和 `/usr/libexec`，所以 sudo 等私有 helper 不会再被留作基础镜像的隐式依赖。如果后续程序需要当前 ABI target 中尚不存在的库（例如 libutf8proc），必须先作为独立库 recipe 进入新的 feed release，不能把它静态塞入应用。
 
-因此 `tdvp-gba`、`tdvp-netsurf`、`tdvp-mpv` 都是叶子应用：它们不携带静态副本，不从基础镜像暗中借用通用库，而是通过精确版本的 `Depends` 取得所有直接运行时需求。镜像可为了首次桌面启动而带有与 r3 字节一致的兼容副本，但这不改变依赖契约：闭包检查把 feed package 而不是 base rootfs 作为非 ABI SONAME 的 provider，安装后该 IPK 是唯一的软件包所有者。
+因此 `tdvp-gba`、`tdvp-netsurf`、`tdvp-mpv` 都是叶子应用：它们不携带静态副本，不从基础镜像暗中借用通用库，而是通过精确版本的 `Depends` 取得所有直接运行时需求。镜像可为了首次桌面启动而带有与 r4 字节一致的兼容副本，但这不改变依赖契约：闭包检查把 feed package 而不是 base rootfs 作为非 ABI SONAME 的 provider，安装后该 IPK 是唯一的软件包所有者。
 
 一个库在一个 ABI/feed release 中只构建或提取一次，任意后续程序直接复用相同版本的 IPK；添加应用不会重新编译或静态塞入 SDL、GTK、curl、图像库等基础库。
 

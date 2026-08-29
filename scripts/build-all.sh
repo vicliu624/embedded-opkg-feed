@@ -63,7 +63,7 @@ if [[ -n "$base_root" ]]; then
   base_root=$(cd -- "$base_root" && pwd)
 fi
 
-# r3 begins the composable-distribution model.  The completed firmware target
+# r4 is the current composable-distribution release.  The completed firmware target
 # is an input to the release, not an undeclared provider: all of its non-ABI
 # runtime SONAMEs are copied byte-for-byte into independently versioned feed
 # packages before any leaf application is packaged.

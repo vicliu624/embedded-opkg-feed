@@ -161,7 +161,7 @@ for package in "${!package_root[@]}"; do
       }
     done < <("$readelf_tool" -d "$elf" 2>/dev/null | sed -n 's/.*Shared library: \[\(.*\)\]/\1/p')
     if "$readelf_tool" -d "$elf" 2>/dev/null | grep -Eq '\((RPATH|RUNPATH)\)'; then
-      # Current r3 packages transition byte-identical Buildroot runtime
+      # Current r4 packages transition byte-identical Buildroot runtime
       # objects into explicit feed owners.  Preserve an existing target RPATH
       # only when the exact same regular file is present in the locked base;
       # new applications and rebuilt libraries still fail this guard.

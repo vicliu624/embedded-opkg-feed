@@ -9,7 +9,7 @@ desktop entry in the normal application menu.
 The package is built from NetSurf 3.10 using the same Buildroot 2025.02.1
 profile that produced the firmware. Its direct runtime SONAMEs are checked
 against that profile's `target/` as an ABI reference before packaging, then
-resolved by the r3 feed owner map into exact `Depends`. It therefore contains
+resolved by the r4 feed owner map into exact `Depends`. It therefore contains
 the browser binary and NetSurf resources only; GTK3, TLS, Curl, OpenSSL, image,
 font, GLib, and Wayland libraries stay independently installable feed packages
 rather than firmware-owned or browser-bundled copies.

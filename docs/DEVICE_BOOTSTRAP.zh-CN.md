@@ -35,7 +35,7 @@ option gpg_trust_level TrustAny
 在构建镜像时创建 `/var/lib/opkg/{lists,info}` 和状态文件。唯一的软件源应单独安装为 `/etc/opkg/tdvp-feed.conf`：
 
 ```conf
-src/gz tdvp_apps_r2 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
+src/gz tdvp_apps_r4 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r4/riscv64
 ```
 
 这样 opkg 才能知道哪些文件由它管理，不会把根文件系统当成一堆无法追踪的文件；签名软件源约定也不会混入核心 opkg 配置。

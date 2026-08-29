@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Package the exact MPV binary from the locked Buildroot target.  Its shared
-# libraries are supplied independently by the r3 runtime catalogue.
+# libraries are supplied independently by the r4 runtime catalogue.
 set -Eeuo pipefail
 IFS=$'\n\t'
 

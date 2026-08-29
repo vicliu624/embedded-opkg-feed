@@ -34,11 +34,11 @@ option gpg_trust_level TrustAny
 ```
 
 Create `/var/lib/opkg/{lists,info}` and the status file in the image build.
-Install the single ABI-specific r2 source separately in `/etc/opkg/tdvp-feed.conf`.
+Install the single ABI-specific r4 source separately in `/etc/opkg/tdvp-feed.conf`.
 The feed revision is not a firmware ABI bump: the marker below remains r1.
 
 ```conf
-src/gz tdvp_apps_r2 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
+src/gz tdvp_apps_r4 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r4/riscv64
 ```
 
 This avoids an untracked root filesystem where opkg cannot know what it owns,

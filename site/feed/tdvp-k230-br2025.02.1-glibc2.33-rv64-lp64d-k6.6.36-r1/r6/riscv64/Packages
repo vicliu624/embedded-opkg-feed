@@ -1,0 +1,2626 @@
+Package: adwaita-icon-theme
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: Adwaita icon resources
+Filename: adwaita-icon-theme_2025.02.1-1_riscv64.ipk
+Size: 11858100
+MD5Sum: 1ecd6c149924fc151863cfeee260a2cb
+SHA256sum: 70232ba35f3e145e353b1fa922d5a4b65bc78f6fc001ca167948a08d762b8984
+
+Package: alsa-data
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: ALSA UCM and profile data
+Filename: alsa-data_2025.02.1-1_riscv64.ipk
+Size: 20744
+MD5Sum: 6f781a4cbc8a5fb6dc468005a4a39767
+SHA256sum: fb34f537bd910e42d5de661a31433cd9925f5afb92d84ba577b0018f7834fa18
+
+Package: ca-certificates
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TLS trust store
+Filename: ca-certificates_2025.02.1-1_riscv64.ipk
+Size: 138226
+MD5Sum: 2c5bf64a46ce68f43fbd25a3650f72a8
+SHA256sum: fea6e3078d850b27e686cfe7e3936d549f62eb8592e199b7846f144c2870a4dd
+
+Package: gdk-pixbuf-loaders
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgdk-pixbuf-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libjpeg-9 (= 2025.02.1-1),libpng16-16 (= 2025.02.1-1),librsvg-2-2 (= 2025.02.1-1),libcairo-gobject-2 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1),libxml2-2 (= 2025.02.1-1),libpangocairo-1.0-0 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1),libpangoft2-1.0-0 (= 2025.02.1-1),libpango-1.0-0 (= 2025.02.1-1),libharfbuzz-0 (= 2025.02.1-1),libfontconfig-1 (= 2025.02.1-1),libfreetype-6 (= 2025.02.1-1),libz-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: GDK Pixbuf image loader modules and metadata
+Filename: gdk-pixbuf-loaders_2025.02.1-1_riscv64.ipk
+Size: 29400
+MD5Sum: 1ba7ddf307d624c20a4b95a34188a2eb
+SHA256sum: fd2af37db39cde95f727d1fb9d1b6be4ae16086b589058762021e1de124f3305
+
+Package: glib-networking
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgio-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libgnutls-30 (= 2025.02.1-1),libssl-3 (= 2025.02.1-1),libcrypto-3 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: GIO TLS backend modules
+Filename: glib-networking_2025.02.1-1_riscv64.ipk
+Size: 100860
+MD5Sum: e6f3252453bbf44cbd69333189413ec2
+SHA256sum: bd6ce92ae803a2ff41713a8e1b0e63d204c550b5b4051a7e9c79fa7d879be63e
+
+Package: gtk3-data
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgtk-3-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libgdk-3-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libpango-1.0-0 (= 2025.02.1-1),libwayland-client-0 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: GTK3 themes, input modules, and print backends
+Filename: gtk3-data_2025.02.1-1_riscv64.ipk
+Size: 1179040
+MD5Sum: 42c8e3b4395612a1734cf80ce77d986e
+SHA256sum: a4a0b5efd6f2dc3235dab19073400054eb0b840880256fadab6acded85aa0ac0
+
+Package: hicolor-icon-theme
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: Hicolor icon resources
+Filename: hicolor-icon-theme_2025.02.1-1_riscv64.ipk
+Size: 187994
+MD5Sum: 85ad50c3cb8d9948910c6502fe2290a7
+SHA256sum: 6dcfe5ad8de84d5ec257d737a50739f141dd939a6bced9eaeeca9d44ff0ef8c3
+
+Package: libanl-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libanl.so.1
+Filename: libanl-1_2025.02.1-1_riscv64.ipk
+Size: 6036
+MD5Sum: bf1f3171c7222f9d3d7b78b37ec78e3a
+SHA256sum: b5500dfc632040d8169194d153f5eeeae211089a9b5983fa3e522ec293676b9b
+
+Package: libarchive-13
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcrypto-3 (= 2025.02.1-1),libnettle-8 (= 2025.02.1-1),libxml2-2 (= 2025.02.1-1),libz-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libarchive.so.13
+Filename: libarchive-13_2025.02.1-1_riscv64.ipk
+Size: 379436
+MD5Sum: e92e8037d61460f349d63930ee5d522c
+SHA256sum: 74e8e99e9dc9a998c419c107e6b0da7fba869106572dc3a438855bdbba90b53f
+
+Package: libasan-8
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libasan.so.8
+Filename: libasan-8_2025.02.1-1_riscv64.ipk
+Size: 547536
+MD5Sum: 43724e58ca434e61d7f7eb59ed89bc32
+SHA256sum: b729df7ad5e9bfce6632570566235a67cb5686e374a893fc2b319ad4fd2d912e
+
+Package: libasound-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libasound.so.2
+Filename: libasound-2_2025.02.1-1_riscv64.ipk
+Size: 452490
+MD5Sum: e534c61f585d5ee496d50a5b4c08e62e
+SHA256sum: d80cf8d734b69f31991c886e485ba001ca5c9050b28b041c6d7ca0c9c091a884
+
+Package: libass-9
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libpng16-16 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libfribidi-0 (= 2025.02.1-1),libharfbuzz-0 (= 2025.02.1-1),libfontconfig-1 (= 2025.02.1-1),libfreetype-6 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libass.so.9
+Filename: libass-9_2025.02.1-1_riscv64.ipk
+Size: 107772
+MD5Sum: 14cfac8cfd6451c36692352b9a10f9dd
+SHA256sum: e9d08931fff22fe933321e004e4d70d327b4c455e89a740c6cc3372564504c87
+
+Package: libassuan-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgpg-error-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libassuan.so.0
+Filename: libassuan-0_2025.02.1-1_riscv64.ipk
+Size: 35872
+MD5Sum: c32a4992905514c4c692fadde937b7a5
+SHA256sum: 0ff2425a4be182a42319bb8565e4411f95fbc50ab69343d82f7e8998c9dbba6c
+
+Package: libatk-1.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libatk-1.0.so.0
+Filename: libatk-1.0-0_2025.02.1-1_riscv64.ipk
+Size: 52268
+MD5Sum: efbf34fe18c4a26312e1386dc3e6a5f0
+SHA256sum: 4d8d0236ab16b119f9c29f1da7aa0ab35c7ef07361d14d7a538b5a46268a0f8d
+
+Package: libatk-bridge-2.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libatspi-0 (= 2025.02.1-1),libatk-1.0-0 (= 2025.02.1-1),libdbus-1-3 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libatk-bridge-2.0.so.0
+Filename: libatk-bridge-2.0-0_2025.02.1-1_riscv64.ipk
+Size: 70434
+MD5Sum: 4b6da56cc75b4348ce70f716500441e7
+SHA256sum: caeab66560d9cb27515e5f0a21cbe368165574cf68ff6ac2104d3d4dc3b60c0c
+
+Package: libatkmm-1.6-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglibmm-2.4-1 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libsigc-2.0-0 (= 2025.02.1-1),libatk-1.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libatkmm-1.6.so.1
+Filename: libatkmm-1.6-1_2025.02.1-1_riscv64.ipk
+Size: 82730
+MD5Sum: 2cb81865720c7dba1d5c126db94eb87a
+SHA256sum: f839372feaa2919a89401a4b617f256a72da1dd3fc289959452f4d6a6cdce143
+
+Package: libatomic-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libatomic.so.1
+Filename: libatomic-1_2025.02.1-1_riscv64.ipk
+Size: 9136
+MD5Sum: 7d95fcb4df8ee30b1a503cb96a2fe2c9
+SHA256sum: 4ff400e542743fd6a2f38de37f390773701983e5b8623ccddac32b1dae83428f
+
+Package: libatopology-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libasound-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libatopology.so.2
+Filename: libatopology-2_2025.02.1-1_riscv64.ipk
+Size: 54552
+MD5Sum: 65f502e266cfa4406fae7666fd340f84
+SHA256sum: 2ded967418968ba5c19414dfa49ca97a38a01be090aefa0130564f0677700b88
+
+Package: libatspi-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libdbus-1-3 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libatspi.so.0
+Filename: libatspi-0_2025.02.1-1_riscv64.ipk
+Size: 78160
+MD5Sum: 4c586142d130ee96549a0012c004ec0f
+SHA256sum: bb53bbf648ef558507d53dd18cfcca3bdd4c687a56bbd2b6e0eea4aa4bcfce0b
+
+Package: libavcodec-58
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libswresample-3 (= 2025.02.1-1),libavutil-56 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libvorbis-0 (= 2025.02.1-1),libvorbisenc-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libavcodec.so.58
+Filename: libavcodec-58_2025.02.1-1_riscv64.ipk
+Size: 6383674
+MD5Sum: 4640d288f995d761ccc7ec6532c7d316
+SHA256sum: b5c12c6d32d9e733fac8f8273927fc5b085659cd59440b26e5244e45db9e0ee7
+
+Package: libavdevice-58
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libavfilter-7 (= 2025.02.1-1),libavformat-58 (= 2025.02.1-1),libavcodec-58 (= 2025.02.1-1),libavutil-56 (= 2025.02.1-1),libdrm-2 (= 2025.02.1-1),libasound-2 (= 2025.02.1-1),libv4l2-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libavdevice.so.58
+Filename: libavdevice-58_2025.02.1-1_riscv64.ipk
+Size: 34540
+MD5Sum: 4d56842371c49601bd0192f38268f8f9
+SHA256sum: 609c92de3c44cb348d7064ffc743e937eac25141eec8897e06543f60a54dbf50
+
+Package: libavfilter-7
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libswscale-5 (= 2025.02.1-1),libavformat-58 (= 2025.02.1-1),libavcodec-58 (= 2025.02.1-1),libswresample-3 (= 2025.02.1-1),libavutil-56 (= 2025.02.1-1),libass-9 (= 2025.02.1-1),libfontconfig-1 (= 2025.02.1-1),libfreetype-6 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libavfilter.so.7
+Filename: libavfilter-7_2025.02.1-1_riscv64.ipk
+Size: 1477080
+MD5Sum: 6bb6b578fe1c0065bec5ec6a52677bb4
+SHA256sum: 625b913e7d2af3a6e8859fde960a549560a79c5f4e088cdeb901843a5281a6db
+
+Package: libavformat-58
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libavcodec-58 (= 2025.02.1-1),libavutil-56 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libgnutls-30 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libavformat.so.58
+Filename: libavformat-58_2025.02.1-1_riscv64.ipk
+Size: 1208914
+MD5Sum: 30a7aacc18b2aea490d8fc374b1e3b50
+SHA256sum: 5cea7bc4d880ecc2931bda3772413b6cfbba745dfe623f3225f885c2c563cb80
+
+Package: libavutil-56
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libdrm-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libavutil.so.56
+Filename: libavutil-56_2025.02.1-1_riscv64.ipk
+Size: 292108
+MD5Sum: 203306489b8766dcf60b374081ff3705
+SHA256sum: b1ebc0f396b9f33805d559f85cbe6e7d7190fc5c601da16ad027b11cc1d7d944
+
+Package: libblkid-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libblkid.so.1
+Filename: libblkid-1_2025.02.1-1_riscv64.ipk
+Size: 184776
+MD5Sum: b63556c508fff6654c1829b5ae31d2b7
+SHA256sum: c727554b63b34fd82ecb56ebf5fc2f8f2246a3c5010ea2fa75ffae91cfe274f7
+
+Package: libcairo-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libz-1 (= 2025.02.1-1),libpng16-16 (= 2025.02.1-1),libfontconfig-1 (= 2025.02.1-1),libfreetype-6 (= 2025.02.1-1),libpixman-1-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libcairo.so.2
+Filename: libcairo-2_2025.02.1-1_riscv64.ipk
+Size: 551304
+MD5Sum: fcc4081114bcfa605e31c9c08e23ebed
+SHA256sum: f8e3f05f884dba6b37d757d1847220cacccab0bc971fe515264d0ab26d5491f6
+
+Package: libcairo-gobject-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcairo-2 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libcairo-gobject.so.2
+Filename: libcairo-gobject-2_2025.02.1-1_riscv64.ipk
+Size: 9256
+MD5Sum: ca124261f9a861344ac829778be26924
+SHA256sum: 92a27c9eee5d4f60d717d6fdb88394305fb458d91478bfb6abcd35847c1c7601
+
+Package: libcairo-script-interpreter-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcairo-2 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libfontconfig-1 (= 2025.02.1-1),libfreetype-6 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libcairo-script-interpreter.so.2
+Filename: libcairo-script-interpreter-2_2025.02.1-1_riscv64.ipk
+Size: 57792
+MD5Sum: 15e3e17e539e38a81fc35130e00705d5
+SHA256sum: 6cfa3d006a3a90cdfd2fedd4923179303e0b1737a5eae5e703bd6daeb9cf3d10
+
+Package: libcairomm-1.0-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libsigc-2.0-0 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libcairomm-1.0.so.1
+Filename: libcairomm-1.0-1_2025.02.1-1_riscv64.ipk
+Size: 45738
+MD5Sum: e6c909b6e4eafe0f4a6e7f39977dd41b
+SHA256sum: 723eea9ab676d369e26c3f2fcdf81d0fe306ff02f3d8c14242dc298387f57485
+
+Package: libcanberra-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libvorbisfile-3 (= 2025.02.1-1),libvorbis-0 (= 2025.02.1-1),libogg-0 (= 2025.02.1-1),libltdl-7 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libcanberra.so.0
+Filename: libcanberra-0_2025.02.1-1_riscv64.ipk
+Size: 27024
+MD5Sum: 5ab4990964cbfef9e509eba4b9843a9c
+SHA256sum: 1e690c71246a33b535120759ca61a5e3ccce7c20e5529e59785692328dcc89b0
+
+Package: libcap-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libcap.so.2
+Filename: libcap-2_2025.02.1-1_riscv64.ipk
+Size: 20716
+MD5Sum: 6a9ecdd6edd2d037e4e08260935b9653
+SHA256sum: 8164bf003d3649c3139ac9fe64745aff85b8900e6a80a6f12aad6dff99455eda
+
+Package: libcom-err-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libcom_err.so.2
+Filename: libcom-err-2_2025.02.1-1_riscv64.ipk
+Size: 5698
+MD5Sum: 21cbef9a93f9103705fe8e54fdbbf006
+SHA256sum: 6e7b5b9d0b4fac3d3de892ec5beafba5c9233b20ad8f252b71e86b1b8bac9348
+
+Package: libcrypt-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libcrypt.so.1
+Filename: libcrypt-1_2025.02.1-1_riscv64.ipk
+Size: 18448
+MD5Sum: 4389a776454eeda52e919687ae4137df
+SHA256sum: b4b7c1078bf1008239e0e43d4695d1442aed245bb801078ad0c7e0ac4a9a6f5a
+
+Package: libcrypt-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libcrypt.so.2
+Filename: libcrypt-2_2025.02.1-1_riscv64.ipk
+Size: 97494
+MD5Sum: bbc9c89f452b1e6549ae5d9576f6bac5
+SHA256sum: 89ac644992bc7a29afe2a2d350e9803ea6721220dce0c9ff4640009d406146dc
+
+Package: libcrypto-3
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libcrypto.so.3
+Filename: libcrypto-3_2025.02.1-1_riscv64.ipk
+Size: 1695380
+MD5Sum: 8873d257b351062d63ff3d805a8ea71c
+SHA256sum: e3bf13d5368e727df3019eb0d4c718ac57475641ef1c8f0feb76403441ee9685
+
+Package: libcurl-4
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libssl-3 (= 2025.02.1-1),libcrypto-3 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libatomic-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libcurl.so.4
+Filename: libcurl-4_2025.02.1-1_riscv64.ipk
+Size: 306190
+MD5Sum: ca0c3d1081a5173b206c522cc26f9eae
+SHA256sum: d80d263e9f8f314fc3acac52262362d7ec8279245318b5a58c93e05e6cf4e9fc
+
+Package: libdbus-1-3
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libsystemd-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libdbus-1.so.3
+Filename: libdbus-1-3_2025.02.1-1_riscv64.ipk
+Size: 149714
+MD5Sum: f8320388aca0e86d1b511c3f21e9fd5b
+SHA256sum: fdd22d400f8edac51164ae77109bcbd5f96acd5fe9913e377381ba98fa67acbe
+
+Package: libdisplay-info-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libdisplay-info.so.2
+Filename: libdisplay-info-2_2025.02.1-1_riscv64.ipk
+Size: 87420
+MD5Sum: e7a12a4351b70792a905847584e098d1
+SHA256sum: 07ffe9a4b1c9f49f2ac30267d388cc305d71284c39f1437245ab8d3c94bdd384
+
+Package: libdisplay
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libdrm-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libdisplay.so
+Filename: libdisplay_2025.02.1-1_riscv64.ipk
+Size: 9658
+MD5Sum: 18a59ef5c9ebcbea3b7dbd52a5f3b1dc
+SHA256sum: 08f1844fc38d0a6ed70a148e42104455d4f776a6bae056a5cacc69ba90027e17
+
+Package: libdrm-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libdrm.so.2
+Filename: libdrm-2_2025.02.1-1_riscv64.ipk
+Size: 40010
+MD5Sum: 86a758fa385a2528e15fa03fe51f424e
+SHA256sum: 6f7d2523bfc14ca791390315874e2b922299659e6a262243b1866626ce1e8ef4
+
+Package: libdvbv5-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libudev-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libdvbv5.so.0
+Filename: libdvbv5-0_2025.02.1-1_riscv64.ipk
+Size: 116652
+MD5Sum: df471138117704a929d0426f6ef6fa5d
+SHA256sum: cb94875f2ca73389f5cdfac337f296610487b7bcaace6b3b7a8d0d2f88777bec
+
+Package: libe2p-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libe2p.so.2
+Filename: libe2p-2_2025.02.1-1_riscv64.ipk
+Size: 15738
+MD5Sum: 12da82c1633f9875e78afa0b51bdb551
+SHA256sum: d84e9a0bb24a765555b6e0d6d4183975c9c402a47ce7b5374f0fbd07f668baa3
+
+Package: libegl-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgbm-1 (= 2025.02.1-1),libglapi-0 (= 2025.02.1-1),libexpat-1 (= 2025.02.1-1),libdrm-2 (= 2025.02.1-1),libwayland-client-0 (= 2025.02.1-1),libwayland-server-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libEGL.so.1
+Filename: libegl-1_2025.02.1-1_riscv64.ipk
+Size: 100516
+MD5Sum: 5e7a266fba49609da8bb4e093edbd765
+SHA256sum: 300c564f13bfe2baac2d7150a77cc84e2a5ae5e54a84bbd4f8f35c629888ef43
+
+Package: libepoxy-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libepoxy.so.0
+Filename: libepoxy-0_2025.02.1-1_riscv64.ipk
+Size: 245498
+MD5Sum: 71f478b47d6ad2dd83b9620c459583b3
+SHA256sum: a9b14aa7248e273dff601dd829c6e237da986092724b07065f7a0b11bc246d80
+
+Package: libevdev-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libevdev.so.2
+Filename: libevdev-2_2025.02.1-1_riscv64.ipk
+Size: 33224
+MD5Sum: 53aefaa1f20d72a2196eaa363cdfcf17
+SHA256sum: f8501109a22e15fb6bf4b78260929e9385c213a02ee05a476b39d03d1308758a
+
+Package: libexpat-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libexpat.so.1
+Filename: libexpat-1_2025.02.1-1_riscv64.ipk
+Size: 66442
+MD5Sum: 597fc1ecfbacf2da3a8c42fe7f82dbe0
+SHA256sum: 315bf055d2037da93c57acc1003d865881a9cc37f3f5c981ce7bc27b64547c6b
+
+Package: libext2fs-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcom-err-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libext2fs.so.2
+Filename: libext2fs-2_2025.02.1-1_riscv64.ipk
+Size: 210432
+MD5Sum: b7c93a1a3248dc99e7151782fa8c6040
+SHA256sum: 15d10c751ca60bd66661ec3d562db715ed19cf4c34ab98d5475f9da47a383ce0
+
+Package: libfcft-4
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libfontconfig-1 (= 2025.02.1-1),libfreetype-6 (= 2025.02.1-1),libpixman-1-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libfcft.so.4
+Filename: libfcft-4_2025.02.1-1_riscv64.ipk
+Size: 21756
+MD5Sum: e3af9c5560ac4b29ff1a53f224476110
+SHA256sum: 84ffb1009d758b967211566418637d969125c62d05e54b2d70f60b649db1626d
+
+Package: libfdisk-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libuuid-1 (= 2025.02.1-1),libblkid-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libfdisk.so.1
+Filename: libfdisk-1_2025.02.1-1_riscv64.ipk
+Size: 231776
+MD5Sum: df0b8c94f6bbfe5f32aa593919869f83
+SHA256sum: 902eb627cf0216dc2c340ecaa159583787fafb8d41d06da2eb88f9cb0ebffd2f
+
+Package: libffi-8
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libffi.so.8
+Filename: libffi-8_2025.02.1-1_riscv64.ipk
+Size: 17440
+MD5Sum: 2326c8f229cc795f311ef66616e8a6b7
+SHA256sum: d93a6b98c2d776bcb49bb87b9bfd2f42b9fd0fb773a38537408711c0176fdb30
+
+Package: libfm-4
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgthread-2.0-0 (= 2025.02.1-1),libmenu-cache-3 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libfm.so.4
+Filename: libfm-4_2025.02.1-1_riscv64.ipk
+Size: 106722
+MD5Sum: c19dae2cfba38c9ff75f29e2ee282827
+SHA256sum: 9a88dcc704b8ff9e8e805eb74478a722b27133347b967e7318288db55cc4fe19
+
+Package: libfm-extra-4
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgio-2.0-0 (= 2025.02.1-1),libgthread-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libfm-extra.so.4
+Filename: libfm-extra-4_2025.02.1-1_riscv64.ipk
+Size: 12094
+MD5Sum: c995d330c958753049157593741370ad
+SHA256sum: d9e126084fe193d73b6ae015918f49d6f73ad196b61e21f745daddd4bc7103be
+
+Package: libfm-gtk3-4
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgtk-3-0 (= 2025.02.1-1),libgdk-3-0 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libpangocairo-1.0-0 (= 2025.02.1-1),libatk-1.0-0 (= 2025.02.1-1),libcairo-gobject-2 (= 2025.02.1-1),libgdk-pixbuf-2.0-0 (= 2025.02.1-1),libpango-1.0-0 (= 2025.02.1-1),libharfbuzz-0 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1),libfm-4 (= 2025.02.1-1),libgthread-2.0-0 (= 2025.02.1-1),libmenu-cache-3 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libfm-gtk3.so.4
+Filename: libfm-gtk3-4_2025.02.1-1_riscv64.ipk
+Size: 181476
+MD5Sum: cb5b27ee0cc7127e707988616634ab49
+SHA256sum: bacce34057dbdca5fe9e5675e643af380cf4e1990f254c5f86521a2015912ba1
+
+Package: libfontconfig-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libfreetype-6 (= 2025.02.1-1),libexpat-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libfontconfig.so.1
+Filename: libfontconfig-1_2025.02.1-1_riscv64.ipk
+Size: 152720
+MD5Sum: ebafc679b2a16037100354967a51d7dc
+SHA256sum: 12e7622da2dd3ebeac4f10319489e8184b18305b63e1d2d02764f93901c809aa
+
+Package: libformw-6
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libncursesw-6 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libformw.so.6
+Filename: libformw-6_2025.02.1-1_riscv64.ipk
+Size: 33482
+MD5Sum: 4323c353425877d27c360dcf70b72cb4
+SHA256sum: b3a0a18910df92e09eabf35bf249496de060333602cc9dc70947a6aa14cfb31b
+
+Package: libfreetype-6
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libpng16-16 (= 2025.02.1-1),libz-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libfreetype.so.6
+Filename: libfreetype-6_2025.02.1-1_riscv64.ipk
+Size: 384578
+MD5Sum: cb62f2e840782232f79c21501d5ed4aa
+SHA256sum: c42fd208ceaab740b12637abb021687781eace7507381347b7785fe46b100946
+
+Package: libfribidi-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libfribidi.so.0
+Filename: libfribidi-0_2025.02.1-1_riscv64.ipk
+Size: 23598
+MD5Sum: 06a574e0d7a856549fb501b243fb8845
+SHA256sum: c85fc62c6dd002a3990a31c7235b939579aea3cf8965d01e9e5091d2ef71ef71
+
+Package: libgailutil-3-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgtk-3-0 (= 2025.02.1-1),libgdk-3-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libpango-1.0-0 (= 2025.02.1-1),libatk-1.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgailutil-3.so.0
+Filename: libgailutil-3-0_2025.02.1-1_riscv64.ipk
+Size: 11000
+MD5Sum: ec76533bd1fb5cfbd80626d50772e40d
+SHA256sum: ab3b4f37c0a02f982282de8a8d7b720ea44fad9128e8b359eff9848664e1619f
+
+Package: libgbm-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libdrm-2 (= 2025.02.1-1),libwayland-server-0 (= 2025.02.1-1),libexpat-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgbm.so.1
+Filename: libgbm-1_2025.02.1-1_riscv64.ipk
+Size: 29506
+MD5Sum: 98a62f4d091bfb9cb1e4082579c0ee96
+SHA256sum: b8a8f65450c1117bbda2a7c99a60411d47b8aee94fb97a05c41f38e8c8081419
+
+Package: libgcrypt-20
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgpg-error-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgcrypt.so.20
+Filename: libgcrypt-20_2025.02.1-1_riscv64.ipk
+Size: 573898
+MD5Sum: 3062171925565daf2d92743ac62e9104
+SHA256sum: 4dccf75dc5125f0386367982a1e951a7c149e56792afd8ef25ec3f82696bba95
+
+Package: libgdk-3-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgdk-pixbuf-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1),libpango-1.0-0 (= 2025.02.1-1),libfribidi-0 (= 2025.02.1-1),libcairo-gobject-2 (= 2025.02.1-1),libepoxy-0 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1),libpangocairo-1.0-0 (= 2025.02.1-1),libxkbcommon-0 (= 2025.02.1-1),libwayland-client-0 (= 2025.02.1-1),libwayland-cursor-0 (= 2025.02.1-1),libwayland-egl-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgdk-3.so.0
+Filename: libgdk-3-0_2025.02.1-1_riscv64.ipk
+Size: 286558
+MD5Sum: 8d8e7b6003e3c280e48c5f9bbf785a91
+SHA256sum: b53b999983deb1458d8cff85d03048f69396713de446674785cba49f7564f285
+
+Package: libgdk-pixbuf-2.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libgmodule-2.0-0 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgdk_pixbuf-2.0.so.0
+Filename: libgdk-pixbuf-2.0-0_2025.02.1-1_riscv64.ipk
+Size: 62422
+MD5Sum: 0db93ee009b12e4f5522060cbaccd610
+SHA256sum: b74a3442f69cf461a7c17fb0661d64a18189b4d76e40d78bfc10b672e04a26f0
+
+Package: libgdkmm-3.0-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgiomm-2.4-1 (= 2025.02.1-1),libglibmm-2.4-1 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libsigc-2.0-0 (= 2025.02.1-1),libgtk-3-0 (= 2025.02.1-1),libgdk-3-0 (= 2025.02.1-1),libgdk-pixbuf-2.0-0 (= 2025.02.1-1),libcairomm-1.0-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgdkmm-3.0.so.1
+Filename: libgdkmm-3.0-1_2025.02.1-1_riscv64.ipk
+Size: 96910
+MD5Sum: 0f8340546001181db2fdc94c326e70a7
+SHA256sum: 57b2a9638b8ea2527ba993eed7cde0335de2956151b6049a70bd88ac19d24159
+
+Package: libgfortran-5
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgfortran.so.5
+Filename: libgfortran-5_2025.02.1-1_riscv64.ipk
+Size: 505454
+MD5Sum: 80216b573afa1ad304267f1a5430caf8
+SHA256sum: 9ee16e2c4e583a77dfd7e799bd1a374cb8e443859485a3de641c22f270d93ff2
+
+Package: libgio-2.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libgmodule-2.0-0 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libmount-1 (= 2025.02.1-1),libresolv-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgio-2.0.so.0
+Filename: libgio-2.0-0_2025.02.1-1_riscv64.ipk
+Size: 763274
+MD5Sum: 40abfd291431aa3d6ab0dea1a5b9b4fb
+SHA256sum: 7889bc80eb2fa177716811db0742c74524cfcabd2bc62ddaf2c3c0c3f478260f
+
+Package: libgiomm-2.4-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglibmm-2.4-1 (= 2025.02.1-1),libsigc-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgiomm-2.4.so.1
+Filename: libgiomm-2.4-1_2025.02.1-1_riscv64.ipk
+Size: 502176
+MD5Sum: e9a18b18aa3a7ebc590adbb08daa6836
+SHA256sum: 3e8dc2f2032e36eb86dd9451507c084210709925774bcc415f032ac953c66f94
+
+Package: libgirepository-2.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libgmodule-2.0-0 (= 2025.02.1-1),libffi-8 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgirepository-2.0.so.0
+Filename: libgirepository-2.0-0_2025.02.1-1_riscv64.ipk
+Size: 103112
+MD5Sum: 09a8f613b4863240a8573bbf624c6007
+SHA256sum: 53c0b97e9e73fcf85af729ff7f5015a1bfd8ff31c823ef13d837e9612dad2078
+
+Package: libglapi-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libglapi.so.0
+Filename: libglapi-0_2025.02.1-1_riscv64.ipk
+Size: 58212
+MD5Sum: 0aa656fc259a518f2c8d1c94095a7e9c
+SHA256sum: 213e37f9948aa5d05649530ce47188f3348b6e02938c7adc633369f39ea08d42
+
+Package: libglesv1-cm-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglapi-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libGLESv1_CM.so.1
+Filename: libglesv1-cm-1_2025.02.1-1_riscv64.ipk
+Size: 7100
+MD5Sum: 518e76689e5fb291b57c02c04f8c417d
+SHA256sum: c5a07aa53544bacdda7bceaed89fb8f9dddd9f347702f0d2d69c126284044186
+
+Package: libglesv2-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglapi-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libGLESv2.so.2
+Filename: libglesv2-2_2025.02.1-1_riscv64.ipk
+Size: 14756
+MD5Sum: c361dcb8fee2b2085c24fdb24332714e
+SHA256sum: 4993b4081cfd2f6c5337cb6045d3203ad95ec5f6db8d6fed9b97d4603c5f158f
+
+Package: libglib-2.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libpcre2-8-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libglib-2.0.so.0
+Filename: libglib-2.0-0_2025.02.1-1_riscv64.ipk
+Size: 558364
+MD5Sum: 7f6931882434f3312b90c7c8ccac2b7d
+SHA256sum: 242aee48ed36c6b8618c9a9d97a436a007f694b5d40a2916ce3dd3891dc05888
+
+Package: libglibmm-2.4-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libsigc-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libgmodule-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libglibmm-2.4.so.1
+Filename: libglibmm-2.4-1_2025.02.1-1_riscv64.ipk
+Size: 187506
+MD5Sum: 4c41751b96df5e5c65cd8d921eb1f9a2
+SHA256sum: 9e640d61e187eff9cc6fef9fb98ab6a67930635d16d7e17f883fc9f28554ca98
+
+Package: libglibmm-generate-extra-defs-2.4-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libglibmm_generate_extra_defs-2.4.so.1
+Filename: libglibmm-generate-extra-defs-2.4-1_2025.02.1-1_riscv64.ipk
+Size: 70948
+MD5Sum: 6c450fc7edeec550169670b5a02664c6
+SHA256sum: 9b1d477ed0c1760d5202c72b14f9ddabc74577e8baea963cb6f0ce4d8bdcbf98
+
+Package: libgmodule-2.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglib-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgmodule-2.0.so.0
+Filename: libgmodule-2.0-0_2025.02.1-1_riscv64.ipk
+Size: 6228
+MD5Sum: cda85ed86c9ba41c2746f309d6599e42
+SHA256sum: 5b590cf60f113d0331e91fa78a595c49c6fe35aa850a92c73b810f63676e56d0
+
+Package: libgmp-10
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgmp.so.10
+Filename: libgmp-10_2025.02.1-1_riscv64.ipk
+Size: 259456
+MD5Sum: 013ab2d4b7748fd19197284f82573384
+SHA256sum: c58176ee16727d6985bf4822bfaf987dc3ce1ed498b4a138cc3555b7adb98637
+
+Package: libgmpxx-4
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgmp-10 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgmpxx.so.4
+Filename: libgmpxx-4_2025.02.1-1_riscv64.ipk
+Size: 8248
+MD5Sum: e0e25c57549074948fcec5dd6a75b521
+SHA256sum: 7bee03eace89229fe2e7d63c54dea95d909eb0340435df3cb60fd5f4eb7faef7
+
+Package: libgnutls-30
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libatomic-1 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libp11-kit-0 (= 2025.02.1-1),libffi-8 (= 2025.02.1-1),libunistring-5 (= 2025.02.1-1),libtasn1-6 (= 2025.02.1-1),libhogweed-6 (= 2025.02.1-1),libnettle-8 (= 2025.02.1-1),libgmp-10 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgnutls.so.30
+Filename: libgnutls-30_2025.02.1-1_riscv64.ipk
+Size: 790768
+MD5Sum: 91934b111c4328cc5434cc11e327eb83
+SHA256sum: 7ec78c64ae698a171f13174404e302a20f9eb22f0cd37175385d958bd3788103
+
+Package: libgnutlsxx-30
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgnutls-30 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libp11-kit-0 (= 2025.02.1-1),libffi-8 (= 2025.02.1-1),libunistring-5 (= 2025.02.1-1),libtasn1-6 (= 2025.02.1-1),libhogweed-6 (= 2025.02.1-1),libnettle-8 (= 2025.02.1-1),libgmp-10 (= 2025.02.1-1),libatomic-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgnutlsxx.so.30
+Filename: libgnutlsxx-30_2025.02.1-1_riscv64.ipk
+Size: 16984
+MD5Sum: 56919a566aba6b3476ba48cb9ffd8387
+SHA256sum: e3222a256bcb8bd67ce7f2ae22f1705666b7b64c0d012c743cd273efaa6bff2a
+
+Package: libgobject-2.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglib-2.0-0 (= 2025.02.1-1),libffi-8 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgobject-2.0.so.0
+Filename: libgobject-2.0-0_2025.02.1-1_riscv64.ipk
+Size: 158332
+MD5Sum: 7e5c0ed7aada7fe70121720ab4a038dc
+SHA256sum: 81038d898e234860168a38f247ef0819a20eed625342565ebb16f2b5fc29b210
+
+Package: libgomp-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgomp.so.1
+Filename: libgomp-1_2025.02.1-1_riscv64.ipk
+Size: 148748
+MD5Sum: cdb83270f650cc719ac8cb25e1fc49bc
+SHA256sum: 9104b0d50baae9004f72e48b8c8a3a7d9051ac3c6c43869893377ddade376028
+
+Package: libgpg-error-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgpg-error.so.0
+Filename: libgpg-error-0_2025.02.1-1_riscv64.ipk
+Size: 74122
+MD5Sum: 4e076d8fef03e1de38e26e1614f191ae
+SHA256sum: 8ec320659e4f98ca31ad062f68af17411bf899c50516edce489c6e6e52359c69
+
+Package: libgpgme-11
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libassuan-0 (= 2025.02.1-1),libgpg-error-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgpgme.so.11
+Filename: libgpgme-11_2025.02.1-1_riscv64.ipk
+Size: 144734
+MD5Sum: a3044e47f45a6958f56c12ae8ca1af5e
+SHA256sum: 2e763bd12f2434610f10a4e6f60f8d08c4ea18cdfd222e5a5b8485908cd14b10
+
+Package: libgpgmepp-6
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgpgme-11 (= 2025.02.1-1),libassuan-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgpgmepp.so.6
+Filename: libgpgmepp-6_2025.02.1-1_riscv64.ipk
+Size: 150916
+MD5Sum: 6715383c7fb422babbffe3132b23bbe8
+SHA256sum: c530d398e98ed3a84eb4523b85107df8d38d965ed127cd4c6c78fbb307f1e8d4
+
+Package: libgpiod-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgpiod.so.2
+Filename: libgpiod-2_2025.02.1-1_riscv64.ipk
+Size: 15390
+MD5Sum: 1cf7bb255da0577b7a2b121afe8219be
+SHA256sum: 71e36218d2bf65b97eedf028c87c7e9575c7f74e6442f479215ea31eed9b6203
+
+Package: libgpiodcxx-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgpiod-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgpiodcxx.so.1
+Filename: libgpiodcxx-1_2025.02.1-1_riscv64.ipk
+Size: 28254
+MD5Sum: 6d6b3c1ae2b94853baf39f28bd83d6fc
+SHA256sum: cbe7ce257a8008b48bb80f1f756e341b3896708290fb378f1751b501f6ec5fa5
+
+Package: libgthread-2.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglib-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgthread-2.0.so.0
+Filename: libgthread-2.0-0_2025.02.1-1_riscv64.ipk
+Size: 2080
+MD5Sum: bac5406809dbcc53e74e3464c875a276
+SHA256sum: 024718ce42b2c5470469549b1c454a2c6ee126b7cebf205391eaf1bb1dae9194
+
+Package: libgtk-3-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgdk-3-0 (= 2025.02.1-1),libgmodule-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1),libpangocairo-1.0-0 (= 2025.02.1-1),libpango-1.0-0 (= 2025.02.1-1),libharfbuzz-0 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1),libpangoft2-1.0-0 (= 2025.02.1-1),libfontconfig-1 (= 2025.02.1-1),libfribidi-0 (= 2025.02.1-1),libcairo-gobject-2 (= 2025.02.1-1),libgdk-pixbuf-2.0-0 (= 2025.02.1-1),libatk-1.0-0 (= 2025.02.1-1),libepoxy-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgtk-3.so.0
+Filename: libgtk-3-0_2025.02.1-1_riscv64.ipk
+Size: 2962350
+MD5Sum: cc61814643760fc5f5090d7f5012e5cb
+SHA256sum: 5bc3e8b5d2b87b765508de3772b4af7edbe8c2f2a3ec4f944b3e46ba10c30823
+
+Package: libgtk-layer-shell-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgtk-3-0 (= 2025.02.1-1),libgdk-3-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libwayland-client-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgtk-layer-shell.so.0
+Filename: libgtk-layer-shell-0_2025.02.1-1_riscv64.ipk
+Size: 58786
+MD5Sum: cbbd49e7c2f9892ef9f8ddf5eac89ac4
+SHA256sum: dab02472c27ab9a7bde0fda132e6566bd666fd010d6ddc734ff496feb9649ff5
+
+Package: libgtkmm-3.0-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgdkmm-3.0-1 (= 2025.02.1-1),libgiomm-2.4-1 (= 2025.02.1-1),libglibmm-2.4-1 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libsigc-2.0-0 (= 2025.02.1-1),libgtk-3-0 (= 2025.02.1-1),libgdk-3-0 (= 2025.02.1-1),libcairomm-1.0-1 (= 2025.02.1-1),libpangomm-1.4-1 (= 2025.02.1-1),libatkmm-1.6-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libgtkmm-3.0.so.1
+Filename: libgtkmm-3.0-1_2025.02.1-1_riscv64.ipk
+Size: 1217286
+MD5Sum: 90919d193fd7a69101b081aa59216c0b
+SHA256sum: 3ba0a0333a84036dfef594c79c37f5ea0907030b30071bb4efaada614a35823d
+
+Package: libharfbuzz-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libfreetype-6 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libharfbuzz.so.0
+Filename: libharfbuzz-0_2025.02.1-1_riscv64.ipk
+Size: 646818
+MD5Sum: 8bc511c36159913d7473e7bb99ebf4b2
+SHA256sum: 3c101391a99dc3b234cfdf3b6b5aff9523cfc735b496087975c5b9a89409270f
+
+Package: libharfbuzz-cairo-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libharfbuzz-0 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libharfbuzz-cairo.so.0
+Filename: libharfbuzz-cairo-0_2025.02.1-1_riscv64.ipk
+Size: 41298
+MD5Sum: 9e406292d0fa2e375eed865ceff61c02
+SHA256sum: 59a37142ab205dcff883c41d70d9cb6297f9236a2425fb1b69972118d811f572
+
+Package: libharfbuzz-subset-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libharfbuzz-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libharfbuzz-subset.so.0
+Filename: libharfbuzz-subset-0_2025.02.1-1_riscv64.ipk
+Size: 742504
+MD5Sum: a2feef1a5c3cae17eaff881c5b2525bb
+SHA256sum: cc6ac171298f3c89db70eaafeea14aea1718533d316ac965fbc05b0e8c186005
+
+Package: libhistory-8
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libncursesw-6 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libhistory.so.8
+Filename: libhistory-8_2025.02.1-1_riscv64.ipk
+Size: 22820
+MD5Sum: 17a88ffe7ffce94a61304f9b02ac1b04
+SHA256sum: 4165fff31728fad44328b16fcef906a1c6bc7cbf4f43e7cca19780d0c2062247
+
+Package: libhogweed-6
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libnettle-8 (= 2025.02.1-1),libgmp-10 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libhogweed.so.6
+Filename: libhogweed-6_2025.02.1-1_riscv64.ipk
+Size: 199010
+MD5Sum: 08033449a1eb05636fdb436a78406806
+SHA256sum: dc11db8ebebc5eaa8e01fd670f88da3d6b89f269a8944a4a45bc5cf6562c1c7c
+
+Package: libi2c-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libi2c.so.0
+Filename: libi2c-0_2025.02.1-1_riscv64.ipk
+Size: 3232
+MD5Sum: 08a4c525a20cdac122f3a13f99e333eb
+SHA256sum: 328acc5019f9df6efe9cbd1b1db6ba374728f3a69d0047f421cac3e8f513a366
+
+Package: libinput-10
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libmtdev-1 (= 2025.02.1-1),libudev-1 (= 2025.02.1-1),libevdev-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libinput.so.10
+Filename: libinput-10_2025.02.1-1_riscv64.ipk
+Size: 148528
+MD5Sum: 44134f9fdeafaef9601d12dcd97715b6
+SHA256sum: 7bd1a83663ff8ff1e1cdb871eb01d593450b9c68686ec0cbac6156f7e72b2a3c
+
+Package: libiw-30
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libiw.so.30
+Filename: libiw-30_2025.02.1-1_riscv64.ipk
+Size: 16458
+MD5Sum: f5075d6015be9d09ca8e7ca42711eaf1
+SHA256sum: ad3f9a88dd2adcb304b16b8849cfeb3e0310187233d6568383815353b2eaad46
+
+Package: libjpeg-9
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libjpeg.so.9
+Filename: libjpeg-9_2025.02.1-1_riscv64.ipk
+Size: 150810
+MD5Sum: 5928547e8a9b53bcda4c181cbcfb043f
+SHA256sum: 6ba57d2474337e3bc66daa6d0d431008d33e55af0dbc7bbec3eae50a7fb52c62
+
+Package: libjson-c-5
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libjson-c.so.5
+Filename: libjson-c-5_2025.02.1-1_riscv64.ipk
+Size: 32396
+MD5Sum: 15d669f2061fff53acf10a2abcbdbea0
+SHA256sum: f9250f633b8020b44b1623555b0acddd212243e1d667449625262cca2f04f7e8
+
+Package: libkmod-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libz-1 (= 2025.02.1-1),libcrypto-3 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libkmod.so.2
+Filename: libkmod-2_2025.02.1-1_riscv64.ipk
+Size: 46772
+MD5Sum: 7965e578807fceb7acba10dca5d6a49c
+SHA256sum: 0d2d78c53a21ee1eadc708d91d766836e4df641e865ea83ee5a8ad801d08e4d9
+
+Package: libksba-8
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgpg-error-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libksba.so.8
+Filename: libksba-8_2025.02.1-1_riscv64.ipk
+Size: 116718
+MD5Sum: fc3bf9670ba5d7c3e39d09c3e212a5cb
+SHA256sum: 3034ef18ff6e0f03daf81dbe9b9b387422d4446f07dfb6e5d3f4a99701f2eb77
+
+Package: libltdl-7
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libltdl.so.7
+Filename: libltdl-7_2025.02.1-1_riscv64.ipk
+Size: 17094
+MD5Sum: 06467a46298fe5a5458dc4319fefc6b7
+SHA256sum: 8a071528be8dde086c37b18d02fd1d3f553bc979ed3decef13412feb2d71b8cb
+
+Package: libmenu-cache-3
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgio-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libmenu-cache.so.3
+Filename: libmenu-cache-3_2025.02.1-1_riscv64.ipk
+Size: 14136
+MD5Sum: 39abd0cc33563175b67c5e2190731091
+SHA256sum: 09fc46dfa84a515920bb36f62e23b4844a9a1cb19468c336e65a02e5245abed9
+
+Package: libmenuw-6
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libncursesw-6 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libmenuw.so.6
+Filename: libmenuw-6_2025.02.1-1_riscv64.ipk
+Size: 15188
+MD5Sum: dfd6f0a4037e00c65bf2b46af9235ab8
+SHA256sum: 9c2ffeea65df10bad8323c5d9a0c54656d5e3075db24479a773bbaa234b8322c
+
+Package: libmgba
+Version: 0.10.5-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libepoxy-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: mGBA emulation-core runtime library for ABI-matched TDVP K230 applications
+Filename: libmgba_0.10.5-1_riscv64.ipk
+Size: 429352
+MD5Sum: c9b37db649b0f452b475c5151b21e942
+SHA256sum: 3219434bfcdd2aedbf80a20e75adb893f58ea258f7b1ed7ff62914999029a10b
+
+Package: libmicrohttpd-12
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libmicrohttpd.so.12
+Filename: libmicrohttpd-12_2025.02.1-1_riscv64.ipk
+Size: 110372
+MD5Sum: d68469d54cb0815f541d877d9cbbf1e4
+SHA256sum: dca5c23c5935c62393b128e0084c0042b24bd2d920a9d1e22dd7705f48e01f14
+
+Package: libmount-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libblkid-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libmount.so.1
+Filename: libmount-1_2025.02.1-1_riscv64.ipk
+Size: 220500
+MD5Sum: 622d097a9a141a7e6c6891bfdee8ac19
+SHA256sum: 20dfd1e31d89e655dd34da19e7190dcd0b0aeb115fa92cef83ddf1cfd78337e4
+
+Package: libmpv-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libasound-2 (= 2025.02.1-1),libdrm-2 (= 2025.02.1-1),libegl-1 (= 2025.02.1-1),libavfilter-7 (= 2025.02.1-1),libswscale-5 (= 2025.02.1-1),libavformat-58 (= 2025.02.1-1),libavcodec-58 (= 2025.02.1-1),libswresample-3 (= 2025.02.1-1),libavutil-56 (= 2025.02.1-1),libgbm-1 (= 2025.02.1-1),libwayland-egl-1 (= 2025.02.1-1),libwayland-client-0 (= 2025.02.1-1),libjpeg-9 (= 2025.02.1-1),libarchive-13 (= 2025.02.1-1),libass-9 (= 2025.02.1-1),libavdevice-58 (= 2025.02.1-1),libpulse-0 (= 2025.02.1-1),libwayland-cursor-0 (= 2025.02.1-1),libxkbcommon-0 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libatomic-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libmpv.so.2
+Filename: libmpv-2_2025.02.1-1_riscv64.ipk
+Size: 761698
+MD5Sum: ad50beca0346a97600d808acc23692c0
+SHA256sum: 80fcabf70c2038ec405b999ed4d009b8f25bc5ba28eb33d80b7e8c3238195442
+
+Package: libmtdev-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libmtdev.so.1
+Filename: libmtdev-1_2025.02.1-1_riscv64.ipk
+Size: 10444
+MD5Sum: 104f4bb0393c43c7c659f538d3f7ce07
+SHA256sum: 6d0feb529ed8f6691e33661cf5631144d035c7c243b2b59ae0313c53c6cfb11d
+
+Package: libmxml-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libmxml.so.1
+Filename: libmxml-1_2025.02.1-1_riscv64.ipk
+Size: 25190
+MD5Sum: 419499a1f30e9081fa4b23ce0933e73a
+SHA256sum: cf4bb91840ea01a2c3b32e1649da3e15d033eea1e14ccba2fbd99f7114ceb312
+
+Package: libncursesw-6
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libncursesw.so.6
+Filename: libncursesw-6_2025.02.1-1_riscv64.ipk
+Size: 184644
+MD5Sum: a4c389944b9043fdbfd667c06ef2a52c
+SHA256sum: 49fa2335a44dff309a42c5387f8d88cc2cb44c263edbe4e88184d2f474b5c85b
+
+Package: libndp-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libndp.so.0
+Filename: libndp-0_2025.02.1-1_riscv64.ipk
+Size: 10410
+MD5Sum: ec00a819c6d9c3b5baa36b91648af952
+SHA256sum: 91d8168a68ee0bb99e2858bef39fd70b0bca5f8a82c7f416a9695445688f4824
+
+Package: libnettle-8
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnettle.so.8
+Filename: libnettle-8_2025.02.1-1_riscv64.ipk
+Size: 198660
+MD5Sum: a96c7e210e89f36cca23c93c0ef77f7d
+SHA256sum: ae6af8a7399085dc9849c399a31dd921b456fedc3c001896ece12947528ffcb4
+
+Package: libnl-3-200
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnl-3.so.200
+Filename: libnl-3-200_2025.02.1-1_riscv64.ipk
+Size: 57766
+MD5Sum: 3a4d8d0194d0ba08a4159191accf93da
+SHA256sum: fd743fb8c732fd7e507d00cbb9c3ac32be309cc108548bc8a050984e9bc48cd6
+
+Package: libnl-genl-3-200
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libnl-3-200 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnl-genl-3.so.200
+Filename: libnl-genl-3-200_2025.02.1-1_riscv64.ipk
+Size: 9880
+MD5Sum: 8c32bc91213ec4dd19d3584a5186c310
+SHA256sum: 1d203df2823bd67b70ddeaeb4cd26140160f91c2831d633a45db26b09de9e41e
+
+Package: libnl-idiag-3-200
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libnl-3-200 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnl-idiag-3.so.200
+Filename: libnl-idiag-3-200_2025.02.1-1_riscv64.ipk
+Size: 12608
+MD5Sum: 4810a89caceb53953881dcde6e2d4c99
+SHA256sum: b1a0179f1b87a775228a5c142b066d082a40f360f424eab2be83048052da8dc2
+
+Package: libnl-nf-3-200
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libnl-3-200 (= 2025.02.1-1),libnl-route-3-200 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnl-nf-3.so.200
+Filename: libnl-nf-3-200_2025.02.1-1_riscv64.ipk
+Size: 36582
+MD5Sum: 80399ad5a54bd5995f7556966df5c8c0
+SHA256sum: cbc20bf243c1bb35a552b9b6471ae473f56372bd5f465b6b3502e8acaacfbe43
+
+Package: libnl-route-3-200
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libnl-3-200 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnl-route-3.so.200
+Filename: libnl-route-3-200_2025.02.1-1_riscv64.ipk
+Size: 228198
+MD5Sum: f34f57ad60a5732836d213e1f5971570
+SHA256sum: ac7f93188d2b2959bf807195ebf284f3dc8917176c446249c0e34c0d181d0ca9
+
+Package: libnl-xfrm-3-200
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libnl-3-200 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnl-xfrm-3.so.200
+Filename: libnl-xfrm-3-200_2025.02.1-1_riscv64.ipk
+Size: 32082
+MD5Sum: c49e49d623acd3c57bfff865fdaa3687
+SHA256sum: 3adb506d1050a786daa324518febf5a4b3dae8527cda6cf2a88e76eac5715a94
+
+Package: libnm-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgio-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libgmodule-2.0-0 (= 2025.02.1-1),libudev-1 (= 2025.02.1-1),libgnutls-30 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnm.so.0
+Filename: libnm-0_2025.02.1-1_riscv64.ipk
+Size: 544232
+MD5Sum: 5a46834722c4b30402d078c8fe174fb6
+SHA256sum: cff94f43fd92f6c2734a563e1f925e73fc1a13f3e20fa704746030cb2336c0df
+
+Package: libnma-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgio-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libnm-0 (= 2025.02.1-1),libgtk-3-0 (= 2025.02.1-1),libgdk-3-0 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnma.so.0
+Filename: libnma-0_2025.02.1-1_riscv64.ipk
+Size: 105778
+MD5Sum: 6332eb85f4da829720a4fccfa8a9e954
+SHA256sum: ccd096f56670b3b0b555e3d240ae2dd3f6cb806ff3286ec94b8dea09367c6498
+
+Package: libnpth-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnpth.so.0
+Filename: libnpth-0_2025.02.1-1_riscv64.ipk
+Size: 6402
+MD5Sum: 8b344985faf5ee395f6cf8b33d502ae5
+SHA256sum: 06a08bdee7ef9cd4726eaad03f6c0cdd0b35978fc80e050805aba31ad3d3708f
+
+Package: libnsl-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnsl.so.1
+Filename: libnsl-1_2025.02.1-1_riscv64.ipk
+Size: 38190
+MD5Sum: fbc02b8a115f2ec6722d43f441282f5b
+SHA256sum: 7509482b9f5f1359f8dced2fc2900eb4101e6f650f48f1d41de9badad4953e7f
+
+Package: libnss-dns-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libresolv-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnss_dns.so.2
+Filename: libnss-dns-2_2025.02.1-1_riscv64.ipk
+Size: 9890
+MD5Sum: fc5232f47d0ef1676097a26dfb0956e3
+SHA256sum: 7309abf12fdda97a8ec92447def0fbb86d8cd28721161f67c64fbf99bce27c7d
+
+Package: libnss-files-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnss_files.so.2
+Filename: libnss-files-2_2025.02.1-1_riscv64.ipk
+Size: 16866
+MD5Sum: ed324daf430eb5a82578350559fea578
+SHA256sum: b203408eaf181573c786bc9b846235943b7a6e2e86b2e0a1cf3c6b4f3d53aa57
+
+Package: libnss-myhostname-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcap-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnss_myhostname.so.2
+Filename: libnss-myhostname-2_2025.02.1-1_riscv64.ipk
+Size: 95998
+MD5Sum: 6b4535bec6368dfbd7b4cbd1f43cf225
+SHA256sum: 2092d935af96a7132f7c3e768dcb40a58d1f4f0a0ce3086f677b4427a91aebcb
+
+Package: libnss-resolve-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcap-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnss_resolve.so.2
+Filename: libnss-resolve-2_2025.02.1-1_riscv64.ipk
+Size: 98598
+MD5Sum: a3ce63451692f9a978ce2863aafd3b67
+SHA256sum: 5b81848f10f251ad8cffc0e919066c227c158a0019c7d9255debaf84cf9959f7
+
+Package: libnss-systemd-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcap-2 (= 2025.02.1-1),libcrypt-2 (= 2025.02.1-1),libcrypto-3 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libnss_systemd.so.2
+Filename: libnss-systemd-2_2025.02.1-1_riscv64.ipk
+Size: 204384
+MD5Sum: 9d8d8b3c6b5a02baef0f9ae1e3414623
+SHA256sum: 634a0dfd4c922c210610a685070033124a407ee13eb595fcd35d05e2b72acb7f
+
+Package: libogg-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libogg.so.0
+Filename: libogg-0_2025.02.1-1_riscv64.ipk
+Size: 19230
+MD5Sum: 52356b6ee52dd429e593c9185d7bd2c2
+SHA256sum: 409f548de7043f090f7368367ca954f9a95c31784e1cfecd3d294ed9a40c930e
+
+Package: libopkg-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libarchive-13 (= 2025.02.1-1),libcurl-4 (= 2025.02.1-1),libgpgme-11 (= 2025.02.1-1),libgpg-error-0 (= 2025.02.1-1),libssl-3 (= 2025.02.1-1),libcrypto-3 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libopkg.so.1
+Filename: libopkg-1_2025.02.1-1_riscv64.ipk
+Size: 103806
+MD5Sum: c7e3d601b20293bb2add88bc4a0826ff
+SHA256sum: 5c3d8a8d14a27f1a206d1021eb820b3323776be91d128bd4de5ae76f589878ec
+
+Package: libp11-kit-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libffi-8 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libp11-kit.so.0
+Filename: libp11-kit-0_2025.02.1-1_riscv64.ipk
+Size: 378358
+MD5Sum: b133cf78cc3abe4911a5962b69b127f2
+SHA256sum: b431c13194edbf935a15901cd851fd985fc2ddb328ad5c4a55d0edf1f4c54354
+
+Package: libpam-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libatomic-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpam.so.0
+Filename: libpam-0_2025.02.1-1_riscv64.ipk
+Size: 26038
+MD5Sum: cc4af7b42f4262f2b092eaa5939fd449
+SHA256sum: ad1b7269ad03608d40066211b5cef3bccb72c983f624b6ec6733139e186c7d7b
+
+Package: libpam-misc-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libpam-0 (= 2025.02.1-1),libatomic-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpam_misc.so.0
+Filename: libpam-misc-0_2025.02.1-1_riscv64.ipk
+Size: 6362
+MD5Sum: 3b39f8186d735fe6d716bb9ae7eab936
+SHA256sum: dccb5769fc88ffa70c3e9e8919dc567c57f851c9c9f0f438c502d3c9dfc426a6
+
+Package: libpamc-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libatomic-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpamc.so.0
+Filename: libpamc-0_2025.02.1-1_riscv64.ipk
+Size: 7846
+MD5Sum: 7e498a1e3777e6efc4372cbf4e6ab893
+SHA256sum: 404f0a612d7045a35fc4f179e261e064d072ae6384fac30eeaccabd159c94ad5
+
+Package: libpanelw-6
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libncursesw-6 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpanelw.so.6
+Filename: libpanelw-6_2025.02.1-1_riscv64.ipk
+Size: 5166
+MD5Sum: ae77574b62868e475d44616e811e53de
+SHA256sum: 9fac64bbdbf833adfbd447d4c018b709044bca129e1fc3194c83eacf54922165
+
+Package: libpango-1.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1),libfribidi-0 (= 2025.02.1-1),libharfbuzz-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpango-1.0.so.0
+Filename: libpango-1.0-0_2025.02.1-1_riscv64.ipk
+Size: 197930
+MD5Sum: ec152472356a20046a1b563e5b255e5c
+SHA256sum: 4a2cc979c3cf4fab8af8fb093b59e24a100fd48dd51846bf21f193312569c94a
+
+Package: libpangocairo-1.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libpango-1.0-0 (= 2025.02.1-1),libpangoft2-1.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libharfbuzz-0 (= 2025.02.1-1),libfontconfig-1 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpangocairo-1.0.so.0
+Filename: libpangocairo-1.0-0_2025.02.1-1_riscv64.ipk
+Size: 22682
+MD5Sum: 6747c007880a3f9977d64cd909ca3a3a
+SHA256sum: 09393831949866b841549c7d6a1ba1553b3660230e8781cbfd7b76a8feecb627
+
+Package: libpangoft2-1.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libpango-1.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1),libharfbuzz-0 (= 2025.02.1-1),libfontconfig-1 (= 2025.02.1-1),libfreetype-6 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpangoft2-1.0.so.0
+Filename: libpangoft2-1.0-0_2025.02.1-1_riscv64.ipk
+Size: 38496
+MD5Sum: 30a1c54b78bc8f2d7a692871c2c0264d
+SHA256sum: a4da000b4414c3478734b10102d8a08b5a0923c3d173d228ac1529da7fffeb3b
+
+Package: libpangomm-1.4-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglibmm-2.4-1 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libsigc-2.0-0 (= 2025.02.1-1),libcairomm-1.0-1 (= 2025.02.1-1),libpangocairo-1.0-0 (= 2025.02.1-1),libpango-1.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpangomm-1.4.so.1
+Filename: libpangomm-1.4-1_2025.02.1-1_riscv64.ipk
+Size: 54932
+MD5Sum: beef4f4a2334f234b3b9a58f71cd7cf5
+SHA256sum: 5227b17788c42ff300bac54de2a2e4f156fb333a5e9899215917a85f41a83722
+
+Package: libpcre2-8-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpcre2-8.so.0
+Filename: libpcre2-8-0_2025.02.1-1_riscv64.ipk
+Size: 158982
+MD5Sum: 3c91e57490ad62803dc568defdcd8ede
+SHA256sum: fcd53f43fd1d0ef0720dc9adf3eb300c162749a1079b6bd2c457b0aa916e5b2a
+
+Package: libpcre2-posix-3
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libpcre2-8-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpcre2-posix.so.3
+Filename: libpcre2-posix-3_2025.02.1-1_riscv64.ipk
+Size: 3990
+MD5Sum: 96d63b4131ed9578ba261410a465d3d8
+SHA256sum: 5b17715013d074bcd5b12be54452570e98b482d4d909c9c2c6b86fee7092a60c
+
+Package: libpixman-1-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpixman-1.so.0
+Filename: libpixman-1-0_2025.02.1-1_riscv64.ipk
+Size: 214106
+MD5Sum: cb0aa5467923cfd511bf6563fff2bbc1
+SHA256sum: e87f004d7b50ade27b19b6b692c577b4e75476fd9388c6eb626993078a00d274
+
+Package: libpng16-16
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libz-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpng16.so.16
+Filename: libpng16-16_2025.02.1-1_riscv64.ipk
+Size: 115874
+MD5Sum: 92c2a1381862f5617ec2a212ef0b173a
+SHA256sum: d9a0168eb0fa203b5193256bb9d199d276e125b43c4f36c7c3f8a4b2884a8e3d
+
+Package: libpopt-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpopt.so.0
+Filename: libpopt-0_2025.02.1-1_riscv64.ipk
+Size: 24734
+MD5Sum: a85227dfe5b232e886c52257db4ce218
+SHA256sum: 7c520e394aa08edcfe8e1495f251802b19fefc72dbe2f28ef313a6190caf1e95
+
+Package: libproc2-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libsystemd-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libproc2.so.1
+Filename: libproc2-1_2025.02.1-1_riscv64.ipk
+Size: 64598
+MD5Sum: 3d86327fbdd8b369dabcdefc07778e5c
+SHA256sum: f4a5a4a7d2c6cef1763712c3101745fdb82da7a4911030d13ec445026171ace5
+
+Package: libpsx-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpsx.so.2
+Filename: libpsx-2_2025.02.1-1_riscv64.ipk
+Size: 6370
+MD5Sum: 618b16e56c344f729a140d061bac0a73
+SHA256sum: 6f63f61bb80905e5d541e050e394a3179fdfcde0ae503adf8da2c61460fa9062
+
+Package: libpulse-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),pulse-modules (= 2025.02.1-1),libdbus-1-3 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpulse.so.0
+Filename: libpulse-0_2025.02.1-1_riscv64.ipk
+Size: 121110
+MD5Sum: 87172100fb1eee06394fe05d311c7109
+SHA256sum: 595b31d16ba35d9550cb113fa008df1e1b9b1f045f6ec733f33c9d63b9f82d9a
+
+Package: libpulse-mainloop-glib-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libpulse-0 (= 2025.02.1-1),pulse-modules (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpulse-mainloop-glib.so.0
+Filename: libpulse-mainloop-glib-0_2025.02.1-1_riscv64.ipk
+Size: 6830
+MD5Sum: ca82f774474a343a34ea64c0fd87ac9a
+SHA256sum: 71947a2c52723f11adcfcf22e65b854f3616d8a8fa9ed933c28a50b754eb76d2
+
+Package: libpulse-simple-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libpulse-0 (= 2025.02.1-1),pulse-modules (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libpulse-simple.so.0
+Filename: libpulse-simple-0_2025.02.1-1_riscv64.ipk
+Size: 6532
+MD5Sum: 1cee3e2beced25602f5e7bd21293eba0
+SHA256sum: 2a4e25d01fd99389e07381caed70868bb55b7418f8333584940959847774f367
+
+Package: libreadline-8
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libncursesw-6 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libreadline.so.8
+Filename: libreadline-8_2025.02.1-1_riscv64.ipk
+Size: 148620
+MD5Sum: 5f7102d50c18f27854e01ff7a2c70c9c
+SHA256sum: 3b70e3ef8992082183286fedcda788707cb518b14094c59734eabe3a14df4cfa
+
+Package: libresolv-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libresolv.so.2
+Filename: libresolv-2_2025.02.1-1_riscv64.ipk
+Size: 37600
+MD5Sum: 58a0e4ac7bb8761d65cfea49d6b6d84a
+SHA256sum: 4aa9185185ee128e786f74085b97916f6ca97b08a56a7c0cdec1e4a4a893fb60
+
+Package: librsvg-2-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcairo-gobject-2 (= 2025.02.1-1),libgdk-pixbuf-2.0-0 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1),libxml2-2 (= 2025.02.1-1),libpangocairo-1.0-0 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1),libpangoft2-1.0-0 (= 2025.02.1-1),libpango-1.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libharfbuzz-0 (= 2025.02.1-1),libfontconfig-1 (= 2025.02.1-1),libfreetype-6 (= 2025.02.1-1),libpng16-16 (= 2025.02.1-1),libz-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library librsvg-2.so.2
+Filename: librsvg-2-2_2025.02.1-1_riscv64.ipk
+Size: 2855180
+MD5Sum: 547d136cd44437fc1eba11fc138e04fb
+SHA256sum: e4aa2d5ebc7ed89f3a8b66f91303e9ca1b27f9503f5118d9b9959f29771d1630
+
+Package: libseat-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libseat.so.1
+Filename: libseat-1_2025.02.1-1_riscv64.ipk
+Size: 12106
+MD5Sum: 404d5e9a85c2f9d57f82c85332d1c348
+SHA256sum: 23aa689aab8cafd86821ddc0343a0724cf2de76fcc8f8aa1561cf5e23a39190f
+
+Package: libsecret-1-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglib-2.0-0 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libgcrypt-20 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libsecret-1.so.0
+Filename: libsecret-1-0_2025.02.1-1_riscv64.ipk
+Size: 128304
+MD5Sum: abbf633fe0e983e5c87907604e01921c
+SHA256sum: 68fa5f8d159dd84930a953dea2fc8542018c9dc36032cfe6abf409b64c537be3
+
+Package: libsigc-2.0-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libsigc-2.0.so.0
+Filename: libsigc-2.0-0_2025.02.1-1_riscv64.ipk
+Size: 9314
+MD5Sum: 7ffa3caa1a75c37bc3ffc5765afa1bc8
+SHA256sum: 5ff9076a0f786821c05d5fb41b89967085992db20ef4502f2ebd85a14dfd8714
+
+Package: libsmartcols-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libsmartcols.so.1
+Filename: libsmartcols-1_2025.02.1-1_riscv64.ipk
+Size: 149012
+MD5Sum: b6774c52e514669a77c98e84827031f0
+SHA256sum: d91e1348d57adda8eb658032e57c3a50d87e501d93ed53e326fe5663fee2b490
+
+Package: libsndfile-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libsndfile.so.1
+Filename: libsndfile-1_2025.02.1-1_riscv64.ipk
+Size: 213626
+MD5Sum: 570a474719e35eaf2e7d09925a40c8cf
+SHA256sum: 15a0c7414e895d1305a9c21ce55318660da6f7aa535c68820ff4d1231a7b8aa0
+
+Package: libss-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcom-err-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libss.so.2
+Filename: libss-2_2025.02.1-1_riscv64.ipk
+Size: 10996
+MD5Sum: d77ba17f30008d3a6f339284e30ca98c
+SHA256sum: 874830c68ce3019c215d8dd5a1b04a362fd1bb7855e21f32d53b91d8c8c50ccd
+
+Package: libssl-3
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcrypto-3 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libssl.so.3
+Filename: libssl-3_2025.02.1-1_riscv64.ipk
+Size: 423376
+MD5Sum: 15e51b9bdf1bab9b4279e647c351023d
+SHA256sum: b959099ae4053258188eb1d5a197fc1e2c66a3a0b202d8d97857aecaf91c8158
+
+Package: libswresample-3
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libavutil-56 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libswresample.so.3
+Filename: libswresample-3_2025.02.1-1_riscv64.ipk
+Size: 42040
+MD5Sum: 5a4a2b7c106291f9ce08cfea4ee9d571
+SHA256sum: b4b2d7b89d8fcff730e14af5b0fd9e1a56465fc8a337f6985ec3b1831fb5297a
+
+Package: libswscale-5
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libavutil-56 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libswscale.so.5
+Filename: libswscale-5_2025.02.1-1_riscv64.ipk
+Size: 162186
+MD5Sum: 6a90462a4cffa71eac276da3f4e711b2
+SHA256sum: 84222f95bf2631c6296918d8664808cd57860543ecbd4d8167d70c3ba6396fac
+
+Package: libsystemd-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcap-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libsystemd.so.0
+Filename: libsystemd-0_2025.02.1-1_riscv64.ipk
+Size: 458534
+MD5Sum: 3f35624e41ee8b91985997280e8a6e52
+SHA256sum: 56ac3f2521108da1f4c2c13f7edde5ff58d0d0373b8006069a58781ff6e14e7f
+
+Package: libtasn1-6
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libtasn1.so.6
+Filename: libtasn1-6_2025.02.1-1_riscv64.ipk
+Size: 40056
+MD5Sum: ed39df51509f3665eb0413149e5a28d7
+SHA256sum: 0c957c21f2a924e86400c3948f977001cabc22d45a99d9500781ec850384f7b2
+
+Package: libubootenv-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libz-1 (= 2025.02.1-1),libyaml-0-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libubootenv.so.0
+Filename: libubootenv-0_2025.02.1-1_riscv64.ipk
+Size: 12266
+MD5Sum: 66822354339cc5df0764a924283bf464
+SHA256sum: 71a056ac72fdf64ce5a41f7ae8ebeeddf4b1f239d49c7dfccc5d3fe47bb8e438
+
+Package: libudev-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcap-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libudev.so.1
+Filename: libudev-1_2025.02.1-1_riscv64.ipk
+Size: 137490
+MD5Sum: 4825e8c46f0d238a6307e5ffcdbf9397
+SHA256sum: d49247ad18648ce8a314b4f9e1c98a7418aef31239e0628d9e8434317a3f1ea0
+
+Package: libunistring-5
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libunistring.so.5
+Filename: libunistring-5_2025.02.1-1_riscv64.ipk
+Size: 788088
+MD5Sum: 148bd59c3f79b7e1fd0cc23d49335e8d
+SHA256sum: 1834c154c0cae2b7a7db4c908f09bff68b5154e08193666945eed739437c5478
+
+Package: libutf8proc-3
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libutf8proc.so.3
+Filename: libutf8proc-3_2025.02.1-1_riscv64.ipk
+Size: 81416
+MD5Sum: c054505da7dfd962f79e6e1010f87629
+SHA256sum: 38840ed8b6eee50db19af804ed8ad3521dfa1a62254739b12d05eaa89b02590b
+
+Package: libutil-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libutil.so.1
+Filename: libutil-1_2025.02.1-1_riscv64.ipk
+Size: 4214
+MD5Sum: d705a0d8dad39787fdddf27f02c274fc
+SHA256sum: 2de193d914d103ce6a5127a387fcdb46a46803d543183ac6196e8afff98cb4f9
+
+Package: libuuid-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libuuid.so.1
+Filename: libuuid-1_2025.02.1-1_riscv64.ipk
+Size: 18880
+MD5Sum: 0540557e3eba412d345b98d0dd2aa693
+SHA256sum: 6a0f127231a5542e14a1b4d8a0088418dba599ecbda0d661a8bbead05828faf5
+
+Package: libv4l1-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libv4l2-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libv4l1.so.0
+Filename: libv4l1-0_2025.02.1-1_riscv64.ipk
+Size: 11516
+MD5Sum: caf6658e7b1f2acf898330b2c8a8e137
+SHA256sum: 8f6fe29f14ebfdd5d6a34d77227e0e7b2d4ce68ef18f2623c8705f2878f32946
+
+Package: libv4l2-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libv4lconvert-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libv4l2.so.0
+Filename: libv4l2-0_2025.02.1-1_riscv64.ipk
+Size: 18942
+MD5Sum: 889b19df7c91e5a1c8ef57a340829448
+SHA256sum: 17b9ae19c993d2e34088aaa56494287018c190846c6ff17c3f269053d04801e2
+
+Package: libv4l2-drm++
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libv4l2-drm (= 2025.02.1-1),libdisplay (= 2025.02.1-1),libdrm-2 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libv4l2-drm++.so
+Filename: libv4l2-drm++_2025.02.1-1_riscv64.ipk
+Size: 9886
+MD5Sum: a92ed733faf8c6c33028bcbed679291b
+SHA256sum: 72c7d6097f79bf09bf5e5ad163f225d8c92e9ec37066af759f91991516ed3aee
+
+Package: libv4l2-drm
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libdisplay (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libv4l2-drm.so
+Filename: libv4l2-drm_2025.02.1-1_riscv64.ipk
+Size: 8964
+MD5Sum: 4e712086daabb3901ff3cd2ba3d6042f
+SHA256sum: 4df6efe0b2e9063a27f5da0be7a892e290b4ef219c1f776d77919c8e23a16fd7
+
+Package: libv4l2rds-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libv4l2rds.so.0
+Filename: libv4l2rds-0_2025.02.1-1_riscv64.ipk
+Size: 11134
+MD5Sum: 251d4a6cfcbbf47962fea525971a2541
+SHA256sum: 86cc1a2c66e7775641107b90bd75d53ab759df8bb42d5f155172fe396e9422bc
+
+Package: libv4lconvert-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libjpeg-9 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libv4lconvert.so.0
+Filename: libv4lconvert-0_2025.02.1-1_riscv64.ipk
+Size: 71638
+MD5Sum: ac832d0c7807675d0aa82d82c01ed8b4
+SHA256sum: 1c079a962c61bbbb12e641ad7f1ead37600f030e9af2c4cad43906fe696b06ef
+
+Package: libvorbis-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libogg-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libvorbis.so.0
+Filename: libvorbis-0_2025.02.1-1_riscv64.ipk
+Size: 99218
+MD5Sum: ec527e4115427bc3ad4a2da5315b0d28
+SHA256sum: b7b8ed6b3a5a26e3d8092994fb27e35e78e1908559afa64909848247208c0238
+
+Package: libvorbisenc-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libvorbis-0 (= 2025.02.1-1),libogg-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libvorbisenc.so.2
+Filename: libvorbisenc-2_2025.02.1-1_riscv64.ipk
+Size: 90006
+MD5Sum: 14c6415e35d93c2767171c374c6229a3
+SHA256sum: 0d680f25dd27abcb1ee38e88c76979af09047f97dc5db8dc7237be0dbd242bda
+
+Package: libvorbisfile-3
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libvorbis-0 (= 2025.02.1-1),libogg-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libvorbisfile.so.3
+Filename: libvorbisfile-3_2025.02.1-1_riscv64.ipk
+Size: 15750
+MD5Sum: 877b8e35d02f43a625b95a039d4b6fce
+SHA256sum: 4114b226e1e83b8d1571db5ebc2854211069c91ead019980717a4e5377c4e296
+
+Package: libvvcam
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libvvcam.so
+Filename: libvvcam_2025.02.1-1_riscv64.ipk
+Size: 14232
+MD5Sum: c38388b8e4e40eac310780117a911130
+SHA256sum: 2d9f669c7ef0b0aa9133e43bff8791f3f70e0ba3495f311d95787c9a5175d4c6
+
+Package: libwayland-client-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libffi-8 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libwayland-client.so.0
+Filename: libwayland-client-0_2025.02.1-1_riscv64.ipk
+Size: 26598
+MD5Sum: 05ec9901d09dd5f9a82e33c987bc8c12
+SHA256sum: bcd90fad5f0e32a4256dd9aa2a46d116a6a31d917b6b74014a0af696b5599c45
+
+Package: libwayland-cursor-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libwayland-client-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libwayland-cursor.so.0
+Filename: libwayland-cursor-0_2025.02.1-1_riscv64.ipk
+Size: 8850
+MD5Sum: 4c86d89052bab45469c5fbc2900e531a
+SHA256sum: 7ae817130ed7a73cb0a68a0380c9699ef8310652e49ef7b54e8d232e998655af
+
+Package: libwayland-egl-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libwayland-egl.so.1
+Filename: libwayland-egl-1_2025.02.1-1_riscv64.ipk
+Size: 2214
+MD5Sum: 41feb5cd2698d31a8c250e1201189e0b
+SHA256sum: b2db953dbd34f52f8c2b081f5e5fc4769c37d013380a7839c667f5a5d481c50a
+
+Package: libwayland-server-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libffi-8 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libwayland-server.so.0
+Filename: libwayland-server-0_2025.02.1-1_riscv64.ipk
+Size: 35384
+MD5Sum: f7daa95bcbb96b2390a6d16b4bc9a213
+SHA256sum: 607873dbfebc99238e292c957a86fbf2f4ba8fa7407d019767a176555803c554
+
+Package: libwlroots-0.18
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libwayland-server-0 (= 2025.02.1-1),libdrm-2 (= 2025.02.1-1),libxkbcommon-0 (= 2025.02.1-1),libpixman-1-0 (= 2025.02.1-1),libegl-1 (= 2025.02.1-1),libgbm-1 (= 2025.02.1-1),libglesv2-2 (= 2025.02.1-1),libudev-1 (= 2025.02.1-1),libseat-1 (= 2025.02.1-1),libdisplay-info-2 (= 2025.02.1-1),libinput-10 (= 2025.02.1-1),libwayland-client-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libwlroots-0.18.so
+Filename: libwlroots-0.18_2025.02.1-1_riscv64.ipk
+Size: 366942
+MD5Sum: 32401f25d9384e120c80f2f2dbe3bd80
+SHA256sum: 393544e477ddeabbecc8b7344d7c8566fa22ceab606a8b9801426e610712a097
+
+Package: libxkbcommon-0
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libxkbcommon.so.0
+Filename: libxkbcommon-0_2025.02.1-1_riscv64.ipk
+Size: 133312
+MD5Sum: 89e1eb2f026e62b6bad3d800c2f6fd6a
+SHA256sum: 7485512a4622786dbb7884a29abae28a5fe3b792084524b3f8822d6db035d35f
+
+Package: libxml2-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libz-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libxml2.so.2
+Filename: libxml2-2_2025.02.1-1_riscv64.ipk
+Size: 597904
+MD5Sum: 00c1742cecb7ed8fa48b8686ee99bc19
+SHA256sum: 07f8950b0afa25ff5d18e2b2220e6f2d4089d3e1c22807bf9721b9a2865e5df5
+
+Package: libyaml-0-2
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libyaml-0.so.2
+Filename: libyaml-0-2_2025.02.1-1_riscv64.ipk
+Size: 58696
+MD5Sum: 7da61248121133ab0256f7cd6840c7c6
+SHA256sum: 344eaa955667576189438f2a6b659fc03c3e2eb1bc9621ec2d9754786c71da59
+
+Package: libz-1
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP K230 runtime library libz.so.1
+Filename: libz-1_2025.02.1-1_riscv64.ipk
+Size: 49954
+MD5Sum: c705e7b85cc9ddcaa23161765accd13e
+SHA256sum: 902feb401d880ea206a09c7b0054a364ad0c97ca93d69dd167aa35ae8298b18f
+
+Package: mesa-dri-drivers
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglapi-0 (= 2025.02.1-1),libdrm-2 (= 2025.02.1-1),libexpat-1 (= 2025.02.1-1),libz-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: Mesa DRI software renderer modules
+Filename: mesa-dri-drivers_2025.02.1-1_riscv64.ipk
+Size: 3598714
+MD5Sum: c7afd3fd8ed0eb70e0e29184d8910d6e
+SHA256sum: 28d0cae56748a9671927d46856be17d116973c74c21226f65ec6c6ce7fa7147b
+
+Package: openssl-modules
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libcrypto-3 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: OpenSSL provider modules
+Filename: openssl-modules_2025.02.1-1_riscv64.ipk
+Size: 42070
+MD5Sum: 645b6b82c46cddd9774ba348df26f6ef
+SHA256sum: 29f3df202ac1387f7558e2d02849fabb6dc12ec9298b8cb8724536e8c0ff941a
+
+Package: pulse-modules
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libsndfile-1 (= 2025.02.1-1),libdbus-1-3 (= 2025.02.1-1),libsystemd-0 (= 2025.02.1-1),libltdl-7 (= 2025.02.1-1),libpulse-0 (= 2025.02.1-1),libasound-2 (= 2025.02.1-1),libudev-1 (= 2025.02.1-1),libcrypto-3 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: PulseAudio runtime modules and default configuration
+Filename: pulse-modules_2025.02.1-1_riscv64.ipk
+Size: 1221414
+MD5Sum: 54281835e9a39218c01c8a0ee112b608
+SHA256sum: 3f920d8051d73392195df58566867742de3c19e338077c2eff1c18be4157785b
+
+Package: sdl2-ttf
+Version: 2.22.0-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),sdl2 (= 2.30.11-1),libfreetype-6 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: SDL_ttf runtime library for ABI-matched TDVP K230 applications
+Filename: sdl2-ttf_2.22.0-1_riscv64.ipk
+Size: 31916
+MD5Sum: 296c24512a943ce940fcc75c3fc6e87e
+SHA256sum: 75cf6b72cf922fd900bd523703a854f155c60be3aa9fb81a5177a829f5a1da4d
+
+Package: sdl2
+Version: 2.30.11-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: SDL 2 runtime library for ABI-matched TDVP K230 applications
+Filename: sdl2_2.30.11-1_riscv64.ipk
+Size: 593784
+MD5Sum: 354c86cd68c40ea2b0f258fd3d4c0b8b
+SHA256sum: a9668084f0ffb24cd5c63bec7732e2a72ec249d5fd7cc9be77f45869fe898cce
+
+Package: shared-mime-info
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: Shared MIME database
+Filename: shared-mime-info_2025.02.1-1_riscv64.ipk
+Size: 40932
+MD5Sum: 4691224a7410f7d20effdf6e552b9c01
+SHA256sum: 4cd996cddb79842ba8d2a051c15776b279a20a470ee6b165d5d6a8ea64acfc8f
+
+Package: tdvp-gba
+Version: 0.2.0-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),sdl2 (= 2.30.11-1),sdl2-ttf (= 2.22.0-1),libmgba (= 0.10.5-1),libwayland-client-0 (= 2025.02.1-1),libffi-8 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: applications
+Priority: optional
+Description: Game Boy Advance emulator frontend for the TDVP K230 landscape desktop
+Filename: tdvp-gba_0.2.0-1_riscv64.ipk
+Size: 103294
+MD5Sum: d4386ef32395ebdf8db8926307f5b4a4
+SHA256sum: 770a16e059ebc73acb12cf3b6af7c8b7e0d619b8480a07841ec8c2a025d20d47
+
+Package: tdvp-gdk-committed-compat
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libglib-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP wf-panel-pi GTK committed-signal compatibility runtime
+Filename: tdvp-gdk-committed-compat_2025.02.1-1_riscv64.ipk
+Size: 3204
+MD5Sum: 2845b016ed2f112e1d2de0602b1ed2a5
+SHA256sum: a8e287b9a0bc787769531ffd8c869b5698028051da6a2aa6b8a383025bf48409
+
+Package: tdvp-hardware-runtime
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: TDVP hardware state service dynamic runtime
+Filename: tdvp-hardware-runtime_2025.02.1-1_riscv64.ipk
+Size: 38858
+MD5Sum: 1f414610315d8ec2384d9e6789580b2f
+SHA256sum: 7ec30b35d53b667daaa63a4d0a0fcb443daa5805ffc37bed112c8eddaaa6c51e
+
+Package: tdvp-mpv
+Version: 0.35.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),ca-certificates (= 2025.02.1-1),tdvp-runtime-data (= 2025.02.1-1),libasound-2 (= 2025.02.1-1),libdrm-2 (= 2025.02.1-1),libegl-1 (= 2025.02.1-1),libavfilter-7 (= 2025.02.1-1),libswscale-5 (= 2025.02.1-1),libavformat-58 (= 2025.02.1-1),libavcodec-58 (= 2025.02.1-1),libswresample-3 (= 2025.02.1-1),libavutil-56 (= 2025.02.1-1),libgbm-1 (= 2025.02.1-1),libwayland-egl-1 (= 2025.02.1-1),libwayland-client-0 (= 2025.02.1-1),libjpeg-9 (= 2025.02.1-1),libarchive-13 (= 2025.02.1-1),libass-9 (= 2025.02.1-1),libavdevice-58 (= 2025.02.1-1),libpulse-0 (= 2025.02.1-1),libwayland-cursor-0 (= 2025.02.1-1),libxkbcommon-0 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libatomic-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: applications
+Priority: optional
+Description: MPV media player leaf application for the composable TDVP K230 feed
+Filename: tdvp-mpv_0.35.1-1_riscv64.ipk
+Size: 771926
+MD5Sum: 304084be225b185d698d0cb2cea45e55
+SHA256sum: 8711753269ae2b9b29fc01272b74c202fdda36b0c9ad09205156d5a535ca70f7
+
+Package: tdvp-netsurf
+Version: 3.10-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),glib-networking (= 2025.02.1-1),ca-certificates (= 2025.02.1-1),gtk3-data (= 2025.02.1-1),gdk-pixbuf-loaders (= 2025.02.1-1),shared-mime-info (= 2025.02.1-1),adwaita-icon-theme (= 2025.02.1-1),libjpeg-9 (= 2025.02.1-1),libexpat-1 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libcurl-4 (= 2025.02.1-1),libssl-3 (= 2025.02.1-1),libcrypto-3 (= 2025.02.1-1),libpng16-16 (= 2025.02.1-1),librsvg-2-2 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1),libgdk-pixbuf-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1),libgtk-3-0 (= 2025.02.1-1),libgdk-3-0 (= 2025.02.1-1),libpangocairo-1.0-0 (= 2025.02.1-1),libpango-1.0-0 (= 2025.02.1-1),libharfbuzz-0 (= 2025.02.1-1),libatk-1.0-0 (= 2025.02.1-1),libcairo-gobject-2 (= 2025.02.1-1),libgthread-2.0-0 (= 2025.02.1-1),libgmodule-2.0-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: applications
+Priority: optional
+Description: NetSurf GTK3 web browser for the ABI-matched TDVP K230 desktop
+Filename: tdvp-netsurf_3.10-1_riscv64.ipk
+Size: 2284870
+MD5Sum: c2c4171fbddc68ad3cea63971da80d82
+SHA256sum: cc81f57d105d7c531efa0cafa66a7c3cd921d7fd4047ef1349ca5339a4bb0d5c
+
+Package: tdvp-runtime-data
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: Remaining non-ABI userland data below usr/share
+Filename: tdvp-runtime-data_2025.02.1-1_riscv64.ipk
+Size: 11664194
+MD5Sum: 9a4cefbf5cbe111dc4572a8fb1259607
+SHA256sum: aefefa01efe397769483de2c4927596f40376af693cdc4442fc97983df91c2a4
+
+Package: tdvp-runtime-libexec
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgio-2.0-0 (= 2025.02.1-1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libatspi-0 (= 2025.02.1-1),libdbus-1-3 (= 2025.02.1-1),libsystemd-0 (= 2025.02.1-1),libexpat-1 (= 2025.02.1-1),libassuan-0 (= 2025.02.1-1),libgcrypt-20 (= 2025.02.1-1),libgpg-error-0 (= 2025.02.1-1),libinput-10 (= 2025.02.1-1),libudev-1 (= 2025.02.1-1),libevdev-2 (= 2025.02.1-1),libgtk-3-0 (= 2025.02.1-1),libgdk-3-0 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1),libwayland-client-0 (= 2025.02.1-1),libutil-1 (= 2025.02.1-1),libfm-extra-4 (= 2025.02.1-1),libgthread-2.0-0 (= 2025.02.1-1),libnm-0 (= 2025.02.1-1),libgmodule-2.0-0 (= 2025.02.1-1),libgnutls-30 (= 2025.02.1-1),libp11-kit-0 (= 2025.02.1-1),libffi-8 (= 2025.02.1-1),libksba-8 (= 2025.02.1-1),libnpth-0 (= 2025.02.1-1),libssl-3 (= 2025.02.1-1),libcrypto-3 (= 2025.02.1-1),libresolv-2 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libcrypt-2 (= 2025.02.1-1),libpam-0 (= 2025.02.1-1),libatomic-1 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: Remaining non-ABI runtime modules and helpers below usr/libexec
+Filename: tdvp-runtime-libexec_2025.02.1-1_riscv64.ipk
+Size: 2584980
+MD5Sum: a2bbda125ac2d07fa7b0f33767515ed0
+SHA256sum: 8d92ca137e4eed1e5ab415b328c62e8a753b7a147fb733854e340a40af790448
+
+Package: tdvp-runtime-modules
+Version: 2025.02.1-1
+Architecture: riscv64
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1),libgobject-2.0-0 (= 2025.02.1-1),libglib-2.0-0 (= 2025.02.1-1),libgio-2.0-0 (= 2025.02.1-1),libz-1 (= 2025.02.1-1),libatk-bridge-2.0-0 (= 2025.02.1-1),libgmodule-2.0-0 (= 2025.02.1-1),libasound-2 (= 2025.02.1-1),libcanberra-0 (= 2025.02.1-1),libvorbisfile-3 (= 2025.02.1-1),libvorbis-0 (= 2025.02.1-1),libogg-0 (= 2025.02.1-1),libltdl-7 (= 2025.02.1-1),libpulse-0 (= 2025.02.1-1),libgtk-3-0 (= 2025.02.1-1),libgdk-3-0 (= 2025.02.1-1),libpangocairo-1.0-0 (= 2025.02.1-1),libatk-1.0-0 (= 2025.02.1-1),libcairo-gobject-2 (= 2025.02.1-1),libgdk-pixbuf-2.0-0 (= 2025.02.1-1),libpango-1.0-0 (= 2025.02.1-1),libharfbuzz-0 (= 2025.02.1-1),libcairo-2 (= 2025.02.1-1),libfm-4 (= 2025.02.1-1),libgthread-2.0-0 (= 2025.02.1-1),libmenu-cache-3 (= 2025.02.1-1),libfm-gtk3-4 (= 2025.02.1-1),libfm-extra-4 (= 2025.02.1-1),libv4l1-0 (= 2025.02.1-1),libv4l2-0 (= 2025.02.1-1),libffi-8 (= 2025.02.1-1),libtasn1-6 (= 2025.02.1-1),libpam-0 (= 2025.02.1-1),libatomic-1 (= 2025.02.1-1),libcrypt-2 (= 2025.02.1-1),libcap-2 (= 2025.02.1-1),libcrypto-3 (= 2025.02.1-1),libmount-1 (= 2025.02.1-1),libblkid-1 (= 2025.02.1-1),libgcrypt-20 (= 2025.02.1-1),libgpg-error-0 (= 2025.02.1-1),libssl-3 (= 2025.02.1-1),libudev-1 (= 2025.02.1-1),libevdev-2 (= 2025.02.1-1),libgtkmm-3.0-1 (= 2025.02.1-1),libglibmm-2.4-1 (= 2025.02.1-1),libsigc-2.0-0 (= 2025.02.1-1),libnm-0 (= 2025.02.1-1),libnma-0 (= 2025.02.1-1),libsecret-1-0 (= 2025.02.1-1),libwayland-client-0 (= 2025.02.1-1)
+Maintainer: TDVP Device Team <devices@example.invalid>
+Section: libraries
+Priority: optional
+Description: Remaining non-ABI runtime modules below usr/lib
+Filename: tdvp-runtime-modules_2025.02.1-1_riscv64.ipk
+Size: 17773538
+MD5Sum: 25452eec68e5c3dac7c84eaefcea4d12
+SHA256sum: 05e377a24f2570d9acddfe1b28e53d0d1f8cbfeec9e4959b08fb4be9ed4547e9
+

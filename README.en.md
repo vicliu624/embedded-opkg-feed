@@ -24,11 +24,14 @@ It is not a “works on every RISC-V device” repository. On embedded systems, 
 
 The intended model is the same division of responsibility used by a normal
 Linux distribution: the base image is a small, hardware-specific bootstrap and
-ABI seed; the feed is the expandable userland catalogue. From r4, **every
+ABI seed; the feed is the expandable userland catalogue. From r6, **every
 dynamic runtime SONAME, plugin, and private runtime helper other than the
 dynamic loaders, glibc, `libgcc_s`, and `libstdc++` has exactly one
 independently installable IPK owner in the same ABI release.** The audit covers
-both `/usr/lib` and `/usr/libexec`. Common libraries, CLI tools, desktop applications, and
+`/usr/lib`, `/usr/libexec`, `/usr/local/lib`, and `/usr/local/libexec`; the
+local locations are audited so that an accidental private shared object cannot
+become an undeclared base-image dependency. SDL2, libmGBA, libcurl, libpng,
+libjpeg, libutf8proc, GTK3, common CLI tools, desktop applications, and
 device-specific applications therefore ship as independent packages with exact
 versioned dependencies; leaf applications neither statically bundle libraries
 nor borrow a general-purpose runtime from the base image. It is deliberately

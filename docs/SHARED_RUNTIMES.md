@@ -12,11 +12,11 @@ runtime           target-derived shared runtime, plugin, or runtime data
 
 This is not a generic RISC-V repository. Every package is `riscv64`, belongs to one immutable TDVP feed revision, and receives an exact `tdvp-platform-abi` dependency from the platform manifest.
 
-## r4 composable-ownership contract
+## Composable-ownership contract
 
 From r4 forward, this is not an “application plus a few exception libraries” feed. It is a composable, distribution-style userland catalogue. The only runtime an application may assume implicitly from the base image is the ABI seed: all target dynamic loaders, glibc's `libc/libdl/libm/libpthread/librt`, `libgcc_s`, and `libstdc++`, alongside the kernel, drivers, and boot chain. Those components are not opkg-upgradeable.
 
-**Every other dynamic SONAME has exactly one independently installable IPK owner in the same ABI/feed release.** Current r5 covers GTK3/GLib, Wayland/EGL/Mesa, ALSA/PulseAudio, SDL2, libmGBA, libcurl, libpng, libjpeg, the FFmpeg/MPV stack, and the NetSurf runtime. Runtime data and loadable modules have explicit owners too: `gtk3-data`, `gdk-pixbuf-loaders`, `glib-networking`, `pulse-modules`, `tdvp-gdk-committed-compat`, `tdvp-hardware-runtime`, `tdvp-runtime-libexec`, and `shared-mime-info`, for example. The release verifier scans `/usr/lib`, `/usr/libexec`, `/usr/local/lib`, and `/usr/local/libexec`; local library locations are included specifically so custom shared objects cannot remain implicit base-image dependencies. If a future application needs a library that is absent from the current ABI target (for example libutf8proc), that library must first enter a new feed release as an independent library recipe; it must not be statically bundled into the application.
+**Every other dynamic SONAME has exactly one independently installable IPK owner in the same ABI/feed release.** Current r6 covers GTK3/GLib, Wayland/EGL/Mesa, ALSA/PulseAudio, SDL2, libmGBA, libcurl, libpng, libjpeg, libutf8proc, the FFmpeg/MPV stack, and the NetSurf runtime. Runtime data and loadable modules have explicit owners too: `gtk3-data`, `gdk-pixbuf-loaders`, `glib-networking`, `pulse-modules`, `tdvp-gdk-committed-compat`, `tdvp-hardware-runtime`, `tdvp-runtime-libexec`, and `shared-mime-info`, for example. The release verifier scans `/usr/lib`, `/usr/libexec`, `/usr/local/lib`, and `/usr/local/libexec`; local library locations are included specifically so custom shared objects cannot remain implicit base-image dependencies. If a future application needs a library absent from the current ABI target, that library must first enter a new feed release as an independent provider; it must not be statically bundled into the application.
 
 `tdvp-gba`, `tdvp-netsurf`, and `tdvp-mpv` are therefore leaf applications. They do not carry static copies or borrow a general-purpose library from the base image; their exact versioned `Depends` relations acquire every direct runtime requirement. The image can carry byte-identical compatibility copies so its first desktop boot does not rely on the network, but that never changes the dependency contract: release verification treats the feed package, not the base rootfs, as the provider of every non-ABI SONAME, private dynamic helper, plugin, or runtime module, and the installed IPK is the sole package owner. TDVP-owned shared objects belong in `/usr/lib`; `/usr/local/lib` is audited specifically so an accidental private shared object cannot become an undeclared image dependency.
 
@@ -28,7 +28,7 @@ Each recipe declares both build ordering and installed runtime requirements:
 
 ```sh
 PACKAGE_KIND='shared-library'        # or application / runtime
-PACKAGE_RELEASES='r4'
+PACKAGE_RELEASES='r6'
 PACKAGE_SECTION='libraries'          # e.g. libraries, utils, desktop, games
 PACKAGE_BUILD_DEPENDS='sdl2'         # staging only
 PACKAGE_DEPENDS='sdl2 (= 2.30.11-1)' # opkg runtime relationship

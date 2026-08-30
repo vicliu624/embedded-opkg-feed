@@ -107,7 +107,7 @@ while IFS= read -r ipk; do
   while IFS= read -r archive_path; do
     relative=${archive_path#./}
     case "$relative" in
-      usr/lib/*|usr/libexec/*)
+      usr/lib/*|usr/libexec/*|usr/local/lib/*|usr/local/libexec/*)
         [[ -n "$relative" && "$relative" != */ ]] || continue
         existing=${runtime_path_owner[$relative]:-}
         [[ -z "$existing" || "$existing" == "$package" ]] || {
@@ -134,8 +134,14 @@ elf_soname() {
     sed -n 's/.*SONAME.*\[\(.*\)\]/\1/p' | head -n 1 || true
 }
 
+# /usr/local/lib is deliberately part of the audit even though generated
+# runtime packages are not allowed to install there.  This makes an accidental
+# custom-library install fail the release rather than becoming an invisible
+# base-image dependency.  TDVP-owned shared objects belong under /usr/lib.
 runtime_roots=("$base_root/usr/lib")
 [[ -d "$base_root/usr/libexec" ]] && runtime_roots+=("$base_root/usr/libexec")
+[[ -d "$base_root/usr/local/lib" ]] && runtime_roots+=("$base_root/usr/local/lib")
+[[ -d "$base_root/usr/local/libexec" ]] && runtime_roots+=("$base_root/usr/local/libexec")
 checked=0
 while IFS= read -r -d '' runtime_file; do
   is_dynamic_elf "$runtime_file" || continue

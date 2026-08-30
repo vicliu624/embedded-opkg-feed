@@ -7,6 +7,8 @@
 gtk3-data|GTK3 themes, input modules, and print backends|/usr/share/gtk-3.0,/usr/lib/gtk-3.0
 gdk-pixbuf-loaders|GDK Pixbuf image loader modules and metadata|/usr/lib/gdk-pixbuf-2.0
 glib-networking|GIO TLS backend modules|/usr/lib/gio/modules
+tdvp-gdk-committed-compat|TDVP wf-panel-pi GTK committed-signal compatibility runtime|/usr/lib/tdvp-gdk-committed-compat.so
+tdvp-hardware-runtime|TDVP hardware state service dynamic runtime|/usr/libexec/vicliu-pocket-linux-hardware/vpl-hardwared
 pulse-modules|PulseAudio runtime modules and default configuration|/usr/lib/pulseaudio,/etc/pulse
 alsa-data|ALSA UCM and profile data|/usr/share/alsa
 mesa-dri-drivers|Mesa DRI software renderer modules|/usr/lib/dri,/usr/share/drirc.d

@@ -1,0 +1,12 @@
+TDVP K230 developer starter set
+
+This package is an installation profile, not a private copy of programs or
+libraries.  It installs the independently versioned archive, Git, GitHub CLI,
+Python, and Vim packages declared in its Depends field.
+
+After installing, verify:
+  tar --version
+  git --version
+  gh --version
+  python3 --version
+  vim --version

@@ -15,6 +15,7 @@ on:
         options:
           - r7
           - r8
+          - r9
 
 permissions:
   contents: read
@@ -59,6 +60,11 @@ jobs:
           for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
           bash ./tests/audacious-package-policy.sh
           bash ./tests/vim-package-policy.sh
+          bash ./tests/archive-package-policy.sh
+          bash ./tests/git-package-policy.sh
+          bash ./tests/gh-package-policy.sh
+          bash ./tests/python3-package-policy.sh
+          bash ./tests/dev-tools-package-policy.sh
 
       - name: Restore SDK downloads and toolchain cache
         uses: actions/cache@v4
@@ -66,7 +72,7 @@ jobs:
           path: |
             firmware/.ci-cache/dl
             firmware/.ci-cache/toolchain
-          key: tdvp-k230-feed-${{ runner.os }}-${{ hashFiles('support/audacious-buildroot/**', 'support/vim-plugin-build.sh', 'packages/audacious*/**', 'packages/vim*/**') }}
+          key: tdvp-k230-feed-${{ runner.os }}-${{ hashFiles('support/**', 'packages/**', 'platforms/tdvp-k230-r1/**') }}
           restore-keys: |
             tdvp-k230-feed-${{ runner.os }}-
 
@@ -89,6 +95,13 @@ jobs:
         working-directory: firmware
         run: bash buildroot/tools/build-k230-sdk-rm69a10.sh "$TDVP_WORKTREE"
 
+      - name: Install reviewed Go host for the r9 GitHub CLI source build
+        if: inputs.release == 'r9'
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.7'
+          check-latest: false
+
       - name: Cross-build selected applications and assemble unsigned feed candidate
         run: |
           build_output="$TDVP_WORKTREE/output/$TDVP_PROFILE"
@@ -96,6 +109,9 @@ jobs:
           export TDVP_FEED_BASE_ROOT="$build_output/target"
           export TDVP_AUDACIOUS_BUILDROOT_OUTPUT="$build_output"
           export TDVP_VIM_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_ARCHIVE_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_GIT_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_PYTHON3_BUILDROOT_OUTPUT="$build_output"
           bash ./scripts/build-all.sh --platform tdvp-k230-r1 --release "$TDVP_RELEASE" --output candidate-dist
           feed_dir="candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/$TDVP_RELEASE/riscv64"
           test -s "$feed_dir/Packages"
@@ -103,6 +119,16 @@ jobs:
           case "$TDVP_RELEASE" in
             r7) ;;
             r8) packages+=(vim-runtime vim vim-plugin-repeat vim-plugin-surround vim-plugin-commentary vim-plugin-sleuth) ;;
+            r9)
+              packages+=(
+                vim-runtime vim vim-plugin-repeat vim-plugin-surround vim-plugin-commentary vim-plugin-sleuth
+                libmgba sdl2 sdl2-ttf tdvp-gba tdvp-mpv tdvp-netsurf
+                libbz2 liblzma libzstd archive-tools
+                git-runtime git gh
+                libpython3.13 python3-runtime python3
+                tdvp-dev-tools
+              )
+              ;;
             *) echo "unsupported candidate release: $TDVP_RELEASE" >&2; exit 64 ;;
           esac
           for package in "${packages[@]}"; do

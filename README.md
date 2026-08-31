@@ -15,6 +15,7 @@
 | 我是平台/固件维护者，要让新设备接入 | [平台说明](docs/PLATFORM.zh-CN.md) |
 | 我负责打包、签名和发布 | [发布说明](docs/RELEASE.zh-CN.md) |
 | 我需要修复设备端的 opkg 与签名支持 | [设备引导说明](docs/DEVICE_BOOTSTRAP.zh-CN.md) |
+| 我想了解开发工具、语言和办公软件的实际发布状态 | [开发与办公软件目录](docs/DEVELOPER_CATALOG.zh-CN.md) |
 
 ## 三句话了解这个仓库
 

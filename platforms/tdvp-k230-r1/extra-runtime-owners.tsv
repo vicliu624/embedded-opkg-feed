@@ -12,3 +12,13 @@ libmgba.so.0.10|libmgba|0.10.5-1
 libaudcore.so.6|audacious-core|4.6.1-1
 libaudtag.so.4|audacious-core|4.6.1-1
 libaudgui.so.7|audacious-core|4.6.1-1
+# Archive utilities add three public compression-library SONAMEs that do not
+# exist in the immutable r9 firmware target. Each SONAME has one independently
+# installable IPK owner; archive applications depend on them instead of copying
+# a private library into a command package.
+libbz2.so.1.0|libbz2|1.0.8-1
+liblzma.so.5|liblzma|5.6.4-1
+libzstd.so.1|libzstd|1.5.7-1
+# Python's libpython is public ABI for native extension modules and therefore
+# is split from the standard library data and the interpreter executable.
+libpython3.13.so.1.0|libpython3.13|3.13.3-1

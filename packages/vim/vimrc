@@ -1,0 +1,38 @@
+" TDVP K230 baseline for terminal Vim on the 1232 x 568 landscape display.
+" This is Vim's system configuration; a user's ~/.vimrc is read afterwards
+" and can intentionally override every preference below.
+
+if has('syntax')
+  syntax enable
+endif
+
+set nocompatible
+set encoding=utf-8
+set number
+set cursorline
+set ruler
+set laststatus=2
+set showcmd
+set showmatch
+set incsearch
+set hlsearch
+set ignorecase
+set smartcase
+set scrolloff=3
+set sidescrolloff=2
+set nowrap
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4
+set expandtab
+set autoindent
+set backspace=indent,eol,start
+set signcolumn=no
+set foldcolumn=0
+set nofoldenable
+set shortmess+=I
+
+" Foot already translates pointer/touch input at the terminal boundary. Do
+" not let Vim capture it in mouse mode, which would make selection/focus feel
+" broken on the touch display and prevent the terminal's normal behavior.
+set mouse=

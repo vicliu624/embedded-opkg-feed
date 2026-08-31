@@ -27,6 +27,7 @@ jobs:
             dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
           bash ./tests/build-shared-package-policy.sh
           bash ./tests/audacious-package-policy.sh
+          bash ./tests/vim-package-policy.sh
 
   cardputer-source-lock:
     name: Validate pinned Cardputer Zero source revision

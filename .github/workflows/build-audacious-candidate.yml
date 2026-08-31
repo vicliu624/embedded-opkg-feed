@@ -65,6 +65,7 @@ jobs:
           bash ./tests/gh-package-policy.sh
           bash ./tests/python3-package-policy.sh
           bash ./tests/dev-tools-package-policy.sh
+          bash ./tests/command-package-policy.sh
 
       - name: Restore SDK downloads and toolchain cache
         uses: actions/cache@v4
@@ -112,6 +113,7 @@ jobs:
           export TDVP_ARCHIVE_BUILDROOT_OUTPUT="$build_output"
           export TDVP_GIT_BUILDROOT_OUTPUT="$build_output"
           export TDVP_PYTHON3_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_DEVEL_BUILDROOT_OUTPUT="$build_output"
           bash ./scripts/build-all.sh --platform tdvp-k230-r1 --release "$TDVP_RELEASE" --output candidate-dist
           feed_dir="candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/$TDVP_RELEASE/riscv64"
           test -s "$feed_dir/Packages"
@@ -126,6 +128,7 @@ jobs:
                 libbz2 liblzma libzstd archive-tools
                 git-runtime git gh
                 libpython3.13 python3-runtime python3
+                make pkgconf patch diffutils strace
                 tdvp-dev-tools
               )
               ;;

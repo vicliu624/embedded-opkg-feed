@@ -5,3 +5,10 @@
 libSDL2-2.0.so.0|sdl2|2.30.11-1
 libSDL2_ttf-2.0.so.0|sdl2-ttf|2.22.0-1
 libmgba.so.0.10|libmgba|0.10.5-1
+# Audacious 4.6.1 is built once by the audited core recipe. Its three public
+# libraries have one reusable runtime owner; the player and every loadable
+# Audacious plugin acquire that owner through exact dependencies instead of
+# copying any of these SONAMEs into their payload.
+libaudcore.so.6|audacious-core|4.6.1-1
+libaudtag.so.4|audacious-core|4.6.1-1
+libaudgui.so.7|audacious-core|4.6.1-1

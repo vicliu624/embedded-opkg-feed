@@ -1,0 +1,100 @@
+name: Build TDVP K230 Audacious candidate
+
+# This workflow deliberately produces an unsigned, expiring Actions artifact
+# only.  A candidate must compile against the exact firmware ABI before it can
+# be signed into an immutable feed release; it must never publish Pages or a
+# GitHub Release by itself.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tdvp-k230-audacious-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audacious-r7:
+    name: Cross-build and audit Audacious r7
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      TDVP_RELEASE: r7
+      TDVP_WORKTREE: ${{ runner.temp }}/tdvp-sdk
+      TDVP_CACHE_ROOT: ${{ github.workspace }}/firmware/.ci-cache
+      TDVP_FIRMWARE_REVISION: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+      TDVP_PROFILE: k230_canmv_t_display_rm69a10_labwc_desktop_defconfig
+    steps:
+      - name: Check out the feed recipe revision
+        uses: actions/checkout@v4
+
+      - name: Check out the pinned r9 firmware ABI
+        uses: actions/checkout@v4
+        with:
+          repository: vicliu624/t-display-k230-vision-platform
+          ref: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+          path: firmware
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Assert the selected firmware ABI revision
+        run: |
+          test "$(git -C firmware rev-parse HEAD)" = "$TDVP_FIRMWARE_REVISION"
+
+      - name: Check recipe policy before the long target build
+        run: |
+          for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
+          bash ./tests/audacious-package-policy.sh
+
+      - name: Restore SDK downloads and toolchain cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            firmware/.ci-cache/dl
+            firmware/.ci-cache/toolchain
+          key: tdvp-k230-audacious-${{ runner.os }}-${{ hashFiles('support/audacious-buildroot/**', 'packages/audacious*/**') }}
+          restore-keys: |
+            tdvp-k230-audacious-${{ runner.os }}-
+
+      - name: Install reproducible TDVP build host
+        working-directory: firmware
+        run: |
+          chmod +x buildroot/tools/*.sh
+          bash buildroot/tools/ci-prepare-host.sh
+
+      - name: Stage the locked K230 SDK worktree
+        working-directory: firmware
+        run: |
+          rm -rf "$TDVP_WORKTREE"
+          bash buildroot/tools/prepare-k230-sdk-worktree.sh "$TDVP_WORKTREE"
+          mkdir -p "$TDVP_CACHE_ROOT/dl"
+          rm -rf "$TDVP_WORKTREE/dl"
+          ln -s "$TDVP_CACHE_ROOT/dl" "$TDVP_WORKTREE/dl"
+
+      - name: Build the r9 base target
+        working-directory: firmware
+        run: bash buildroot/tools/build-k230-sdk-rm69a10.sh "$TDVP_WORKTREE"
+
+      - name: Cross-build Audacious and assemble the unsigned r7 candidate
+        env:
+          TDVP_SDK_ROOT: ${{ runner.temp }}/tdvp-sdk/output/k230_canmv_t_display_rm69a10_labwc_desktop_defconfig/host
+          TDVP_FEED_BASE_ROOT: ${{ runner.temp }}/tdvp-sdk/output/k230_canmv_t_display_rm69a10_labwc_desktop_defconfig/target
+          TDVP_AUDACIOUS_BUILDROOT_OUTPUT: ${{ runner.temp }}/tdvp-sdk/output/k230_canmv_t_display_rm69a10_labwc_desktop_defconfig
+        run: |
+          bash ./scripts/build-all.sh --platform tdvp-k230-r1 --release "$TDVP_RELEASE" --output candidate-dist
+          feed_dir="candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/$TDVP_RELEASE/riscv64"
+          test -s "$feed_dir/Packages"
+          for package in audacious-core audacious-plugins audacious; do
+            find "$feed_dir" -maxdepth 1 -type f -name "${package}_*.ipk" -print -quit | grep -q .
+            grep -Eq "^Package: ${package}$" "$feed_dir/Packages"
+          done
+          bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
+
+      - name: Upload unsigned candidate feed evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdvp-k230-audacious-r7-unsigned-${{ github.sha }}
+          path: candidate-dist
+          if-no-files-found: error
+          retention-days: 14

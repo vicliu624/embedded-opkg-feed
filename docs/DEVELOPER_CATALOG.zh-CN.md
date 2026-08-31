@@ -50,7 +50,29 @@ Python 的 `libpython3.13` 是原生扩展的公共 ABI；标准库和 `lib-dynl
 | 调试 | `strace`、`lsof`、`gdbserver`，其后是带 TUI 的 target `gdb` | `strace true`、远程调试握手、TUI 在 Foot 中可用 |
 | C/C++ 本地开发 | 目标 sysroot、headers、`pkg-config` metadata、native GCC/G++ | 这不是把 x86 SDK 复制进设备；必须构建真正的 riscv64 native compiler，并单独测编译/执行 Hello World |
 
-## Node.js 与 Java：先过源码/ABI gate
+## r10：Node.js v22.23.2 源码交叉构建候选
+
+Node 的选择固定为 **v22.23.2**（LTS `Jod`）。它不是下载 upstream 的预编译
+RISC-V 包：该 release 对 K230 的 RISC-V/glibc 2.33 组合没有上游发行二进制承诺，
+所以 r10 的候选 job 使用 GCC >= 10 的 x86 构建主机交叉编译，但**仅**以完成的 K230
+SDK sysroot 链接，并拒绝任何 `GLIBC_2.34` 或更新符号。
+
+| 能力 | IPK 分层 | 硬门槛 |
+| --- | --- | --- |
+| DNS/I/O/HTTP2 | `libcares`、`libuv`、`libnghttp2` | 每个 SONAME 单独拥有一个 IPK；不由 `node` 静态携带 |
+| Unicode Intl | `libicudata`、`libicuuc`、`libicui18n`、`libicuio` | Node 使用 `--with-intl=system-icu`，而非关闭 Intl 或塞小型 ICU 副本 |
+| Node embedding ABI | `libnode` | 仅拥有 `libnode.so.127`；ELF 不得动态需要新版 `libstdc++` 或 `libgcc_s` |
+| Node CLI | `node` | 仅 `/usr/bin/node`，精确依赖 `libnode` |
+| npm/包管理前端 | `npm-runtime`、`npm` | JavaScript payload 和 `/usr/bin/npm`/`npx`/`corepack` 分离；TLS 信任链显式依赖 `ca-certificates` |
+| Node 开发安装 profile | `tdvp-nodejs-tools` | 精确组合 Node、npm 与已有 `tdvp-dev-tools`，不复制任何二进制或库 |
+
+CI 除 IPK 运行时闭包外，还会检查 Node、`libnode` 和目标动态对象的 RISC-V ELF
+机器类型、`GLIBC_*` 版本上限、`DT_NEEDED` 所有者以及 QEMU 下的 V8 生成器执行。
+在 `node --version`、`node -e`、HTTPS/TLS、`npm --version` 和纯 JavaScript
+`npm install` 的**实机**验证通过前，r10 仍只是 unsigned candidate，不能进入公共
+signed feed。
+
+## Java：先过源码/ABI gate
 
 `node` 与 `java` 都属于目标目录，但当前 firmware 使用 glibc 2.33 与 Xuantie
 GCC 6.6。它们不能通过下载上游 x86/ARM 或为较新 glibc 制作的 RISC-V 预编译包

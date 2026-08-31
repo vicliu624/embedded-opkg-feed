@@ -16,6 +16,7 @@ on:
           - r7
           - r8
           - r9
+          - r10
 
 permissions:
   contents: read
@@ -66,6 +67,7 @@ jobs:
           bash ./tests/python3-package-policy.sh
           bash ./tests/dev-tools-package-policy.sh
           bash ./tests/command-package-policy.sh
+          bash ./tests/node22-package-policy.sh
 
       - name: Restore SDK downloads and toolchain cache
         uses: actions/cache@v4
@@ -96,12 +98,23 @@ jobs:
         working-directory: firmware
         run: bash buildroot/tools/build-k230-sdk-rm69a10.sh "$TDVP_WORKTREE"
 
-      - name: Install reviewed Go host for the r9 GitHub CLI source build
-        if: inputs.release == 'r9'
+      - name: Install reviewed Go host for GitHub CLI source builds
+        if: inputs.release == 'r9' || inputs.release == 'r10'
         uses: actions/setup-go@v5
         with:
           go-version: '1.26.7'
           check-latest: false
+
+      - name: Install reviewed Node v22 RISC-V source-build host
+        if: inputs.release == 'r10'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            gcc-riscv64-linux-gnu \
+            g++-riscv64-linux-gnu \
+            qemu-user
+          test "$(riscv64-linux-gnu-g++ -dumpversion | cut -d. -f1)" -ge 10
+          command -v qemu-riscv64
 
       - name: Cross-build selected applications and assemble unsigned feed candidate
         run: |
@@ -114,6 +127,8 @@ jobs:
           export TDVP_GIT_BUILDROOT_OUTPUT="$build_output"
           export TDVP_PYTHON3_BUILDROOT_OUTPUT="$build_output"
           export TDVP_DEVEL_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_NODE22_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_NODE22_SOURCE_CACHE="$TDVP_CACHE_ROOT/dl/nodejs"
           bash ./scripts/build-all.sh --platform tdvp-k230-r1 --release "$TDVP_RELEASE" --output candidate-dist
           feed_dir="candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/$TDVP_RELEASE/riscv64"
           test -s "$feed_dir/Packages"
@@ -130,6 +145,20 @@ jobs:
                 libpython3.13 python3-runtime python3
                 make pkgconf patch diffutils strace
                 tdvp-dev-tools
+              )
+              ;;
+            r10)
+              packages+=(
+                vim-runtime vim vim-plugin-repeat vim-plugin-surround vim-plugin-commentary vim-plugin-sleuth
+                libmgba sdl2 sdl2-ttf tdvp-gba tdvp-mpv tdvp-netsurf
+                libbz2 liblzma libzstd archive-tools
+                git-runtime git gh
+                libpython3.13 python3-runtime python3
+                make pkgconf patch diffutils strace
+                tdvp-dev-tools
+                libcares libuv libnghttp2
+                libicudata libicuuc libicui18n libicuio
+                libnode node npm-runtime npm tdvp-nodejs-tools
               )
               ;;
             *) echo "unsupported candidate release: $TDVP_RELEASE" >&2; exit 64 ;;

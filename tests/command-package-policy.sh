@@ -5,7 +5,7 @@ repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 for package in make pkgconf patch diffutils strace; do
   env_file="$repo_root/packages/$package/package.env"
   grep -Fqx "PACKAGE='$package'" "$env_file"
-  grep -Fqx "PACKAGE_RELEASES='r9'" "$env_file"
+  grep -Fqx "PACKAGE_RELEASES='r9 r10'" "$env_file"
   grep -Fq 'tdvp_buildroot_command_package' "$repo_root/packages/$package/build.sh"
 done
 grep -Fq '/usr/libexec/tdvp-' "$repo_root/support/buildroot-command-package.sh"

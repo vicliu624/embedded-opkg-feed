@@ -34,7 +34,7 @@ for plugin in repeat surround commentary sleuth; do
   env_file="$repo_root/packages/vim-plugin-$plugin/package.env"
   expect_line "^PACKAGE='vim-plugin-$plugin'$" "$env_file"
   expect_line "^PACKAGE_KIND='runtime'$" "$env_file"
-  expect_line "^PACKAGE_RELEASES='r8 r9'$" "$env_file"
+  expect_line "^PACKAGE_RELEASES='r8 r9 r10'$" "$env_file"
   expect_line "^SOURCE_REVISION='[0-9a-f]{40}'$" "$env_file"
   expect_line "^SOURCE_ARCHIVE_SHA256='[0-9a-f]{64}'$" "$env_file"
 done
@@ -44,4 +44,4 @@ for package in audacious-core audacious-plugins audacious libmgba sdl2 sdl2-ttf 
   expect_line "^PACKAGE_RELEASES=.*\\br8\\b" "$repo_root/packages/$package/package.env"
 done
 
-echo 'Vim r8/r9 package, touch/keyboard defaults, and pure-plugin policy: PASS'
+echo 'Vim r8/r9/r10 package, touch/keyboard defaults, and pure-plugin policy: PASS'

@@ -23,7 +23,9 @@
 2. **GitHub Pages 是公开下载地址；签名索引用于证明下载内容确实由仓库维护者发布。**
 3. **仓库包不能替换不可变的系统核心部分。** libc、内核、系统服务、启动链、`opkg` 本身和 KPU 驱动都属于固件责任范围，不从这里升级。
 
-目标模型与正常 Linux 发行版的职责划分一致：基础镜像只保留小而稳定的硬件相关引导和 ABI seed，feed 是可扩展的用户态软件目录。r6 起，除所有动态加载器、glibc、`libgcc_s` 和 `libstdc++` 之外，**每一个动态运行时 SONAME、插件和私有运行时 helper 都必须在同一 ABI release 中有且只有一个独立 IPK 所有者**；校验范围同时覆盖 `/usr/lib`、`/usr/libexec` 与 `/usr/local/lib`。后者不是允许私有运行时长期落地的位置：审计它是为了让错误安装直接失败；TDVP 自有动态对象必须归入 `/usr/lib` 并由 feed 包拥有。SDL2、libmGBA、libcurl、libpng、libjpeg、libutf8proc、GTK3 与后续通用库、命令行工具、桌面程序和设备专属应用都作为带有精确版本依赖的独立包进入这里；叶子应用不静态塞库，也不从基础镜像暗中借用通用库。它并不是任意 RISC-V 板子都能使用的二进制堆放区；每个 feed release 都严格绑定一个声明过的 TDVP 平台 ABI。
+目标模型与正常 Linux 发行版的职责划分一致：基础镜像只保留小而稳定的硬件相关引导和 ABI seed，feed 是逐步补全、可扩展的用户态软件目录。r6 起，除所有动态加载器、glibc、`libgcc_s` 和 `libstdc++` 之外，**每一个纳入某个 ABI release 的动态运行时 SONAME、插件和私有运行时 helper 都必须在该 release 中有且只有一个独立 IPK 所有者**；校验范围同时覆盖 `/usr/lib`、`/usr/libexec` 与 `/usr/local/lib`。后者不是允许私有运行时长期落地的位置：审计它是为了让错误安装直接失败；TDVP 自有动态对象必须归入 `/usr/lib` 并由 feed 包拥有。新增应用发现当前 release 尚未收录的运行时库时，应先把它作为可复用 provider 加入新 feed release；SDL2、libmGBA、libcurl、libpng、libjpeg、libutf8proc、GTK3 与后续通用库、命令行工具、桌面程序和设备专属应用都以这种方式进入这里。叶子应用不静态塞库，也不从基础镜像暗中借用尚未拥有 feed provider 的通用库。
+
+ELF 检查无法看见程序通过 `exec` 启动的命令。因此，配方必须把这类命令的包所有者显式写入 `PACKAGE_DEPENDS`；如果目标设备没有该命令的可安装 provider，先在同一 feed release 新增一个普通工具包。缺少某个应用功能所需的工具（例如 LoFiBox 的 `ffprobe`）**不是**修改固件 ABI 或平台清单的理由。它并不是任意 RISC-V 板子都能使用的二进制堆放区；每个 feed release 都严格绑定一个声明过的 TDVP 平台 ABI。
 
 ## 当前支持的平台
 
@@ -36,7 +38,7 @@
 | CPU 架构 | RISC-V 64 位，LP64D |
 | C 库 | glibc 2.33 |
 | 内核基线 | Linux 6.6.36 |
-| 平台 ABI 标识 | `tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r2` |
+| 平台 ABI 标识 | `tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1` |
 
 完整平台边界见 [平台说明](docs/PLATFORM.zh-CN.md)。如果你的设备与这些条件不同，请不要直接安装本平台的包；应先为你的设备建立新的平台定义。
 
@@ -72,7 +74,7 @@ TDVP_SDK_ROOT=/path/to/output/host \
 TDVP_FEED_BASE_ROOT=/path/to/output/target \
 ./scripts/build-all.sh --platform tdvp-k230-r1 --release r7 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r2/r7/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r7/riscv64
 ```
 
 开发者只需要提交**可审查的源码、构建脚本和包描述**。不要提交生成的 `.ipk`、`Packages`、`Packages.gz`、签名文件或 `site/feed/` 内容；这些是发布流程的产物。更详细、带检查清单的说明见 [CONTRIBUTING.zh-CN.md](CONTRIBUTING.zh-CN.md)。

@@ -12,9 +12,10 @@ widget target, installs its executable/assets/icon/desktop entry, and derives
 all ELF SONAME dependencies from the release-local runtime owner map.
 
 At startup the widget strictly requires `ffmpeg`, `ffprobe`, and either
-`paplay` or `aplay`.  Those are base-image media tools, deliberately not
-private binaries hidden in this package; a firmware that lacks one exits with
-a direct error instead of falling back to reduced media behavior.
+`paplay` or `aplay`. `ffprobe` is an explicit dependency on the feed's
+`ffprobe` package; the r1 image's existing `ffmpeg` and native audio commands
+remain runtime prerequisites. A missing capability causes a direct error
+instead of reduced-media fallback.
 
 Build it as part of the immutable r7 candidate from a Linux/WSL builder with a
 completed matching TDVP Buildroot output:

@@ -35,10 +35,12 @@ option gpg_trust_level TrustAny
 
 Create `/var/lib/opkg/{lists,info}` and the status file in the image build.
 Install the single ABI-specific r7 source separately in `/etc/opkg/tdvp-feed.conf`.
-The media-tool contract includes `ffprobe`, so this firmware ABI marker is r2.
+`r7` is a feed catalogue revision, while the firmware ABI marker remains r1.
+Application tools such as LoFiBox's `ffprobe` are feed packages, not a reason
+to change the firmware ABI.
 
 ```conf
-src/gz tdvp_apps_r7 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r2/r7/riscv64
+src/gz tdvp_apps_r7 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r7/riscv64
 ```
 
 This avoids an untracked root filesystem where opkg cannot know what it owns,
@@ -51,10 +53,10 @@ application package is accepted:
 
 ```text
 Package: tdvp-platform-abi
-Version: 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r2
+Version: 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1
 Architecture: riscv64
 Status: install ok installed
-Description: ABI identity for TDVP K230 firmware r2
+Description: ABI identity for TDVP K230 firmware r1
 ```
 
 Generate this state entry during the Buildroot image build. Do not hand-edit a

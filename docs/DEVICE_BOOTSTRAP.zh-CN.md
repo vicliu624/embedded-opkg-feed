@@ -32,10 +32,10 @@ option gpg_dir /etc/opkg/gpg
 option gpg_trust_level TrustAny
 ```
 
-在构建镜像时创建 `/var/lib/opkg/{lists,info}` 和状态文件。唯一的软件源应单独安装为 `/etc/opkg/tdvp-feed.conf`：
+在构建镜像时创建 `/var/lib/opkg/{lists,info}` 和状态文件。唯一的软件源应单独安装为 `/etc/opkg/tdvp-feed.conf`。`r7` 是 feed catalogue revision，固件 ABI 仍是 r1；LoFiBox 所需的 `ffprobe` 等应用工具由 feed 包交付，不能因此改动固件 ABI：
 
 ```conf
-src/gz tdvp_apps_r7 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r2/r7/riscv64
+src/gz tdvp_apps_r7 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r7/riscv64
 ```
 
 这样 opkg 才能知道哪些文件由它管理，不会把根文件系统当成一堆无法追踪的文件；签名软件源约定也不会混入核心 opkg 配置。
@@ -46,10 +46,10 @@ src/gz tdvp_apps_r7 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k23
 
 ```text
 Package: tdvp-platform-abi
-Version: 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r2
+Version: 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1
 Architecture: riscv64
 Status: install ok installed
-Description: ABI identity for TDVP K230 firmware r2
+Description: ABI identity for TDVP K230 firmware r1
 ```
 
 应在 Buildroot 构建镜像时生成该状态记录。不要直接手改运行中设备的状态数据库来代替发布清单；手改记录无法证明设备上的 libc、工具链和内核真的是匹配版本。

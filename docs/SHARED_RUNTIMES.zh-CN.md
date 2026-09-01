@@ -16,9 +16,11 @@ runtime           从已验证 target 提取的共享运行时、插件或运行
 
 从 r4 起，这不是“应用 + 若干例外库”的软件源，而是一份可组合的、发行版式用户态 catalogue。基础镜像唯一可以被应用隐式假定的运行时是 ABI seed：所有目标动态加载器、glibc 的 `libc/libdl/libm/libpthread/librt`、`libgcc_s`、`libstdc++`，以及内核、驱动与启动链；它们不能由 opkg 升级。
 
-**每一个其他动态 SONAME 在同一 ABI/feed release 中必须有且只有一个独立 IPK 所有者。** 当前 r6 例如覆盖 GTK3/GLib、Wayland/EGL/Mesa、ALSA/PulseAudio、SDL2、libmGBA、libcurl、libpng、libjpeg、libutf8proc、FFmpeg/MPV 和 NetSurf 所需的库。数据、可加载模块和桌面资源也有明确的 runtime 所有者，例如 `gtk3-data`、`gdk-pixbuf-loaders`、`glib-networking`、`pulse-modules`、`tdvp-gdk-committed-compat`、`tdvp-hardware-runtime`、`tdvp-runtime-libexec` 与 `shared-mime-info`。发布检查同时扫描 `/usr/lib`、`/usr/libexec`、`/usr/local/lib` 与 `/usr/local/libexec`；纳入本地库目录是为了让自定义共享对象不能再成为基础镜像的隐式依赖。如果后续程序需要当前 ABI target 中尚不存在的库，必须先作为独立 provider 进入新的 feed release，不能把它静态塞入应用。
+**每一个被纳入某个 feed release 的其他动态 SONAME，在该 release 中必须有且只有一个独立 IPK 所有者。** 这个 catalogue 本来就是逐步补全的：新应用可能首次暴露此前 release 不需要的库。发布叶子应用前，该库必须作为可复用 provider 加入新的 feed release，不能静态塞入应用，也不能从 target rootfs 暗中借用。每个 release 的 runtime catalogue 会从经过验证的 target 中打包其选择的非 ABI SONAME、运行时数据和可加载模块；例如 GTK3/GLib、Wayland/EGL/Mesa、ALSA/PulseAudio、SDL2、libmGBA、libcurl、libpng、libjpeg、libutf8proc、FFmpeg/MPV，以及 `gtk3-data`、`gdk-pixbuf-loaders`、`glib-networking`、`pulse-modules`、`tdvp-gdk-committed-compat`、`tdvp-hardware-runtime`、`tdvp-runtime-libexec` 和 `shared-mime-info`。发布检查同时扫描 `/usr/lib`、`/usr/libexec`、`/usr/local/lib` 与 `/usr/local/libexec`；纳入本地库目录是为了让自定义共享对象不能再成为基础镜像的隐式依赖。
 
 因此 `tdvp-gba`、`tdvp-netsurf`、`tdvp-mpv`、`audacious` 都是叶子应用：它们不携带静态副本，不从基础镜像暗中借用通用库，而是通过精确版本的 `Depends` 取得所有直接运行时需求。Audacious 被拆分为可复用的 `audacious-core` 运行时（三个公开 `libaud*` SONAME）、`audacious-plugins` 运行时（私有 GTK3/FFmpeg/ALSA/PulseAudio 模块树）以及 `audacious` 桌面叶子包。镜像可为了首次桌面启动而带有与 r6 字节一致的兼容副本，但这不改变依赖契约：闭包检查把 feed package 而不是 base rootfs 作为每个非 ABI SONAME、私有动态 helper、插件和运行时模块的 provider，安装后该 IPK 是唯一的软件包所有者。TDVP 自有动态对象必须放入 `/usr/lib`；审计 `/usr/local/lib` 的目的正是让错误放置的私有共享对象不能成为未声明的镜像依赖。
+
+自动闭包检查读取的是 ELF `NEEDED`，无法推导程序通过 `exec` 启动的子进程。需要外部命令的 recipe 必须在 `PACKAGE_DEPENDS` 写出该命令的 IPK provider；所选 target 没有 provider 时，先在同一 feed release 新增普通工具包。这是应用/软件包依赖，不是平台 ABI 或固件变更；LoFiBox 的 `ffprobe` 是这一规则的参考案例。
 
 一个库在一个 ABI/feed release 中只构建或提取一次，任意后续程序直接复用相同版本的 IPK；添加应用不会重新编译或静态塞入 SDL、GTK、curl、图像库等基础库。
 

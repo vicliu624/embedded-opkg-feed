@@ -27,12 +27,14 @@
 - 工具链、sysroot、glibc、C++ ABI 或硬浮点 ABI；
 - 会与内核交互的软件包所依赖的内核版本；
 - KPU/GPU/AI2D 运行时 ABI；
-- 某个打包应用需要的核心 Wayland 组件栈。
+- 核心 Wayland 组件栈的 compositor/protocol ABI 发生变化。
+
+最后一项仅指所有 Wayland 客户端都要共享的合成器或协议 ABI 变化，不是某一个应用所需的库、桌面功能或 helper 可执行文件。后者应作为带精确依赖的普通 feed 包发布，不能为此新建平台 ABI。
 
 每个包使用下面的依赖门槛：
 
 ```text
-Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r2)
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
 ```
 
 基础固件必须把这个标记包登记为已安装。若一个包不能满足此依赖，就不应使用 `--force-depends` 强行安装；正确做法是切换到匹配的平台软件源，或为新固件建立新的平台定义。

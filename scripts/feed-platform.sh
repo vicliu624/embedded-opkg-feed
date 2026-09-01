@@ -49,3 +49,20 @@ tdvp_feed_release_id() {
     printf '%s/%s\n' "$PLATFORM_ID" "$release"
   fi
 }
+
+tdvp_feed_channel_path() {
+  local channel=$1
+
+  # A channel is deliberately distinct from an immutable rN snapshot.  Images
+  # may keep this path for the lifetime of one firmware ABI while release
+  # maintainers promote a complete, already-signed snapshot through it.
+  case "$channel" in
+    stable)
+      printf '%s/%s/%s\n' "$PLATFORM_ID" "$channel" "$ARCH"
+      ;;
+    *)
+      echo "invalid TDVP feed channel: $channel" >&2
+      return 68
+      ;;
+  esac
+}

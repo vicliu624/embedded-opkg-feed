@@ -8,7 +8,8 @@ IFS=$'\n\t'
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd -- "$script_dir/.." && pwd)
-site_dir="$repo_root/site"
+site_dir=${TDVP_FEED_SITE_ROOT:-"$repo_root/site"}
+site_dir=$(cd -- "$site_dir" && pwd)
 feed_root="$site_dir/feed"
 output="$site_dir/index.html"
 
@@ -23,12 +24,20 @@ trap cleanup EXIT
 
 render_release_directory() {
   local index=$1
-  local directory relative release_output release_temporary filename
+  local directory relative release_output release_temporary filename publication_note
 
   directory=$(dirname -- "$index")
   relative=${directory#"$site_dir/"}
   release_output="$directory/index.html"
   release_temporary=$(mktemp "$directory/.index.html.XXXXXX")
+  case "/$relative/" in
+    */stable/*)
+      publication_note='This is the signed stable channel used by devices. It is replaced only as a complete, verified copy of one immutable rN snapshot.'
+      ;;
+    *)
+      publication_note='This is an immutable rN HTTP directory. It is never replaced or re-signed after publication.'
+      ;;
+  esac
 
   {
     cat <<EOF
@@ -51,8 +60,8 @@ render_release_directory() {
     <p><a href="/embedded-opkg-feed/">TDVP feed catalogue</a></p>
     <h1>Feed files</h1>
     <p><code>${relative}</code></p>
-    <p>This is the immutable HTTP directory used by <code>opkg</code>. Index
-      files must be verified with their detached signatures before installation.</p>
+    <p>${publication_note} Index files must be verified with their detached
+      signatures before installation.</p>
     <table>
       <thead><tr><th>File</th><th>Bytes</th><th>Purpose</th></tr></thead>
       <tbody>
@@ -104,12 +113,14 @@ cat >"$temporary" <<'EOF'
       TDVP K230: shared libraries, command-line tools, desktop programs, and
       device applications are published here as independent packages. It is
       not an arbitrary cross-device RISC-V binary repository.</p>
-    <p>Each feed has an immutable <code>Packages</code> index and detached
-      signatures. A package is listed here only when it is present in that
-      signed index; local recipes and unbuilt candidates are intentionally not
-      shown.</p>
+    <p>Each immutable <code>rN</code> snapshot has a signed
+      <code>Packages</code> index and detached signatures. The
+      <code>stable</code> endpoint is the device-facing channel: it is changed
+      only by promoting a complete, already verified snapshot. A package is
+      listed here only when it is present in that signed index; local recipes
+      and unbuilt candidates are intentionally not shown.</p>
     <h2>Feed directories</h2>
-    <p>Browse the raw, FTP-style HTTP release directories below. Each directory
+    <p>Browse the raw, FTP-style HTTP directories below. Each directory
       contains the package index, detached signatures, release metadata, and
       every installable <code>.ipk</code> for that exact ABI and architecture.</p>
     <ul>

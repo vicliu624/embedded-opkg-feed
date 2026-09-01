@@ -16,13 +16,16 @@
 
 ## 配置 TDVP K230 r1 软件源
 
-r7 候选通过验证、完成签名并发布后，TDVP K230 r1 的配置会在 `/etc/opkg/tdvp-feed.conf` 中使用下面这个**与 ABI 绑定的 r7 软件源**。这里的 r7 是不可变的软件源目录版本，不会改变仍为 r1 的固件 ABI：
+TDVP K230 r1 在 `/etc/opkg/tdvp-feed.conf` 中使用下面这个**与 ABI 绑定的 stable 通道**。
+这里的 `stable` 是设备长期保留的通道名；r7、r8 等不可变目录由经过审核、签名的发布流程
+提升到该通道，不会改变仍为 r1 的固件 ABI：
 
 ```conf
-src/gz tdvp_apps_r7 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r7/riscv64
+src/gz tdvp_apps https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/stable/riscv64
 ```
 
-在该 URL 的已签名索引真正发布之前，不能让设备指向它。
+在该 URL 的已签名索引真正发布之前，不能让设备指向它。不要将设备改指某一个 rN 目录；
+这会重新引入“每次 Feed 更新都需要改镜像配置”的错误耦合。
 
 不要手工修改该文件，也不要添加通用 OpenWrt、Debian 或任意 `riscv64` 软件源；即使 CPU 架构同为 RISC-V 64 位，它们的系统 ABI 也可能不同。
 
@@ -45,7 +48,9 @@ LoFiBox 的社区包可作为一个事务安装：
 sudo tdvp-opkg install vicliu624-lofibox-widget
 ```
 
-它会拉取精确的 r7 `ffprobe`、Wayland、XKB 与 FreeType 包。r1 镜像已有的 `ffmpeg` 与原生音频命令仍是前提；widget 不会静默降级，在启动时必须发现 `ffmpeg`、`ffprobe`，以及 `paplay` 或 `aplay` 之一，否则直接报告错误。
+它会拉取当前已提升快照中的精确 `ffprobe`、Wayland、XKB 与 FreeType 包。r1 镜像已有的
+`ffmpeg` 与原生音频命令仍是前提；widget 不会静默降级，在启动时必须发现 `ffmpeg`、`ffprobe`，
+以及 `paplay` 或 `aplay` 之一，否则直接报告错误。
 
 ## 哪些失败是正常且正确的
 

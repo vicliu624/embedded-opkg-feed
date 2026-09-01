@@ -12,8 +12,11 @@
 6. 在受保护的签名主机上对 `Packages.gz` 签名。
 7. 使用已提交的公开密钥验证分离式签名。
 8. 将不可变的软件源内容暂存到 `site/feed/<PLATFORM_ID>/rN/riscv64/` 下。已发布 r1 路径保持原样；不得重签或覆盖。
-9. 将生成的公开文件提交到受保护的 `release` 分支。
-10. 只有签名验证成功后，才允许 Pages 工作流发布。
-11. 在非生产 K230 上测试：正确安装、拒绝错误签名、拒绝错误 ABI、卸载以及回滚；全部通过后再批准发布。
+9. 使用 `scripts/promote-stable-channel.sh --platform <platform> --release rN` 将已验证的快照完整提升到 `stable`，再运行 `scripts/verify-stable-channel.sh`。这一步是唯一允许改变设备软件源目录的操作。
+10. 将生成的公开文件提交到受保护的 `release` 分支。
+11. 只有签名验证成功、rN 不可变性和 stable 对应关系都通过后，才允许 Pages 工作流发布。
+12. 在非生产 K230 上测试：正确安装、拒绝错误签名、拒绝错误 ABI、卸载以及回滚；全部通过后再批准发布。
+
+回滚不重写旧 rN：把 `stable` 重新提升到已经验证过的旧 snapshot，并通过同一 Pages 发布闸门。
 
 签名细节见 [签名与发布安全策略](SIGNING.zh-CN.md)，平台兼容性细节见 [平台兼容性约定](PLATFORM.zh-CN.md)。

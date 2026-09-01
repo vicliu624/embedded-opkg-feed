@@ -12,7 +12,11 @@
 6. Sign `Packages.gz` on the protected signing host.
 7. Verify the detached signature with the committed public key.
 8. Stage the immutable feed below `site/feed/<PLATFORM_ID>/rN/riscv64/`. The already published r1 path remains byte-for-byte unchanged.
-9. Commit the generated public files to the protected `release` branch.
-10. Let the Pages workflow publish only after signature verification succeeds.
-11. On a non-production K230, test valid install, rejected bad signature,
+9. Promote the verified snapshot in full with `scripts/promote-stable-channel.sh --platform <platform> --release rN`, then run `scripts/verify-stable-channel.sh`. This is the only operation allowed to change the device-facing feed directory.
+10. Commit the generated public files to the protected `release` branch.
+11. Let the Pages workflow publish only after signature verification, rN immutability, and the stable-channel relationship succeed.
+12. On a non-production K230, test valid install, rejected bad signature,
     rejected wrong ABI, uninstall, and rollback before release approval.
+
+Rollback does not rewrite an old rN: promote the previously verified snapshot
+to `stable` again and pass the same Pages release gate.

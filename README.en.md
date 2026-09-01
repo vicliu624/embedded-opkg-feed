@@ -14,6 +14,7 @@ It is not a “works on every RISC-V device” repository. On embedded systems, 
 | Submit a program or library | [Contribution guide](CONTRIBUTING.md) |
 | Bring a new device/firmware platform to the feed | [Platform guide](docs/PLATFORM.md) |
 | Build, sign, and publish a release | [Release guide](docs/RELEASE.md) |
+| Understand snapshots, stable promotion, and rollback | [Feed channel guide](docs/CHANNELS.md) |
 | Repair the device-side opkg and signature support | [Device bootstrap guide](docs/DEVICE_BOOTSTRAP.md) |
 
 ## The repository in three sentences
@@ -23,9 +24,11 @@ It is not a “works on every RISC-V device” repository. On embedded systems, 
 3. **Feed packages must not replace immutable core system components.** libc, the kernel, system services, the boot chain, `opkg` itself, and the KPU driver belong to the firmware, not this feed.
 
 The intended model is the same division of responsibility used by a normal
-Linux distribution: the base image is a small, hardware-specific bootstrap and
-ABI seed; the feed is an expandable userland catalogue that is completed
-release by release. From r6, **every dynamic runtime SONAME, plugin, and
+Linux distribution: the base image is a small, hardware-specific bootstrap,
+ABI seed, public key, and fixed `stable` channel; the feed is an expandable
+userland catalogue. Reviewed immutable rN snapshots are promoted to `stable`,
+so normal application releases do not require rebuilding firmware images. From
+r6, **every dynamic runtime SONAME, plugin, and
 private runtime helper included in an ABI release, other than the dynamic
 loaders, glibc, `libgcc_s`, and `libstdc++`, has exactly one independently
 installable IPK owner in that release.** The audit covers

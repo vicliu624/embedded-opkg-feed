@@ -23,16 +23,18 @@ substitute; follow
 
 ## Configure the TDVP K230 r1 feed
 
-After the r7 candidate has passed verification, been signed, and been
-published, the TDVP K230 r1 configuration uses this **single, ABI-specific r7
-feed** in `/etc/opkg/tdvp-feed.conf`. `r7` is the immutable catalogue revision;
-it does not change the firmware ABI, which remains r1:
+The TDVP K230 r1 configuration uses this **single ABI-specific stable channel**
+in `/etc/opkg/tdvp-feed.conf`. `stable` is the long-lived device endpoint;
+immutable r7, r8, and later snapshots are promoted to it only after review and
+signing. The firmware ABI remains r1:
 
 ```conf
-src/gz tdvp_apps_r7 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r7/riscv64
+src/gz tdvp_apps https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/stable/riscv64
 ```
 
 Do not point a device at that URL before its signed index has been published.
+Do not point devices at an individual rN directory: doing so would again make
+normal Feed updates depend on changing the image configuration.
 
 Do not manually alter that file or add generic OpenWrt, Debian, or arbitrary
 `riscv64` feeds.
@@ -61,8 +63,9 @@ LoFiBox's published community package is installed as one transaction:
 sudo tdvp-opkg install vicliu624-lofibox-widget
 ```
 
-It pulls the exact r7 `ffprobe`, Wayland, XKB and FreeType packages. The r1
-image's existing `ffmpeg` and native audio commands remain prerequisites. The
+It pulls the exact `ffprobe`, Wayland, XKB and FreeType packages from the
+currently promoted snapshot. The r1 image's existing `ffmpeg` and native audio
+commands remain prerequisites. The
 widget does not silently fall back: at launch it requires `ffmpeg`, `ffprobe`,
 and either `paplay` or `aplay`, and reports a direct error if any required
 capability is unavailable.

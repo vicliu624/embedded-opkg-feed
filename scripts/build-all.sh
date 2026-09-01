@@ -104,6 +104,7 @@ declare -A recipe_dir=()
 declare -A recipe_build_depends=()
 declare -A recipe_kind=()
 declare -A build_state=()
+declare -A force_source_build=()
 declare -a selected_packages=()
 
 read_recipe_value() {
@@ -160,6 +161,36 @@ if [[ "$contains_shared_runtime" -eq 1 && -z "$base_root" ]]; then
   exit 72
 fi
 
+# A reused runtime IPK deliberately contains only runtime files. When a leaf
+# package changes source, its compile-time dependencies must instead be built
+# once into this release's ephemeral staging sysroot so headers, pkg-config
+# metadata, and linker symlinks exist. Walk the declared build-dependency graph
+# before scheduling packages; selected-package sort order must not decide
+# whether a runtime is incorrectly reused before its source-built consumer.
+mark_source_build_closure() {
+  local package=$1
+  local dependency
+  local -a dependencies=()
+  [[ -n "${recipe_dir[$package]:-}" ]] || {
+    echo "source-built package depends on unavailable build package: $package" >&2
+    exit 77
+  }
+  [[ "${force_source_build[$package]:-0}" == 1 ]] && return
+  force_source_build[$package]=1
+  IFS=' ' read -r -a dependencies <<< "${recipe_build_depends[$package]}"
+  for dependency in "${dependencies[@]}"; do
+    [[ -n "$dependency" ]] || continue
+    mark_source_build_closure "$dependency"
+  done
+}
+
+for package in "${selected_packages[@]}"; do
+  if [[ -f "${recipe_dir[$package]}/build.sh" ]] && \
+     [[ -z "$(read_recipe_value "${recipe_dir[$package]}/package.env" REUSE_IPK_URL)" ]]; then
+    mark_source_build_closure "$package"
+  fi
+done
+
 build_package() {
   local package=$1
   local dependency package_dir
@@ -194,10 +225,15 @@ build_package() {
   done
 
   package_dir=${recipe_dir[$package]}
+  local reuse_published_payloads=${TDVP_REUSE_PUBLISHED_PAYLOADS:-1}
+  if [[ "${force_source_build[$package]:-0}" == 1 ]]; then
+    reuse_published_payloads=0
+  fi
   if [[ -f "$package_dir/build.sh" ]]; then
     TDVP_FEED_STAGING_ROOT="$staging_root" \
     TDVP_FEED_BASE_ROOT="$base_root" \
-      bash "$package_dir/build.sh" --platform "$platform_slug" --sdk-root "${TDVP_SDK_ROOT:-}"
+    TDVP_REUSE_PUBLISHED_PAYLOADS="$reuse_published_payloads" \
+    bash "$package_dir/build.sh" --platform "$platform_slug" --sdk-root "${TDVP_SDK_ROOT:-}"
   fi
   TDVP_FEED_BASE_ROOT="$base_root" \
   TDVP_RUNTIME_OWNER_MAP="$runtime_owner_map" \

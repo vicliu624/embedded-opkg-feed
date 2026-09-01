@@ -31,11 +31,24 @@ tdvp_require_wayland_sdk_overlay
 tdvp_prepare_pkg_config
 
 build_root=$(mktemp -d)
+patched_source=$(mktemp -d)
 payload_dir="$package_dir/root"
-cleanup() { rm -rf -- "$build_root"; }
+cleanup() { rm -rf -- "$build_root" "$patched_source"; }
 trap cleanup EXIT
 rm -rf -- "$payload_dir"
 mkdir -p -- "$payload_dir"
+
+# The feed owns the K230 buffering policy without forking SDL2. Materialize an
+# exact pinned checkout in a disposable directory, apply the reviewed
+# downstream patch there, and leave the source-locked checkout untouched for
+# the later application recipes in this same release.
+rm -rf -- "$patched_source"
+git clone --no-checkout "$source_root" "$patched_source"
+git -C "$patched_source" checkout --detach "$SOURCE_REVISION"
+git -C "$patched_source" apply --check \
+  "$package_dir/patches/0001-pulseaudio-add-opt-in-stream-buffer.patch"
+git -C "$patched_source" apply \
+  "$package_dir/patches/0001-pulseaudio-add-opt-in-stream-buffer.patch"
 
 (
   cd -- "$build_root"
@@ -53,7 +66,7 @@ mkdir -p -- "$payload_dir"
     -DSDL_PULSEAUDIO=ON -DSDL_PULSEAUDIO_SHARED=ON \
     -DSDL_ALSA=ON -DSDL_ALSA_SHARED=ON -DSDL_SNDIO=OFF \
     -DCMAKE_SKIP_RPATH=ON \
-    "$source_root"
+    "$patched_source"
 )
 "$TDVP_K230_CMAKE" --build "$build_root" --parallel
 DESTDIR="$TDVP_FEED_STAGING_ROOT" "$TDVP_K230_CMAKE" --install "$build_root"

@@ -1,0 +1,42 @@
+diff --git a/src/audio/pulseaudio/SDL_pulseaudio.c b/src/audio/pulseaudio/SDL_pulseaudio.c
+index 504d5d3ce..7fbaaaf15 100644
+--- a/src/audio/pulseaudio/SDL_pulseaudio.c
++++ b/src/audio/pulseaudio/SDL_pulseaudio.c
+@@ -663,9 +663,37 @@ static int PULSEAUDIO_OpenDevice(_THIS, const char *devname)
+     /* Reduced prebuffering compared to the defaults. */
+     paattr.fragsize = this->spec.size;
+     paattr.tlength = h->mixlen;
+     paattr.prebuf = -1;
+     paattr.maxlength = -1;
+     paattr.minreq = -1;
+     flags |= PA_STREAM_ADJUST_LATENCY;
++
++    if (!iscapture) {
++        const char *hint = SDL_GetHint("SDL_AUDIO_PULSEAUDIO_BUFFER_FRAMES");
++
++        if (hint && *hint) {
++            const int requested_frames = SDL_atoi(hint);
++            const Uint64 requested_length =
++                (Uint64)requested_frames * h->mixlen / this->spec.samples;
++
++            /* A positive hint smaller than one callback cannot make the
++             * backend more responsive. Ignore malformed and overflowing
++             * values instead of changing an existing application's policy. */
++            if (requested_frames >= this->spec.samples &&
++                requested_length >= h->mixlen &&
++                requested_length <= SDL_MAX_UINT32) {
++                paattr.tlength = (uint32_t)requested_length;
++                paattr.prebuf = paattr.tlength;
++                paattr.maxlength = paattr.tlength;
++                paattr.minreq = h->mixlen;
++
++                /* tlength is an application queue here. With
++                 * ADJUST_LATENCY set, PulseAudio treats it as an end-to-end
++                 * target and may shrink the explicitly configured ALSA
++                 * queue that protects a slow embedded codec. */
++                flags &= ~PA_STREAM_ADJUST_LATENCY;
++            }
++        }
++    }
+
+     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);

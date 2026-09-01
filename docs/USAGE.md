@@ -23,13 +23,16 @@ substitute; follow
 
 ## Configure the TDVP K230 r1 feed
 
-The current base image installs this **single, ABI-specific r7 feed** in
-`/etc/opkg/tdvp-feed.conf`. `r7` is the immutable catalogue revision; it does
-not change the firmware ABI, which remains r1:
+After the r7 candidate has passed verification, been signed, and been
+published, the TDVP K230 r1 configuration uses this **single, ABI-specific r7
+feed** in `/etc/opkg/tdvp-feed.conf`. `r7` is the immutable catalogue revision;
+it does not change the firmware ABI, which remains r1:
 
 ```conf
 src/gz tdvp_apps_r7 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r7/riscv64
 ```
+
+Do not point a device at that URL before its signed index has been published.
 
 Do not manually alter that file or add generic OpenWrt, Debian, or arbitrary
 `riscv64` feeds.

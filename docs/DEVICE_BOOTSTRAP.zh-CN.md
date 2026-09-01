@@ -32,7 +32,7 @@ option gpg_dir /etc/opkg/gpg
 option gpg_trust_level TrustAny
 ```
 
-在构建镜像时创建 `/var/lib/opkg/{lists,info}` 和状态文件。唯一的软件源应单独安装为 `/etc/opkg/tdvp-feed.conf`。`r7` 是 feed catalogue revision，固件 ABI 仍是 r1；LoFiBox 所需的 `ffprobe` 等应用工具由 feed 包交付，不能因此改动固件 ABI：
+在构建镜像时创建 `/var/lib/opkg/{lists,info}` 和状态文件。经验证并签名的 r7 release 发布后，再把其唯一、与 ABI 绑定的软件源单独配置为 `/etc/opkg/tdvp-feed.conf`。`r7` 是 feed catalogue revision，固件 ABI 仍是 r1；LoFiBox 所需的 `ffprobe` 等应用工具由 feed 包交付，不能因此改动固件 ABI：
 
 ```conf
 src/gz tdvp_apps_r7 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r7/riscv64

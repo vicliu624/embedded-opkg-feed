@@ -46,6 +46,41 @@ if [[ ! -f "$include_source/wayland-client.h" ]]; then
 fi
 [[ -f "$include_source/wayland-client.h" ]] || die 'Wayland client headers are missing'
 
+# Buildroot's SDK sysroot includes the development view of most firmware
+# libraries, but strips FreeType's public headers from this profile.  The
+# matching completed firmware build remains the authoritative fallback: use
+# its one FreeType build tree only when the sysroot/target roots do not expose
+# the required development files.  This keeps the overlay ABI-bound and does
+# not synthesise headers or metadata from the build host.
+header_sources=("$include_source" "$sysroot/usr/include" "$build_root/target/usr/include")
+freetype_build_dir=
+find_freetype_build_dir() {
+  [[ -n "$freetype_build_dir" ]] && return 0
+  local -a matches=()
+  shopt -s nullglob
+  matches=("$build_root"/build/freetype-*)
+  shopt -u nullglob
+  [[ ${#matches[@]} -eq 1 && -d "${matches[0]}" ]] || {
+    die 'the SDK and target roots omit FreeType development files, and the completed firmware build has no unique build/freetype-* fallback'
+  }
+  freetype_build_dir=${matches[0]}
+  [[ -d "$freetype_build_dir/include/freetype" && -f "$freetype_build_dir/include/ft2build.h" ]] || {
+    die "FreeType fallback has incomplete public headers: $freetype_build_dir"
+  }
+}
+
+has_freetype_headers=0
+for directory in "${header_sources[@]}"; do
+  if [[ -d "$directory/freetype" && -f "$directory/ft2build.h" ]]; then
+    has_freetype_headers=1
+    break
+  fi
+done
+if [[ "$has_freetype_headers" -eq 0 ]]; then
+  find_freetype_build_dir
+  header_sources+=("$freetype_build_dir/include")
+fi
+
 pc_sources=(
   "$sysroot/usr/lib/pkgconfig"
   "$sysroot/usr/share/pkgconfig"
@@ -66,15 +101,27 @@ trap cleanup EXIT
 mkdir -p "$temporary/include" "$temporary/lib/pkgconfig"
 
 copy_header_file() {
-  local header=$1
-  [[ -f "$include_source/$header" ]] || die "required header is missing: $header"
-  cp -a -- "$include_source/$header" "$temporary/include/$header"
+  local header=$1 source='' directory
+  for directory in "${header_sources[@]}"; do
+    if [[ -f "$directory/$header" ]]; then
+      source="$directory/$header"
+      break
+    fi
+  done
+  [[ -n "$source" ]] || die "required header is missing: $header"
+  cp -a -- "$source" "$temporary/include/$header"
 }
 
 copy_header_dir() {
-  local directory=$1
-  [[ -d "$include_source/$directory" ]] || die "required header directory is missing: $directory"
-  cp -a -- "$include_source/$directory" "$temporary/include/$directory"
+  local header_dir=$1 source='' directory
+  for directory in "${header_sources[@]}"; do
+    if [[ -d "$directory/$header_dir" ]]; then
+      source="$directory/$header_dir"
+      break
+    fi
+  done
+  [[ -n "$source" ]] || die "required header directory is missing: $header_dir"
+  cp -a -- "$source" "$temporary/include/$header_dir"
 }
 
 copy_pc_file() {
@@ -86,6 +133,10 @@ copy_pc_file() {
       break
     fi
   done
+  if [[ -z "$source" && "$pc" == freetype2 ]]; then
+    find_freetype_build_dir
+    source=$(find "$freetype_build_dir" -type f -name 'freetype2.pc' -print | LC_ALL=C sort | sed -n '1p')
+  fi
   [[ -n "$source" ]] || die "required pkg-config metadata is missing: $pc.pc"
   cp -a -- "$source" "$temporary/lib/pkgconfig/$pc.pc"
 }

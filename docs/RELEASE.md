@@ -13,9 +13,10 @@
 7. Verify the detached signature with the committed public key.
 8. Stage the immutable feed below `site/feed/<PLATFORM_ID>/rN/riscv64/`. The already published r1 path remains byte-for-byte unchanged.
 9. Promote the verified snapshot in full with `scripts/promote-stable-channel.sh --platform <platform> --release rN`, then run `scripts/verify-stable-channel.sh`. This is the only operation allowed to change the device-facing feed directory.
-10. Commit the generated public files to the protected `release` branch.
-11. Let the Pages workflow publish only after signature verification, rN immutability, and the stable-channel relationship succeed.
-12. On a non-production K230, test valid install, rejected bad signature,
+10. Stage the generated public files. Generic `.gitignore` excludes `.ipk`, so use `git add -f` for `*.ipk` in both rN and stable; a Packages index without its IPKs is not a publishable opkg source.
+11. Commit the generated public files to the protected `release` branch.
+12. Let the Pages workflow publish only after signature verification, rN immutability, and the stable-channel relationship succeed.
+13. On a non-production K230, test valid install, rejected bad signature,
     rejected wrong ABI, uninstall, and rollback before release approval.
 
 Rollback does not rewrite an old rN: promote the previously verified snapshot

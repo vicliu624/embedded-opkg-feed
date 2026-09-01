@@ -35,10 +35,17 @@ bash scripts/stage-site.sh --platform tdvp-k230-r1 --release r8 \
 
 bash scripts/promote-stable-channel.sh --platform tdvp-k230-r1 --release r8
 bash scripts/verify-stable-channel.sh --platform tdvp-k230-r1
+
+# .ipk 由通用 .gitignore 忽略；公开发布时必须显式纳入两份完整目录。
+git add -- site
+git add -f -- \
+  site/feed/<PLATFORM_ID>/r8/riscv64/*.ipk \
+  site/feed/<PLATFORM_ID>/stable/riscv64/*.ipk
 ```
 
-第三步会验证签名、ABI 依赖、索引哈希和 rN 到 `stable` 的逐包字节一致性。把 snapshot 与
-stable 的同一次变更提交到受保护的 `release` 分支后，Pages 工作流会重复验证再部署。
+第三步会验证签名、ABI 依赖、索引哈希和 rN 到 `stable` 的逐包字节一致性。通用 `.gitignore`
+会忽略 `.ipk`，因此第四步的强制暂存是发布完整 opkg 目录所必需的；它不代表绕过签名或校验。
+把 snapshot 与 stable 的同一次变更提交到受保护的 `release` 分支后，Pages 工作流会重复验证再部署。
 
 不得把未签名候选、任意本机构建目录或某个开发分支直接指向 `stable`。镜像也不得配置 rN URL；
 那会使每次应用发布都错误地变成固件发布。

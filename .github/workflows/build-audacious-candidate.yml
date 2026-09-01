@@ -1,0 +1,183 @@
+name: Build TDVP K230 feed candidate
+
+# This workflow deliberately produces an unsigned, expiring Actions artifact
+# only.  A candidate must compile against the exact firmware ABI before it can
+# be signed into an immutable feed release; it must never publish Pages or a
+# GitHub Release by itself.
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Immutable feed revision to cross-build and audit
+        required: true
+        default: r7
+        type: choice
+        options:
+          - r7
+          - r8
+          - r9
+          - r10
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tdvp-k230-feed-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  feed-candidate:
+    name: Cross-build and audit TDVP feed candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      TDVP_FIRMWARE_REVISION: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+      TDVP_PROFILE: k230_canmv_t_display_rm69a10_labwc_desktop_defconfig
+    steps:
+      - name: Check out the feed recipe revision
+        uses: actions/checkout@v4
+
+      - name: Check out the pinned TDVP r1 firmware ABI
+        uses: actions/checkout@v4
+        with:
+          repository: vicliu624/t-display-k230-vision-platform
+          ref: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+          path: firmware
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Assert the selected firmware ABI revision
+        run: |
+          test "$(git -C firmware rev-parse HEAD)" = "$TDVP_FIRMWARE_REVISION"
+
+      - name: Establish runner-local SDK paths
+        run: |
+          echo "TDVP_WORKTREE=${RUNNER_TEMP}/tdvp-sdk" >> "$GITHUB_ENV"
+          echo "TDVP_CACHE_ROOT=${GITHUB_WORKSPACE}/firmware/.ci-cache" >> "$GITHUB_ENV"
+          echo "TDVP_RELEASE=${{ inputs.release }}" >> "$GITHUB_ENV"
+
+      - name: Check recipe policy before the long target build
+        run: |
+          for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
+          bash ./tests/audacious-package-policy.sh
+          bash ./tests/vim-package-policy.sh
+          bash ./tests/archive-package-policy.sh
+          bash ./tests/git-package-policy.sh
+          bash ./tests/gh-package-policy.sh
+          bash ./tests/python3-package-policy.sh
+          bash ./tests/dev-tools-package-policy.sh
+          bash ./tests/command-package-policy.sh
+          bash ./tests/node22-package-policy.sh
+
+      - name: Restore SDK downloads and toolchain cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            firmware/.ci-cache/dl
+            firmware/.ci-cache/toolchain
+          key: tdvp-k230-feed-${{ runner.os }}-${{ hashFiles('support/**', 'packages/**', 'platforms/tdvp-k230-r1/**') }}
+          restore-keys: |
+            tdvp-k230-feed-${{ runner.os }}-
+
+      - name: Install reproducible TDVP build host
+        working-directory: firmware
+        run: |
+          chmod +x buildroot/tools/*.sh
+          bash buildroot/tools/ci-prepare-host.sh
+
+      - name: Stage the locked K230 SDK worktree
+        working-directory: firmware
+        run: |
+          rm -rf "$TDVP_WORKTREE"
+          bash buildroot/tools/prepare-k230-sdk-worktree.sh "$TDVP_WORKTREE"
+          mkdir -p "$TDVP_CACHE_ROOT/dl"
+          rm -rf "$TDVP_WORKTREE/dl"
+          ln -s "$TDVP_CACHE_ROOT/dl" "$TDVP_WORKTREE/dl"
+
+      - name: Build the matching TDVP r1 base target
+        working-directory: firmware
+        run: bash buildroot/tools/build-k230-sdk-rm69a10.sh "$TDVP_WORKTREE"
+
+      - name: Install reviewed Go host for GitHub CLI source builds
+        if: inputs.release == 'r9' || inputs.release == 'r10'
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.7'
+          check-latest: false
+
+      - name: Install reviewed Node v22 RISC-V source-build host
+        if: inputs.release == 'r10'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            gcc-riscv64-linux-gnu \
+            g++-riscv64-linux-gnu \
+            qemu-user
+          test "$(riscv64-linux-gnu-g++ -dumpversion | cut -d. -f1)" -ge 10
+          command -v qemu-riscv64
+
+      - name: Cross-build selected applications and assemble unsigned feed candidate
+        run: |
+          build_output="$TDVP_WORKTREE/output/$TDVP_PROFILE"
+          export TDVP_SDK_ROOT="$build_output/host"
+          export TDVP_FEED_BASE_ROOT="$build_output/target"
+          overlay_root="$RUNNER_TEMP/tdvp-wayland-sdk-overlay"
+          bash ./scripts/prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$overlay_root"
+          export TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay_root"
+          export TDVP_AUDACIOUS_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_VIM_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_ARCHIVE_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_GIT_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_PYTHON3_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_DEVEL_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_NODE22_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_NODE22_SOURCE_CACHE="$TDVP_CACHE_ROOT/dl/nodejs"
+          bash ./scripts/build-all.sh --platform tdvp-k230-r1 --release "$TDVP_RELEASE" --output candidate-dist
+          feed_dir="candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/$TDVP_RELEASE/riscv64"
+          test -s "$feed_dir/Packages"
+          packages=(audacious-core audacious-plugins audacious)
+          case "$TDVP_RELEASE" in
+            r7)
+              packages+=(ffprobe vicliu624-lofibox-widget)
+              ;;
+            r8) packages+=(vim-runtime vim vim-plugin-repeat vim-plugin-surround vim-plugin-commentary vim-plugin-sleuth) ;;
+            r9)
+              packages+=(
+                vim-runtime vim vim-plugin-repeat vim-plugin-surround vim-plugin-commentary vim-plugin-sleuth
+                libmgba sdl2 sdl2-ttf tdvp-gba tdvp-mpv tdvp-netsurf
+                libbz2 liblzma libzstd archive-tools
+                git-runtime git gh
+                libpython3.13 python3-runtime python3
+                make pkgconf patch diffutils strace
+                tdvp-dev-tools
+              )
+              ;;
+            r10)
+              packages+=(
+                vim-runtime vim vim-plugin-repeat vim-plugin-surround vim-plugin-commentary vim-plugin-sleuth
+                libmgba sdl2 sdl2-ttf tdvp-gba tdvp-mpv tdvp-netsurf
+                libbz2 liblzma libzstd archive-tools
+                git-runtime git gh
+                libpython3.13 python3-runtime python3
+                make pkgconf patch diffutils strace
+                tdvp-dev-tools
+                libcares libuv libnghttp2
+                libicudata libicuuc libicui18n libicuio
+                libnode node npm-runtime npm tdvp-nodejs-tools
+              )
+              ;;
+            *) echo "unsupported candidate release: $TDVP_RELEASE" >&2; exit 64 ;;
+          esac
+          for package in "${packages[@]}"; do
+            find "$feed_dir" -maxdepth 1 -type f -name "${package}_*.ipk" -print -quit | grep -q .
+            grep -Eq "^Package: ${package}$" "$feed_dir/Packages"
+          done
+          bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
+
+      - name: Upload unsigned candidate feed evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdvp-k230-${{ inputs.release }}-unsigned-${{ github.sha }}
+          path: candidate-dist
+          if-no-files-found: error
+          retention-days: 14

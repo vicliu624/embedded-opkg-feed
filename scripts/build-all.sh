@@ -87,7 +87,7 @@ if [[ "$runtime_catalog_enabled" -eq 1 ]]; then
     exit 70
   }
   TDVP_READELF="$readelf_tool" \
-    "$script_dir/build-runtime-catalog.sh" --platform "$platform_slug" \
+    bash "$script_dir/build-runtime-catalog.sh" --platform "$platform_slug" \
       --target-root "$base_root" --output "$feed_dir"
   runtime_owner_map="$feed_dir/.tdvp-runtime-owners.tsv"
   [[ -s "$runtime_owner_map" ]] || {
@@ -257,7 +257,7 @@ done
 "$script_dir/verify-feed.sh" --platform "$platform_slug" "$feed_dir"
 if [[ -n "$base_root" ]]; then
   TDVP_SDK_ROOT="${TDVP_SDK_ROOT:-}" \
-    "$script_dir/verify-runtime-closure.sh" --platform "$platform_slug" --base-root "$base_root" "$feed_dir"
+    bash "$script_dir/verify-runtime-closure.sh" --platform "$platform_slug" --base-root "$base_root" "$feed_dir"
   TDVP_SDK_ROOT="${TDVP_SDK_ROOT:-}" \
     "$script_dir/verify-target-runtime-coverage.sh" --platform "$platform_slug" --base-root "$base_root" "$feed_dir"
 fi

@@ -14,6 +14,7 @@ It is not a “works on every RISC-V device” repository. On embedded systems, 
 | Submit a program or library | [Contribution guide](CONTRIBUTING.md) |
 | Bring a new device/firmware platform to the feed | [Platform guide](docs/PLATFORM.md) |
 | Build, sign, and publish a release | [Release guide](docs/RELEASE.md) |
+| Understand snapshots, stable promotion, and rollback | [Feed channel guide](docs/CHANNELS.md) |
 | Repair the device-side opkg and signature support | [Device bootstrap guide](docs/DEVICE_BOOTSTRAP.md) |
 
 ## The repository in three sentences
@@ -23,20 +24,32 @@ It is not a “works on every RISC-V device” repository. On embedded systems, 
 3. **Feed packages must not replace immutable core system components.** libc, the kernel, system services, the boot chain, `opkg` itself, and the KPU driver belong to the firmware, not this feed.
 
 The intended model is the same division of responsibility used by a normal
-Linux distribution: the base image is a small, hardware-specific bootstrap and
-ABI seed; the feed is the expandable userland catalogue. From r6, **every
-dynamic runtime SONAME, plugin, and private runtime helper other than the
-dynamic loaders, glibc, `libgcc_s`, and `libstdc++` has exactly one
-independently installable IPK owner in the same ABI release.** The audit covers
+Linux distribution: the base image is a small, hardware-specific bootstrap,
+ABI seed, public key, and fixed `stable` channel; the feed is an expandable
+userland catalogue. Reviewed immutable rN snapshots are promoted to `stable`,
+so normal application releases do not require rebuilding firmware images. From
+r6, **every dynamic runtime SONAME, plugin, and
+private runtime helper included in an ABI release, other than the dynamic
+loaders, glibc, `libgcc_s`, and `libstdc++`, has exactly one independently
+installable IPK owner in that release.** The audit covers
 `/usr/lib`, `/usr/libexec`, `/usr/local/lib`, and `/usr/local/libexec`; the
 local locations are audited so that an accidental private shared object cannot
-become an undeclared base-image dependency. SDL2, libmGBA, libcurl, libpng,
+become an undeclared base-image dependency. When a new application needs a
+runtime library not yet present in the selected release, that library is added
+as a reusable provider in a new feed release. SDL2, libmGBA, libcurl, libpng,
 libjpeg, libutf8proc, GTK3, common CLI tools, desktop applications, and
-device-specific applications therefore ship as independent packages with exact
-versioned dependencies; leaf applications neither statically bundle libraries
-nor borrow a general-purpose runtime from the base image. It is deliberately
-not an unbounded binary repository for every RISC-V board: each feed release is
-tied to one declared TDVP platform ABI.
+device-specific applications enter the catalogue this way with exact versioned
+dependencies; leaf applications neither statically bundle libraries nor borrow
+a general-purpose runtime that lacks a feed provider.
+
+ELF inspection cannot discover a program that is launched through `exec`.
+Recipes must therefore name the owning package for such a command in
+`PACKAGE_DEPENDS`; if the selected target has no installable provider, add a
+normal tool package in the same feed release first. A missing application
+helper (for example LoFiBox's `ffprobe`) is **not** a reason to change the
+firmware ABI or its platform manifest. This is deliberately not an unbounded
+binary repository for every RISC-V board: each feed release is tied to one
+declared TDVP platform ABI.
 
 ## Currently supported platform
 
@@ -95,9 +108,9 @@ For example:
 ```sh
 TDVP_SDK_ROOT=/path/to/output/host \
 TDVP_FEED_BASE_ROOT=/path/to/output/target \
-./scripts/build-all.sh --platform tdvp-k230-r1 --release r4 --output dist
+./scripts/build-all.sh --platform tdvp-k230-r1 --release r7 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r4/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r7/riscv64
 ```
 
 Submit **reviewable source, build scripts, and package metadata**. Do not submit generated `.ipk` files, `Packages`, `Packages.gz`, signatures, or `site/feed/` content. They are release outputs. The full checklist is in [CONTRIBUTING.md](CONTRIBUTING.md).

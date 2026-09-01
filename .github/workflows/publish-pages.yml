@@ -6,7 +6,9 @@ on:
     paths:
       - 'site/**'
       - 'keys/tdvp-repo-public.asc'
+      - 'scripts/feed-platform.sh'
       - 'scripts/verify-feed.sh'
+      - 'scripts/verify-stable-channel.sh'
       - 'platforms/tdvp-k230-r1/platform.env'
   workflow_dispatch:
 
@@ -39,6 +41,10 @@ jobs:
               "$feed_dir"
           done < <(find site/feed -type f -name Packages -print0 | LC_ALL=C sort -z)
           test "$found" -eq 1
+          stable_dir='site/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/stable/riscv64'
+          if test -d "$stable_dir"; then
+            bash ./scripts/verify-stable-channel.sh --platform tdvp-k230-r1
+          fi
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

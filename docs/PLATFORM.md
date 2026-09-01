@@ -29,7 +29,12 @@ manifest and feed path whenever any of these change:
 - toolchain, sysroot, glibc, C++ ABI, or hard-float ABI;
 - kernel release for packages that interact with the kernel;
 - KPU/GPU/AI2D runtime ABI;
-- core Wayland stack required by a packaged application.
+- a compositor/protocol ABI change in the core Wayland stack.
+
+The last item means a change to the compositor or protocol ABI that every
+Wayland client must share. It does **not** mean a library, desktop feature, or
+helper executable needed by one application. Add those as ordinary feed
+packages with exact dependencies; do not create a new platform ABI for them.
 
 Packages use the following dependency gate:
 

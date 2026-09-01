@@ -1,0 +1,4 @@
+This profile installs the audited TDVP K230 Node.js v22.23.2 runtime, npm and
+the independent TDVP developer-tool starter profile.  It intentionally does
+not install arbitrary native npm add-ons: each native add-on needs its own
+RISC-V source recipe and dynamic-library closure audit.

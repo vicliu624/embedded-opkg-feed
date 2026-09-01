@@ -32,13 +32,18 @@ option gpg_dir /etc/opkg/gpg
 option gpg_trust_level TrustAny
 ```
 
-在构建镜像时创建 `/var/lib/opkg/{lists,info}` 和状态文件。唯一的软件源应单独安装为 `/etc/opkg/tdvp-feed.conf`：
+在构建镜像时创建 `/var/lib/opkg/{lists,info}` 和状态文件。镜像必须配置唯一、与 ABI
+绑定但**不含具体 rN** 的 `stable` 通道。`r7`、`r8` 等只是 feed catalogue revision；
+固件 ABI 仍是 r1。LoFiBox 所需的 `ffprobe` 等应用工具由 feed 包交付，不能因此改动固件
+ABI 或重打镜像：
 
 ```conf
-src/gz tdvp_apps_r4 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r4/riscv64
+src/gz tdvp_apps https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/stable/riscv64
 ```
 
-这样 opkg 才能知道哪些文件由它管理，不会把根文件系统当成一堆无法追踪的文件；签名软件源约定也不会混入核心 opkg 配置。
+`stable` 只能由发布流程以一份已签名、不可变 rN snapshot 的完整字节副本推进；设备仍然只
+信任 `Packages`/`Packages.gz` 的 detached signature。这样 opkg 才能知道哪些文件由它管理，
+不会把根文件系统当成一堆无法追踪的文件；签名软件源约定也不会混入核心 opkg 配置。
 
 ## 2. 在镜像中登记 ABI 标记包
 

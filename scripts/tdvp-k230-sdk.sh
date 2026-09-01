@@ -56,20 +56,19 @@ tdvp_require_wayland_sdk_overlay() {
     include/EGL/egl.h \
     include/pulse/pulseaudio.h \
     include/alsa/asoundlib.h \
+    include/ft2build.h \
     lib/pkgconfig/wayland-client.pc \
     lib/pkgconfig/xkbcommon.pc \
     lib/pkgconfig/libpulse.pc \
-    lib/libffi.so lib/libpulse.so lib/libasound.so; do
+    lib/pkgconfig/freetype2.pc \
+    include/freetype/freetype.h \
+    include/zlib.h \
+    lib/libffi.so lib/libpulse.so lib/libasound.so lib/libfreetype.so; do
     [[ -e "$overlay/$required" ]] || {
       echo "invalid TDVP_K230_WAYLAND_SDK_OVERLAY: missing $required" >&2
       return 69
     }
   done
-  # Freetype and zlib are ordinary Buildroot sysroot development inputs, not
-  # part of this firmware-specific Wayland/Pulse/ALSA bridge. Requiring stale
-  # duplicate copies here prevents a correctly matched SDK from building a
-  # leaf package while adding no ABI protection; the toolchain file already
-  # confines their lookup to TDVP_K230_SYSROOT.
   TDVP_K230_WAYLAND_SDK_OVERLAY=$overlay
   export TDVP_K230_WAYLAND_SDK_OVERLAY
 }

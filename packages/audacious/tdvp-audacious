@@ -1,0 +1,12 @@
+#!/bin/sh
+# Apply the small-landscape TDVP defaults only on first launch. A user's normal
+# Audacious preferences are never overwritten; Labwc selects the real work area.
+set -eu
+config_home=${XDG_CONFIG_HOME:-"$HOME/.config"}
+config_file="$config_home/audacious/config"
+if [ ! -e "$config_file" ]; then
+    umask 077
+    mkdir -p "$(dirname -- "$config_file")"
+    cp /usr/share/audacious/tdvp-k230-default.conf "$config_file"
+fi
+exec /usr/bin/audacious "$@"

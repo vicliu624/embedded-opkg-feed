@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Stage a signed immutable feed for Pages without replacing a prior release.
+# Stage a signed immutable rN snapshot for Pages without replacing a prior
+# release.  Publishing that snapshot through a mutable device channel is an
+# explicit, separate promotion performed by promote-stable-channel.sh.
 set -Eeuo pipefail
 
 platform_slug=
@@ -45,6 +47,7 @@ mkdir -p -- "$target_dir"
 cp -a -- "$source_feed/." "$target_dir/"
 cat >"$target_dir/release.json" <<EOF
 {
+  "publication_type": "immutable-release",
   "platform_slug": "$PLATFORM_SLUG",
   "platform_id": "$PLATFORM_ID",
   "feed_release": "$release",

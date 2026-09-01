@@ -8,4 +8,9 @@ dist-*/
 *.tar.xz
 *.sig
 *.asc
+# Feed index signatures are release artifacts, not local signing material.
+# Keep generic detached signatures ignored, but let `git add -- site` include
+# the two public signatures that opkg clients must fetch with each index.
+!site/feed/**/Packages.asc
+!site/feed/**/Packages.gz.asc
 !keys/tdvp-repo-public.asc

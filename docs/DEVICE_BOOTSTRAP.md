@@ -34,15 +34,21 @@ option gpg_trust_level TrustAny
 ```
 
 Create `/var/lib/opkg/{lists,info}` and the status file in the image build.
-Install the single ABI-specific r4 source separately in `/etc/opkg/tdvp-feed.conf`.
-The feed revision is not a firmware ABI bump: the marker below remains r1.
+Configure the single ABI-specific `stable` channel, never a particular rN
+directory, in `/etc/opkg/tdvp-feed.conf`. `r7`, `r8`, and later values are feed
+catalogue revisions while the firmware ABI marker remains r1. Application tools
+such as LoFiBox's `ffprobe` are feed packages, not a reason to change the
+firmware ABI or rebuild an image.
 
 ```conf
-src/gz tdvp_apps_r4 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r4/riscv64
+src/gz tdvp_apps https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/stable/riscv64
 ```
 
-This avoids an untracked root filesystem where opkg cannot know what it owns,
-and keeps the signed feed contract independent from the core opkg settings.
+Only the release workflow may advance `stable`, and only as a complete,
+byte-identical view of one signed immutable rN snapshot. Devices still trust
+the detached `Packages` and `Packages.gz` signatures. This avoids an untracked
+root filesystem where opkg cannot know what it owns, and keeps the signed feed
+contract independent from the core opkg settings.
 
 ## 2. Register the ABI marker in the image
 

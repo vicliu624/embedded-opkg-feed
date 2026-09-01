@@ -6,7 +6,7 @@
 
 ## 贡献者需要提交什么
 
-一个普通软件包 PR 可以在 `packages/<包名>/` 下新增或修改一个目录，目录内容如下：
+一个普通软件包 PR 可以在 `packages/<包名>/` 下新增或修改一个或多个目录，目录内容如下：
 
 ```text
 package.env                 包元数据和支持的平台
@@ -28,11 +28,13 @@ MAINTAINER='Your Name <you@example.com>'
 DESCRIPTION='One-line application description'
 SUPPORTED_PLATFORMS='tdvp-k230-r1'
 PACKAGE_KIND='application' # 或 shared-library
-PACKAGE_RELEASES='r2'
+PACKAGE_RELEASES='r7'
 PACKAGE_DEPENDS=''
 ```
 
 打包脚本会自动加入精确的 ABI 依赖。不要把 `tdvp-platform-abi` 手工写进 `PACKAGE_DEPENDS`；手工写不仅没有帮助，还可能和平台定义不一致。
+
+`PACKAGE_AUTO_RUNTIME_DEPENDS=1` 只能从 ELF 的 `NEEDED` 推导动态库，无法发现程序在运行时通过 `exec` 启动的命令。若应用依赖外部可执行文件，必须把其 provider 显式写进 `PACKAGE_DEPENDS`。所选 release 中尚无该命令时，应在同一 PR 或 release 增加普通应用/工具包；不能把某个应用的依赖误当成固件或平台清单变更。
 
 ## 命名与归属
 
@@ -51,6 +53,8 @@ PACKAGE_DEPENDS=''
 - 签名或发布工作流；
 - [平台说明](docs/PLATFORM.zh-CN.md)中列出的固件负责目录。
 
+新增普通应用、命令行工具、共享库或依赖 provider 都属于 `packages/` 的职责；不能仅因一个应用需要额外功能就修改平台清单。
+
 PR 模板会要求你填写适用平台、构建输入、源码来源、许可证、资源占用和测试结果。维护者会检查安装内容，并在匹配的平台测试镜像上运行软件，然后才会决定是否签名发布。
 
 ## 本地验证
@@ -58,9 +62,9 @@ PR 模板会要求你填写适用平台、构建输入、源码来源、许可�
 请在装有匹配 SDK 的 Linux 主机上运行：
 
 ```sh
-./scripts/build-all.sh --platform tdvp-k230-r1 --output dist
+./scripts/build-all.sh --platform tdvp-k230-r1 --release r7 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r7/riscv64
 ```
 
 仅仅成功生成 `.ipk` 并不等于可以合并。软件包还必须在所声明的平台上通过功能测试；否则即使包格式正确，也不能保证设备真的能使用它。

@@ -25,7 +25,18 @@ jobs:
           ./scripts/make-index.sh dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
           ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
             dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/riscv64
+          channel_fixture=$(mktemp -d)
+          trap 'rm -rf -- "$channel_fixture"' EXIT
+          release_path=tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
+          mkdir -p "$channel_fixture/site/feed/$(dirname "$release_path")"
+          cp -a "site/feed/$release_path" "$channel_fixture/site/feed/$release_path"
+          TDVP_FEED_SITE_ROOT="$channel_fixture/site" \
+            bash ./scripts/promote-stable-channel.sh --platform tdvp-k230-r1 --release r2
+          TDVP_FEED_SITE_ROOT="$channel_fixture/site" \
+            bash ./scripts/verify-stable-channel.sh --platform tdvp-k230-r1
           bash ./tests/build-shared-package-policy.sh
+          bash ./tests/audacious-package-policy.sh
+          bash ./tests/vim-package-policy.sh
 
   cardputer-source-lock:
     name: Validate pinned Cardputer Zero source revision

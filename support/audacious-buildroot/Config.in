@@ -1,0 +1,17 @@
+config BR2_PACKAGE_TDVP_AUDACIOUS
+	bool "tdvp-audacious"
+	depends on BR2_INSTALL_LIBSTDCPP
+	depends on BR2_TOOLCHAIN_HAS_THREADS
+	help
+	  Audacious 4.6.1 core, built only as a transient input to the
+	  ABI-matched TDVP K230 feed. It is not installed into the firmware
+	  target: the feed build splits its reusable libraries and leaf
+	  application into separate IPKs.
+
+config BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS
+	bool "tdvp-audacious-plugins"
+	depends on BR2_PACKAGE_TDVP_AUDACIOUS
+	help
+	  GTK3, ALSA/PulseAudio, local-file and FFmpeg playback plugins used by
+	  the TDVP Audacious feed package. Deliberately excludes Qt, X11,
+	  PipeWire, stream-service and visualization modules.

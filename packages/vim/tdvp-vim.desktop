@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Vim
+Comment=Terminal text editor
+Exec=foot -e vim
+Icon=accessories-text-editor
+Categories=Utility;TextEditor;
+Terminal=false
+StartupNotify=true

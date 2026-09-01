@@ -46,11 +46,19 @@ location, and all signature rejection cases before a release is published.
 
 ## Immutable releases
 
-Never overwrite an already published feed directory. A new ABI or firmware
+Never overwrite an already published rN feed directory. A new ABI or firmware
 contract gets a new `PLATFORM_ID`. Even when the ABI is unchanged, adding an
 application, shared runtime, or index requires a new immutable feed revision,
 for example `site/feed/<PLATFORM_ID>/r2/riscv64/`. The published r1 path is
 never re-signed or replaced.
+
+Devices do not configure an rN path directly. They configure
+`site/feed/<PLATFORM_ID>/stable/<ARCH>/`. `stable` is the one mutable directory,
+but not an unsigned index: every promotion copies one already verified rN
+snapshot in full, retaining byte-identical IPKs, `Packages`, `Packages.gz`, and
+both detached signatures. Pages CI proves that relationship. Device trust
+continues to come from the signed package index; the channel merely lets normal
+Feed releases proceed without rebuilding firmware images.
 
 The `release` branch must require review. Publishing directly from `main`
 would allow a build change to become a device update without a release gate.

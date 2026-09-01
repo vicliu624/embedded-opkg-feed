@@ -39,7 +39,16 @@ TDVP K230 r1 基础镜像使用这套 `gpg-asc` 约定，其中包括 `check_sig
 
 ## 不可变发布
 
-不要覆盖一个已经公开发布的软件源目录。新的 ABI 或固件约定必须使用新的 `PLATFORM_ID`；即使 ABI 未变，只要需要新增包、共享库或索引，也必须发布新的不可变 feed revision，例如 `site/feed/<PLATFORM_ID>/r2/riscv64/`。已发布的 r1 路径保持原样，绝不重签或覆盖。
+不要覆盖一个已经公开发布的 `rN` 软件源目录。新的 ABI 或固件约定必须使用新的
+`PLATFORM_ID`；即使 ABI 未变，只要需要新增包、共享库或索引，也必须发布新的不可变 feed
+revision，例如 `site/feed/<PLATFORM_ID>/r2/riscv64/`。已发布的 r1 路径保持原样，绝不重签或
+覆盖。
+
+设备不直接配置 rN，而是配置 `site/feed/<PLATFORM_ID>/stable/<ARCH>/`。`stable` 是唯一可变
+目录，但不是不受控的索引：每次提升必须完整复制一份已经用同一公钥验证过的 rN 目录，保持
+所有 IPK、`Packages`、`Packages.gz` 和两份 detached signature 字节一致。Pages CI 会验证这种
+对应关系。设备安全性仍然来自已签名的 Packages 索引；`stable` 只是使高频 Feed 发布不需要
+重打固件镜像的交付通道。
 
 `release` 分支必须要求评审。直接从 `main` 发布，会让一次普通构建修改直接变成设备更新，缺少发布闸门。
 

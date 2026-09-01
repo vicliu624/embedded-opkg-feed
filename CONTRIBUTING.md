@@ -8,7 +8,7 @@ is not a binary upload site and not a general cross-device RISC-V distribution.
 
 ## What a contributor submits
 
-A PR may add or change one directory under `packages/<package-name>/` with:
+A PR may add or change one or more directories under `packages/<package-name>/` with:
 
 ```text
 package.env                 package metadata and supported platforms
@@ -34,12 +34,19 @@ MAINTAINER='Your Name <you@example.com>'
 DESCRIPTION='One-line application description'
 SUPPORTED_PLATFORMS='tdvp-k230-r1'
 PACKAGE_KIND='application' # or shared-library
-PACKAGE_RELEASES='r2'
+PACKAGE_RELEASES='r7'
 PACKAGE_DEPENDS=''
 ```
 
 The packaging script injects the exact ABI dependency. Do not write
 `tdvp-platform-abi` manually in `PACKAGE_DEPENDS`.
+
+`PACKAGE_AUTO_RUNTIME_DEPENDS=1` derives ELF `NEEDED` libraries only. If an
+application starts another executable at runtime, its package owner must be
+listed explicitly in `PACKAGE_DEPENDS`. When that executable has no provider
+in the selected release, add its ordinary application/tool package to the feed
+in the same PR or release. Do not turn an application dependency into a
+firmware or platform-manifest change.
 
 ## Naming and ownership
 
@@ -60,6 +67,10 @@ Do not change these in a normal package PR:
 - signing/publishing workflows;
 - firmware-owned paths listed in [docs/PLATFORM.md](docs/PLATFORM.md).
 
+Adding a normal application, tool, shared library, or a dependency provider
+belongs under `packages/`. It must not alter a platform manifest merely because
+one application needs an additional feature.
+
 The PR template asks for the platform, build inputs, source origin, license,
 resource impact, and test results. A maintainer will inspect the payload and
 run the package in a matching test image before signing it.
@@ -69,9 +80,9 @@ run the package in a matching test image before signing it.
 On a Linux host with the matching SDK:
 
 ```sh
-./scripts/build-all.sh --platform tdvp-k230-r1 --output dist
+./scripts/build-all.sh --platform tdvp-k230-r1 --release r7 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r7/riscv64
 ```
 
 The existence of a successful `.ipk` build is not sufficient for acceptance;

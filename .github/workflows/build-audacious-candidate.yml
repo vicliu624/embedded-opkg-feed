@@ -22,11 +22,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: tdvp-k230-audacious-candidate-${{ github.ref }}
+  group: tdvp-k230-feed-candidate-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  audacious-r7:
+  feed-candidate:
     name: Cross-build and audit TDVP feed candidate
     runs-on: ubuntu-24.04
     timeout-minutes: 300
@@ -37,7 +37,7 @@ jobs:
       - name: Check out the feed recipe revision
         uses: actions/checkout@v4
 
-      - name: Check out the pinned r9 firmware ABI
+      - name: Check out the pinned TDVP r1 firmware ABI
         uses: actions/checkout@v4
         with:
           repository: vicliu624/t-display-k230-vision-platform
@@ -94,7 +94,7 @@ jobs:
           rm -rf "$TDVP_WORKTREE/dl"
           ln -s "$TDVP_CACHE_ROOT/dl" "$TDVP_WORKTREE/dl"
 
-      - name: Build the r9 base target
+      - name: Build the matching TDVP r1 base target
         working-directory: firmware
         run: bash buildroot/tools/build-k230-sdk-rm69a10.sh "$TDVP_WORKTREE"
 
@@ -134,7 +134,9 @@ jobs:
           test -s "$feed_dir/Packages"
           packages=(audacious-core audacious-plugins audacious)
           case "$TDVP_RELEASE" in
-            r7) ;;
+            r7)
+              packages+=(ffprobe vicliu624-lofibox-widget)
+              ;;
             r8) packages+=(vim-runtime vim vim-plugin-repeat vim-plugin-surround vim-plugin-commentary vim-plugin-sleuth) ;;
             r9)
               packages+=(

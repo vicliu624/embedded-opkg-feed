@@ -56,12 +56,14 @@ tdvp_require_wayland_sdk_overlay() {
     include/EGL/egl.h \
     include/pulse/pulseaudio.h \
     include/alsa/asoundlib.h \
+    include/ft2build.h \
     lib/pkgconfig/wayland-client.pc \
     lib/pkgconfig/xkbcommon.pc \
     lib/pkgconfig/libpulse.pc \
+    lib/pkgconfig/freetype2.pc \
     include/freetype/freetype.h \
     include/zlib.h \
-    lib/libffi.so lib/libpulse.so lib/libasound.so; do
+    lib/libffi.so lib/libpulse.so lib/libasound.so lib/libfreetype.so; do
     [[ -e "$overlay/$required" ]] || {
       echo "invalid TDVP_K230_WAYLAND_SDK_OVERLAY: missing $required" >&2
       return 69

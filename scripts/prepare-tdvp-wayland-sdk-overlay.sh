@@ -129,13 +129,15 @@ copy_header_file wayland-client-protocol.h
 copy_header_file wayland-util.h
 copy_header_dir EGL
 copy_header_dir alsa
+copy_header_dir freetype
 copy_header_dir pulse
 copy_header_dir xkbcommon
+copy_header_file ft2build.h
 
-for pc in wayland-client wayland-cursor wayland-egl xkbcommon alsa libpulse; do
+for pc in wayland-client wayland-cursor wayland-egl xkbcommon alsa libpulse freetype2; do
   copy_pc_file "$pc"
 done
-for library in wayland-client wayland-cursor wayland-egl xkbcommon EGL asound pulse ffi; do
+for library in wayland-client wayland-cursor wayland-egl xkbcommon EGL asound pulse ffi freetype; do
   copy_link_input "$library"
 done
 

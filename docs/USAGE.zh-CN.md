@@ -16,10 +16,10 @@
 
 ## 配置 TDVP K230 r1 软件源
 
-当前基础镜像会在 `/etc/opkg/tdvp-feed.conf` 中安装下面这个**与 ABI 绑定的 r4 软件源**。这里的 r4 是不可变的软件源目录版本；设备的基础 ABI 仍是 r1：
+当前基础镜像会在 `/etc/opkg/tdvp-feed.conf` 中安装下面这个**与 ABI 绑定的 r7 软件源**。这里的 r7 是不可变的软件源目录版本；由于媒体工具契约新增 `ffprobe`，设备基础 ABI 为 r2：
 
 ```conf
-src/gz tdvp_apps_r4 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r4/riscv64
+src/gz tdvp_apps_r7 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r2/r7/riscv64
 ```
 
 不要手工修改该文件，也不要添加通用 OpenWrt、Debian 或任意 `riscv64` 软件源；即使 CPU 架构同为 RISC-V 64 位，它们的系统 ABI 也可能不同。
@@ -36,6 +36,14 @@ tdvp-gba
 ```
 
 安装社区应用时，把 `tdvp-gba` 换成它的实际发布名称。`tdvp-gba` 会自动拉取 `sdl2`、`sdl2-ttf` 和 `libmgba`；不要单独强制安装或绕开依赖检查。若设备已安装 r1 的旧 `tdvp-cardputer-zero-gba`，先卸载旧包再安装 `tdvp-gba`，避免两个启动器重叠。不要使用 `--force-depends`、`--force-checksum` 或 `--no-check-certificate`；这些选项会跳过本仓库用来保护设备的检查。
+
+LoFiBox 的社区包可作为一个事务安装：
+
+```sh
+sudo tdvp-opkg install vicliu624-lofibox-widget
+```
+
+它会拉取精确的 r7 Wayland、XKB 与 FreeType 运行时包。它不安装降级解码器；匹配的 r2 固件必须在 widget 启动前提供 `ffmpeg`、`ffprobe` 以及 `paplay` 或 `aplay`。
 
 ## 哪些失败是正常且正确的
 

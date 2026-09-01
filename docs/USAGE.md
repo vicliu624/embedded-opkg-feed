@@ -23,12 +23,12 @@ substitute; follow
 
 ## Configure the TDVP K230 r1 feed
 
-The current base image installs this **single, ABI-specific r4 feed** in
-`/etc/opkg/tdvp-feed.conf`. `r4` is the immutable catalogue revision; the
-firmware ABI itself remains r1:
+The current base image installs this **single, ABI-specific r7 feed** in
+`/etc/opkg/tdvp-feed.conf`. `r7` is the immutable catalogue revision; the
+firmware ABI is r2 because its media-tool contract now includes `ffprobe`:
 
 ```conf
-src/gz tdvp_apps_r4 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r4/riscv64
+src/gz tdvp_apps_r7 https://vicliu624.github.io/embedded-opkg-feed/feed/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r2/r7/riscv64
 ```
 
 Do not manually alter that file or add generic OpenWrt, Debian, or arbitrary
@@ -51,6 +51,16 @@ dependencies. If the immutable r1 package `tdvp-cardputer-zero-gba` is
 installed, remove it before installing `tdvp-gba` so their launchers cannot
 overlap. Do not use `--force-depends`, `--force-checksum`, or
 `--no-check-certificate`.
+
+LoFiBox's published community package is installed as one transaction:
+
+```sh
+sudo tdvp-opkg install vicliu624-lofibox-widget
+```
+
+It pulls the exact r7 Wayland, XKB and FreeType runtime packages. It does not
+install a fallback decoder: the matching r2 firmware must provide `ffmpeg`,
+`ffprobe`, and `paplay` or `aplay` before the widget starts.
 
 ## Expected failure cases
 

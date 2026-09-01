@@ -58,9 +58,9 @@ PR 模板会要求你填写适用平台、构建输入、源码来源、许可�
 请在装有匹配 SDK 的 Linux 主机上运行：
 
 ```sh
-./scripts/build-all.sh --platform tdvp-k230-r1 --output dist
+./scripts/build-all.sh --platform tdvp-k230-r1 --release r7 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r2/r7/riscv64
 ```
 
 仅仅成功生成 `.ipk` 并不等于可以合并。软件包还必须在所声明的平台上通过功能测试；否则即使包格式正确，也不能保证设备真的能使用它。

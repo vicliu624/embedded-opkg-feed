@@ -34,7 +34,7 @@ manifest and feed path whenever any of these change:
 Packages use the following dependency gate:
 
 ```text
-Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r2)
 ```
 
 The base firmware must register that marker as installed. A package that

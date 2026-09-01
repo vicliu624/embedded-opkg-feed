@@ -36,7 +36,7 @@
 | CPU 架构 | RISC-V 64 位，LP64D |
 | C 库 | glibc 2.33 |
 | 内核基线 | Linux 6.6.36 |
-| 平台 ABI 标识 | `tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1` |
+| 平台 ABI 标识 | `tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r2` |
 
 完整平台边界见 [平台说明](docs/PLATFORM.zh-CN.md)。如果你的设备与这些条件不同，请不要直接安装本平台的包；应先为你的设备建立新的平台定义。
 
@@ -70,9 +70,9 @@ tdvp-gba
 ```sh
 TDVP_SDK_ROOT=/path/to/output/host \
 TDVP_FEED_BASE_ROOT=/path/to/output/target \
-./scripts/build-all.sh --platform tdvp-k230-r1 --release r4 --output dist
+./scripts/build-all.sh --platform tdvp-k230-r1 --release r7 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r4/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r2/r7/riscv64
 ```
 
 开发者只需要提交**可审查的源码、构建脚本和包描述**。不要提交生成的 `.ipk`、`Packages`、`Packages.gz`、签名文件或 `site/feed/` 内容；这些是发布流程的产物。更详细、带检查清单的说明见 [CONTRIBUTING.zh-CN.md](CONTRIBUTING.zh-CN.md)。

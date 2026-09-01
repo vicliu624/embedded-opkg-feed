@@ -4,4 +4,4 @@
 # independently versioned owner in the feed.  A current transitional image
 # may contain byte-identical copies for boot convenience, but it must never be
 # used as an undeclared desktop, network, multimedia, or application runtime.
-tdvp-platform-abi|2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1|K230 glibc dynamic-loader and compiler ABI seed|ld-linux-riscv32-ilp32.so.1,ld-linux-riscv32-ilp32d.so.1,ld-linux-riscv64-lp64.so.1,ld-linux-riscv64-lp64d.so.1,libc.so.6,libdl.so.2,libm.so.6,libpthread.so.0,librt.so.1,libgcc_s.so.1,libstdc++.so.6
+tdvp-platform-abi|2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r2|K230 glibc dynamic-loader and compiler ABI seed|ld-linux-riscv32-ilp32.so.1,ld-linux-riscv32-ilp32d.so.1,ld-linux-riscv64-lp64.so.1,ld-linux-riscv64-lp64d.so.1,libc.so.6,libdl.so.2,libm.so.6,libpthread.so.0,librt.so.1,libgcc_s.so.1,libstdc++.so.6

@@ -32,7 +32,7 @@
 每个包使用下面的依赖门槛：
 
 ```text
-Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r1)
+Depends: tdvp-platform-abi (= 2025.02.1-k230.6.6.36-glibc2.33-rv64-lp64d-r2)
 ```
 
 基础固件必须把这个标记包登记为已安装。若一个包不能满足此依赖，就不应使用 `--force-depends` 强行安装；正确做法是切换到匹配的平台软件源，或为新固件建立新的平台定义。

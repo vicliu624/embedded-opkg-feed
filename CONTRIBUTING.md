@@ -69,9 +69,9 @@ run the package in a matching test image before signing it.
 On a Linux host with the matching SDK:
 
 ```sh
-./scripts/build-all.sh --platform tdvp-k230-r1 --output dist
+./scripts/build-all.sh --platform tdvp-k230-r1 --release r7 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r2/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r2/r7/riscv64
 ```
 
 The existence of a successful `.ipk` build is not sufficient for acceptance;

@@ -49,7 +49,7 @@ The first platform is `tdvp-k230-r1`:
 | CPU architecture | 64-bit RISC-V, LP64D |
 | C library | glibc 2.33 |
 | Kernel baseline | Linux 6.6.36 |
-| Platform ABI ID | `tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1` |
+| Platform ABI ID | `tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r2` |
 
 Read the [platform guide](docs/PLATFORM.md) for the full compatibility boundary. If your device differs from this baseline, do not install this platform's packages directly; define a separate platform first.
 
@@ -95,9 +95,9 @@ For example:
 ```sh
 TDVP_SDK_ROOT=/path/to/output/host \
 TDVP_FEED_BASE_ROOT=/path/to/output/target \
-./scripts/build-all.sh --platform tdvp-k230-r1 --release r4 --output dist
+./scripts/build-all.sh --platform tdvp-k230-r1 --release r7 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r4/riscv64
+  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r2/r7/riscv64
 ```
 
 Submit **reviewable source, build scripts, and package metadata**. Do not submit generated `.ipk` files, `Packages`, `Packages.gz`, signatures, or `site/feed/` content. They are release outputs. The full checklist is in [CONTRIBUTING.md](CONTRIBUTING.md).

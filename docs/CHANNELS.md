@@ -46,6 +46,7 @@ bash scripts/promote-stable-channel.sh --platform tdvp-k230-r1 --release r8
 bash scripts/verify-stable-channel.sh --platform tdvp-k230-r1
 
 # Generic .gitignore excludes .ipk; explicitly stage both complete directories.
+# Packages.asc and Packages.gz.asc are intentionally unignored under site/feed.
 git add -- site
 git add -f -- \
   site/feed/<PLATFORM_ID>/r8/riscv64/*.ipk \
@@ -55,9 +56,11 @@ git add -f -- \
 The last command verifies signatures, ABI dependencies, index hashes, and the
 per-package byte identity from rN to `stable`. Generic `.gitignore` excludes
 `.ipk`, so the explicit forced staging is required to publish complete opkg
-directories; it does not bypass signature or validation rules. Commit the
-snapshot and stable change together on the protected `release` branch; the
-Pages workflow verifies the relation again before deployment.
+directories; it does not bypass signature or validation rules. The public
+`Packages.asc` and `Packages.gz.asc` files beneath `site/feed/` are explicitly
+unignored and must be staged with the indexes. Commit the snapshot and stable
+change together on the protected `release` branch; the Pages workflow verifies
+the relation again before deployment.
 
 Never promote an unsigned candidate, an arbitrary local build directory, or a
 development branch to `stable`. Firmware must never configure an rN URL,

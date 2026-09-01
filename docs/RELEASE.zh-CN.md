@@ -15,6 +15,7 @@
 9. 使用 `scripts/promote-stable-channel.sh --platform <platform> --release rN` 将已验证的快照完整提升到 `stable`，再运行 `scripts/verify-stable-channel.sh`。这一步是唯一允许改变设备软件源目录的操作。
 10. 暂存生成的公开文件。通用 `.gitignore` 会忽略 `.ipk`，因此必须对 rN 和 stable 目录中的
     `*.ipk` 使用 `git add -f`；没有 IPK 的 Packages 索引不能作为公开 opkg 软件源发布。
+    `site/feed/**/Packages.asc` 和 `Packages.gz.asc` 已明确从忽略规则中放行，必须随各自索引一起暂存。
 11. 将生成的公开文件提交到受保护的 `release` 分支。
 12. 只有签名验证成功、rN 不可变性和 stable 对应关系都通过后，才允许 Pages 工作流发布。
 13. 在非生产 K230 上测试：正确安装、拒绝错误签名、拒绝错误 ABI、卸载以及回滚；全部通过后再批准发布。

@@ -2,4 +2,3 @@
 # inputs staged temporarily into the matching Buildroot worktree by the feed
 # recipe; no host-native or prebuilt RISC-V payload is accepted.
 sha256  62a5a609267eca7f6e3ce52ef6f42d5618d2961e3b4ddc227c6a5859026965d9  audacious-4.6.1.tar.bz2
-sha256  22e58a8a2c3f3caa9687434353618c822963cc8846cd239de36d4e8e5bd166a6  audacious-plugins-4.6.1.tar.bz2

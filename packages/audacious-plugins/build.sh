@@ -23,7 +23,7 @@ buildroot_tree=$(awk '$1 == "MAKEARGS" && ($2 == ":=" || $2 == "+=") && $3 == "-
 [[ -n "$buildroot_tree" && -d "$buildroot_tree" && -x "$buildroot_tree/utils/config" ]] || { echo 'could not resolve the locked Buildroot tree from the SDK output' >&2; exit 68; }
 actual_buildroot_version=$(awk '$1 == "export" && $2 == "BR2_VERSION" && $3 == ":=" { print $4; exit }' "$buildroot_tree/Makefile")
 [[ "$actual_buildroot_version" == '2025.02.1' ]] || { echo "expected Buildroot 2025.02.1, got ${actual_buildroot_version:-unknown}" >&2; exit 69; }
-grep -Fqx "sha256  $SOURCE_ARCHIVE_SHA256  $SOURCE_ARCHIVE" "$support_dir/tdvp-audacious.hash" || { echo 'Audacious plugin source checksum does not match the reviewed Buildroot package input' >&2; exit 70; }
+grep -Fqx "sha256  $SOURCE_ARCHIVE_SHA256  $SOURCE_ARCHIVE" "$support_dir/tdvp-audacious-plugins.hash" || { echo 'Audacious plugin source checksum does not match the reviewed Buildroot package input' >&2; exit 70; }
 
 staged_package="$buildroot_tree/package/tdvp-audacious"
 config_file="$buildroot_tree/package/Config.in"

@@ -1,0 +1,7 @@
+config BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS
+	bool "tdvp-audacious-plugins"
+	depends on BR2_PACKAGE_TDVP_AUDACIOUS
+	help
+	  GTK3, ALSA/PulseAudio, local-file and FFmpeg playback plugins used by
+	  the TDVP Audacious feed package. Deliberately excludes Qt, X11,
+	  PipeWire, stream-service and visualization modules.

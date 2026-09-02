@@ -2,9 +2,8 @@
 # tdvp-audacious-plugins
 ################################################################################
 
-# Buildroot derives a package identity from its .mk filename. Keep this
-# recipe distinct from tdvp-audacious.mk: placing two $(meson-package)
-# evaluations in the same file registers the latter as tdvp-audacious again.
+# Buildroot derives package identity from the package directory. Keep this
+# recipe in its own directory so it cannot register as tdvp-audacious.
 TDVP_AUDACIOUS_PLUGINS_VERSION = 4.6.1
 TDVP_AUDACIOUS_PLUGINS_SOURCE = audacious-plugins-$(TDVP_AUDACIOUS_PLUGINS_VERSION).tar.bz2
 TDVP_AUDACIOUS_PLUGINS_SITE = https://distfiles.audacious-media-player.org

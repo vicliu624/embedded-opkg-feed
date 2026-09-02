@@ -1,3 +1,0 @@
-# Hash metadata for the separately named tdvp-audacious-plugins Buildroot
-# package. Buildroot resolves this file from the .mk package identity.
-sha256  22e58a8a2c3f3caa9687434353618c822963cc8846cd239de36d4e8e5bd166a6  audacious-plugins-4.6.1.tar.bz2

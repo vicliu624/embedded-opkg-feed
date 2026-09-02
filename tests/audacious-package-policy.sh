@@ -25,6 +25,15 @@ expect_fixed_line() {
   }
 }
 
+expect_contains() {
+  local expected=$1
+  local path=$2
+  grep -Fq -- "$expected" "$path" || {
+    echo "missing required policy fragment in $path: $expected" >&2
+    exit 1
+  }
+}
+
 expect_exactly_once() {
   local text=$1
   local path=$2
@@ -36,12 +45,31 @@ expect_exactly_once() {
   }
 }
 
+expect_recipe_directory_identity() {
+  local recipe=$1
+  local package_dir
+  local recipe_name
+  package_dir=$(basename -- "$(dirname -- "$recipe")")
+  recipe_name=$(basename -- "${recipe%.mk}")
+  [[ "$package_dir" == "$recipe_name" ]] || {
+    echo "Buildroot recipe must live in its own matching package directory: $recipe" >&2
+    exit 1
+  }
+}
+
 core_env="$repo_root/packages/audacious-core/package.env"
 plugins_env="$repo_root/packages/audacious-plugins/package.env"
 app_env="$repo_root/packages/audacious/package.env"
-core_buildroot_recipe="$repo_root/support/audacious-buildroot/tdvp-audacious.mk"
-plugins_buildroot_recipe="$repo_root/support/audacious-buildroot/tdvp-audacious-plugins.mk"
-plugins_buildroot_hash="$repo_root/support/audacious-buildroot/tdvp-audacious-plugins.hash"
+core_build_script="$repo_root/packages/audacious-core/build.sh"
+plugins_build_script="$repo_root/packages/audacious-plugins/build.sh"
+buildroot_support_dir="$repo_root/support/audacious-buildroot"
+core_buildroot_dir="$buildroot_support_dir/tdvp-audacious"
+plugins_buildroot_dir="$buildroot_support_dir/tdvp-audacious-plugins"
+core_buildroot_recipe="$core_buildroot_dir/tdvp-audacious.mk"
+plugins_buildroot_recipe="$plugins_buildroot_dir/tdvp-audacious-plugins.mk"
+core_buildroot_config="$core_buildroot_dir/Config.in"
+plugins_buildroot_config="$plugins_buildroot_dir/Config.in"
+plugins_buildroot_hash="$plugins_buildroot_dir/tdvp-audacious-plugins.hash"
 layout_config="$repo_root/packages/audacious/tdvp-k230-default.conf"
 owner_map="$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
 
@@ -55,6 +83,8 @@ expect_line "^PACKAGE_DEPENDS='audacious-core \\(= 4\\.6\\.1-1\\), audacious-plu
 expect_fixed_line 'TDVP_AUDACIOUS_VERSION = 4.6.1' "$core_buildroot_recipe"
 expect_fixed_line 'TDVP_AUDACIOUS_PLUGINS_VERSION = 4.6.1' "$plugins_buildroot_recipe"
 expect_fixed_line 'sha256  22e58a8a2c3f3caa9687434353618c822963cc8846cd239de36d4e8e5bd166a6  audacious-plugins-4.6.1.tar.bz2' "$plugins_buildroot_hash"
+expect_line '^config BR2_PACKAGE_TDVP_AUDACIOUS$' "$core_buildroot_config"
+expect_line '^config BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS$' "$plugins_buildroot_config"
 expect_line '^[[:space:]]*-Dgtkui=true \\' "$plugins_buildroot_recipe"
 expect_line '^[[:space:]]*-Dffaudio=true \\' "$plugins_buildroot_recipe"
 expect_line '^[[:space:]]*-Dalsa=true \\' "$plugins_buildroot_recipe"
@@ -63,15 +93,24 @@ expect_line '^[[:space:]]*-Dqt=false \\' "$plugins_buildroot_recipe"
 expect_line '^[[:space:]]*-Dqtui=false \\' "$plugins_buildroot_recipe"
 expect_line '^[[:space:]]*-Dpipewire=false \\' "$plugins_buildroot_recipe"
 
-# Buildroot derives package identity from a .mk filename. Each file must
-# register exactly its own package, otherwise the second meson-package
-# evaluation is identified as tdvp-audacious and candidate builds fail.
+# Buildroot derives package identity from its package directory. Each staged
+# directory must register exactly one package, otherwise the plugin evaluation
+# is identified as tdvp-audacious and candidate builds fail.
 expect_exactly_once '$(eval $(meson-package))' "$core_buildroot_recipe"
 expect_exactly_once '$(eval $(meson-package))' "$plugins_buildroot_recipe"
+expect_recipe_directory_identity "$core_buildroot_recipe"
+expect_recipe_directory_identity "$plugins_buildroot_recipe"
 if grep -Fq 'TDVP_AUDACIOUS_PLUGINS_' "$core_buildroot_recipe"; then
   echo 'Audacious plugins must use their own Buildroot recipe file' >&2
   exit 1
 fi
+if [[ -e "$buildroot_support_dir/Config.in" || -e "$buildroot_support_dir/tdvp-audacious.mk" || -e "$buildroot_support_dir/tdvp-audacious-plugins.mk" ]]; then
+  echo 'Audacious Buildroot recipes must be staged from separate package directories' >&2
+  exit 1
+fi
+expect_contains 'package/tdvp-audacious/Config.in' "$core_build_script"
+expect_contains 'package/tdvp-audacious/Config.in' "$plugins_build_script"
+expect_contains 'package/tdvp-audacious-plugins/Config.in' "$plugins_build_script"
 
 # 1232 x 568 is the physical landscape display. The fallback deliberately
 # leaves room for compositor decoration/panel; normal startup is maximized.

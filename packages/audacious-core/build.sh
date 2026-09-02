@@ -12,10 +12,11 @@ fi
 package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 feed_root=$(cd -- "$package_dir/../.." && pwd)
 support_dir="$feed_root/support/audacious-buildroot"
+support_core_dir="$support_dir/tdvp-audacious"
 sdk_root=$4
 source "$package_dir/package.env"
 
-[[ -d "$sdk_root" && -d "$support_dir" ]] || { echo 'audacious-core needs the matching Buildroot SDK and support files' >&2; exit 66; }
+[[ -d "$sdk_root" && -d "$support_core_dir" ]] || { echo 'audacious-core needs the matching Buildroot SDK and core support files' >&2; exit 66; }
 sdk_root=$(cd -- "$sdk_root" && pwd)
 build_output=${TDVP_AUDACIOUS_BUILDROOT_OUTPUT:-$(cd -- "$sdk_root/.." && pwd)}
 [[ "$sdk_root" == "$build_output/host" && -f "$build_output/.config" && -f "$build_output/Makefile" && -d "$build_output/target" ]] || { echo 'TDVP_AUDACIOUS_BUILDROOT_OUTPUT must be a completed matching Buildroot output' >&2; exit 67; }
@@ -23,9 +24,9 @@ buildroot_tree=$(awk '$1 == "MAKEARGS" && ($2 == ":=" || $2 == "+=") && $3 == "-
 [[ -n "$buildroot_tree" && -d "$buildroot_tree" && -x "$buildroot_tree/utils/config" ]] || { echo 'could not resolve the locked Buildroot tree from the SDK output' >&2; exit 68; }
 actual_buildroot_version=$(awk '$1 == "export" && $2 == "BR2_VERSION" && $3 == ":=" { print $4; exit }' "$buildroot_tree/Makefile")
 [[ "$actual_buildroot_version" == '2025.02.1' ]] || { echo "expected Buildroot 2025.02.1, got ${actual_buildroot_version:-unknown}" >&2; exit 69; }
-grep -Fqx "sha256  $SOURCE_ARCHIVE_SHA256  $SOURCE_ARCHIVE" "$support_dir/tdvp-audacious.hash" || { echo 'Audacious source checksum does not match the reviewed Buildroot package input' >&2; exit 70; }
+grep -Fqx "sha256  $SOURCE_ARCHIVE_SHA256  $SOURCE_ARCHIVE" "$support_core_dir/tdvp-audacious.hash" || { echo 'Audacious source checksum does not match the reviewed Buildroot package input' >&2; exit 70; }
 
-staged_package="$buildroot_tree/package/tdvp-audacious"
+staged_core_package="$buildroot_tree/package/tdvp-audacious"
 config_file="$buildroot_tree/package/Config.in"
 config_backup=$(mktemp "$build_output/.config.tdvp-audacious.XXXXXX")
 package_config_backup=$(mktemp "$buildroot_tree/package/Config.in.tdvp-audacious.XXXXXX")
@@ -34,7 +35,7 @@ payload_dir="$package_dir/root"
 config_hash=$(sha256sum "$build_output/.config" | awk '{print $1}')
 config_saved=0
 package_config_saved=0
-package_staged=0
+core_package_staged=0
 
 cleanup() {
   local rc=$?
@@ -48,17 +49,17 @@ cleanup() {
     env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" make -C "$build_output" olddefconfig || rc=98
     [[ "$(sha256sum "$build_output/.config" | awk '{print $1}')" == "$config_hash" ]] || rc=99
   fi
-  if [[ "$package_staged" -eq 1 ]]; then rm -rf -- "$staged_package"; fi
+  if [[ "$core_package_staged" -eq 1 ]]; then rm -rf -- "$staged_core_package"; fi
   rm -f -- "$config_backup" "$package_config_backup"
   rm -rf -- "$install_root"
   exit "$rc"
 }
 trap cleanup EXIT
 
-[[ ! -e "$staged_package" ]] || { echo "refusing to replace existing Buildroot package: $staged_package" >&2; exit 71; }
+[[ ! -e "$staged_core_package" ]] || { echo "refusing to replace existing Buildroot package: $staged_core_package" >&2; exit 71; }
 cp -- "$build_output/.config" "$config_backup"; config_saved=1
 cp -- "$config_file" "$package_config_backup"; package_config_saved=1
-cp -a -- "$support_dir" "$staged_package"; package_staged=1
+cp -a -- "$support_core_dir" "$staged_core_package"; core_package_staged=1
 printf '\nsource "package/tdvp-audacious/Config.in"\n' >>"$config_file"
 
 "$buildroot_tree/utils/config" --file "$build_output/.config" --enable BR2_PACKAGE_TDVP_AUDACIOUS

@@ -24,12 +24,31 @@ fi
 
 # shellcheck source=../../scripts/tdvp-k230-sdk.sh
 source "$feed_root/scripts/tdvp-k230-sdk.sh"
+# shellcheck source=../../support/buildroot-feed-session.sh
+source "$feed_root/support/buildroot-feed-session.sh"
 
 source_root=${TDVP_GBA_SOURCE_DIR:-"$feed_root/../cardputer-zero-gameboy-emulator"}
 source_root=$(tdvp_verify_git_source "$source_root" "$SOURCE_REPOSITORY" "$SOURCE_REVISION")
 tdvp_require_k230_sdk "$4"
 tdvp_require_wayland_sdk_overlay
 tdvp_prepare_pkg_config
+
+# The generated bindings are target-ABI neutral, but the scanner and XML must
+# come from the completed firmware Buildroot tree so a feed build never uses a
+# random release-builder protocol version.
+buildroot_output=$(tdvp_buildroot_output_from_sdk "$4" "${TDVP_GBA_BUILDROOT_OUTPUT:-}")
+scanner="$buildroot_output/host/bin/wayland-scanner"
+[[ -x "$scanner" ]] || {
+  echo "matching Buildroot wayland-scanner is missing: $scanner" >&2
+  exit 66
+}
+linux_dmabuf_xml=$(find "$buildroot_output/build" -type f \
+  -path '*/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' -print -quit)
+[[ -n "$linux_dmabuf_xml" ]] || {
+  echo 'matching Buildroot wayland-protocols XML is missing: unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' >&2
+  exit 67
+}
+protocols_dir=$(cd -- "$(dirname -- "$linux_dmabuf_xml")/../.." && pwd)
 
 build_root=$(mktemp -d)
 payload_dir="$package_dir/root"
@@ -56,6 +75,8 @@ mkdir -p -- "$payload_dir"
     -DCZ_GBA_REQUIRE_K230_DRM=ON \
     -DCZ_GBA_REQUIRE_K230_WAYLAND_SHM=ON \
     -DCZ_GBA_TDVP_WAYLAND_SDK_OVERLAY="$TDVP_K230_WAYLAND_SDK_OVERLAY" \
+    -DCZ_GBA_TDVP_WAYLAND_SCANNER="$scanner" \
+    -DCZ_GBA_TDVP_WAYLAND_PROTOCOLS_DIR="$protocols_dir" \
     -DALSA_INCLUDE_DIR="$TDVP_K230_WAYLAND_SDK_OVERLAY/include" \
     -DALSA_LIBRARY="$TDVP_K230_WAYLAND_SDK_OVERLAY/lib/libasound.so" \
     "$source_root"

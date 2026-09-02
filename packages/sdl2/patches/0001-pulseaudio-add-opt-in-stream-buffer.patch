@@ -10,6 +10,7 @@ index 504d5d3ce..7fbaaaf15 100644
      paattr.maxlength = -1;
      paattr.minreq = -1;
      flags |= PA_STREAM_ADJUST_LATENCY;
+-
 +
 +    if (!iscapture) {
 +        const char *hint = SDL_GetHint("SDL_AUDIO_PULSEAUDIO_BUFFER_FRAMES");
@@ -38,5 +39,5 @@ index 504d5d3ce..7fbaaaf15 100644
 +            }
 +        }
 +    }
-
++
      PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);

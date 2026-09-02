@@ -43,19 +43,44 @@ mkdir -p -- "$payload_dir"
 # downstream patch there, and leave the source-locked checkout untouched for
 # the later application recipes in this same release.
 rm -rf -- "$patched_source"
-git clone --no-checkout "$source_root" "$patched_source"
-git -C "$patched_source" checkout --detach "$SOURCE_REVISION"
-git -C "$patched_source" apply --check \
-  "$package_dir/patches/0001-pulseaudio-add-opt-in-stream-buffer.patch"
-git -C "$patched_source" apply \
-  "$package_dir/patches/0001-pulseaudio-add-opt-in-stream-buffer.patch"
+# The source and feed can be checked out on Windows while the cross build runs
+# in WSL.  Force the disposable clone and its reviewed patch to LF before
+# applying it, so CRLF worktrees cannot change the patch context or the SDL
+# source that is actually compiled.
+git -c core.autocrlf=false clone --no-checkout "$source_root" "$patched_source"
+git -C "$patched_source" -c core.autocrlf=false checkout --detach "$SOURCE_REVISION"
+pulseaudio_patch="$build_root/0001-pulseaudio-add-opt-in-stream-buffer.patch"
+sed 's/\r$//' "$package_dir/patches/0001-pulseaudio-add-opt-in-stream-buffer.patch" >"$pulseaudio_patch"
+git -C "$patched_source" apply --check "$pulseaudio_patch"
+git -C "$patched_source" apply "$pulseaudio_patch"
+
+# SDL's CMake helper derives the dlopen name from the file passed to it rather
+# than reading ELF DT_SONAME. Some SDK bridges retain the real target object
+# only under libpulse.so (the development-link name). Materialise a disposable
+# file using its verified SONAME so SDL records the target runtime name, never
+# the overlay's development filename, in SDL_config.h.
+pulse_soname=$("$TDVP_K230_READELF" -d "$TDVP_K230_WAYLAND_SDK_OVERLAY/lib/libpulse.so" | \
+  sed -n 's/.*SONAME.*\[\(libpulse\.so\.[0-9][0-9.]*\)\].*/\1/p' | head -n 1)
+[[ -n "$pulse_soname" ]] || {
+  echo 'could not read a versioned libpulse DT_SONAME from the TDVP SDK overlay' >&2
+  exit 66
+}
+pulse_loader_probe="$build_root/$pulse_soname"
+cp -L -- "$TDVP_K230_WAYLAND_SDK_OVERLAY/lib/libpulse.so" "$pulse_loader_probe"
 
 (
   cd -- "$build_root"
+  # Overlay .pc files use a normal /usr prefix. PKG_CONFIG_SYSROOT_DIR
+  # intentionally rewrites that prefix to the immutable SDK sysroot, so
+  # make this separate development overlay explicit to both the compiler
+  # and SDL's FindLibraryAndSONAME dynamic-loader probe.
   "$TDVP_K230_CMAKE" -G Ninja -DCMAKE_MAKE_PROGRAM="$TDVP_K230_NINJA" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE="$TDVP_K230_TOOLCHAIN_FILE" \
     -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_C_FLAGS="-I$TDVP_K230_WAYLAND_SDK_OVERLAY/include" \
+    -DCMAKE_LIBRARY_PATH="$TDVP_K230_WAYLAND_SDK_OVERLAY/lib" \
+    -DPULSE_LIB="$pulse_loader_probe" \
     -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TEST=OFF \
     -DSDL_VIDEO=ON -DSDL_WAYLAND=ON -DSDL_WAYLAND_SHARED=ON \
     -DSDL_WAYLAND_LIBDECOR=OFF -DSDL_WAYLAND_QT_TOUCH=OFF \

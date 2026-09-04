@@ -134,6 +134,13 @@ run `33905941863` 已构建到 GNU awk 的 payload gate，随后因它试图发�
 精确依赖的 `tdvp-source-tools` 同步更新到 `1.6-3`。这保留 GNU awk 能力，同时确保卸载
 该 IPK 不会改变固件的 `/usr/bin/awk`。
 
+run `33906647472` 已成功构建前面的网络 leaf，随后错误地尝试重建已在 target-runtime
+catalogue 中的 `ca-certificates`，因此它的私有 Buildroot 下载目录找不到该包的来源锁归档。
+根因是 `build-all.sh` 的选择阶段已把 catalogue provider 排除，但递归 build 阶段只跳过
+SONAME 型 target provider。两处现在使用同样的 catalogue 判定：已有的、带版本的
+target-runtime IPK 直接保留在部分 feed 中，不重新编译、不要求重复 source cache，也不
+改变其 ABI owner；真正需要 source build 的依赖仍会在 CI 预取并锁定校验。
+
 ## 设备生命周期记录
 
 每一个 unsigned candidate 都要独立记录：

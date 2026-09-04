@@ -384,6 +384,7 @@ mark_source_build_closure() {
   local dependency
   local -a dependencies=()
   [[ -n "${target_runtime_provider[$package]:-}" ]] && return
+  target_catalogue_has_package "$package" && return
   [[ -n "${recipe_dir[$package]:-}" ]] || {
     echo "source-built package depends on unavailable build package: $package" >&2
     exit 77
@@ -505,6 +506,10 @@ build_package() {
   IFS=' ' read -r -a build_dependencies <<< "${recipe_build_depends[$package]}"
   for dependency in "${build_dependencies[@]}"; do
     [[ -n "${target_runtime_provider[$dependency]:-}" ]] && continue
+    # A target-runtime catalogue entry is as immutable as a SONAME provider.
+    # It is already present in the partial feed and must not be rebuilt merely
+    # because a source-built leaf lists it as a build-time prerequisite.
+    target_catalogue_has_package "$dependency" && continue
     [[ -n "${recipe_dir[$dependency]:-}" ]] || {
       echo "$package declares PACKAGE_BUILD_DEPENDS on $dependency, which is not selected for $release" >&2
       exit 76

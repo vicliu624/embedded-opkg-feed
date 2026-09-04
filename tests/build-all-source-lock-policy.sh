@@ -105,6 +105,7 @@ grep -Fqx 'Package: fixture-profile' "$selected_feed_dir/Packages"
 grep -Fq 'select_package_closure()' "$fixture_root/scripts/build-all.sh"
 grep -Fq 'emit_runtime_dependency_names()' "$fixture_root/scripts/build-all.sh"
 grep -Fq 'target_catalogue_has_package()' "$fixture_root/scripts/build-all.sh"
+grep -Fq 'target_catalogue_has_package "$dependency" && continue' "$fixture_root/scripts/build-all.sh"
 
 # The normal r1 fixture has no composable target-runtime catalogue.  Both
 # incremental-runtime switches must therefore reject it rather than quietly

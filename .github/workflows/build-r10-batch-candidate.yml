@@ -11,15 +11,21 @@ on:
         required: true
         default: build-sdk-base
         type: choice
-        options: [build-sdk-base, build-package-batch]
+        options: [build-sdk-base, build-package-batch, merge-batches]
       batch:
         description: Source cohort used only by build-package-batch
         required: true
         default: archive
         type: choice
         options: [archive, audacious, network-tools, desktop-tools, development-tools, nodejs]
+      source_run_ids:
+        description: Comma-separated successful package-batch run IDs, used only by merge-batches
+        required: false
+        default: ''
+        type: string
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
@@ -309,10 +315,148 @@ jobs:
           done
           bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
 
+          manifest='candidate-dist/tdvp-batch-manifest.tsv'
+          {
+            printf 'format\t1\n'
+            printf 'platform\ttdvp-k230-r1\n'
+            printf 'release_path\t%s\n' "$(realpath --relative-to=candidate-dist "$feed_dir")"
+            printf 'sdk_cache_key\t%s\n' "$TDVP_SDK_CACHE_KEY"
+            printf 'recipe_revision\t%s\n' "$GITHUB_SHA"
+            printf 'batch\t%s\n' "${{ inputs.batch }}"
+            find "$feed_dir" -maxdepth 1 -type f -name '*.ipk' -print0 | \
+              LC_ALL=C sort -z | xargs -0 -r sha256sum | \
+              while read -r digest archive; do
+                printf 'ipk\t%s\t%s\n' "$digest" "$(basename "$archive")"
+              done
+          } >"$manifest"
+          test -s "$manifest"
+
       - name: Upload the unsigned incremental batch
         uses: actions/upload-artifact@v4
         with:
           name: tdvp-k230-r10-${{ inputs.batch }}-unsigned-${{ github.sha }}
           path: candidate-dist
+          if-no-files-found: error
+          retention-days: 14
+
+  merge-package-batches:
+    name: Merge verified r10 batches without recompiling
+    if: inputs.mode == 'merge-batches'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out the feed recipe revision
+        uses: actions/checkout@v6
+
+      - name: Restore the reviewed SDK base required for closure validation
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/buildroot-overlay
+            ${{ runner.temp }}/tdvp-k230-sdk/output/buildroot-2025.02.1
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config.old
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/Makefile
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}
+          fail-on-cache-miss: true
+
+      - name: Download compatible unsigned batches and compare every IPK hash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TDVP_SOURCE_RUN_IDS: ${{ inputs.source_run_ids }}
+        run: |
+          set -Eeuo pipefail
+          expected_release_path='tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          [[ "$TDVP_SOURCE_RUN_IDS" =~ ^[0-9]+(,[0-9]+)*$ ]] || {
+            echo 'merge-batches requires a comma-separated list of GitHub Actions run IDs' >&2
+            exit 64
+          }
+
+          incoming_root="$RUNNER_TEMP/tdvp-r10-incoming"
+          merged_feed="candidate-merged/$expected_release_path"
+          mkdir -p "$incoming_root" "$merged_feed"
+          IFS=',' read -r -a run_ids <<< "$TDVP_SOURCE_RUN_IDS"
+
+          manifest_value() {
+            local manifest=$1 key=$2
+            awk -F '\t' -v key="$key" '$1 == key { print $2; exit }' "$manifest"
+          }
+
+          for run_id in "${run_ids[@]}"; do
+            run_dir="$incoming_root/$run_id"
+            mkdir -p "$run_dir"
+            mapfile -t artifacts < <(
+              gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json artifacts \
+                --jq '.artifacts[].name | select(test("^tdvp-k230-r10-.*-unsigned-"))'
+            )
+            [[ ${#artifacts[@]} -eq 1 ]] || {
+              echo "run $run_id must expose exactly one unsigned incremental batch artifact" >&2
+              exit 65
+            }
+            gh run download "$run_id" --repo "$GITHUB_REPOSITORY" \
+              --name "${artifacts[0]}" --dir "$run_dir"
+
+            mapfile -t manifests < <(find "$run_dir" -type f -name tdvp-batch-manifest.tsv -print | LC_ALL=C sort)
+            [[ ${#manifests[@]} -eq 1 ]] || {
+              echo "run $run_id must contain exactly one batch manifest" >&2
+              exit 66
+            }
+            manifest=${manifests[0]}
+            [[ "$(manifest_value "$manifest" format)" == 1 ]] || { echo "run $run_id has an unknown manifest format" >&2; exit 67; }
+            [[ "$(manifest_value "$manifest" platform)" == tdvp-k230-r1 ]] || { echo "run $run_id targets another platform" >&2; exit 67; }
+            [[ "$(manifest_value "$manifest" release_path)" == "$expected_release_path" ]] || { echo "run $run_id targets another release path" >&2; exit 67; }
+            [[ "$(manifest_value "$manifest" sdk_cache_key)" == "$TDVP_SDK_CACHE_KEY" ]] || { echo "run $run_id has a different SDK/ABI cache identity" >&2; exit 67; }
+
+            mapfile -t feed_dirs < <(find "$run_dir" -type d -path "*/$expected_release_path" -print | LC_ALL=C sort)
+            [[ ${#feed_dirs[@]} -eq 1 ]] || { echo "run $run_id has no unambiguous feed directory" >&2; exit 68; }
+            feed_dir=${feed_dirs[0]}
+            ipk_count=0
+            while IFS=$'\t' read -r record digest filename; do
+              [[ "$record" == ipk ]] || continue
+              [[ "$digest" =~ ^[0-9a-f]{64}$ && "$filename" =~ ^[A-Za-z0-9+._-]+\.ipk$ ]] || {
+                echo "run $run_id has an invalid IPK manifest record" >&2
+                exit 69
+              }
+              source_ipk="$feed_dir/$filename"
+              [[ -f "$source_ipk" ]] || { echo "run $run_id is missing $filename" >&2; exit 69; }
+              [[ "$(sha256sum "$source_ipk" | awk '{print $1}')" == "$digest" ]] || {
+                echo "run $run_id hash mismatch for $filename" >&2
+                exit 69
+              }
+              destination_ipk="$merged_feed/$filename"
+              if [[ -e "$destination_ipk" ]]; then
+                [[ "$(sha256sum "$destination_ipk" | awk '{print $1}')" == "$digest" ]] || {
+                  echo "incompatible duplicate IPK: $filename" >&2
+                  exit 70
+                }
+              else
+                install -m 0644 "$source_ipk" "$destination_ipk"
+              fi
+              ipk_count=$((ipk_count + 1))
+            done <"$manifest"
+            [[ "$ipk_count" -gt 0 ]] || { echo "run $run_id declares no IPKs" >&2; exit 71; }
+          done
+
+      - name: Re-index and validate the merged candidate without compiling
+        run: |
+          set -Eeuo pipefail
+          feed_dir='candidate-merged/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          build_output="${RUNNER_TEMP}/tdvp-k230-sdk/output/$TDVP_PROFILE"
+          export TDVP_SDK_ROOT="$build_output/host"
+          export TDVP_FEED_BASE_ROOT="$build_output/target"
+          bash ./scripts/make-index.sh "$feed_dir"
+          bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
+          bash ./scripts/verify-runtime-closure.sh \
+            --platform tdvp-k230-r1 --base-root "$TDVP_FEED_BASE_ROOT" "$feed_dir"
+          bash ./scripts/verify-target-runtime-coverage.sh \
+            --platform tdvp-k230-r1 --base-root "$TDVP_FEED_BASE_ROOT" "$feed_dir"
+
+      - name: Upload the merged unsigned candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdvp-k230-r10-merged-unsigned-${{ github.sha }}
+          path: candidate-merged
           if-no-files-found: error
           retention-days: 14

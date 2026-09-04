@@ -1,0 +1,45 @@
+--- a/configure.py
++++ b/configure.py
+@@ -10,7 +10,6 @@
+ import shlex
+ import subprocess
+ import shutil
+-import bz2
+ import io
+ 
+ from pathlib import Path
+@@ -2117,6 +2116,7 @@
+     if icu_tmp_path.is_dir():
+       shutil.rmtree(icu_tmp_path)
+     icu_tmp_path.mkdir()
++    import bz2
+     icu_data_path = icu_tmp_path / icu_data_file_l
+     with icu_data_path.open(mode='wb') as outf:
+       inf = bz2.BZ2File(compressed_data, 'rb')
+@@ -2327,6 +2327,26 @@
+ variables = output['variables']
+ del output['variables']
+ 
++target_conditions = output.setdefault('target_conditions', [])
++if output['include_dirs']:
++  target_include_dirs = output.pop('include_dirs')
++  target_conditions.append(
++      ['_toolset!="host"', {'include_dirs': target_include_dirs}])
++if output['libraries']:
++  target_libraries = output.pop('libraries')
++  target_conditions.append(
++      ['_toolset!="host"', {'libraries': target_libraries}])
++host_icu_include = os.environ.get('TDVP_NODE22_HOST_ICU_INCLUDE')
++host_icu_libraries = os.environ.get('TDVP_NODE22_HOST_ICU_LIBRARIES')
++host_libuv_libraries = os.environ.get('TDVP_NODE22_HOST_LIBUV_LIBRARIES')
++if not (bool(host_icu_include) == bool(host_icu_libraries) == bool(host_libuv_libraries)):
++  error('TDVP Node host ICU include, ICU libraries, and libuv libraries must be supplied together')
++if host_icu_include:
++  target_conditions.append(['_toolset=="host"', {
++      'include_dirs': host_icu_include.split(os.pathsep) + ['deps/uv/include'],
++      'libraries': host_icu_libraries.split() + host_libuv_libraries.split(),
++  }])
++
+ # make_global_settings should be a root level element too
+ if 'make_global_settings' in output:
+   make_global_settings = output['make_global_settings']

@@ -1,0 +1,18 @@
+# The three Python IPKs are one direct CPython source build split by payload
+# ownership. Each record locks the same immutable upstream source archive.
+FORMAT_VERSION='1'
+SOURCE_TYPE='release-tarball'
+UPSTREAM_NAME='CPython'
+UPSTREAM_LICENSE='PSF-2.0'
+UPSTREAM_VERSION='3.13.3'
+UPSTREAM_REVISION='v3.13.3'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/python3/python3.mk'
+SOURCE_SELECTION_REASON='The public libpython3.13 ABI is built once from locked upstream CPython source, then assigned to this dedicated provider before the runtime and CLI split.'
+NON_PLATFORM_BUILD_INPUTS='Matching Buildroot SDK host Python 3.13, cross toolchain/sysroot, and separately owned libffi, mpdecimal, SQLite, TLS, compression, terminal, XML, and zlib providers; no Buildroot target-root payload copy.'
+SECURITY_STATUS='The CPython release archive SHA-256 is verified before every candidate build; Python security advisory review remains a release-candidate gate.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 python3.hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/python3/python3.hash'
+SOURCE_ARTIFACT_1_URL='https://www.python.org/ftp/python/3.13.3/Python-3.13.3.tar.xz'
+SOURCE_ARTIFACT_1_FILE='Python-3.13.3.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='40f868bcbdeb8149a3149580bb9bfd407b3321cd48f0be631af955ac92c0e041'

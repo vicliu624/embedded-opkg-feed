@@ -1,0 +1,39 @@
+# TDVP K230 diagnostics
+
+`tdvp-diagnostics` is an r10 installation profile. It does not bundle copied
+executables, system libraries, SDK files, or firmware utilities. Instead it
+brings independently versioned packages through exact dependencies:
+
+* `strace` for focused system-call traces;
+* `htop` for interactive process inspection without the optional `libcap`
+  feature;
+* `lsof` for Linux `/proc` open-file and socket inspection without `libtirpc`.
+  Its full implementation is invoked as `tdvp-lsof`, preserving K230's
+  immutable BusyBox `/usr/bin/lsof` applet;
+  and
+* `iperf3` for controlled-LAN TCP throughput and UDP-loss measurements without
+  its optional OpenSSL authentication mode; and
+* `netcat` for controlled TCP/UDP listener and connection checks.
+
+The profile's own payload is only this document. Uninstalling it never removes
+one of those tools if another installed package still depends on it. Some
+diagnostics are intentionally constrained by device privileges: `tdvp-lsof` may
+only reveal processes the current user can inspect, and packet/network tests
+must run against a controlled endpoint rather than an untrusted public server.
+
+After installing an unsigned r10 candidate on a real K230 device, verify:
+
+    strace true
+    htop --version
+    tdvp-lsof --version
+    tdvp-lsof /tmp
+    tdvp-lsof -i
+    iperf3 --version
+    nc -h
+    # Use `nc -l` only on a controlled LAN endpoint.
+    # On a controlled LAN: start `iperf3 -s` on one endpoint, then run:
+    iperf3 -c <controlled-server>
+    iperf3 -u -c <controlled-server>
+
+Record installation, normal operation, uninstall, and rollback results before
+promoting any of these candidate IPKs to an immutable public feed release.

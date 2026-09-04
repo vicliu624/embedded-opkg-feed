@@ -1,0 +1,18 @@
+# mpdecimal is a reusable public provider for CPython _decimal. Buildroot
+# supplies the reviewed target configuration while this record locks its source.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='mpdecimal'
+UPSTREAM_LICENSE='BSD-2-Clause'
+UPSTREAM_VERSION='4.0.0'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/mpdecimal/mpdecimal.mk'
+SOURCE_SELECTION_REASON='CPython _decimal requires the public libmpdec.so.4 ABI when configured with the reviewed system mpdecimal provider. Publishing it first prevents a private interpreter copy or firmware dependency.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 mpdecimal.mk/mpdecimal.hash; no TDVP-specific patches or non-platform target dependencies.'
+SECURITY_STATUS='Buildroot recipe source SHA-256 is verified before every candidate build; release-candidate mpdecimal advisory review remains required.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/mpdecimal/mpdecimal.hash'
+SOURCE_ARTIFACT_1_URL='https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-4.0.0.tar.gz'
+SOURCE_ARTIFACT_1_FILE='mpdecimal-4.0.0.tar.gz'
+SOURCE_ARTIFACT_1_SHA256='942445c3245b22730fd41a67a7c5c231d11cb1b9936b9c0f76334fb7d0b4468c'

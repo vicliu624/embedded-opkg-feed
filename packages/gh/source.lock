@@ -1,0 +1,26 @@
+# GitHub CLI is built from its immutable upstream source; an official Go host
+# distribution is a build-only input that remains outside the target payload.
+# go-modules.lock then binds the Go module graph and the deterministic offline
+# vendor bundle used by the final riscv64 compile.
+FORMAT_VERSION='1'
+SOURCE_TYPE='release-tarball'
+UPSTREAM_NAME='GitHub CLI'
+UPSTREAM_LICENSE='MIT'
+UPSTREAM_VERSION='2.98.0'
+UPSTREAM_REVISION='a255baf71d13fe5947a4eb7ad521ffd412d64cee'
+SOURCE_SNAPSHOT='https://github.com/cli/cli/archive/a255baf71d13fe5947a4eb7ad521ffd412d64cee.tar.gz'
+SOURCE_SELECTION_REASON='GitHub CLI is a high-value developer client. It is source-built for linux/riscv64 with a target-independent, statically linked Go build; no upstream release binary, Debian package, or Buildroot target artifact is admitted.'
+NON_PLATFORM_BUILD_INPUTS='The official Go 1.26.7 linux/amd64 archive is a host-only compiler input. go-modules.lock pins its hash, go.mod/go.sum, vendor/modules.txt and the deterministic vendor-bundle hash; the final target compile uses GOPROXY=off and -mod=vendor.'
+SECURITY_STATUS='GitHub CLI, the reviewed Go host toolchain and every module named by the locked go.sum require advisory review before release promotion. The vendor bundle is accepted only when regenerated from the pinned inputs with the recorded SHA-256.'
+VERIFIED_BY='TDVP source-lock verifier plus Go module vendor cache policy'
+VERIFIED_AT='2026-09-03'
+VERIFICATION_REFERENCE='https://github.com/cli/cli/tree/a255baf71d13fe5947a4eb7ad521ffd412d64cee'
+SOURCE_ARTIFACT_1_URL='https://github.com/cli/cli/archive/a255baf71d13fe5947a4eb7ad521ffd412d64cee.tar.gz'
+SOURCE_ARTIFACT_1_FILE='cli-a255baf71d13fe5947a4eb7ad521ffd412d64cee.tar.gz'
+SOURCE_ARTIFACT_1_SHA256='52e8e45fb5f5431dd269966c97bbf398fd5c8f1b6fafdc02af182ce4d7012c43'
+SOURCE_ARTIFACT_2_URL='https://go.dev/dl/go1.26.7.linux-amd64.tar.gz'
+SOURCE_ARTIFACT_2_FILE='go1.26.7.linux-amd64.tar.gz'
+SOURCE_ARTIFACT_2_SHA256='ffb5f8de10c62550dfddab66b36b57030721e0a44a3218e9e1181d7b59f121ca'
+SOURCE_BUILD_INPUT_1_FILE='go-modules.lock'
+SOURCE_BUILD_INPUT_1_SHA256='b1f3a356e9324b37a62fa26660680bf42d143a8bd4898a6e20f0bd4ed4882bc4'
+SOURCE_BUILD_INPUT_1_REASON='The literal Go module lock captures host-tool, source-module and deterministic vendor-bundle hashes without executing package-controlled content.'

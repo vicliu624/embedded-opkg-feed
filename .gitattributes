@@ -3,3 +3,9 @@
 *.env text eol=lf
 *.yml text eol=lf
 *.md text eol=lf
+
+# Embedded third-party patches use their own leading marker characters and may
+# carry tabs or an intentionally blank added line that must be retained for
+# `patch` to reproduce the upstream hunk.  Do not evaluate those patch-format
+# bytes as source-code indentation during the repository whitespace gate.
+packages/**/patches/*.patch whitespace=-blank-at-eol,-space-before-tab

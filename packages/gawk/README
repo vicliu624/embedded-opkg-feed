@@ -1,0 +1,7 @@
+gawk — GNU awk interpreter
+
+This r10 candidate rebuilds the reviewed Buildroot 2025.02.1 recipe with the
+baseline optional MPFR and libsigsegv features disabled. Its private gawk and
+awk executables are exposed with /usr/bin frontends only. The baseline GNU
+readline capability is a separately audited, exact runtime dependency:
+`libreadline`, which in turn depends on `libncursesw`.

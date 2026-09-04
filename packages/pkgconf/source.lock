@@ -1,0 +1,18 @@
+# Buildroot owns the cross-compile configuration.  This record locks the
+# reviewed upstream archive consumed by its 2025.02.1 pkgconf recipe.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='pkgconf'
+UPSTREAM_LICENSE='ISC'
+UPSTREAM_VERSION='2.3.0'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/pkgconf/pkgconf.mk'
+SOURCE_SELECTION_REASON='Buildroot 2025.02.1 provides the reviewed cross-build recipe; the package statically links libpkgconf into its private tools and does not replace firmware pkg-config state.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 pkgconf.mk and pkgconf.hash; no TDVP-specific patches.'
+SECURITY_STATUS='Buildroot recipe source SHA-256 is verified before candidate build; shared libpkgconf is explicitly disabled so no unowned runtime SONAME enters the candidate; security review is release-candidate scoped.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/pkgconf/pkgconf.hash'
+SOURCE_ARTIFACT_1_URL='https://distfiles.ariadne.space/pkgconf/pkgconf-2.3.0.tar.xz'
+SOURCE_ARTIFACT_1_FILE='pkgconf-2.3.0.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='3a9080ac51d03615e7c1910a0a2a8df08424892b5f13b0628a204d3fcce0ea8b'

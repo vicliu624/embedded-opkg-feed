@@ -1,0 +1,23 @@
+# Buildroot owns the cross-compile configuration. This record locks both the
+# target archive and the host lzip helper that Buildroot 2025.02.1 must build
+# to extract GNU Make's .tar.lz source; neither may be fetched during a
+# release build.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='GNU Make'
+UPSTREAM_LICENSE='GPL-3.0-or-later'
+UPSTREAM_VERSION='4.4.1'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/make/make.mk'
+SOURCE_SELECTION_REASON='Buildroot 2025.02.1 provides the reviewed cross-build recipe; the feed installs only a private executable and frontend, never firmware files.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 make.mk/make.hash and lzip.mk/lzip.hash; no TDVP-specific patches.'
+SECURITY_STATUS='Buildroot target and required host-helper source SHA-256 values are verified before candidate build; security review is release-candidate scoped.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 make.hash and lzip.hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/make/make.hash'
+SOURCE_ARTIFACT_1_URL='https://ftp.gnu.org/gnu/make/make-4.4.1.tar.lz'
+SOURCE_ARTIFACT_1_FILE='make-4.4.1.tar.lz'
+SOURCE_ARTIFACT_1_SHA256='8814ba072182b605d156d7589c19a43b89fc58ea479b9355146160946f8cf6e9'
+SOURCE_ARTIFACT_2_URL='https://download.savannah.gnu.org/releases/lzip/lzip-1.25.tar.gz'
+SOURCE_ARTIFACT_2_FILE='lzip-1.25.tar.gz'
+SOURCE_ARTIFACT_2_SHA256='09418a6d8fb83f5113f5bd856e09703df5d37bae0308c668d0f346e3d3f0a56f'

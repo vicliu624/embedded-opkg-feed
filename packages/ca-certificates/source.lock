@@ -1,0 +1,18 @@
+# Buildroot owns the host-tool and source-build configuration. This record
+# locks the reviewed Debian snapshot archive consumed by its 2025.02.1 recipe.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='Debian ca-certificates'
+UPSTREAM_LICENSE='GPL-2.0+ (script), MPL-2.0 (data)'
+UPSTREAM_VERSION='20230311'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/ca-certificates/ca-certificates.mk'
+SOURCE_SELECTION_REASON='A single source-built TLS trust-store provider unblocks future Git, Python, and Node candidates without importing a Debian binary package.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 ca-certificates.mk and ca-certificates.hash; existing matching SDK host OpenSSL and Python helpers generate the bundle and certificate hashes; no TDVP-specific patches.'
+SECURITY_STATUS='The dated Debian snapshot archive is SHA-256 verified before candidate build; current trust-store freshness and release-candidate security review remain required.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/ca-certificates/ca-certificates.hash'
+SOURCE_ARTIFACT_1_URL='https://snapshot.debian.org/archive/debian/20230317T205011Z/pool/main/c/ca-certificates/ca-certificates_20230311.tar.xz'
+SOURCE_ARTIFACT_1_FILE='ca-certificates_20230311.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='83de934afa186e279d1ed08ea0d73f5cf43a6fbfb5f00874b6db3711c64576f3'

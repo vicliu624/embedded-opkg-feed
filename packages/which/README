@@ -1,0 +1,10 @@
+which — command path locator
+
+This r10 candidate package rebuilds Buildroot 2025.02.1's reviewed GNU which
+recipe from one SHA-256-locked upstream source archive. The executable lives
+under /usr/libexec/tdvp-which and is reached through /usr/bin/tdvp-which.
+K230 BusyBox already owns /usr/bin/which, so the explicit alias avoids any
+replacement of firmware-owned paths.
+
+It requires the exact tdvp-k230-r1 ABI package.  It is not a Debian binary,
+and it does not alter firmware, boot, kernel, libc, drivers, or opkg.

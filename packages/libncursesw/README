@@ -1,0 +1,10 @@
+# libncursesw
+
+`libncursesw` is the r10 owner of `libncursesw.so.6`. It is rebuilt from the
+wide-character ncurses configuration selected by the reviewed K230 baseline.
+The package intentionally contains only that runtime SONAME family; headers,
+terminfo data, target programs, and other ncurses libraries remain outside its
+payload until a separately audited package needs them.
+
+`libreadline` is its first feed consumer. The release build graph creates this
+provider before `libreadline`, which keeps target library ownership explicit.

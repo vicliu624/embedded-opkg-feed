@@ -1,0 +1,23 @@
+# Buildroot owns the cross-compile configuration. This lock includes GNU Wget
+# and host-pkgconf, the only non-platform archive inputs consumed by the Wget
+# target recipe. TLS and zlib are provided by separately owned, locked TDVP
+# runtime packages through the matching K230 SDK/sysroot.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='GNU Wget'
+UPSTREAM_LICENSE='GPL-3.0-or-later'
+UPSTREAM_VERSION='1.25.0'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/wget/wget.mk'
+SOURCE_SELECTION_REASON='Wget complements curl for simple scripted HTTPS/FTP retrieval while retaining an independently owned command package. The reviewed candidate uses OpenSSL and zlib only; optional PSL, GnuTLS, IDN/IRI, c-ares, PCRE, and libuuid closures are disabled.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 wget.mk/wget.hash plus the host-pkgconf archive required by WGET_DEPENDENCIES. The matching K230 SDK supplies headers and libraries from separately owned libssl-3/libcrypto-3/libz providers; no TDVP-specific patches.'
+SECURITY_STATUS='Wget, OpenSSL, zlib, and the CA store require release-candidate advisory review. Every listed archive is SHA-256 verified before the private offline Buildroot build.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 wget and pkgconf package hashes'
+VERIFIED_AT='2026-09-03'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/wget/wget.hash'
+SOURCE_ARTIFACT_1_URL='https://ftp.gnu.org/gnu/wget/wget-1.25.0.tar.lz'
+SOURCE_ARTIFACT_1_FILE='wget-1.25.0.tar.lz'
+SOURCE_ARTIFACT_1_SHA256='19225cc756b0a088fc81148dc6a40a0c8f329af7fd8483f1c7b2fe50f4e08a1f'
+SOURCE_ARTIFACT_2_URL='https://distfiles.ariadne.space/pkgconf/pkgconf-2.3.0.tar.xz'
+SOURCE_ARTIFACT_2_FILE='pkgconf-2.3.0.tar.xz'
+SOURCE_ARTIFACT_2_SHA256='3a9080ac51d03615e7c1910a0a2a8df08424892b5f13b0628a204d3fcce0ea8b'

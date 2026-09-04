@@ -1,0 +1,6 @@
+dos2unix — text line-ending conversion command
+
+This r10 candidate rebuilds the Buildroot 2025.02.1 recipe with the baseline
+NLS setting. It uses one SHA-256-locked source archive and exposes only a
+private executable through /usr/bin/tdvp-dos2unix. K230 BusyBox owns
+/usr/bin/dos2unix, so no firmware path is replaced.

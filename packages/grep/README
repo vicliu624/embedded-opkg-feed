@@ -1,0 +1,8 @@
+grep — GNU text-search command
+
+This r10 candidate rebuilds the reviewed Buildroot 2025.02.1 recipe with the
+baseline PCRE2 feature enabled.  `libpcre2-8` is its separately owned exact
+runtime dependency.  Only the real `grep` executable is exposed through a
+private-path `/usr/bin/grep` frontend; the upstream compatibility shell scripts
+`egrep` and `fgrep` are deliberately omitted because their PATH lookup could
+fall back to BusyBox.

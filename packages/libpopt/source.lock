@@ -1,0 +1,19 @@
+# Popt is a small reusable command-line option parsing ABI. The reviewed
+# Buildroot target recipe is used only to cross-compile the locked source and
+# extract libpopt.so*; optional external libiconv is explicitly disabled.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='popt'
+UPSTREAM_LICENSE='MIT'
+UPSTREAM_VERSION='1.19'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/popt/popt.mk'
+SOURCE_SELECTION_REASON='Rsync requires the public libpopt.so.0 command-line parsing ABI. It is split into one independently owned runtime before the rsync application is admitted; the payload contains only the versioned libpopt.so.0 runtime files, and no private popt copy is allowed in the command package.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 popt.mk/popt.hash. The package transaction explicitly disables BR2_PACKAGE_LIBICONV, so no external iconv provider is introduced; no TDVP-specific patches.'
+SECURITY_STATUS='popt security freshness is a release-candidate gate; the listed source archive is SHA-256 verified before private offline Buildroot compilation.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 popt package hash and the upstream 1.19 release record'
+VERIFIED_AT='2026-09-03'
+VERIFICATION_REFERENCE='https://github.com/rpm-software-management/popt/releases/tag/popt-1.19-release'
+SOURCE_ARTIFACT_1_URL='https://ftp.osuosl.org/pub/rpm/popt/releases/popt-1.x/popt-1.19.tar.gz'
+SOURCE_ARTIFACT_1_FILE='popt-1.19.tar.gz'
+SOURCE_ARTIFACT_1_SHA256='c25a4838fc8e4c1c8aacb8bd620edb3084a3d63bf8987fdad3ca2758c63240f9'

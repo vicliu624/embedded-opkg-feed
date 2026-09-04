@@ -20,16 +20,11 @@ feed_root=$(cd -- "$package_dir/../.." && pwd)
 source "$package_dir/package.env"
 # shellcheck source=../../scripts/tdvp-k230-sdk.sh
 source "$feed_root/scripts/tdvp-k230-sdk.sh"
+# shellcheck source=../../support/source-archive-library.sh
+source "$feed_root/support/source-archive-library.sh"
 
-temporary_source=
-source_root=${TDVP_SDL2_TTF_SOURCE_DIR:-}
-if [[ -z "$source_root" ]]; then
-  temporary_source=$(mktemp -d)
-  source_root="$temporary_source/source"
-  git clone --filter=blob:none "$SOURCE_REPOSITORY" "$source_root"
-  git -C "$source_root" checkout --detach "$SOURCE_REVISION"
-fi
-source_root=$(tdvp_verify_git_source "$source_root" "$SOURCE_REPOSITORY" "$SOURCE_REVISION")
+temporary_source=$(mktemp -d)
+source_root=$(tdvp_unpack_locked_source_archive "$package_dir" "$temporary_source")
 tdvp_require_k230_sdk "$4"
 tdvp_require_wayland_sdk_overlay
 tdvp_prepare_pkg_config

@@ -3,8 +3,9 @@ set -Eeuo pipefail
 IFS=$'\n\t'
 [[ $# -eq 4 && "$1" == '--platform' && "$2" == 'tdvp-k230-r1' && "$3" == '--sdk-root' ]] || { echo 'usage: build.sh --platform tdvp-k230-r1 --sdk-root <host>' >&2; exit 64; }
 package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-# shellcheck source=../../support/buildroot-node-inputs.sh
-source "$package_dir/../../support/buildroot-node-inputs.sh"
-tdvp_prepare_node22_inputs "$package_dir" "$4" "${TDVP_NODE22_BUILDROOT_OUTPUT:-}"
-tdvp_copy_node22_input_library "$package_dir" 'libnghttp2.so*'
-echo "libnghttp2 payload ready: $package_dir/root"
+# shellcheck source=package.env
+source "$package_dir/package.env"
+# shellcheck source=../../support/source-archive-library.sh
+source "$package_dir/../../support/source-archive-library.sh"
+tdvp_build_direct_archive_library "$package_dir" "$4" "${TDVP_LIBNGHTTP2_BUILDROOT_OUTPUT:-}" \
+  'nghttp2-1.64.0' 'libnghttp2.so*' -- --enable-lib-only

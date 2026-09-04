@@ -1,0 +1,18 @@
+# SQLite is a reusable public provider for CPython _sqlite3 and future database
+# clients. Buildroot supplies its reviewed target configuration and source hash.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='SQLite'
+UPSTREAM_LICENSE='blessing'
+UPSTREAM_VERSION='3.48.0'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/sqlite/sqlite.mk'
+SOURCE_SELECTION_REASON='CPython _sqlite3 requires the public libsqlite3.so.0 ABI. Publishing its source-built provider first prevents Python or future database clients from embedding a private SQLite copy or borrowing firmware state.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 sqlite.mk/sqlite.hash; no TDVP-specific patches or non-platform target dependencies.'
+SECURITY_STATUS='Buildroot recipe source SHA-256 is verified before every candidate build; release-candidate SQLite advisory review remains required.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/sqlite/sqlite.hash'
+SOURCE_ARTIFACT_1_URL='https://www.sqlite.org/2025/sqlite-autoconf-3480000.tar.gz'
+SOURCE_ARTIFACT_1_FILE='sqlite-autoconf-3480000.tar.gz'
+SOURCE_ARTIFACT_1_SHA256='ac992f7fca3989de7ed1fe99c16363f848794c8c32a158dafd4eb927a2e02fd5'

@@ -1,0 +1,18 @@
+# Buildroot owns the cross-compile configuration. This record locks the
+# reviewed upstream archive consumed by its 2025.02.1 htop recipe.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='htop'
+UPSTREAM_LICENSE='GPL-2.0-or-later'
+UPSTREAM_VERSION='3.3.0'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/htop/htop.mk'
+SOURCE_SELECTION_REASON='Buildroot 2025.02.1 provides the reviewed cross-build recipe; htop is a terminal application whose real executable stays package-private and does not replace BusyBox.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 htop.mk and htop.hash; it consumes the separately owned libncursesw runtime and explicitly disables the optional libcap capability feature because libcap is not an admitted feed runtime; no TDVP-specific patches.'
+SECURITY_STATUS='Buildroot recipe source SHA-256 is verified before candidate build; release-candidate security review remains required.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/htop/htop.hash'
+SOURCE_ARTIFACT_1_URL='https://sources.buildroot.net/htop/htop-3.3.0.tar.xz'
+SOURCE_ARTIFACT_1_FILE='htop-3.3.0.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='a69acf9b42ff592c4861010fce7d8006805f0d6ef0e8ee647a6ee6e59b743d5c'

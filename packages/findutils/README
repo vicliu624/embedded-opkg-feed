@@ -1,0 +1,7 @@
+findutils — GNU find and xargs commands
+
+This r10 candidate rebuilds the reviewed Buildroot 2025.02.1 recipe with the
+baseline SELinux option disabled. The package contains private executables and
+/usr/bin/tdvp-find plus /usr/bin/tdvp-xargs frontends; K230 BusyBox already
+owns the standard names. It neither replaces firmware files nor introduces a
+new shared runtime provider.

@@ -1,0 +1,18 @@
+# Buildroot owns the cross-compile configuration. This record locks the
+# reviewed upstream archive consumed by its 2025.02.1 iperf3 recipe.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='iperf3'
+UPSTREAM_LICENSE='BSD-3-Clause, BSD-2-Clause, MIT'
+UPSTREAM_VERSION='3.18'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/iperf3/iperf3.mk'
+SOURCE_SELECTION_REASON='iperf3 provides a small, independently packaged LAN throughput and UDP-loss diagnostic for the K230. Buildroot 2025.02.1 supplies the reviewed cross-build recipe; its optional OpenSSL authentication mode is explicitly disabled, leaving no added feed runtime closure.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 iperf3.mk and iperf3.hash only. With BR2_PACKAGE_OPENSSL disabled, the recipe does not fetch host-pkgconf or OpenSSL source inputs; no TDVP-specific patches.'
+SECURITY_STATUS='iperf3 requires release-candidate advisory review. Its locked archive is SHA-256 verified before the private offline Buildroot build; no unreviewed TLS/authentication mode enters this candidate.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 iperf3 package hash'
+VERIFIED_AT='2026-09-03'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/iperf3/iperf3.hash'
+SOURCE_ARTIFACT_1_URL='https://downloads.es.net/pub/iperf/iperf-3.18.tar.gz'
+SOURCE_ARTIFACT_1_FILE='iperf-3.18.tar.gz'
+SOURCE_ARTIFACT_1_SHA256='c0618175514331e766522500e20c94bfb293b4424eb27d7207fb427b88d20bab'

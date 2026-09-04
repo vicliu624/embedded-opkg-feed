@@ -1,0 +1,19 @@
+# Git is built directly from the same reviewed release archive as Buildroot.
+# The normal Git frontend is a separate leaf package that receives the exact
+# same source record because both IPKs are one audited source build split.
+FORMAT_VERSION='1'
+SOURCE_TYPE='release-tarball'
+UPSTREAM_NAME='Git'
+UPSTREAM_LICENSE='GPL-2.0-only, LGPL-2.1-or-later'
+UPSTREAM_VERSION='2.48.1'
+UPSTREAM_REVISION='2.48.1'
+SOURCE_SNAPSHOT='https://cdn.kernel.org/pub/software/scm/git/git-2.48.1.tar.xz'
+SOURCE_SELECTION_REASON='Git supplies the TDVP development workflow. Buildroot 2025.02.1 selects this exact release and its hash; the feed source-builds it with the matching SDK, then separates the public frontend from private helpers and templates.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 git.mk supplies the reviewed cross-build feature choices. The direct build uses only the matching SDK compiler, sysroot, and host pkgconf with separately owned libz, libssl-3, libcrypto-3, libcurl-4, libexpat-1, and libpcre2-8 providers. NO_GETTEXT, NO_PERL, NO_PYTHON, and NO_TCLTK avoid silently admitting interpreters, locale catalogs, or a GUI runtime.'
+SECURITY_STATUS='Git, curl, OpenSSL, Expat, PCRE2, and zlib advisory review remains a release-candidate gate; the release archive is SHA-256 verified before every offline build.'
+VERIFIED_BY='TDVP source-lock verifier plus the reviewed Buildroot 2025.02.1 Git package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/git/git.hash'
+SOURCE_ARTIFACT_1_URL='https://cdn.kernel.org/pub/software/scm/git/git-2.48.1.tar.xz'
+SOURCE_ARTIFACT_1_FILE='git-2.48.1.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='1c5d545f5dc1eb51e95d2c50d98fdf88b1a36ba1fa30e9ae5d5385c6024f82ad'

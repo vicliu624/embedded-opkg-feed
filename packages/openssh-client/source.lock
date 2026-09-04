@@ -1,0 +1,19 @@
+# The Buildroot recipe supplies reviewed cross-build knowledge, but this recipe
+# compiles the locked OpenSSH archive directly to avoid importing this desktop
+# SDK's unrelated global PAM/server dependency graph.
+FORMAT_VERSION='1'
+SOURCE_TYPE='release-tarball'
+UPSTREAM_NAME='OpenSSH portable'
+UPSTREAM_LICENSE='BSD-3-Clause, BSD-2-Clause, Public Domain'
+UPSTREAM_VERSION='9.9p2'
+UPSTREAM_REVISION='9.9p2'
+SOURCE_SNAPSHOT='https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.9p2.tar.gz'
+SOURCE_SELECTION_REASON='Git SSH transport requires an independently owned OpenSSH client. The TDVP package retains only normal client/file-transfer/agent programs; it does not import server binaries, setuid helpers, key utilities, or /etc/ssh configuration.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 openssh.mk supplies the reviewed configure choices. The direct cross-build uses only the matching SDK compiler/sysroot and its host pkgconf, with separately owned libssl-3/libcrypto-3/libz providers; no TDVP-specific patches.'
+SECURITY_STATUS='OpenSSH, OpenSSL, and zlib advisory review remains a release-candidate gate; every consumed source archive is SHA-256 verified before the offline build.'
+VERIFIED_BY='TDVP source-lock verifier plus the reviewed Buildroot 2025.02.1 OpenSSH package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/openssh/openssh.hash'
+SOURCE_ARTIFACT_1_URL='https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.9p2.tar.gz'
+SOURCE_ARTIFACT_1_FILE='openssh-9.9p2.tar.gz'
+SOURCE_ARTIFACT_1_SHA256='91aadb603e08cc285eddf965e1199d02585fa94d994d6cae5b41e1721e215673'

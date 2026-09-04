@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+package_dir="$repo_root/packages/tdvp-source-tools"
+env_file="$package_dir/package.env"
+
+grep -Fqx "PACKAGE='tdvp-source-tools'" "$env_file"
+grep -Fqx "VERSION='1.6-1'" "$env_file"
+grep -Fqx "PACKAGE_RELEASES='r10'" "$env_file"
+grep -Fqx "PACKAGE_DEPENDS='tree (= 2.1.1-1), less (= 661-1), file (= 5.45-1), which (= 2.21-1), curl (= 8.12.1-1), wget (= 1.25.0-1), rsync (= 3.4.1-1), tmux (= 3.3a-1), dos2unix (= 7.5.2-1), jq (= 1.7.1-1), grep (= 3.11-1), sed (= 4.9-1), findutils (= 4.10.0-1), gawk (= 5.3.1-1)'" "$env_file"
+grep -Fqx "PACKAGE_BUILD_DEPENDS='tree less file which curl wget rsync tmux dos2unix jq grep sed findutils gawk'" "$env_file"
+grep -Fqx 'PACKAGE_AUTO_RUNTIME_DEPENDS=0' "$env_file"
+grep -Fq "SOURCE_LOCK_EXEMPT_REASON='Installation profile contains only repository-owned documentation and exact dependency metadata; it imports no third-party source.'" "$env_file"
+test ! -e "$package_dir/source.lock"
+grep -Fq 'independently owned' "$package_dir/README"
+grep -Fq 'gawk -> libreadline -> libncursesw' "$package_dir/README"
+grep -Fq 'less --version' "$package_dir/README"
+grep -Fq 'curl --version' "$package_dir/README"
+grep -Fq 'wget --version' "$package_dir/README"
+grep -Fq 'rsync --version' "$package_dir/README"
+grep -Fq 'tmux -V' "$package_dir/README"
+grep -Fq 'file --version' "$package_dir/README"
+grep -Fq 'tdvp-tree --version' "$package_dir/README"
+grep -Fq 'tdvp-which grep' "$package_dir/README"
+grep -Fq 'tdvp-dos2unix' "$package_dir/README"
+grep -Fq 'tdvp-sed' "$package_dir/README"
+grep -Fq 'tdvp-find' "$package_dir/README"
+grep -Fq 'unsigned candidate' "$package_dir/README"
+grep -Fq 'tdvp-source-tools profile payload ready' "$package_dir/build.sh"

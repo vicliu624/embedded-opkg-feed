@@ -37,14 +37,19 @@ config_old_backup=
 package_config_backup=$(mktemp "$buildroot_tree/package/Config.in.tdvp-audacious.XXXXXX")
 install_root=$(mktemp -d)
 buildroot_staging_root=$(mktemp -d)
+buildroot_staging_backup=$(mktemp -d "${buildroot_staging_source}.tdvp-audacious-backup.XXXXXX")
+rmdir -- "$buildroot_staging_backup"
 download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
 payload_dir="$package_dir/root"
 config_hash=$(sha256sum "$build_output/.config" | awk '{print $1}')
+buildroot_staging_inode=$(stat -c '%d:%i' "$buildroot_staging_source")
 config_old_hash=
 config_saved=0
 config_old_saved=0
 package_config_saved=0
 core_package_staged=0
+staging_source_moved=0
+staging_source_redirected=0
 
 cleanup() {
   local rc=$?
@@ -65,7 +70,26 @@ cleanup() {
     fi
   fi
   if [[ "$core_package_staged" -eq 1 ]]; then rm -rf -- "$staged_core_package"; fi
+  if [[ "$staging_source_moved" -eq 1 ]]; then
+    if [[ "$staging_source_redirected" -eq 1 ]]; then
+      if [[ -L "$buildroot_staging_source" && "$(readlink -f -- "$buildroot_staging_source")" == "$buildroot_staging_root" ]]; then
+        rm -f -- "$buildroot_staging_source" || rc=103
+      else
+        echo 'Audacious core refused to remove an unexpected SDK sysroot path' >&2
+        rc=103
+      fi
+    fi
+    if [[ ! -e "$buildroot_staging_source" && ! -L "$buildroot_staging_source" ]]; then
+      mv -- "$buildroot_staging_backup" "$buildroot_staging_source" || rc=104
+      [[ "$(stat -c '%d:%i' "$buildroot_staging_source")" == "$buildroot_staging_inode" ]] || rc=105
+    else
+      echo 'Audacious core could not restore the original SDK sysroot path' >&2
+      rc=104
+    fi
+  fi
   rm -f -- "$config_backup" "$config_old_backup" "$package_config_backup"
+  # If restoration failed, leave the moved original sysroot backup in place
+  # rather than deleting any caller-owned SDK data during error cleanup.
   rm -rf -- "$install_root" "$buildroot_staging_root" "$download_dir"
   exit "$rc"
 }
@@ -87,12 +111,18 @@ printf '\nsource "package/tdvp-audacious/Config.in"\n' >>"$config_file"
 # A full copy is used rather than a hard-link farm: Buildroot is allowed to
 # replace development paths while installing tdvp-audacious.
 cp -a --reflink=auto "$buildroot_staging_source/." "$buildroot_staging_root/"
+# The external K230 compiler fixes its sysroot path in its specs, so a Make
+# STAGING_DIR override would leave the linker looking at the original SDK.
+# Move that exact SDK directory aside and put only the disposable copy at its
+# fixed path; cleanup verifies the symlink and restores the original inode.
+mv -- "$buildroot_staging_source" "$buildroot_staging_backup"; staging_source_moved=1
+ln -s -- "$buildroot_staging_root" "$buildroot_staging_source"; staging_source_redirected=1
 
 "$buildroot_tree/utils/config" --file "$build_output/.config" --enable BR2_PACKAGE_TDVP_AUDACIOUS
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" olddefconfig
 grep -qx 'BR2_PACKAGE_TDVP_AUDACIOUS=y' "$build_output/.config"
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y STAGING_DIR="$buildroot_staging_root" make -C "$build_output" tdvp-audacious-dirclean
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y STAGING_DIR="$buildroot_staging_root" make -C "$build_output" TARGET_DIR="$install_root" tdvp-audacious-install-target
+env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" tdvp-audacious-dirclean
+env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" TARGET_DIR="$install_root" tdvp-audacious-install-target
 
 for runtime in 'libaudcore.so.6*' 'libaudtag.so.4*' 'libaudgui.so.7*'; do
   shopt -s nullglob; matches=("$install_root"/usr/lib/$runtime); shopt -u nullglob

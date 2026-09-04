@@ -1,0 +1,23 @@
+From: TDVP Feed Maintainers <feed@tdvp.invalid>
+Subject: [PATCH] meson: keep the plugin install directory target-relative
+
+The cross pkg-config wrapper correctly resolves audacious.pc through its
+sysroot for compiler dependencies, but its plugin_dir variable consequently
+becomes an absolute host-sysroot path.  Meson appends that path to DESTDIR
+when staging a target package, so Buildroot rejects the attempted install.
+
+Use the reviewed target prefix and libdir instead.  This keeps both the
+compiled plugin discovery path and the installed payload at /usr/lib/audacious
+on TDVP K230.
+
+--- a/meson.build
++++ b/meson.build
+@@ -174,7 +174,7 @@ if intl_found
+ endif
+ 
+ 
+-install_plugindir = audacious_dep.get_variable(pkgconfig: 'plugin_dir')
++install_plugindir = join_paths(get_option('prefix'), get_option('libdir'), 'audacious')
+ 
+ 
+ conf.set_quoted('INSTALL_PLUGINDIR', install_plugindir)

@@ -116,8 +116,16 @@ for build_script in "$core_build_script" "$plugins_build_script"; do
   expect_contains 'buildroot_staging_source="$build_output/host/riscv64-buildroot-linux-gnu/sysroot"' "$build_script"
   expect_contains 'buildroot_staging_root=$(mktemp -d)' "$build_script"
   expect_contains 'cp -a --reflink=auto "$buildroot_staging_source/." "$buildroot_staging_root/"' "$build_script"
-  expect_contains 'STAGING_DIR="$buildroot_staging_root" make -C "$build_output"' "$build_script"
-  expect_contains 'rm -rf -- "$install_root" "$buildroot_staging_root" "$download_dir"' "$build_script"
+  expect_contains 'buildroot_staging_inode=$(stat -c '\''%d:%i'\'' "$buildroot_staging_source")' "$build_script"
+  expect_contains 'mv -- "$buildroot_staging_source" "$buildroot_staging_backup"; staging_source_moved=1' "$build_script"
+  expect_contains 'ln -s -- "$buildroot_staging_root" "$buildroot_staging_source"; staging_source_redirected=1' "$build_script"
+  expect_contains 'refused to remove an unexpected SDK sysroot path' "$build_script"
+  expect_contains '[[ "$(stat -c '\''%d:%i'\'' "$buildroot_staging_source")" == "$buildroot_staging_inode" ]] || rc=105' "$build_script"
+  if grep -Fq 'make -C "$build_output" STAGING_DIR="$buildroot_staging_root"' "$build_script"; then
+    echo 'Audacious build must not override the compiler-fixed K230 sysroot through STAGING_DIR' >&2
+    exit 1
+  fi
+  expect_contains 'rm -rf -- "$install_root" "$buildroot_staging_root"' "$build_script"
   expect_contains 'config_old_backup=' "$build_script"
   expect_contains 'cp --preserve=mode,timestamps -- "$config_backup" "$build_output/.config" || rc=98' "$build_script"
   expect_contains 'cp --preserve=mode,timestamps -- "$config_old_backup" "$build_output/.config.old" || rc=100' "$build_script"
@@ -131,6 +139,13 @@ expect_contains 'test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc
 expect_contains 'test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc"' "$plugins_build_script"
 expect_contains 'tdvp_prepare_locked_buildroot_download "$feed_root/packages/audacious-core"' "$plugins_build_script"
 expect_contains 'Audacious core/plugin download inputs collide' "$plugins_build_script"
+expect_contains 'cp -a -- "$install_root/usr/lib/audacious" "$TDVP_FEED_STAGING_ROOT/usr/lib/"' "$plugins_build_script"
+expect_contains 'Audacious plugin target-install patch differs from the source-lock-reviewed copy' "$plugins_build_script"
+cmp -s -- "$repo_root/packages/audacious-plugins/patches/0001-meson-use-target-plugin-directory.patch" "$plugins_buildroot_dir/0001-meson-use-target-plugin-directory.patch" || {
+  echo 'Audacious plugin Buildroot patch must match the source-lock-reviewed copy' >&2
+  exit 1
+}
+expect_contains "join_paths(get_option('prefix'), get_option('libdir'), 'audacious')" "$plugins_buildroot_dir/0001-meson-use-target-plugin-directory.patch"
 expect_contains 'BR2_PRIMARY_SITE_ONLY=y' "$plugins_build_script"
 expect_contains '"$core_download_dir"' "$plugins_build_script"
 

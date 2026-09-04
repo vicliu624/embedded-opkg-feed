@@ -52,6 +52,13 @@ bash ./scripts/fetch-r10-candidate-cohort.sh \
 上述 cohort helper 只验证并准备 cache；它不会调用 `build.sh`、生成 IPK、签名、安装或发布。
 可在第二台无网络构建机上把同一命令附加 `--offline`，以证明所有已锁定归档均已准备就绪。
 
+**CI 来源镜像记录（2026-09-04）。** Actions run `33902486905` 和 `33902490498` 均在
+GNU Make 的 host `lzip-1.25.tar.gz` 输入上遇到 `download.savannah.gnu.org` 的 `502/504`。
+`packages/make/source.lock` 因此改用 Savannah 的公开 release mirror
+`download-mirror.savannah.gnu.org`；文件名、版本和 Buildroot 审核的 SHA-256
+`09418a6d8fb83f5113f5bd856e09703df5d37bae0308c668d0f346e3d3f0a56f` 完全不变。
+镜像只是传输端替换，不能作为放宽散列、替换归档内容或跳过来源复核的理由。
+
 收到完成态 SDK 后，再运行只读 cohort 门：
 
 ```sh

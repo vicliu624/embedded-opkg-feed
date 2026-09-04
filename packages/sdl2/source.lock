@@ -15,5 +15,5 @@ SOURCE_ARTIFACT_1_URL='https://github.com/libsdl-org/SDL/archive/fa24d868ac2f8fd
 SOURCE_ARTIFACT_1_FILE='SDL-fa24d868ac2f8fd558e4e914c9863411245db8fd.tar.gz'
 SOURCE_ARTIFACT_1_SHA256='d42659685433a84f8b93f6f317a327c6599e190d910081615933abc96c1ebcb6'
 SOURCE_PATCH_1_FILE='patches/0001-pulseaudio-add-opt-in-stream-buffer.patch'
-SOURCE_PATCH_1_SHA256='ad7315f1991752518f7ef8a6f4d36733e3530ce7f2331846d637b84b7e7ef39f'
+SOURCE_PATCH_1_SHA256='886620c4075ab6a314ab7460b7640bb1147c30025e7bc75460f06ad5a2de05ea'
 SOURCE_PATCH_1_REASON='Enable the reviewed opt-in PulseAudio stream buffering policy for the TDVP K230 Wayland runtime.'

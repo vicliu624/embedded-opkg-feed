@@ -41,6 +41,7 @@ env:
   # flash images: the first base run validates them in full, while later
   # package-only runs need only the host toolchain and target sysroot.
   TDVP_SDK_CACHE_KEY: tdvp-k230-r1-sdk-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10-v2
+  TDVP_BUILDROOT_DL_CACHE_KEY: tdvp-k230-r1-buildroot-dl-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10-v1
 
 jobs:
   build-sdk-base:
@@ -109,6 +110,33 @@ jobs:
           rm -rf "$worktree"
           bash buildroot/tools/prepare-k230-sdk-worktree.sh "$worktree"
           bash buildroot/tools/build-k230-sdk-rm69a10.sh "$worktree"
+
+      - name: Restore the reviewed Buildroot source-download base
+        id: restore-buildroot-dl
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/tdvp-k230-sdk/dl
+          key: ${{ env.TDVP_BUILDROOT_DL_CACHE_KEY }}
+
+      - name: Populate the reviewed Buildroot source-download base
+        if: steps.restore-buildroot-dl.outputs.cache-hit != 'true'
+        working-directory: firmware
+        run: |
+          set -Eeuo pipefail
+          worktree="${RUNNER_TEMP}/tdvp-k230-sdk"
+          output="$worktree/output/$TDVP_PROFILE"
+          mkdir -p "$worktree/dl"
+          env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
+            PATH="$output/host/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+            BR2_PRIMARY_SITE=https://download.kendryte.com/k230/downloads/dl \
+            make -C "$output" source
+
+      - name: Save the reviewed Buildroot source-download base
+        if: steps.restore-buildroot-dl.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/tdvp-k230-sdk/dl
+          key: ${{ env.TDVP_BUILDROOT_DL_CACHE_KEY }}
 
       - name: Verify the cached base identity
         working-directory: firmware
@@ -246,6 +274,13 @@ jobs:
           key: ${{ env.TDVP_SDK_CACHE_KEY }}
           fail-on-cache-miss: true
 
+      - name: Restore the reviewed Buildroot source-download base
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/tdvp-k230-sdk/dl
+          key: ${{ env.TDVP_BUILDROOT_DL_CACHE_KEY }}
+          fail-on-cache-miss: true
+
       - name: Restore or create the hash-locked source cache
         uses: actions/cache@v4
         with:
@@ -336,6 +371,7 @@ jobs:
           export TDVP_PYTHON3_BUILDROOT_OUTPUT="$build_output"
           export TDVP_DEVEL_BUILDROOT_OUTPUT="$build_output"
           export TDVP_NODE22_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_BUILDROOT_BASE_DOWNLOAD_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl"
           export TDVP_NODE22_SOURCE_CACHE="${RUNNER_TEMP}/tdvp-r10-source-cache/nodejs"
 
           # Only selected SHA-256-locked source inputs are fetched. The result

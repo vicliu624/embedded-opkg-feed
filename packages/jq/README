@@ -1,0 +1,6 @@
+jq — JSON query and transformation command
+
+This r10 candidate rebuilds Buildroot 2025.02.1's reviewed jq recipe with
+Oniguruma disabled, matching the TDVP baseline. It uses a SHA-256-locked
+source archive and installs only a private executable plus /usr/bin/jq
+frontend; it does not alter firmware or add a public shared library.

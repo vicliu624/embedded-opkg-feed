@@ -23,36 +23,31 @@ feed_root=$(cd -- "$package_dir/../.." && pwd)
 source "$package_dir/package.env"
 # shellcheck source=../../scripts/tdvp-k230-sdk.sh
 source "$feed_root/scripts/tdvp-k230-sdk.sh"
+# shellcheck source=../../support/source-archive-library.sh
+source "$feed_root/support/source-archive-library.sh"
 
-source_root=${TDVP_SDL2_SOURCE_DIR:-"$feed_root/../cardputer-zero-gameboy-emulator/extern/SDL"}
-source_root=$(tdvp_verify_git_source "$source_root" "$SOURCE_REPOSITORY" "$SOURCE_REVISION")
 tdvp_require_k230_sdk "$4"
 tdvp_require_wayland_sdk_overlay
 tdvp_prepare_pkg_config
 
 build_root=$(mktemp -d)
+source_tree=$(mktemp -d)
 patched_source=$(mktemp -d)
 payload_dir="$package_dir/root"
-cleanup() { rm -rf -- "$build_root" "$patched_source"; }
+cleanup() { rm -rf -- "$build_root" "$source_tree" "$patched_source"; }
 trap cleanup EXIT
 rm -rf -- "$payload_dir"
 mkdir -p -- "$payload_dir"
+source_root=$(tdvp_unpack_locked_source_archive "$package_dir" "$source_tree")
 
-# The feed owns the K230 buffering policy without forking SDL2. Materialize an
-# exact pinned checkout in a disposable directory, apply the reviewed
-# downstream patch there, and leave the source-locked checkout untouched for
-# the later application recipes in this same release.
-rm -rf -- "$patched_source"
-# The source and feed can be checked out on Windows while the cross build runs
-# in WSL.  Force the disposable clone and its reviewed patch to LF before
-# applying it, so CRLF worktrees cannot change the patch context or the SDL
-# source that is actually compiled.
-git -c core.autocrlf=false clone --no-checkout "$source_root" "$patched_source"
-git -C "$patched_source" -c core.autocrlf=false checkout --detach "$SOURCE_REVISION"
+# The feed owns the K230 buffering policy without forking SDL2. Copy the exact
+# locked archive tree to a disposable directory and apply the reviewed patch;
+# neither source selection nor patch context depends on a neighboring Git
+# checkout.
+cp -a -- "$source_root/." "$patched_source/"
 pulseaudio_patch="$build_root/0001-pulseaudio-add-opt-in-stream-buffer.patch"
 sed 's/\r$//' "$package_dir/patches/0001-pulseaudio-add-opt-in-stream-buffer.patch" >"$pulseaudio_patch"
-git -C "$patched_source" apply --check "$pulseaudio_patch"
-git -C "$patched_source" apply "$pulseaudio_patch"
+patch --batch --forward -p1 -d "$patched_source" <"$pulseaudio_patch"
 
 # SDL's CMake helper derives the dlopen name from the file passed to it rather
 # than reading ELF DT_SONAME. Some SDK bridges retain the real target object

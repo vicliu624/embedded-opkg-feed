@@ -1,0 +1,7 @@
+libjq — jq shared runtime library
+
+This r10 candidate is the sole owner of libjq.so.1. The jq command package
+depends on this exact runtime instead of carrying a hidden private library.
+Both are rebuilt from the same SHA-256-locked jq source via Buildroot's
+reviewed 2025.02.1 recipe, with optional Oniguruma disabled by the TDVP
+baseline.

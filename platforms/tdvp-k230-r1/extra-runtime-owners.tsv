@@ -23,10 +23,57 @@ libzstd.so.1|libzstd|1.5.7-1
 # is split from the standard library data and the interpreter executable.
 libpython3.13.so.1.0|libpython3.13|3.13.3-1
 libcares.so.2|libcares|1.34.2-1
-libuv.so.1|libuv|1.50.0-1
+libuv.so.1|libuv|1.51.0-1
 libnghttp2.so.14|libnghttp2|1.64.0-1
 libicudata.so.73|libicudata|73.2-1
 libicuuc.so.73|libicuuc|73.2-1
 libicui18n.so.73|libicui18n|73.2-1
 libicuio.so.73|libicuio|73.2-1
 libnode.so.127|libnode|22.23.2-1
+# jq's public library is split from the command package. This lets command
+# packages declare one exact provider instead of embedding libjq privately.
+libjq.so.1|libjq|1.7.1-1
+# The K230 baseline enables PCRE2. Keep its public 8-bit regular-expression
+# ABI in a dedicated provider; GNU grep declares the exact package dependency.
+libpcre2-8.so.0|libpcre2-8|10.44-1
+# Git's XML parsing support consumes the public Expat ABI. Keep it independently
+# installable so Git never borrows a firmware or historical-release library.
+libexpat.so.1|libexpat-1|2.7.0-1
+# CPython _ctypes and future FFI consumers use the public libffi ABI. It is a
+# dedicated source-built provider rather than a private interpreter payload.
+libffi.so.8|libffi-8|3.4.6-1
+# CPython _sqlite3 and future database clients use SQLite's public ABI. Keep
+# the source-built SONAME independent of every language-runtime payload.
+libsqlite3.so.0|libsqlite3-0|3.48.0-1
+# CPython _decimal is configured to use the public mpdecimal ABI. It remains
+# a dedicated source-built provider instead of a private interpreter payload.
+libmpdec.so.4|libmpdec-4|4.0.0-1
+# Split OpenSSL's two public SONAMEs into explicit providers before Git, curl,
+# Python, or Node may depend on TLS. They are built from one locked source tree.
+libcrypto.so.3|libcrypto-3|3.4.1-1
+libssl.so.3|libssl-3|3.4.1-1
+# Rsync consumes popt's public command-line parsing ABI. Keep it independently
+# installable so rsync and future CLI parsers never carry a private copy.
+libpopt.so.0|libpopt|1.19-1
+# libatomic is not an ABI-seed library. Its feed provider transfers the exact
+# GCC 14.1.1 object from the matching target, rather than borrowing it at run time.
+libatomic.so.1|libatomic-1|14.1.1-1
+# The reviewed minimal Buildroot libcurl configuration is the HTTPS transport
+# provider for Git. Optional HTTP/2, libssh2, IDN, and c-ares features stay off.
+libcurl.so.4|libcurl-4|8.12.1-1
+# gawk has line editing enabled by the reviewed baseline. Its readable
+# command-line ABI is provided in layers so the interpreter never embeds
+# ncurses or readline privately.
+libncursesw.so.6|libncursesw|6.4-20230603-1
+libreadline.so.8|libreadline|8.2-1
+# tmux shares libevent's four public event-loop SONAMEs with future consumers.
+# The provider has OpenSSL support disabled; no TLS ABI is carried privately.
+libevent-2.1.so.7|libevent|2.1.12-1
+libevent_core-2.1.so.7|libevent|2.1.12-1
+libevent_extra-2.1.so.7|libevent|2.1.12-1
+libevent_pthreads-2.1.so.7|libevent|2.1.12-1
+# file-type inspection has one reusable compression/runtime layer. libmagic
+# is built from the file source package; its libz dependency is owned by the
+# reviewed libzlib provider rather than copied from the firmware image.
+libz.so.1|libz|1.3.1-1
+libmagic.so.1|libmagic|5.45-1

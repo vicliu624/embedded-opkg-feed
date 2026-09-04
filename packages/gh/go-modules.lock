@@ -1,0 +1,18 @@
+# This is a non-executable, hash-pinned build-input record for gh's Go module
+# graph. It is itself covered by SOURCE_BUILD_INPUT_1 in source.lock. The
+# vendor bundle is derived only from the exact gh source archive, this exact
+# Go host toolchain and the go.mod/go.sum checks below; its archive hash makes
+# a subsequent target build offline and reviewable.
+FORMAT_VERSION='1'
+GO_TOOLCHAIN_VERSION='1.26.7'
+GO_TOOLCHAIN_HOST_OS='linux'
+GO_TOOLCHAIN_HOST_ARCH='amd64'
+GO_TOOLCHAIN_ARCHIVE='go1.26.7.linux-amd64.tar.gz'
+GO_TOOLCHAIN_ARCHIVE_SHA256='ffb5f8de10c62550dfddab66b36b57030721e0a44a3218e9e1181d7b59f121ca'
+GO_MOD_SHA256='b8b80ac7c0de3e46be50e511d57eb56aba9a74354038ddcfe6546bb3871d394f'
+GO_SUM_SHA256='561048db6ad3182cb97575dd74ab171fbe49c9722e3d471d89306d2cc9a64512'
+GO_RESOLVED_SUM_SHA256='86ab1fe26ef974a5ebd5745f3f0b48cf32b42cfbaad173569113254e8aab67d8'
+GO_VENDOR_MODULES_SHA256='eccd88020d2c9b8e3b35b6d89111e5a5638b05fc42a3e5ca1654fafe43945648'
+GO_VENDOR_MODULE_COUNT='179'
+GO_MODULE_VENDOR_ARCHIVE='gh-2.98.0-go1.26.7-vendor.tar.gz'
+GO_MODULE_VENDOR_ARCHIVE_SHA256='7d0291b6670a81ad46c701bac86e87bd4e9b4198301d831882e6f7533dd9c6ea'

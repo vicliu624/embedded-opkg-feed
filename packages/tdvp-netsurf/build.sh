@@ -23,6 +23,9 @@ fi
 platform_slug=$2
 sdk_root=$4
 package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+feed_root=$(cd -- "$package_dir/../.." && pwd)
+# shellcheck source=../../support/buildroot-feed-session.sh
+source "$feed_root/support/buildroot-feed-session.sh"
 
 # shellcheck source=/dev/null
 source "$package_dir/package.env"
@@ -114,6 +117,7 @@ done
 
 config_backup=$(mktemp "$build_output/.config.tdvp-netsurf.XXXXXX")
 install_root=$(mktemp -d)
+download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
 payload_dir="$package_dir/root"
 config_sha256=$(sha256sum "$build_output/.config" | awk '{print $1}')
 config_saved=0
@@ -134,7 +138,7 @@ cleanup() {
   if [[ "$patch_staged" -eq 1 ]]; then
     rm -f -- "$patch_target"
   fi
-  rm -rf -- "$install_root"
+  rm -rf -- "$install_root" "$download_dir"
   exit "$rc"
 }
 trap cleanup EXIT
@@ -151,6 +155,7 @@ patch_staged=1
   --enable BR2_PACKAGE_NETSURF_GTK3
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
   PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+  BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y \
   make -C "$build_output" olddefconfig
 grep -qx 'BR2_PACKAGE_NETSURF=y' "$build_output/.config"
 grep -qx 'BR2_PACKAGE_NETSURF_GTK3=y' "$build_output/.config"
@@ -160,9 +165,11 @@ grep -qx 'BR2_PACKAGE_NETSURF_GTK3=y' "$build_output/.config"
 # image artifacts, or a user data partition.
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
   PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+  BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y \
   make -C "$build_output" netsurf-dirclean
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
   PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+  BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y \
   make -C "$build_output" TARGET_DIR="$install_root" netsurf-install-target
 
 browser_binary="$install_root/usr/bin/netsurf-gtk3"

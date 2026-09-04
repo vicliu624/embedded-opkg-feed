@@ -1,0 +1,19 @@
+# This leaf contains only /usr/bin/git.  git-runtime performs the locked
+# source build first and places that exact frontend in the private release
+# staging root, so both split IPKs retain the same auditable source record.
+FORMAT_VERSION='1'
+SOURCE_TYPE='release-tarball'
+UPSTREAM_NAME='Git'
+UPSTREAM_LICENSE='GPL-2.0-only, LGPL-2.1-or-later'
+UPSTREAM_VERSION='2.48.1'
+UPSTREAM_REVISION='2.48.1'
+SOURCE_SNAPSHOT='https://cdn.kernel.org/pub/software/scm/git/git-2.48.1.tar.xz'
+SOURCE_SELECTION_REASON='The public Git frontend is intentionally separated from git-runtime helper and template data. It is copied only from the immediately preceding verified git-runtime source build in the same private release staging root; no foreign binary is introduced.'
+NON_PLATFORM_BUILD_INPUTS='The source build occurs in git-runtime with the matching SDK/sysroot and the same locked archive. This leaf only packages that staged /usr/bin/git frontend, then repeats target ELF and dependency-closure auditing.'
+SECURITY_STATUS='Git and every transitively owned runtime remain subject to release-candidate advisory review; the shared release archive is SHA-256 verified before the offline build.'
+VERIFIED_BY='TDVP source-lock verifier plus the reviewed Buildroot 2025.02.1 Git package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/git/git.hash'
+SOURCE_ARTIFACT_1_URL='https://cdn.kernel.org/pub/software/scm/git/git-2.48.1.tar.xz'
+SOURCE_ARTIFACT_1_FILE='git-2.48.1.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='1c5d545f5dc1eb51e95d2c50d98fdf88b1a36ba1fa30e9ae5d5385c6024f82ad'

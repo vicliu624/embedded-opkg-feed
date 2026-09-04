@@ -1,0 +1,18 @@
+# Buildroot owns the cross-compile configuration. This record locks the
+# reviewed Expat release archive consumed by its 2025.02.1 recipe.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='Expat'
+UPSTREAM_LICENSE='MIT'
+UPSTREAM_VERSION='2.7.0'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/expat/expat.mk'
+SOURCE_SELECTION_REASON='Git XML parsing requires a reusable public libexpat provider; packaging it first avoids borrowing a firmware or historical-release library.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 expat.mk and expat.hash; no TDVP-specific patches or non-platform target dependencies.'
+SECURITY_STATUS='Buildroot recipe source SHA-256 is verified before candidate build; release-candidate security review remains required.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/expat/expat.hash'
+SOURCE_ARTIFACT_1_URL='https://github.com/libexpat/libexpat/releases/download/R_2_7_0/expat-2.7.0.tar.xz'
+SOURCE_ARTIFACT_1_FILE='expat-2.7.0.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='25df13dd2819e85fb27a1ce0431772b7047d72af81ae78dc26b4c6e0805f48d1'

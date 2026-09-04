@@ -81,6 +81,7 @@ expect_line "^PACKAGE_DEPENDS='audacious-core \\(= 4\\.6\\.1-1\\)'$" "$plugins_e
 expect_line "^PACKAGE='audacious'$" "$app_env"
 expect_line "^PACKAGE_DEPENDS='audacious-core \\(= 4\\.6\\.1-1\\), audacious-plugins \\(= 4\\.6\\.1-1\\), hicolor-icon-theme \\(= 2025\\.02\\.1-1\\)'$" "$app_env"
 expect_fixed_line 'TDVP_AUDACIOUS_VERSION = 4.6.1' "$core_buildroot_recipe"
+expect_fixed_line 'TDVP_AUDACIOUS_INSTALL_STAGING = YES' "$core_buildroot_recipe"
 expect_fixed_line 'TDVP_AUDACIOUS_PLUGINS_VERSION = 4.6.1' "$plugins_buildroot_recipe"
 expect_fixed_line 'sha256  22e58a8a2c3f3caa9687434353618c822963cc8846cd239de36d4e8e5bd166a6  audacious-plugins-4.6.1.tar.bz2' "$plugins_buildroot_hash"
 expect_line '^config BR2_PACKAGE_TDVP_AUDACIOUS$' "$core_buildroot_config"
@@ -111,6 +112,23 @@ fi
 expect_contains 'package/tdvp-audacious/Config.in' "$core_build_script"
 expect_contains 'package/tdvp-audacious/Config.in' "$plugins_build_script"
 expect_contains 'package/tdvp-audacious-plugins/Config.in' "$plugins_build_script"
+for build_script in "$core_build_script" "$plugins_build_script"; do
+  expect_contains 'buildroot_staging_source="$build_output/host/riscv64-buildroot-linux-gnu/sysroot"' "$build_script"
+  expect_contains 'buildroot_staging_root=$(mktemp -d)' "$build_script"
+  expect_contains 'cp -a --reflink=auto "$buildroot_staging_source/." "$buildroot_staging_root/"' "$build_script"
+  expect_contains 'STAGING_DIR="$buildroot_staging_root" make -C "$build_output"' "$build_script"
+  expect_contains 'rm -rf -- "$install_root" "$buildroot_staging_root" "$download_dir"' "$build_script"
+  expect_contains 'config_old_backup=' "$build_script"
+  expect_contains 'cp --preserve=mode,timestamps -- "$config_backup" "$build_output/.config" || rc=98' "$build_script"
+  expect_contains 'cp --preserve=mode,timestamps -- "$config_old_backup" "$build_output/.config.old" || rc=100' "$build_script"
+  if grep -Fq 'make -C "$build_output" olddefconfig || rc=98' "$build_script"; then
+    echo 'Audacious cleanup must not normalize the restored SDK config' >&2
+    exit 1
+  fi
+done
+expect_contains 'tdvp-audacious-dirclean' "$plugins_build_script"
+expect_contains 'test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc"' "$core_build_script"
+expect_contains 'test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc"' "$plugins_build_script"
 
 # 1232 x 568 is the physical landscape display. The fallback deliberately
 # leaves room for compositor decoration/panel; normal startup is maximized.

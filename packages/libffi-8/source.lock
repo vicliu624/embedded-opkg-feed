@@ -1,0 +1,18 @@
+# Buildroot supplies the reviewed target feature choices and exact source hash;
+# this package extracts only the public libffi SONAME into a reusable feed IPK.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='libffi'
+UPSTREAM_LICENSE='MIT'
+UPSTREAM_VERSION='3.4.6'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/libffi/libffi.mk'
+SOURCE_SELECTION_REASON='CPython _ctypes requires libffi.so.8. Publishing the reusable provider first prevents Python and later FFI consumers from borrowing a firmware copy or embedding a private ABI.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 libffi.mk/libffi.hash; no TDVP-specific patches or non-platform target dependencies.'
+SECURITY_STATUS='Buildroot recipe source SHA-256 is verified before every candidate build; release-candidate advisory review remains required.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/libffi/libffi.hash'
+SOURCE_ARTIFACT_1_URL='https://github.com/libffi/libffi/releases/download/v3.4.6/libffi-3.4.6.tar.gz'
+SOURCE_ARTIFACT_1_FILE='libffi-3.4.6.tar.gz'
+SOURCE_ARTIFACT_1_SHA256='b0dea9df23c863a7a50e825440f3ebffabd65df1497108e5d437747843895a4e'

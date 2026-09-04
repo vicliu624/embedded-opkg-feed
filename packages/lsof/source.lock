@@ -1,0 +1,18 @@
+# Buildroot owns the cross-compile configuration. This record locks the
+# reviewed upstream archive consumed by its 2025.02.1 lsof recipe.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='lsof'
+UPSTREAM_LICENSE='lsof license'
+UPSTREAM_VERSION='4.99.4'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/lsof/lsof.mk'
+SOURCE_SELECTION_REASON='lsof complements strace and htop with open-file and socket inspection on a real K230 Linux system. Buildroot 2025.02.1 provides the reviewed Linux /proc cross-build recipe; its optional libtirpc linkage is explicitly disabled because no libtirpc provider is admitted to the feed. The complete implementation is exposed as tdvp-lsof because the immutable K230 BusyBox baseline already owns /usr/bin/lsof.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 lsof.mk and lsof.hash only. With BR2_PACKAGE_LIBTIRPC disabled, the recipe consumes no extra third-party target or host dependency archive; no TDVP-specific patches.'
+SECURITY_STATUS='lsof requires release-candidate advisory review. Its locked archive is SHA-256 verified before the private offline Buildroot build; privileged process visibility is tested on device before publication.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 lsof package hash'
+VERIFIED_AT='2026-09-03'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/lsof/lsof.hash'
+SOURCE_ARTIFACT_1_URL='https://github.com/lsof-org/lsof/archive/4.99.4/lsof-4.99.4.tar.gz'
+SOURCE_ARTIFACT_1_FILE='lsof-4.99.4.tar.gz'
+SOURCE_ARTIFACT_1_SHA256='90d02ae35cd14341bfb04ce80e0030767476b0fc414a0acb115d49e79b13d56c'

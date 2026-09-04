@@ -1,0 +1,18 @@
+# Buildroot owns the cross-compile configuration.  This record locks the
+# reviewed upstream archive consumed by its 2025.02.1 strace recipe.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='strace'
+UPSTREAM_LICENSE='LGPL-2.1-or-later'
+UPSTREAM_VERSION='6.13'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/strace/strace.mk'
+SOURCE_SELECTION_REASON='Buildroot 2025.02.1 provides the reviewed cross-build recipe and source options for RISC-V; the feed packages only the diagnostic command.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 strace.mk and strace.hash; no TDVP-specific patches.'
+SECURITY_STATUS='Buildroot recipe source SHA-256 is verified before candidate build; security review is release-candidate scoped.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/strace/strace.hash'
+SOURCE_ARTIFACT_1_URL='https://github.com/strace/strace/releases/download/v6.13/strace-6.13.tar.xz'
+SOURCE_ARTIFACT_1_FILE='strace-6.13.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='e209daf0ee038ca5adcc4c277e9273b4d51f46a2ff86da575d36742ac3508a17'

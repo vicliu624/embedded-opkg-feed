@@ -15,3 +15,6 @@ VERIFICATION_REFERENCE='https://distfiles.audacious-media-player.org/audacious-4
 SOURCE_ARTIFACT_1_URL='https://distfiles.audacious-media-player.org/audacious-4.6.1.tar.bz2'
 SOURCE_ARTIFACT_1_FILE='audacious-4.6.1.tar.bz2'
 SOURCE_ARTIFACT_1_SHA256='62a5a609267eca7f6e3ce52ef6f42d5618d2961e3b4ddc227c6a5859026965d9'
+SOURCE_ARTIFACT_2_URL='https://cmake.org/files/v3.31/cmake-3.31.5.tar.gz'
+SOURCE_ARTIFACT_2_FILE='cmake-3.31.5.tar.gz'
+SOURCE_ARTIFACT_2_SHA256='66fb53a145648be56b46fa9e8ccade3a4d0dfc92e401e52ce76bdad1fea43d27'

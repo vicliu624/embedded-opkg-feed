@@ -40,6 +40,35 @@ package_config_backup=$(mktemp "$buildroot_tree/package/Config.in.tdvp-audacious
 install_root=$(mktemp -d)
 buildroot_staging_root=$(mktemp -d)
 download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
+core_download_dir=
+# The plugin transaction must rebuild the core into its disposable staging
+# sysroot before Meson can discover audacious.pc.  Seed that prerequisite's
+# already source.lock-verified archive beside the plugin archive, keeping
+# Buildroot's primary-site-only mode genuinely offline.
+core_download_dir=$(tdvp_prepare_locked_buildroot_download "$feed_root/packages/audacious-core")
+core_archive_count=0
+while IFS= read -r core_archive; do
+  [[ -f "$core_archive" && ! -L "$core_archive" ]] || {
+    echo "invalid audited Audacious core archive: $core_archive" >&2
+    exit 70
+  }
+  core_archive_name=$(basename -- "$core_archive")
+  destination_archive="$download_dir/$core_archive_name"
+  if [[ -e "$destination_archive" ]]; then
+    cmp -s -- "$core_archive" "$destination_archive" || {
+      echo "Audacious core/plugin download inputs collide: $core_archive_name" >&2
+      exit 70
+    }
+  else
+    cp --no-preserve=mode -- "$core_archive" "$destination_archive"
+    chmod 0444 "$destination_archive"
+  fi
+  core_archive_count=$((core_archive_count + 1))
+done < <(find "$core_download_dir" -maxdepth 1 -type f -print | LC_ALL=C sort)
+[[ "$core_archive_count" -gt 0 ]] || {
+  echo 'Audacious core source-lock did not provide a Buildroot download input' >&2
+  exit 70
+}
 payload_dir="$package_dir/root"
 config_hash=$(sha256sum "$build_output/.config" | awk '{print $1}')
 config_old_hash=
@@ -69,7 +98,7 @@ cleanup() {
   if [[ "$plugins_package_staged" -eq 1 ]]; then rm -rf -- "$staged_plugins_package"; fi
   if [[ "$core_package_staged" -eq 1 ]]; then rm -rf -- "$staged_core_package"; fi
   rm -f -- "$config_backup" "$config_old_backup" "$package_config_backup"
-  rm -rf -- "$install_root" "$buildroot_staging_root" "$download_dir"
+  rm -rf -- "$install_root" "$buildroot_staging_root" "$download_dir" "$core_download_dir"
   exit "$rc"
 }
 trap cleanup EXIT

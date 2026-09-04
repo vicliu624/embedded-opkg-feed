@@ -1,17 +1,11 @@
 diff --git a/src/audio/pulseaudio/SDL_pulseaudio.c b/src/audio/pulseaudio/SDL_pulseaudio.c
-index 504d5d3ce..7fbaaaf15 100644
+index 2fb2f31c6..a90d017a3 100644
 --- a/src/audio/pulseaudio/SDL_pulseaudio.c
 +++ b/src/audio/pulseaudio/SDL_pulseaudio.c
-@@ -663,9 +663,37 @@ static int PULSEAUDIO_OpenDevice(_THIS, const char *devname)
-     /* Reduced prebuffering compared to the defaults. */
-     paattr.fragsize = this->spec.size;
-     paattr.tlength = h->mixlen;
-     paattr.prebuf = -1;
-     paattr.maxlength = -1;
+@@ -668,6 +668,34 @@ static int PULSEAUDIO_OpenDevice(_THIS, const char *devname)
      paattr.minreq = -1;
      flags |= PA_STREAM_ADJUST_LATENCY;
--
-+
+ 
 +    if (!iscapture) {
 +        const char *hint = SDL_GetHint("SDL_AUDIO_PULSEAUDIO_BUFFER_FRAMES");
 +
@@ -41,3 +35,5 @@ index 504d5d3ce..7fbaaaf15 100644
 +    }
 +
      PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
+ 
+     if (!FindDeviceName(h, iscapture, this->handle)) {

@@ -28,6 +28,24 @@ if grep -Fq 'not downloadable from its public GitHub archive endpoint' \
   exit 1
 fi
 
+# The SDL patch is a locked input, not an optional best-effort tweak.  Its
+# hunk is regenerated for the exact SDL commit and must retain the complete
+# FindDeviceName condition so GNU patch can apply it without fuzz on the
+# archive unpacked by the GitHub-only K230 build.
+sdl2_patch="$repo_root/packages/sdl2/patches/0001-pulseaudio-add-opt-in-stream-buffer.patch"
+grep -Fqx "SOURCE_PATCH_1_SHA256='072edf301194f744e9782fd40e2e6bf6b25580af2408c61a42ea25a99d3ed16e'" \
+  "$repo_root/packages/sdl2/source.lock"
+grep -Fqx '@@ -668,6 +668,34 @@ static int PULSEAUDIO_OpenDevice(_THIS, const char *devname)' "$sdl2_patch"
+grep -Fqx '     if (!FindDeviceName(h, iscapture, this->handle)) {' "$sdl2_patch"
+grep -Fqx "VERSION='2.30.11-3'" "$repo_root/packages/sdl2/package.env"
+grep -Fqx "VERSION='2.22.0-3'" "$repo_root/packages/sdl2-ttf/package.env"
+grep -Fqx "PACKAGE_DEPENDS='sdl2 (= 2.30.11-3)'" "$repo_root/packages/sdl2-ttf/package.env"
+grep -Fqx "VERSION='0.2.3-4'" "$repo_root/packages/tdvp-gba/package.env"
+grep -Fqx "PACKAGE_DEPENDS='sdl2 (= 2.30.11-3), sdl2-ttf (= 2.22.0-3), libmgba (= 0.10.5-1)'" \
+  "$repo_root/packages/tdvp-gba/package.env"
+grep -Fqx 'libSDL2-2.0.so.0|sdl2|2.30.11-3' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
+grep -Fqx 'libSDL2_ttf-2.0.so.0|sdl2-ttf|2.22.0-3' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
+
 grep -Fq 'options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, nodejs]' "$workflow"
 grep -Fq 'retro-gba)' "$workflow"
 grep -Fq 'package_args=(--package sdl2-ttf --package tdvp-gba)' "$workflow"

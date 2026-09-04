@@ -1,9 +1,11 @@
 # SONAME|Package|Version
-# These owners are built outside the firmware target and are repackaged from
-# their immutable r2 artifacts into r3.  They are nevertheless peers of every
-# target-derived runtime in the r3 closure, not application-bundled blobs.
-libSDL2-2.0.so.0|sdl2|2.30.11-2
-libSDL2_ttf-2.0.so.0|sdl2-ttf|2.22.0-2
+# These owners are built outside the firmware target.  They are peers of every
+# target-derived runtime in the r10 closure, not application-bundled blobs.
+# The exact versions below must follow the locked SDL source patch and its
+# dependent metadata releases, so the runtime owner map cannot attest an old
+# package after a source-input correction.
+libSDL2-2.0.so.0|sdl2|2.30.11-3
+libSDL2_ttf-2.0.so.0|sdl2-ttf|2.22.0-3
 libmgba.so.0.10|libmgba|0.10.5-1
 # Audacious 4.6.1 is built once by the audited core recipe. Its three public
 # libraries have one reusable runtime owner; the player and every loadable

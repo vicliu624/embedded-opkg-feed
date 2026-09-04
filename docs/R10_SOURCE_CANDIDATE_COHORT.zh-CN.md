@@ -148,6 +148,17 @@ contract 的两个公共 zlib 头；不是可接受的 IPK 产物，也不得 me
 它们写入 overlay 以外的位置。`libz` 仍由候选 feed 的唯一 `libz` provider 拥有，runtime closure
 gate 继续验证这一点。
 
+zlib retry `33924722697` 已实际通过上述 overlay 准入、FreeType source-cache、target runtime base
+和所有静态策略，并再次从锁定源码成功构建/封装 `libmgba`。随后它正确阻止在 SDL patch 之前：旧 patch
+的 hunk 末尾把 `FindDeviceName(...))` 写成少一个右括号的 `FindDeviceName(...)`，且带有无意义的空行
+删除/添加对；`git apply` 可以模糊接受它，但实际 recipe 使用的 GNU `patch --batch --forward` 在第 663
+行拒绝，故没有 SDL2、SDL_ttf 或 GBA IPK 被产生或 merge。新 patch 直接从 source.lock 固定 commit
+`fa24d868ac2f8fd558e4e914c9863411245db8fd` 重新生成，使用精确 `@@ -668,6 +668,34` hunk；其 SHA-256
+为 `072edf301194f744e9782fd40e2e6bf6b25580af2408c61a42ea25a99d3ed16e`。本地只进行了这个精确源码的
+GNU patch dry-run（无 K230 构建），随后才允许 GitHub Actions 重试。由于 SDL2 payload 代码输入发生
+变化，`sdl2` 升为 `2.30.11-3`，依赖它的 `sdl2-ttf` 升为 `2.22.0-3`，`tdvp-gba` 升为 `0.2.3-4`，三者
+保持精确版本依赖；失败 run `33924722697` 同样不得 merge。
+
 五个已成功 batch 的首次 partial merge `33923703593` 也在下载 artifact 之前停止，原因是 merge
 job 的 SDK cache `path` 集合漏掉了 package batch 保存时包含的 `build/**/.stamp_*`。GitHub Actions
 cache version 包含 path 集合，故即使文本 key 相同也会被当作 cache miss；此修复把 merge restore

@@ -195,7 +195,7 @@ read_recipe_value() {
 }
 
 # PACKAGE_DEPENDS is deliberately human-readable (for example
-# "sdl2 (= 2.30.11-2), libmgba (= 0.10.5-1)"). A selective build still
+# "sdl2 (= 2.30.11-3), libmgba (= 0.10.5-1)"). A selective build still
 # needs every declared runtime package in its partial catalogue, so extract
 # only the package name while leaving version validation to build-ipk and
 # verify-feed. Build-only dependencies use the simpler documented

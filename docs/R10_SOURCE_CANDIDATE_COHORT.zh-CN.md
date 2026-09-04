@@ -163,6 +163,13 @@ run `33907529611` 已用锁定 GitHub CLI source、Go 1.26.7 host archive、`go.
 `gh/source.lock`。下一次 CI 必须重新生成相同 vendor archive 后才会继续交叉编译，不能
 把先前失败产生的临时目录或未验证 cache 当作输入。
 
+run `33908930481` 已证明新摘要本身已获接受，并把失败收敛到 vendor-cache helper 的
+stdout 契约：`go mod verify` 输出的 `all modules verified` 被命令替换一并捕获，导致本应
+只包含 vendor archive 绝对路径的变量变成两行，并被安全路径检查以 exit 93 拒绝。helper
+现在把 `go mod download`、`go mod verify` 和 `go mod vendor` 的诊断输出都定向到 stderr；
+它在 stdout 上只返回经哈希验证的 archive 路径。这个修正不改变 Go 模块、vendor 内容或
+目标 ABI，只恢复函数调用方所依赖的单值返回协议，后续 CI 必须仍验证同一锁定摘要才可交叉编译。
+
 run `33908926617` 已证明 host-lzip 作为锁定输入成功到达 Wget 编译阶段，但也证明先前
 通过 `WGET_CONF_OPTS` 的覆盖会被 `wget.mk` 的追加分支重新引入 GnuTLS。新的 make-time
 Kconfig view 解决该问题。同时，完整 GNU Wget 的源码 payload 与固件 `/usr/bin/wget`

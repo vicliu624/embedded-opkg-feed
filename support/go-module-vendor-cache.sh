@@ -244,21 +244,21 @@ tdvp_prepare_go_module_vendor_cache() {
       GOCACHE="$local_go_cache" \
       GOPROXY='https://proxy.golang.org' \
       GOSUMDB='sum.golang.org' \
-      "$go_binary" mod download all
+      "$go_binary" mod download all >&2
     env \
       GOTOOLCHAIN=local \
       GOMODCACHE="$local_module_cache" \
       GOCACHE="$local_go_cache" \
       GOPROXY='https://proxy.golang.org' \
       GOSUMDB='sum.golang.org' \
-      "$go_binary" mod verify
+      "$go_binary" mod verify >&2
     env \
       GOTOOLCHAIN=local \
       GOMODCACHE="$local_module_cache" \
       GOCACHE="$local_go_cache" \
       GOPROXY='https://proxy.golang.org' \
       GOSUMDB='sum.golang.org' \
-      "$go_binary" mod vendor
+      "$go_binary" mod vendor >&2
   )
   tdvp_assert_go_vendor_resolved_sum "$source_root"
   tdvp_assert_go_vendor_tree "$source_root"

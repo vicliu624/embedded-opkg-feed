@@ -28,6 +28,10 @@ buildroot_tree=$(awk '$1 == "MAKEARGS" && ($2 == ":=" || $2 == "+=") && $3 == "-
 actual_buildroot_version=$(awk '$1 == "export" && $2 == "BR2_VERSION" && $3 == ":=" { print $4; exit }' "$buildroot_tree/Makefile")
 [[ "$actual_buildroot_version" == '2025.02.1' ]] || { echo "expected Buildroot 2025.02.1, got ${actual_buildroot_version:-unknown}" >&2; exit 69; }
 grep -Fqx "sha256  $SOURCE_ARCHIVE_SHA256  $SOURCE_ARCHIVE" "$support_plugins_dir/tdvp-audacious-plugins.hash" || { echo 'Audacious plugin source checksum does not match the reviewed Buildroot package input' >&2; exit 70; }
+plugin_install_patch="$package_dir/patches/0001-meson-use-target-plugin-directory.patch"
+staged_plugin_install_patch="$support_plugins_dir/0001-meson-use-target-plugin-directory.patch"
+[[ -f "$plugin_install_patch" && ! -L "$plugin_install_patch" && -f "$staged_plugin_install_patch" && ! -L "$staged_plugin_install_patch" ]] || { echo 'Audacious plugin target-install patch is missing or unsafe' >&2; exit 70; }
+cmp -s -- "$plugin_install_patch" "$staged_plugin_install_patch" || { echo 'Audacious plugin target-install patch differs from the source-lock-reviewed copy' >&2; exit 70; }
 buildroot_staging_source="$build_output/host/riscv64-buildroot-linux-gnu/sysroot"
 [[ -d "$buildroot_staging_source" ]] || { echo "Audacious plugins need the SDK Buildroot staging sysroot: $buildroot_staging_source" >&2; exit 70; }
 
@@ -39,6 +43,8 @@ config_old_backup=
 package_config_backup=$(mktemp "$buildroot_tree/package/Config.in.tdvp-audacious-plugins.XXXXXX")
 install_root=$(mktemp -d)
 buildroot_staging_root=$(mktemp -d)
+buildroot_staging_backup=$(mktemp -d "${buildroot_staging_source}.tdvp-audacious-plugins-backup.XXXXXX")
+rmdir -- "$buildroot_staging_backup"
 download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
 core_download_dir=
 # The plugin transaction must rebuild the core into its disposable staging
@@ -71,12 +77,15 @@ done < <(find "$core_download_dir" -maxdepth 1 -type f -print | LC_ALL=C sort)
 }
 payload_dir="$package_dir/root"
 config_hash=$(sha256sum "$build_output/.config" | awk '{print $1}')
+buildroot_staging_inode=$(stat -c '%d:%i' "$buildroot_staging_source")
 config_old_hash=
 config_saved=0
 config_old_saved=0
 package_config_saved=0
 core_package_staged=0
 plugins_package_staged=0
+staging_source_moved=0
+staging_source_redirected=0
 
 cleanup() {
   local rc=$?
@@ -97,7 +106,26 @@ cleanup() {
   fi
   if [[ "$plugins_package_staged" -eq 1 ]]; then rm -rf -- "$staged_plugins_package"; fi
   if [[ "$core_package_staged" -eq 1 ]]; then rm -rf -- "$staged_core_package"; fi
+  if [[ "$staging_source_moved" -eq 1 ]]; then
+    if [[ "$staging_source_redirected" -eq 1 ]]; then
+      if [[ -L "$buildroot_staging_source" && "$(readlink -f -- "$buildroot_staging_source")" == "$buildroot_staging_root" ]]; then
+        rm -f -- "$buildroot_staging_source" || rc=103
+      else
+        echo 'Audacious plugins refused to remove an unexpected SDK sysroot path' >&2
+        rc=103
+      fi
+    fi
+    if [[ ! -e "$buildroot_staging_source" && ! -L "$buildroot_staging_source" ]]; then
+      mv -- "$buildroot_staging_backup" "$buildroot_staging_source" || rc=104
+      [[ "$(stat -c '%d:%i' "$buildroot_staging_source")" == "$buildroot_staging_inode" ]] || rc=105
+    else
+      echo 'Audacious plugins could not restore the original SDK sysroot path' >&2
+      rc=104
+    fi
+  fi
   rm -f -- "$config_backup" "$config_old_backup" "$package_config_backup"
+  # Preserve an un-restored original sysroot backup for manual recovery; never
+  # delete caller-owned SDK data from an error cleanup path.
   rm -rf -- "$install_root" "$buildroot_staging_root" "$download_dir" "$core_download_dir"
   exit "$rc"
 }
@@ -121,14 +149,19 @@ printf '\nsource "package/tdvp-audacious/Config.in"\nsource "package/tdvp-audaci
 # persist in the platform SDK. Use an isolated copy that is discarded in the
 # transaction cleanup rather than modifying the caller's staging sysroot.
 cp -a --reflink=auto "$buildroot_staging_source/." "$buildroot_staging_root/"
+# The external K230 compiler fixes its sysroot path in its specs. Redirect the
+# fixed path to the disposable copy for this transaction, then restore the
+# original SDK directory by verified inode during cleanup.
+mv -- "$buildroot_staging_source" "$buildroot_staging_backup"; staging_source_moved=1
+ln -s -- "$buildroot_staging_root" "$buildroot_staging_source"; staging_source_redirected=1
 
 "$buildroot_tree/utils/config" --file "$build_output/.config" --enable BR2_PACKAGE_TDVP_AUDACIOUS --enable BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" olddefconfig
 grep -qx 'BR2_PACKAGE_TDVP_AUDACIOUS=y' "$build_output/.config"
 grep -qx 'BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS=y' "$build_output/.config"
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y STAGING_DIR="$buildroot_staging_root" make -C "$build_output" tdvp-audacious-dirclean
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y STAGING_DIR="$buildroot_staging_root" make -C "$build_output" tdvp-audacious-plugins-dirclean
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y STAGING_DIR="$buildroot_staging_root" make -C "$build_output" TARGET_DIR="$install_root" tdvp-audacious-plugins-install-target
+env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" tdvp-audacious-dirclean
+env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" tdvp-audacious-plugins-dirclean
+env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" TARGET_DIR="$install_root" tdvp-audacious-plugins-install-target
 
 [[ -d "$install_root/usr/lib/audacious" ]] || { echo 'Audacious plugin install did not create /usr/lib/audacious' >&2; exit 72; }
 find "$install_root/usr/lib/audacious" -type f -name '*.so' -print -quit | grep -q . || { echo 'Audacious plugin install did not produce dynamic modules' >&2; exit 73; }
@@ -138,4 +171,10 @@ mkdir -p -- "$payload_dir/usr/lib"
 cp -a -- "$install_root/usr/lib/audacious" "$payload_dir/usr/lib/"
 source_version=${VERSION%-*}
 install -Dm 0644 "$build_output/build/tdvp-audacious-plugins-$source_version/COPYING" "$payload_dir/usr/share/licenses/audacious-plugins/COPYING"
+# The front-end recipe is intentionally a non-compiling split: retain the
+# reviewed modules in this release's ephemeral staging root until it extracts
+# the executable and desktop integration.  The IPK payload above remains the
+# only persistent plugin output.
+mkdir -p -- "$TDVP_FEED_STAGING_ROOT/usr/lib"
+cp -a -- "$install_root/usr/lib/audacious" "$TDVP_FEED_STAGING_ROOT/usr/lib/"
 echo "audacious-plugins payload ready: $payload_dir"

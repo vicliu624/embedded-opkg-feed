@@ -110,6 +110,14 @@ archive 以 SHA-256 写入受控 source cache，最终交叉编译只读取缓�
 `TDVP_REUSE_PUBLISHED_PAYLOADS=0`。这使旧 feed 的 SDL2/mGBA IPK 不能成为 r10 的隐式
 二进制输入。
 
+首次 `retro-gba` run `33921909790` 证明 `libmgba` 已由锁定源码实际构建并封装为
+`libmgba_0.10.5-1_riscv64.ipk`，随后在 SDL2 的 development-ABI 预检处以 exit 68 停止：
+workflow 未生成/导出 `TDVP_K230_WAYLAND_SDK_OVERLAY`。这不是来源、ELF 或 base-overlay
+失败。后续 retry 必须复用匹配的 restored SDK output，通过
+`prepare-tdvp-wayland-sdk-overlay.sh` 在 runner 临时目录创建 overlay，供 SDL2、SDL_ttf 与
+GBA frontend 的 headers、pkg-config 和链接探测使用；overlay 不会进入 IPK，也不得从 target
+rootfs 复制一个未声明的 runtime provider。
+
 特别地，当前 staging K230 output 已选择 `BR2_PACKAGE_POPT=y` 并拥有
 `/usr/lib/libpopt.so.0`。这使 `libpopt` 的普通 feed provider 被 base-overlay gate 拒绝，
 从而也暂停 `rsync`；详情及可接受的后续路径见上述本地证据台账。不得把这份基础库当作

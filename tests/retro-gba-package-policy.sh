@@ -31,6 +31,8 @@ grep -Fq 'retro-gba)' "$workflow"
 grep -Fq 'package_args=(--package sdl2-ttf --package tdvp-gba)' "$workflow"
 grep -Fq 'expected_packages=(sdl2 sdl2-ttf libmgba tdvp-gba)' "$workflow"
 grep -Fq 'if [ "${{ inputs.batch }}" = retro-gba ]; then' "$workflow"
+grep -Fq 'bash ./scripts/prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$overlay_root"' "$workflow"
+grep -Fq 'export TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay_root"' "$workflow"
 grep -Fq 'export TDVP_REUSE_PUBLISHED_PAYLOADS=0' "$workflow"
 grep -Fq 'bash ./tests/retro-gba-package-policy.sh' "$workflow"
 

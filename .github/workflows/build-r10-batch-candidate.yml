@@ -402,6 +402,16 @@ jobs:
           export TDVP_BUILDROOT_BASE_DOWNLOAD_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl"
           export TDVP_NODE22_SOURCE_CACHE="${RUNNER_TEMP}/tdvp-r10-source-cache/nodejs"
 
+          # SDL2, SDL_ttf, and the GBA frontend need a development-only view
+          # of the firmware's Wayland, audio, and FreeType ABI.  Generate it
+          # from this exact restored output; it is never an IPK input copied
+          # from the target rootfs and it is discarded with the runner.
+          if [ "${{ inputs.batch }}" = retro-gba ]; then
+            overlay_root="${RUNNER_TEMP}/tdvp-wayland-sdk-overlay"
+            bash ./scripts/prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$overlay_root"
+            export TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay_root"
+          fi
+
           # Do not admit a legacy r2/r3 payload as the source of an r10 GBA
           # runtime.  This remains explicit even if a future recipe gains a
           # reuse URL: every selected retro-gba package must prove its own

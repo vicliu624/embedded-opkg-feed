@@ -191,6 +191,12 @@ base-overlay gate 处停止。Less 更新为 `661-2` 并只公开 `/usr/bin/tdvp
 `tdvp-less --version` 验收。不能因 BusyBox 已有 pager 而覆盖它，也不能把未选择的
 `lesskey`/`lessecho` 命令扩大为新的公开 feed ABI。
 
+run `33914366172` 已继续构建并封装 `libsqlite3-0`，但在 CPython 的来源锁 helper 前停止：
+repository 中的验证器以 `bash` 调用本来是正确的，但 Python helper 额外要求其 Git 文件模式
+带 executable bit；该模式不属于脚本内容或锁定来源的 ABI 契约。helper 现在像其它来源锁调用
+路径一样只接受 regular、non-symlink verifier，并显式以 `bash` 运行它。这保留安全文件检查和
+完整 SHA-256 验证，不改变 CPython 源码、交叉构建 flags、任何动态库 provider 或 IPK 内容。
+
 ## 设备生命周期记录
 
 每一个 unsigned candidate 都要独立记录：

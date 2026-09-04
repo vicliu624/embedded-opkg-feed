@@ -61,6 +61,8 @@ fi
 
 expect_line "TDVP_PYTHON3_VERSION='3.13.3'" "$helper"
 expect_line "TDVP_PYTHON3_ARCHIVE_SHA256='$expected_sha'" "$helper"
+expect_line '  [[ -f "$verifier" && ! -L "$verifier" ]] || {' "$helper"
+expect_line '  mapfile -t rows < <(bash "$verifier" --package-dir "$package_dir" --emit-artifacts)' "$helper"
 expect_line '      --with-system-expat \' "$helper"
 expect_line '      --with-system-libmpdec \' "$helper"
 expect_line '      --with-openssl-rpath=no \' "$helper"

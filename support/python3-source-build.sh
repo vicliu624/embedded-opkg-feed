@@ -68,7 +68,10 @@ tdvp_python3_locked_archive() {
   }
   repo_root=$(cd -- "$package_dir/../.." && pwd -P)
   verifier="$repo_root/scripts/verify-source-lock.sh"
-  [[ -x "$verifier" ]] || { echo "source-lock verifier is not executable: $verifier" >&2; return 69; }
+  [[ -f "$verifier" && ! -L "$verifier" ]] || {
+    echo "source-lock verifier is missing or unsafe: $verifier" >&2
+    return 69
+  }
   mapfile -t rows < <(bash "$verifier" --package-dir "$package_dir" --emit-artifacts)
   [[ ${#rows[@]} -eq 1 ]] || {
     echo "CPython build expects exactly one locked source archive: $package_dir" >&2

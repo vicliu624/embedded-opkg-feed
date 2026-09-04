@@ -212,6 +212,15 @@ jobs:
       - name: Check out the feed recipe revision
         uses: actions/checkout@v6
 
+      - name: Check out the pinned TDVP r1 firmware ABI
+        uses: actions/checkout@v6
+        with:
+          repository: vicliu624/t-display-k230-vision-platform
+          ref: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+          path: firmware
+          submodules: recursive
+          fetch-depth: 1
+
       - name: Restore the pinned K230 external toolchain
         uses: actions/cache@v4
         with:
@@ -376,6 +385,15 @@ jobs:
     steps:
       - name: Check out the feed recipe revision
         uses: actions/checkout@v6
+
+      - name: Check out the pinned TDVP r1 firmware ABI
+        uses: actions/checkout@v6
+        with:
+          repository: vicliu624/t-display-k230-vision-platform
+          ref: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+          path: firmware
+          submodules: recursive
+          fetch-depth: 1
 
       - name: Restore the pinned K230 external toolchain
         uses: actions/cache@v4

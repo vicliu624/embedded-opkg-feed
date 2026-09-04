@@ -21,6 +21,7 @@ expect_line "^PACKAGE_KIND='application'$" "$package_dir/package.env"
 expect_line "^PACKAGE_RELEASES='r10'$" "$package_dir/package.env"
 expect_line "^PACKAGE_DEPENDS='libcurl-4 \\(= 8[.]12[.]1-1\\), ca-certificates \\(= 2025[.]02[.]1-1\\)'$" "$package_dir/package.env"
 expect_line "^PACKAGE_BUILD_DEPENDS='libcurl-4'$" "$package_dir/package.env"
+expect_line "^PACKAGE_STAGE_BUILD_DEPENDS='libcurl-4'$" "$package_dir/package.env"
 expect_line '^PACKAGE_AUTO_RUNTIME_DEPENDS=1$' "$package_dir/package.env"
 
 test -f "$package_dir/source.lock"
@@ -49,8 +50,13 @@ if grep -Eq 'curl.*(https?://|apt|dpkg|debian)' "$build_file"; then
 fi
 
 helper="$repo_root/support/buildroot-archive-library.sh"
+build_all="$repo_root/scripts/build-all.sh"
 expect_line '^      --stage-command\)$' "$helper"
 expect_line 'staged Buildroot command requires TDVP_FEED_STAGING_ROOT from build-all.sh' "$helper"
 expect_line 'buildroot-package=\$buildroot_package' "$helper"
+expect_line 'stage_target_runtime_provider\(\)' "$build_all"
+expect_line 'PACKAGE_STAGE_BUILD_DEPENDS must reference a deferred target runtime provider' "$build_all"
+expect_line 'target_runtime_recipe_dir\[\$package\]=\$package_dir' "$build_all"
+expect_line 'discard_generated_payload "\$package_dir"' "$build_all"
 
 echo 'locked-source curl/libcurl split policy: PASS'

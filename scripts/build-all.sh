@@ -170,12 +170,15 @@ trap cleanup EXIT
 
 declare -A recipe_dir=()
 declare -A recipe_build_depends=()
+declare -A recipe_stage_build_depends=()
 declare -A recipe_runtime_depends=()
 declare -A recipe_kind=()
 declare -A build_state=()
 declare -A force_source_build=()
 declare -A target_runtime_provider=()
 declare -A target_runtime_provider_sonames=()
+declare -A target_runtime_recipe_dir=()
+declare -A staged_target_runtime_provider=()
 declare -a available_packages=()
 declare -a selected_packages=()
 
@@ -254,6 +257,7 @@ while IFS= read -r package_env; do
   package_kind=$(read_recipe_value "$package_env" PACKAGE_KIND)
   package_kind=${package_kind:-application}
   package_build_depends=$(read_recipe_value "$package_env" PACKAGE_BUILD_DEPENDS)
+  package_stage_build_depends=$(read_recipe_value "$package_env" PACKAGE_STAGE_BUILD_DEPENDS)
   package_runtime_depends=$(read_recipe_value "$package_env" PACKAGE_DEPENDS)
 
   [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || {
@@ -276,6 +280,7 @@ while IFS= read -r package_env; do
       echo "target runtime provider version is not attested for $package: target $target_sonames is $target_version, recipe is $recipe_version" >&2
       exit 74
     }
+    target_runtime_recipe_dir[$package]=$package_dir
     echo "source runtime recipe deferred; target owns $target_sonames: $package ($target_version)" >&2
     continue
   fi
@@ -285,6 +290,7 @@ while IFS= read -r package_env; do
   }
   recipe_dir[$package]=$package_dir
   recipe_build_depends[$package]=$package_build_depends
+  recipe_stage_build_depends[$package]=$package_stage_build_depends
   recipe_runtime_depends[$package]=$package_runtime_depends
   recipe_kind[$package]=$package_kind
   available_packages+=("$package")
@@ -411,6 +417,60 @@ discard_generated_payload() {
   rm -rf -- "$root_link"
 }
 
+# A command leaf can require a reviewed source build solely to stage one
+# command into the ephemeral transaction root, even when the corresponding
+# runtime library remains an immutable target-derived IPK.  This is explicitly
+# opt-in through PACKAGE_STAGE_BUILD_DEPENDS: it never creates a second
+# provider IPK or replaces a platform ABI library.
+stage_target_runtime_provider() {
+  local package=$1 package_dir source_lock_exempt_reason
+  local -a cache_arguments=()
+  case "${staged_target_runtime_provider[$package]:-unseen}" in
+    done) return 0 ;;
+    staging)
+      echo "staged target runtime provider cycle includes: $package" >&2
+      exit 73
+      ;;
+    unseen) ;;
+    *)
+      echo "invalid staged target runtime provider state for $package" >&2
+      exit 74
+      ;;
+  esac
+  [[ -n "${target_runtime_provider[$package]:-}" ]] || {
+    echo "PACKAGE_STAGE_BUILD_DEPENDS must reference a deferred target runtime provider: $package" >&2
+    exit 76
+  }
+  package_dir=${target_runtime_recipe_dir[$package]:-}
+  [[ -n "$package_dir" && -f "$package_dir/build.sh" ]] || {
+    echo "staged target runtime provider has no source build hook: $package" >&2
+    exit 76
+  }
+  staged_target_runtime_provider[$package]=staging
+  if [[ -f "$package_dir/source.lock" ]]; then
+    cache_arguments=(--cache "$source_cache_root" --package-dir "$package_dir")
+    [[ "$offline_source_cache" -eq 0 ]] || cache_arguments+=(--offline)
+    bash "$script_dir/fetch-source-cache.sh" "${cache_arguments[@]}"
+  elif [[ "$require_source_locks" -eq 1 ]]; then
+    source_lock_exempt_reason=$(read_recipe_value "$package_dir/package.env" SOURCE_LOCK_EXEMPT_REASON)
+    [[ -n "$source_lock_exempt_reason" ]] || {
+      echo "staged target runtime provider has no source.lock or SOURCE_LOCK_EXEMPT_REASON: $package_dir" >&2
+      exit 78
+    }
+  fi
+  TDVP_FEED_STAGING_ROOT="$staging_root" \
+  TDVP_FEED_BASE_ROOT="$base_root" \
+  TDVP_SOURCE_CACHE_ROOT="$source_cache_root" \
+  TDVP_SOURCE_CACHE_OFFLINE="$offline_source_cache" \
+  TDVP_REUSE_PUBLISHED_PAYLOADS=0 \
+    bash "$package_dir/build.sh" --platform "$platform_slug" --sdk-root "${TDVP_SDK_ROOT:-}"
+  # The build hook stages its reviewed command in $staging_root. Its library
+  # payload is intentionally discarded so the target-derived provider remains
+  # the only published owner of the runtime SONAMEs.
+  discard_generated_payload "$package_dir"
+  staged_target_runtime_provider[$package]=done
+}
+
 for package in "${selected_packages[@]}"; do
   if [[ -f "${recipe_dir[$package]}/build.sh" ]] && \
      [[ -z "$(read_recipe_value "${recipe_dir[$package]}/package.env" REUSE_IPK_URL)" ]]; then
@@ -421,7 +481,7 @@ done
 build_package() {
   local package=$1
   local dependency package_dir
-  local -a build_dependencies=()
+  local -a build_dependencies=() stage_build_dependencies=()
   case "${build_state[$package]:-unseen}" in
     done) return 0 ;;
     visiting)
@@ -450,6 +510,15 @@ build_package() {
       exit 76
     }
     build_package "$dependency"
+  done
+
+  # PACKAGE_STAGE_BUILD_DEPENDS has a narrower meaning than a normal build
+  # dependency: stage an explicit command from a deferred runtime provider,
+  # but never publish a replacement runtime IPK.
+  IFS=' ' read -r -a stage_build_dependencies <<< "${recipe_stage_build_depends[$package]}"
+  for dependency in "${stage_build_dependencies[@]}"; do
+    [[ -n "$dependency" ]] || continue
+    stage_target_runtime_provider "$dependency"
   done
 
   package_dir=${recipe_dir[$package]}

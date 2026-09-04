@@ -33,6 +33,20 @@ overlay_name=$(basename -- "$overlay_input")
 overlay="$overlay_parent/$overlay_name"
 [[ ! -e "$overlay" ]] || die "refusing to replace an existing overlay: $overlay"
 
+# Both directories are owned by this invocation.  Keeping the FreeType source
+# extraction separate from the overlay makes it impossible for source-only
+# build inputs to be published as SDK overlay files.
+temporary=
+freetype_source_temp=
+cleanup() {
+  local status=$?
+  [[ -z "$temporary" || ! -e "$temporary" ]] || rm -rf -- "$temporary"
+  [[ -z "$freetype_source_temp" || ! -e "$freetype_source_temp" ]] || \
+    rm -rf -- "$freetype_source_temp"
+  return "$status"
+}
+trap cleanup EXIT
+
 toolchain_file=$(find "$build_root/host" -type f \
   -path '*/share/buildroot/toolchainfile.cmake' -print -quit)
 [[ -n "$toolchain_file" && -f "$toolchain_file" ]] || \
@@ -48,25 +62,75 @@ fi
 
 # Buildroot's SDK sysroot includes the development view of most firmware
 # libraries, but strips FreeType's public headers from this profile.  The
-# matching completed firmware build remains the authoritative fallback: use
-# its one FreeType build tree only when the sysroot/target roots do not expose
-# the required development files.  This keeps the overlay ABI-bound and does
-# not synthesise headers or metadata from the build host.
+# matching completed firmware build remains the authoritative fallback.  A
+# package-only SDK cache may preserve its build stamps without preserving those
+# headers, so the fallback can additionally extract headers from the exact
+# FreeType source archive already restored in Buildroot's reviewed dl cache.
+# The archive digest is verified against the matching Buildroot source tree;
+# neither host headers nor an undeclared target runtime provider are used.
 header_sources=("$include_source" "$sysroot/usr/include" "$build_root/target/usr/include")
 freetype_build_dir=
+extract_freetype_source_headers() {
+  local sdk_workspace package_mk hash_file version source_name expected_sha archive actual_sha
+  local source_root
+  local -a package_mks=() source_roots=()
+
+  sdk_workspace=$(cd -- "$build_root/../.." && pwd)
+  mapfile -t package_mks < <(
+    find "$sdk_workspace/output" -type f -path '*/package/freetype/freetype.mk' -print |
+      LC_ALL=C sort
+  )
+  [[ ${#package_mks[@]} -eq 1 ]] || die \
+    'the SDK and target roots omit FreeType development files, and the restored SDK has no unique Buildroot FreeType package definition'
+
+  package_mk=${package_mks[0]}
+  hash_file=${package_mk%.mk}.hash
+  [[ -f "$hash_file" ]] || die "matching Buildroot FreeType hash file is missing: $hash_file"
+  version=$(sed -nE \
+    's/^FREETYPE_VERSION[[:space:]]*=[[:space:]]*([0-9]+([.][0-9]+)*)[[:space:]]*$/\1/p' \
+    "$package_mk")
+  [[ "$version" =~ ^[0-9]+([.][0-9]+)*$ ]] || die \
+    "matching Buildroot FreeType version is invalid: $package_mk"
+
+  source_name="freetype-$version.tar.xz"
+  expected_sha=$(awk -v source="$source_name" \
+    '$1 == "sha256" && $3 == source && length($2) == 64 && $2 ~ /^[0-9a-f]+$/ { print $2; exit }' \
+    "$hash_file")
+  [[ "$expected_sha" =~ ^[0-9a-f]{64}$ ]] || die \
+    "matching Buildroot FreeType SHA-256 is missing: $hash_file"
+
+  archive="$sdk_workspace/dl/$source_name"
+  [[ -f "$archive" && ! -L "$archive" ]] || die \
+    "FreeType source archive is missing from restored Buildroot download cache: $archive"
+  actual_sha=$(sha256sum "$archive" | awk '{print $1}')
+  [[ "$actual_sha" == "$expected_sha" ]] || die \
+    "FreeType source archive hash differs from matching Buildroot metadata: $archive"
+
+  freetype_source_temp=$(mktemp -d "$overlay_parent/.${overlay_name}.freetype-source.XXXXXX")
+  tar -xf "$archive" -C "$freetype_source_temp"
+  mapfile -t source_roots < <(
+    find "$freetype_source_temp" -mindepth 1 -maxdepth 1 -type d -print | LC_ALL=C sort
+  )
+  [[ ${#source_roots[@]} -eq 1 ]] || die \
+    "verified FreeType source archive has an unexpected layout: $archive"
+  source_root=${source_roots[0]}
+  [[ -d "$source_root/include/freetype" && -f "$source_root/include/ft2build.h" ]] || die \
+    "verified FreeType source archive lacks public headers: $archive"
+  freetype_build_dir=$source_root
+}
+
 find_freetype_build_dir() {
   [[ -n "$freetype_build_dir" ]] && return 0
   local -a matches=()
   shopt -s nullglob
   matches=("$build_root"/build/freetype-*)
   shopt -u nullglob
-  [[ ${#matches[@]} -eq 1 && -d "${matches[0]}" ]] || {
-    die 'the SDK and target roots omit FreeType development files, and the completed firmware build has no unique build/freetype-* fallback'
-  }
-  freetype_build_dir=${matches[0]}
-  [[ -d "$freetype_build_dir/include/freetype" && -f "$freetype_build_dir/include/ft2build.h" ]] || {
-    die "FreeType fallback has incomplete public headers: $freetype_build_dir"
-  }
+  if [[ ${#matches[@]} -eq 1 && -d "${matches[0]}" && \
+    -d "${matches[0]}/include/freetype" && -f "${matches[0]}/include/ft2build.h" ]]; then
+    freetype_build_dir=${matches[0]}
+    return 0
+  fi
+  extract_freetype_source_headers
 }
 
 has_freetype_headers=0
@@ -96,8 +160,6 @@ lib_sources=(
 )
 
 temporary=$(mktemp -d "$overlay_parent/.${overlay_name}.tmp.XXXXXX")
-cleanup() { rm -rf -- "$temporary"; }
-trap cleanup EXIT
 mkdir -p "$temporary/include" "$temporary/lib/pkgconfig"
 
 copy_header_file() {
@@ -192,6 +254,13 @@ for library in wayland-client wayland-cursor wayland-egl xkbcommon EGL asound pu
   copy_link_input "$library"
 done
 
+# Headers copied from the verified source archive are development-only staging
+# inputs.  Remove their extraction tree before the overlay is finalised.
+if [[ -n "$freetype_source_temp" ]]; then
+  rm -rf -- "$freetype_source_temp"
+  freetype_source_temp=
+fi
+
 {
   printf 'tdvp_sdk_bridge=1\n'
   printf 'buildroot_output=%s\n' "$build_root"
@@ -205,5 +274,6 @@ done
 )
 
 mv -- "$temporary" "$overlay"
+temporary=
 trap - EXIT
 printf 'TDVP SDK bridge: created firmware-matched Wayland overlay: %s\n' "$overlay"

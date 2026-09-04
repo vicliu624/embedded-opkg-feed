@@ -6,6 +6,7 @@ IFS=$'\n\t'
 
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 workflow="$repo_root/.github/workflows/build-r10-batch-candidate.yml"
+overlay_helper="$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh"
 
 for package in sdl2 sdl2-ttf libmgba tdvp-gba; do
   package_dir="$repo_root/packages/$package"
@@ -35,5 +36,14 @@ grep -Fq 'bash ./scripts/prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$o
 grep -Fq 'export TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay_root"' "$workflow"
 grep -Fq 'export TDVP_REUSE_PUBLISHED_PAYLOADS=0' "$workflow"
 grep -Fq 'bash ./tests/retro-gba-package-policy.sh' "$workflow"
+
+# A package-only CI restore may retain Buildroot stamps but omit FreeType's
+# source-tree headers.  The overlay must then use only the matching, hash-
+# verified Buildroot dl archive; it must never fall back to host headers.
+grep -Fq 'matching Buildroot FreeType SHA-256 is missing' "$overlay_helper"
+grep -Fq 'FreeType source archive is missing from restored Buildroot download cache' "$overlay_helper"
+grep -Fq 'FreeType source archive hash differs from matching Buildroot metadata' "$overlay_helper"
+grep -Fq 'tar -xf "$archive" -C "$freetype_source_temp"' "$overlay_helper"
+grep -Fq 'neither host headers nor an undeclared target runtime provider are used' "$overlay_helper"
 
 echo 'retro-gba package policy test passed'

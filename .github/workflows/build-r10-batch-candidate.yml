@@ -193,6 +193,7 @@ jobs:
             ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-target-runtime-packages.tsv
           if-no-files-found: error
           retention-days: 14
+          include-hidden-files: true
 
   build-package-batch:
     name: Build r10 ${{ inputs.batch }} without rebuilding the SDK

@@ -129,6 +129,10 @@ done
 expect_contains 'tdvp-audacious-dirclean' "$plugins_build_script"
 expect_contains 'test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc"' "$core_build_script"
 expect_contains 'test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc"' "$plugins_build_script"
+expect_contains 'tdvp_prepare_locked_buildroot_download "$feed_root/packages/audacious-core"' "$plugins_build_script"
+expect_contains 'Audacious core/plugin download inputs collide' "$plugins_build_script"
+expect_contains 'BR2_PRIMARY_SITE_ONLY=y' "$plugins_build_script"
+expect_contains '"$core_download_dir"' "$plugins_build_script"
 
 # 1232 x 568 is the physical landscape display. The fallback deliberately
 # leaves room for compositor decoration/panel; normal startup is maximized.

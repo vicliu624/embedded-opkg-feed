@@ -96,7 +96,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 5 | `wget`、`rsync` | 1.25.0、3.4.1 | Wget 只允许 CA/OpenSSL/zlib；`rsync` 在 `libpopt` 仍为 target provider 时暂停 |
 | 6 | `iperf3`、`netcat`、`lsof` | 3.18、0.7.1、4.99.4 | 受控 LAN、无公开 listener；lsof 还需记录权限可见性 |
 | 7 | `htop`（暂缓）、`nano`、`dialog`、`ncdu`、`pv` | 3.3.0、8.2、1.3-20220117、1.21、1.9.0 | 真实终端、locale/宽字符和小屏交互验收；`htop` 需先有独立的 libcap provider |
-| 8 | `tmux` | 3.3a | 仅复用 libevent/ncurses；验证 detached session、capture、kill-session |
+| 8 | `tmux`（暂缓） | 3.3a | 需先准入 OpenSSL-capable libevent runtime；再验证 detached session、capture、kill-session |
 | 9 | `tdvp-source-tools`、`tdvp-diagnostics` | 1.6、1.1 | 仅元数据 profile；安装/卸载不得复制或误删工具/共享库 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
@@ -120,6 +120,12 @@ run `33904931122` 验证了 Dialog 的新锁定来源，随后在 `htop` 上被
 `htop`；不得把目标镜像中碰巧存在的 `libcap` 当作隐式依赖，也不得伪造 seed owner。
 后续只有在 `libcap` 以自己的来源锁、ABI owner、版本化 IPK 与设备验收记录通过准入后，
 才可以重新评审 capability 支持的 `htop`。
+
+同一 run 在 `tmux` 的 `BR2_PACKAGE_OPENSSL` 禁用断言处停止。`tmux` 的 Buildroot
+路径通过 libevent 的可选 TLS 分支间接继承 OpenSSL；当前 SDK 把该符号恢复为启用状态，
+而 TDVP 的窄 seed ABI 也不声明 `libssl`/`libcrypto` 为基础 owner。因此 r10 批次也暂时
+排除 `tmux`。它只能在具有独立、版本化、已验收的 OpenSSL-capable libevent runtime
+provider 后重新准入；不能借用目标镜像已有文件，或把未声明的 TLS ABI 藏在命令 IPK 中。
 
 ## 设备生命周期记录
 

@@ -112,6 +112,14 @@ fi
 expect_contains 'package/tdvp-audacious/Config.in' "$core_build_script"
 expect_contains 'package/tdvp-audacious/Config.in' "$plugins_build_script"
 expect_contains 'package/tdvp-audacious-plugins/Config.in' "$plugins_build_script"
+expect_contains 'buildroot_download_dir=$download_dir' "$core_build_script"
+expect_contains 'buildroot_primary_site="file://${base_download_dir:-$download_dir}"' "$core_build_script"
+core_download_setting='BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="$buildroot_primary_site" BR2_PRIMARY_SITE_ONLY=y'
+count=$(grep -Fc -- "$core_download_setting" "$core_build_script")
+[[ "$count" -eq 3 ]] || {
+  echo "Audacious core must use its verified private download directory for every Buildroot invocation (found $count)" >&2
+  exit 1
+}
 for build_script in "$core_build_script" "$plugins_build_script"; do
   expect_contains 'buildroot_staging_source="$build_output/host/riscv64-buildroot-linux-gnu/sysroot"' "$build_script"
   expect_contains 'buildroot_staging_root=$(mktemp -d)' "$build_script"

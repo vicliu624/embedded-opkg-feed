@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Exercise Wget's reviewed Buildroot option set without a firmware SDK. The
 # fixture proves that the command recipe checks its OpenSSL/zlib contract,
-# forwards every deny-listed optional closure, and leaves the SDK config byte
-# identical when the transaction ends.
+# overrides its own optional closure without changing global SDK Kconfig, and
+# leaves the SDK config byte identical when the transaction ends.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -78,6 +78,7 @@ for argument in "$@"; do
   previous=$argument
 done
 [[ -n "$output" ]] || exit 2
+printf '%s\n' "$@" >>"$output/.tdvp-make.log"
 case " $* " in
   *' olddefconfig '*) exit 0 ;;
   *' wget-dirclean '*) exit 0 ;;
@@ -115,16 +116,11 @@ bash "$package_dir/build.sh" --platform tdvp-k230-r1 --sdk-root "$output/host"
 [[ "$(sha256sum "$output/.config" | awk '{print $1}')" == "$config_hash" ]]
 for record in \
   enable:BR2_PACKAGE_BUSYBOX_SHOW_OTHERS \
-  enable:BR2_PACKAGE_WGET \
-  disable:BR2_PACKAGE_LIBPSL \
-  disable:BR2_PACKAGE_GNUTLS \
-  disable:BR2_PACKAGE_LIBIDN2 \
-  disable:BR2_PACKAGE_C_ARES \
-  disable:BR2_PACKAGE_PCRE \
-  disable:BR2_PACKAGE_PCRE2 \
-  disable:BR2_PACKAGE_UTIL_LINUX_LIBUUID; do
+  enable:BR2_PACKAGE_WGET; do
   grep -Fqx "$record" "$output/.tdvp-kconfig.log"
 done
+grep -Fqx 'WGET_DEPENDENCIES=host-pkgconf openssl zlib' "$output/.tdvp-make.log"
+grep -Fqx 'WGET_CONF_OPTS=--without-libpsl --with-ssl openssl --disable-iri --without-libuuid --with-zlib --without-cares --disable-pcre --disable-pcre2' "$output/.tdvp-make.log"
 
 payload_dir=$(readlink -f -- "$package_dir/root")
 test -f "$payload_dir/usr/libexec/tdvp-wget/wget"

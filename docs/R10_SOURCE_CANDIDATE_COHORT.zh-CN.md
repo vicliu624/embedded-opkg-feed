@@ -141,6 +141,13 @@ SONAME 型 target provider。两处现在使用同样的 catalogue 判定：已�
 target-runtime IPK 直接保留在部分 feed 中，不重新编译、不要求重复 source cache，也不
 改变其 ABI owner；真正需要 source build 的依赖仍会在 CI 预取并锁定校验。
 
+在该修正后的 run `33907526598` 中，`wget` 已到达自己的 Buildroot configure gate。
+该 SDK 全局启用了 GnuTLS，故旧的 Kconfig 禁用断言正确地拒绝了它；但 Wget 的实际
+Buildroot recipe允许命令行覆盖 `WGET_CONF_OPTS` 与 `WGET_DEPENDENCIES`。r10 现在将
+这些变量固定为仅 `host-pkgconf openssl zlib` 和 OpenSSL/zlib/无 PSL、IDN、UUID、c-ares、
+PCRE 的配置。这样不会改写 SDK `.config`，也不会使 Wget 链接 GnuTLS；后续 CI 必须以
+ELF runtime-closure gate 证明确实只使用已声明的 provider。
+
 ## 设备生命周期记录
 
 每一个 unsigned candidate 都要独立记录：

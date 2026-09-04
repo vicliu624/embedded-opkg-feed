@@ -26,8 +26,10 @@ done
 # shellcheck source=../../support/buildroot-command-package.sh
 source "$package_dir/../../support/buildroot-command-package.sh"
 # Keep one auditable TLS path: OpenSSL and zlib are separately owned feed
-# providers.  Do not inherit optional PSL, GnuTLS, IDN/IRI, c-ares, PCRE, or
-# util-linux UUID dependencies merely because a desktop SDK enables them.
-TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS='BR2_PACKAGE_LIBPSL BR2_PACKAGE_GNUTLS BR2_PACKAGE_LIBIDN2 BR2_PACKAGE_C_ARES BR2_PACKAGE_PCRE BR2_PACKAGE_PCRE2 BR2_PACKAGE_UTIL_LINUX_LIBUUID' \
+# providers. The desktop SDK may enable other global Kconfig features, so
+# override this private Buildroot recipe's configure/dependency variables
+# instead of mutating or depending on that immutable SDK configuration.
+TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES='WGET_DEPENDENCIES=host-pkgconf openssl zlib
+WGET_CONF_OPTS=--without-libpsl --with-ssl openssl --disable-iri --without-libuuid --with-zlib --without-cares --disable-pcre --disable-pcre2' \
   tdvp_buildroot_command_package "$package_dir" "$sdk_root" "$configured_output" \
     BR2_PACKAGE_WGET wget 'WGET_VERSION = 1.25.0' 'wget'

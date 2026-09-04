@@ -5,9 +5,11 @@
 [来源锁迁移台账](SOURCE_LOCK_MIGRATION.zh-CN.md)，把需要同一 ABI 匹配 K230 SDK 处理的
 provider、应用和 profile 放在一个可复核的批次中。
 
-一次实际本地构建的成功 IPK、base-overlay 拒绝以及尚缺少的设备门，记录在
-[r10 本地候选构建证据台账](R10_LOCAL_CANDIDATE_EVIDENCE.zh-CN.md)。该台账不会改变本
-清单的候选性质，也不会把本机 `dist-*` 目录当成 release。
+本清单的 K230 构建、封装、ELF/依赖闭包检查以及候选合并证据，**只能**来自 GitHub
+Actions 的成功 run 和其受校验的 artifact manifest。本地 worktree 只可用于来源锁、策略、
+shell 语法和精确 patch dry-run 等不产生 K230 IPK 的静态检查；本地 `dist-*`、下载缓存或
+其他临时输出既不是候选输入，也不是 release 证据。失败的 Actions run 只保留为拒绝原因，
+不能作为 merge source。
 
 ## 必须先满足的环境门槛
 
@@ -181,8 +183,9 @@ closure/coverage gate 都没有放宽。
 
 特别地，当前 staging K230 output 已选择 `BR2_PACKAGE_POPT=y` 并拥有
 `/usr/lib/libpopt.so.0`。这使 `libpopt` 的普通 feed provider 被 base-overlay gate 拒绝，
-从而也暂停 `rsync`；详情及可接受的后续路径见上述本地证据台账。不得把这份基础库当作
-rsync 的隐式 runtime，也不得以同内容覆盖绕过 gate。
+从而也暂停 `rsync`；可接受的后续路径是先以独立、版本化的 feed provider 通过同一
+GitHub Actions 准入链。不得把这份基础库当作 rsync 的隐式 runtime，也不得以同内容覆盖
+绕过 gate。
 
 GitHub Actions 的增量准入证据同样是候选台账的一部分：run `33901074012` 已从
 `source.lock` 审核的 Buildroot 输入重新构建 `curl`，但字节级 base-overlay gate 报告

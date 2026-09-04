@@ -71,6 +71,7 @@ jobs:
           bash ./tests/build-all-source-lock-policy.sh
           bash ./tests/audacious-package-policy.sh
           bash ./tests/archive-package-policy.sh
+          bash ./tests/merge-batches-policy.sh
           bash ./tests/retro-gba-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
@@ -541,7 +542,8 @@ jobs:
             run_dir="$incoming_root/$run_id"
             mkdir -p "$run_dir"
             mapfile -t artifacts < <(
-              gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json artifacts \
+              gh api --paginate \
+                "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100" \
                 --jq '.artifacts[].name | select(test("^tdvp-k230-r10-.*-unsigned-"))'
             )
             [[ ${#artifacts[@]} -eq 1 ]] || {

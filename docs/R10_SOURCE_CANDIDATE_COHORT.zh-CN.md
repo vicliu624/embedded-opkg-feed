@@ -146,6 +146,12 @@ cache version 包含 path 集合，故即使文本 key 相同也会被当作 cac
 path 与 package-batch restore path 完全对齐。它不会重建 SDK、不会改 ABI identity，也不会把
 `fail-on-cache-miss` 放宽为继续执行。
 
+该修复后的 partial merge `33924004327` 已成功恢复 SDK，随后在第一个 source batch 的 artifact
+枚举处停止。runner 内置的 GitHub CLI 不支持 `gh run view --json artifacts` 字段；因此 merge 改为
+调用同一 Actions run artifacts REST API，再保持 `gh run download --name`、manifest SHA-256 比对和
+所有后续 closure gates。这个调整不会从本地下载 artifact，也不会接受零个、多个或名称不符合
+`tdvp-k230-r10-*-unsigned-*` 的 artifact。
+
 特别地，当前 staging K230 output 已选择 `BR2_PACKAGE_POPT=y` 并拥有
 `/usr/lib/libpopt.so.0`。这使 `libpopt` 的普通 feed provider 被 base-overlay gate 拒绝，
 从而也暂停 `rsync`；详情及可接受的后续路径见上述本地证据台账。不得把这份基础库当作

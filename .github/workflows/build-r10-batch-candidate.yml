@@ -1,0 +1,462 @@
+name: Build TDVP K230 r10 incremental feed batches
+
+# `build-sdk-base` is the only mode allowed to build the K230 SDK. Every
+# `build-package-batch` run restores that immutable SDK cache and builds only
+# the requested package closure. Neither mode signs or publishes a release.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Build the platform base once, or an incremental package cohort
+        required: true
+        default: build-sdk-base
+        type: choice
+        options: [build-sdk-base, build-package-batch, merge-batches]
+      batch:
+        description: Source cohort used only by build-package-batch
+        required: true
+        default: archive
+        type: choice
+        options: [archive, audacious, network-tools, desktop-tools, development-tools, nodejs]
+      source_run_ids:
+        description: Comma-separated successful package-batch run IDs, used only by merge-batches
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: tdvp-k230-r10-${{ inputs.mode }}-${{ inputs.batch }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TDVP_FIRMWARE_REVISION: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+  TDVP_PROFILE: k230_canmv_t_display_rm69a10_labwc_desktop_defconfig
+  # Change only when the reviewed platform SDK identity changes. Package
+  # source locks deliberately do not affect this key.
+  TDVP_SDK_CACHE_KEY: tdvp-k230-r1-sdk-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10-v1
+
+jobs:
+  build-sdk-base:
+    name: Build and cache the K230 SDK base once
+    if: inputs.mode == 'build-sdk-base'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - name: Check out the feed recipe revision
+        uses: actions/checkout@v6
+
+      - name: Check out the pinned TDVP r1 firmware ABI
+        uses: actions/checkout@v6
+        with:
+          repository: vicliu624/t-display-k230-vision-platform
+          ref: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+          path: firmware
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Check policy before using build capacity
+        run: |
+          set -Eeuo pipefail
+          for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
+          bash ./tests/build-all-source-lock-policy.sh
+          bash ./tests/audacious-package-policy.sh
+          bash ./tests/archive-package-policy.sh
+          bash ./tests/source-lock-policy.sh
+          bash ./scripts/verify-source-lock.sh --repo-root . --all
+
+      - name: Restore the reviewed SDK base cache
+        id: restore-sdk
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/buildroot-overlay
+            ${{ runner.temp }}/tdvp-k230-sdk/output/buildroot-2025.02.1
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config.old
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/Makefile
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}
+
+      - name: Install reproducible TDVP build host
+        if: steps.restore-sdk.outputs.cache-hit != 'true'
+        working-directory: firmware
+        run: |
+          chmod +x buildroot/tools/*.sh
+          bash buildroot/tools/ci-prepare-host.sh
+
+      - name: Stage and build the matching TDVP base
+        if: steps.restore-sdk.outputs.cache-hit != 'true'
+        working-directory: firmware
+        run: |
+          worktree="${RUNNER_TEMP}/tdvp-k230-sdk"
+          rm -rf "$worktree"
+          bash buildroot/tools/prepare-k230-sdk-worktree.sh "$worktree"
+          bash buildroot/tools/build-k230-sdk-rm69a10.sh "$worktree"
+
+      - name: Verify the cached base identity
+        working-directory: firmware
+        run: |
+          worktree="${RUNNER_TEMP}/tdvp-k230-sdk"
+          bash buildroot/tools/assert-k230-sdk-rm69a10-baseline.sh "$worktree"
+          test -x "$worktree/output/$TDVP_PROFILE/host/bin/riscv64-unknown-linux-gnu-readelf"
+          test -d "$worktree/output/$TDVP_PROFILE/target"
+
+      - name: Check reviewed SDK base cache size
+        if: steps.restore-sdk.outputs.cache-hit != 'true'
+        run: |
+          set -Eeuo pipefail
+          base="${RUNNER_TEMP}/tdvp-k230-sdk"
+          bytes=$(du -sb \
+            "$base/buildroot-overlay" \
+            "$base/output/buildroot-2025.02.1" \
+            "$base/output/$TDVP_PROFILE/.config" \
+            "$base/output/$TDVP_PROFILE/host" \
+            "$base/output/$TDVP_PROFILE/target" | awk '{sum += $1} END {print sum}')
+          # GitHub Actions caches have a repository quota. Refuse an opaque
+          # whole-worktree cache; the reusable package-build interface must
+          # remain below the documented single-cache practical ceiling.
+          test "$bytes" -lt 9663676416
+          printf 'TDVP reusable SDK base cache: %s bytes\n' "$bytes"
+
+      - name: Save the reviewed SDK base cache
+        if: steps.restore-sdk.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/buildroot-overlay
+            ${{ runner.temp }}/tdvp-k230-sdk/output/buildroot-2025.02.1
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config.old
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/Makefile
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}
+
+      - name: Upload SDK base identity evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdvp-k230-r10-sdk-base-evidence-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/.tdvp/sdk-baseline-manifest
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/images/tdvp-image-manifest
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/images/k230-hardware-build-preflight.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Restore the target-runtime IPK base
+        id: restore-runtime-base
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/tdvp-r10-runtime-base
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+
+      - name: Package the target-runtime IPK base once
+        if: steps.restore-runtime-base.outputs.cache-hit != 'true'
+        run: |
+          set -Eeuo pipefail
+          build_output="${RUNNER_TEMP}/tdvp-k230-sdk/output/$TDVP_PROFILE"
+          export TDVP_SDK_ROOT="$build_output/host"
+          export TDVP_FEED_BASE_ROOT="$build_output/target"
+          bash ./scripts/build-all.sh \
+            --platform tdvp-k230-r1 --release r10 \
+            --output "${RUNNER_TEMP}/tdvp-r10-runtime-base" \
+            --runtime-catalog-only
+
+      - name: Save the target-runtime IPK base
+        if: steps.restore-runtime-base.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/tdvp-r10-runtime-base
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+
+      - name: Upload target-runtime base evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdvp-k230-r10-runtime-base-evidence-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-runtime-owners.tsv
+            ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-runtime-ownership.tsv
+            ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-target-runtime-packages.tsv
+          if-no-files-found: error
+          retention-days: 14
+
+  build-package-batch:
+    name: Build r10 ${{ inputs.batch }} without rebuilding the SDK
+    if: inputs.mode == 'build-package-batch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Check out the feed recipe revision
+        uses: actions/checkout@v6
+
+      - name: Restore the required reviewed SDK base
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/buildroot-overlay
+            ${{ runner.temp }}/tdvp-k230-sdk/output/buildroot-2025.02.1
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config.old
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/Makefile
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}
+          fail-on-cache-miss: true
+
+      - name: Restore or create the hash-locked source cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/tdvp-r10-source-cache
+          key: tdvp-k230-r10-source-${{ hashFiles('packages/**/source.lock') }}
+
+      - name: Restore the required target-runtime IPK base
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/tdvp-r10-runtime-base
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+          fail-on-cache-miss: true
+
+      - name: Materialize the immutable target-runtime base for this batch
+        run: |
+          set -Eeuo pipefail
+          test -d "${RUNNER_TEMP}/tdvp-r10-runtime-base"
+          mkdir -p candidate-dist
+          cp -a "${RUNNER_TEMP}/tdvp-r10-runtime-base/." candidate-dist/
+
+      - name: Check the selected batch policy
+        run: |
+          set -Eeuo pipefail
+          for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
+          bash ./tests/build-all-source-lock-policy.sh
+          bash ./tests/audacious-package-policy.sh
+          bash ./tests/archive-package-policy.sh
+          bash ./tests/source-lock-policy.sh
+          bash ./scripts/verify-source-lock.sh --repo-root . --all
+
+      - name: Install the reviewed Go host for development-tools
+        if: inputs.batch == 'development-tools'
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.7'
+          check-latest: false
+
+      - name: Install the reviewed RISC-V Node source-build host
+        if: inputs.batch == 'nodejs'
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            gcc-riscv64-linux-gnu \
+            g++-riscv64-linux-gnu \
+            qemu-user
+          test "$(riscv64-linux-gnu-g++ -dumpversion | cut -d. -f1)" -ge 10
+          command -v qemu-riscv64
+
+      - name: Build only the selected package dependency closure
+        run: |
+          set -Eeuo pipefail
+          case "${{ inputs.batch }}" in
+            archive)
+              package_args=(--package archive-tools)
+              expected_packages=(libbz2 liblzma libzstd archive-tools)
+              ;;
+            audacious)
+              package_args=(--package audacious)
+              expected_packages=(audacious-core audacious-plugins audacious)
+              ;;
+            network-tools)
+              package_args=(--package curl --package wget --package rsync --package iperf3 --package lsof --package netcat --package htop --package nano --package dialog --package ncdu --package pv --package tmux)
+              expected_packages=(curl wget rsync iperf3 lsof netcat htop nano dialog ncdu pv tmux)
+              ;;
+            desktop-tools)
+              package_args=(--package vim --package vim-plugin-gitgutter --package tdvp-mpv --package tdvp-netsurf)
+              expected_packages=(vim-runtime vim vim-plugin-gitgutter tdvp-mpv tdvp-netsurf)
+              ;;
+            development-tools)
+              package_args=(--package tdvp-source-tools --package tdvp-dev-tools)
+              expected_packages=(tdvp-source-tools tdvp-dev-tools)
+              ;;
+            nodejs)
+              package_args=(--package tdvp-nodejs-tools)
+              expected_packages=(libnode node npm-runtime npm tdvp-nodejs-tools)
+              ;;
+            *) echo 'unreviewed batch input' >&2; exit 64 ;;
+          esac
+
+          build_output="${RUNNER_TEMP}/tdvp-k230-sdk/output/$TDVP_PROFILE"
+          export TDVP_SDK_ROOT="$build_output/host"
+          export TDVP_FEED_BASE_ROOT="$build_output/target"
+          export TDVP_AUDACIOUS_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_VIM_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_ARCHIVE_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_GIT_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_PYTHON3_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_DEVEL_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_NODE22_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_NODE22_SOURCE_CACHE="${RUNNER_TEMP}/tdvp-r10-source-cache/nodejs"
+
+          # Only selected SHA-256-locked source inputs are fetched. The result
+          # is an unsigned partial candidate; it does not publish a release.
+          bash ./scripts/build-all.sh \
+            --platform tdvp-k230-r1 --release r10 \
+            --output candidate-dist --source-cache "${RUNNER_TEMP}/tdvp-r10-source-cache" \
+            --require-source-locks --reuse-runtime-catalog "${package_args[@]}"
+
+          feed_dir='candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          test -s "$feed_dir/Packages"
+          for package in "${expected_packages[@]}"; do
+            find "$feed_dir" -maxdepth 1 -type f -name "${package}_*.ipk" -print -quit | grep -q .
+            grep -Eq "^Package: ${package}$" "$feed_dir/Packages"
+          done
+          bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
+
+          manifest='candidate-dist/tdvp-batch-manifest.tsv'
+          {
+            printf 'format\t1\n'
+            printf 'platform\ttdvp-k230-r1\n'
+            printf 'release_path\t%s\n' "$(realpath --relative-to=candidate-dist "$feed_dir")"
+            printf 'sdk_cache_key\t%s\n' "$TDVP_SDK_CACHE_KEY"
+            printf 'recipe_revision\t%s\n' "$GITHUB_SHA"
+            printf 'batch\t%s\n' "${{ inputs.batch }}"
+            find "$feed_dir" -maxdepth 1 -type f -name '*.ipk' -print0 | \
+              LC_ALL=C sort -z | xargs -0 -r sha256sum | \
+              while read -r digest archive; do
+                printf 'ipk\t%s\t%s\n' "$digest" "$(basename "$archive")"
+              done
+          } >"$manifest"
+          test -s "$manifest"
+
+      - name: Upload the unsigned incremental batch
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdvp-k230-r10-${{ inputs.batch }}-unsigned-${{ github.sha }}
+          path: candidate-dist
+          if-no-files-found: error
+          retention-days: 14
+
+  merge-package-batches:
+    name: Merge verified r10 batches without recompiling
+    if: inputs.mode == 'merge-batches'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out the feed recipe revision
+        uses: actions/checkout@v6
+
+      - name: Restore the reviewed SDK base required for closure validation
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/buildroot-overlay
+            ${{ runner.temp }}/tdvp-k230-sdk/output/buildroot-2025.02.1
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config.old
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/Makefile
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}
+          fail-on-cache-miss: true
+
+      - name: Download compatible unsigned batches and compare every IPK hash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TDVP_SOURCE_RUN_IDS: ${{ inputs.source_run_ids }}
+        run: |
+          set -Eeuo pipefail
+          expected_release_path='tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          [[ "$TDVP_SOURCE_RUN_IDS" =~ ^[0-9]+(,[0-9]+)*$ ]] || {
+            echo 'merge-batches requires a comma-separated list of GitHub Actions run IDs' >&2
+            exit 64
+          }
+
+          incoming_root="$RUNNER_TEMP/tdvp-r10-incoming"
+          merged_feed="candidate-merged/$expected_release_path"
+          mkdir -p "$incoming_root" "$merged_feed"
+          IFS=',' read -r -a run_ids <<< "$TDVP_SOURCE_RUN_IDS"
+
+          manifest_value() {
+            local manifest=$1 key=$2
+            awk -F '\t' -v key="$key" '$1 == key { print $2; exit }' "$manifest"
+          }
+
+          for run_id in "${run_ids[@]}"; do
+            run_dir="$incoming_root/$run_id"
+            mkdir -p "$run_dir"
+            mapfile -t artifacts < <(
+              gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json artifacts \
+                --jq '.artifacts[].name | select(test("^tdvp-k230-r10-.*-unsigned-"))'
+            )
+            [[ ${#artifacts[@]} -eq 1 ]] || {
+              echo "run $run_id must expose exactly one unsigned incremental batch artifact" >&2
+              exit 65
+            }
+            gh run download "$run_id" --repo "$GITHUB_REPOSITORY" \
+              --name "${artifacts[0]}" --dir "$run_dir"
+
+            mapfile -t manifests < <(find "$run_dir" -type f -name tdvp-batch-manifest.tsv -print | LC_ALL=C sort)
+            [[ ${#manifests[@]} -eq 1 ]] || {
+              echo "run $run_id must contain exactly one batch manifest" >&2
+              exit 66
+            }
+            manifest=${manifests[0]}
+            [[ "$(manifest_value "$manifest" format)" == 1 ]] || { echo "run $run_id has an unknown manifest format" >&2; exit 67; }
+            [[ "$(manifest_value "$manifest" platform)" == tdvp-k230-r1 ]] || { echo "run $run_id targets another platform" >&2; exit 67; }
+            [[ "$(manifest_value "$manifest" release_path)" == "$expected_release_path" ]] || { echo "run $run_id targets another release path" >&2; exit 67; }
+            [[ "$(manifest_value "$manifest" sdk_cache_key)" == "$TDVP_SDK_CACHE_KEY" ]] || { echo "run $run_id has a different SDK/ABI cache identity" >&2; exit 67; }
+
+            mapfile -t feed_dirs < <(find "$run_dir" -type d -path "*/$expected_release_path" -print | LC_ALL=C sort)
+            [[ ${#feed_dirs[@]} -eq 1 ]] || { echo "run $run_id has no unambiguous feed directory" >&2; exit 68; }
+            feed_dir=${feed_dirs[0]}
+            ipk_count=0
+            while IFS=$'\t' read -r record digest filename; do
+              [[ "$record" == ipk ]] || continue
+              [[ "$digest" =~ ^[0-9a-f]{64}$ && "$filename" =~ ^[A-Za-z0-9+._-]+\.ipk$ ]] || {
+                echo "run $run_id has an invalid IPK manifest record" >&2
+                exit 69
+              }
+              source_ipk="$feed_dir/$filename"
+              [[ -f "$source_ipk" ]] || { echo "run $run_id is missing $filename" >&2; exit 69; }
+              [[ "$(sha256sum "$source_ipk" | awk '{print $1}')" == "$digest" ]] || {
+                echo "run $run_id hash mismatch for $filename" >&2
+                exit 69
+              }
+              destination_ipk="$merged_feed/$filename"
+              if [[ -e "$destination_ipk" ]]; then
+                [[ "$(sha256sum "$destination_ipk" | awk '{print $1}')" == "$digest" ]] || {
+                  echo "incompatible duplicate IPK: $filename" >&2
+                  exit 70
+                }
+              else
+                install -m 0644 "$source_ipk" "$destination_ipk"
+              fi
+              ipk_count=$((ipk_count + 1))
+            done <"$manifest"
+            [[ "$ipk_count" -gt 0 ]] || { echo "run $run_id declares no IPKs" >&2; exit 71; }
+          done
+
+      - name: Re-index and validate the merged candidate without compiling
+        run: |
+          set -Eeuo pipefail
+          feed_dir='candidate-merged/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          build_output="${RUNNER_TEMP}/tdvp-k230-sdk/output/$TDVP_PROFILE"
+          export TDVP_SDK_ROOT="$build_output/host"
+          export TDVP_FEED_BASE_ROOT="$build_output/target"
+          bash ./scripts/make-index.sh "$feed_dir"
+          bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
+          bash ./scripts/verify-runtime-closure.sh \
+            --platform tdvp-k230-r1 --base-root "$TDVP_FEED_BASE_ROOT" "$feed_dir"
+          bash ./scripts/verify-target-runtime-coverage.sh \
+            --platform tdvp-k230-r1 --base-root "$TDVP_FEED_BASE_ROOT" "$feed_dir"
+
+      - name: Upload the merged unsigned candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdvp-k230-r10-merged-unsigned-${{ github.sha }}
+          path: candidate-merged
+          if-no-files-found: error
+          retention-days: 14

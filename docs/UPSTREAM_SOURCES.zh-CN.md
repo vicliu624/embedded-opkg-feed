@@ -151,7 +151,7 @@ Git tag/commit、官方 release tarball、PyPI/crates.io 等公开源码来源�
 2. **目标运行时 IPK 基座**对每个 SDK/ABI 基座仅执行一次：把已完成 target 的运行时转换成普通 feed IPK。它的私有所有权映射只保存在缓存中，绝不与公开 `Packages` 索引一起发布。
 3. **包批次**恢复前两层，只编译显式选择的 recipe 以及其声明的源码构建/运行时依赖闭包。源码缓存以 `source.lock` 中锁定的 SHA-256 为地址。
 
-一个增量批次只是未签名的局部候选。后续合并门只有在平台身份、来源锁、recipe/patch revision、依赖元数据和 IPK SHA-256 全部一致时，才可组合多个批次；它必须重新生成最终索引并验证运行时闭包，不能替换 IPK，更不能暗中触发全量重编。包批次遇到基座缓存缺失必须硬失败，CI 应显式运行基座任务，而不是把平台重建藏在某个库任务里。
+一个增量批次只是未签名的局部候选。后续合并门会记录平台身份、来源锁、recipe/patch revision、依赖元数据和 IPK SHA-256；它校验每个声明归档的 SHA-256，拒绝同名但哈希不同的 IPK，重新生成最终索引，并以恢复的 SDK target 做双向运行时闭包验证。它不能替换 IPK，更不能暗中触发全量重编。包批次遇到基座缓存缺失必须硬失败，CI 应显式运行基座任务，而不是把平台重建藏在某个库任务里。
 
 `build.sh` 只能以选定平台锁定的 `TDVP_SDK_ROOT`、`TDVP_FEED_BASE_ROOT` 和临时 `TDVP_FEED_STAGING_ROOT` 为目标构建环境。构建依赖通过 `PACKAGE_BUILD_DEPENDS` 提供给 staging；设备上的运行时关系必须通过精确版本的 `PACKAGE_DEPENDS` 和 ELF 自动闭包写入 IPK。构建依赖绝不因为在编译机上存在，就自动成为设备上可用的库或命令。
 

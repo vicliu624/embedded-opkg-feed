@@ -60,10 +60,11 @@ GNU Make 的 host `lzip-1.25.tar.gz` 输入上遇到 `download.savannah.gnu.org`
 镜像只是传输端替换，不能作为放宽散列、替换归档内容或跳过来源复核的理由。
 
 run `33902479037` 随后对 `wget-1.25.0.tar.lz` 的 `ftp.gnu.org:443` 连接等待
-135 秒后超时（curl exit 28）。`packages/wget/source.lock` 改用 GNU 官方推荐的
-`https://ftpmirror.gnu.org/wget/` 入口；归档文件名、版本和 Buildroot 审核的 SHA-256
+135 秒后超时（curl exit 28）；GNU 官方镜像选择器在 run `33903742083` 又返回
+`502/504`。`packages/wget/source.lock` 因此固定使用 Buildroot 官方备份来源站
+`https://sources.buildroot.net/wget/`。归档文件名、版本和 Buildroot 审核的 SHA-256
 `19225cc756b0a088fc81148dc6a40a0c8f329af7fd8483f1c7b2fe50f4e08a1f` 完全不变。
-它是受 GNU 维护的就近镜像选择器，不是未审核的独立来源；下载结果仍必须命中此 SHA-256。
+它是 Buildroot 维护的备份下载端，不是未审核的独立来源；下载结果仍必须命中此 SHA-256。
 
 收到完成态 SDK 后，再运行只读 cohort 门：
 

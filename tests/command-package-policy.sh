@@ -35,6 +35,8 @@ grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='patch=tdvp-patch'" "$repo_root/packages/p
 grep -Fq "'tree'" "$repo_root/packages/tree/build.sh"
 grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='tree=tdvp-tree'" "$repo_root/packages/tree/build.sh"
 grep -Fq "'less'" "$repo_root/packages/less/build.sh"
+grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='less=tdvp-less'" "$repo_root/packages/less/build.sh"
+grep -Fqx "VERSION='661-2'" "$repo_root/packages/less/package.env"
 grep -Fqx "PACKAGE_DEPENDS='libncursesw (= 6.4-20230603-1)'" "$repo_root/packages/less/package.env"
 grep -Fqx "PACKAGE_BUILD_DEPENDS='libncursesw'" "$repo_root/packages/less/package.env"
 grep -Fq "'file'" "$repo_root/packages/file/build.sh"

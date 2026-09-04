@@ -185,6 +185,12 @@ run `33910604255` 已证明 GitHub CLI 的 vendor-cache stdout 修复生效：�
 `tdvp-source-tools` 更新为 `1.6-5`，设备验收使用 `tdvp-grep -P`；固件 grep 和 IPK 卸载
 后的行为均不受影响。
 
+run `33913031567` 又越过 GNU grep，随后在 GNU Less 默认 `/usr/bin/less` 的同一 immutable
+base-overlay gate 处停止。Less 更新为 `661-2` 并只公开 `/usr/bin/tdvp-less`；它的私有
+二进制和 `libncursesw` 运行时所有权保持不变。`tdvp-source-tools` 因而更新到 `1.6-6` 并以
+`tdvp-less --version` 验收。不能因 BusyBox 已有 pager 而覆盖它，也不能把未选择的
+`lesskey`/`lessecho` 命令扩大为新的公开 feed ABI。
+
 ## 设备生命周期记录
 
 每一个 unsigned candidate 都要独立记录：

@@ -123,6 +123,12 @@ rootfs 复制一个未声明的 runtime provider。
 `include/` 源码头文件；这不是 SDL2/mGBA/GBA 的 source lock、目标 ABI 或 runtime closure
 失败。第三次 retry `33922965456` 又证明 restored SDK 的 `dl` base 并不含
 `freetype-2.13.3.tar.xz`，所以也不能把该下载缓存误当作这个 header fallback 的来源契约。
+第四次 retry `33923512627` 已到达新的 source-cache retrieval，并证实 lock 和 SHA-256 验证
+本身有效；失败只是 `download-mirror.savannah.gnu.org` 的 TLS connection reset，未写入 archive，
+也未启动任何 K230 package build。该 lock 改用与 Buildroot 维护流程一致的
+`sources.buildroot.net/freetype/freetype-2.13.3.tar.xz` HTTPS mirror，仍以完全相同的
+Buildroot SHA-256 验证。它不是下载失败时的未验证备用源：archive hash、文件名与 Buildroot
+commit 仍必须全部一致。
 
 后续 retry 的 helper 仍优先使用完整 build tree；若 cache 仍缺头文件，CI 必须先通过独立的
 `support/wayland-sdk-overlay-source/source.lock` 将 FreeType 2.13.3 放入内容寻址的 source
@@ -130,8 +136,15 @@ cache。helper 只接受该 cache 中按 SHA-256 定位的 archive，并再次�
 Buildroot `package/freetype/freetype.mk`/`.hash` 核验版本与摘要；两份不可变记录必须一致，才会在
 runner 临时目录解出 `ft2build.h` 与 `include/freetype`。该临时目录会在最终 overlay 前删除，既不会
 进入 IPK，也不会使用 host headers、未锁定网络下载、target rootfs 的未声明 provider 或手写/合成的
-pkg-config metadata。失败 run `33921909790`、`33922256133` 与 `33922965456` 都不得被 merge；只有
-修正后的独立 retry 通过全部 source、ELF、payload 和 runtime-closure gates 后才是可合并候选。
+pkg-config metadata。失败 run `33921909790`、`33922256133`、`33922965456` 与 `33923512627` 都不得
+被 merge；只有修正后的独立 retry 通过全部 source、ELF、payload 和 runtime-closure gates 后才是可
+合并候选。
+
+五个已成功 batch 的首次 partial merge `33923703593` 也在下载 artifact 之前停止，原因是 merge
+job 的 SDK cache `path` 集合漏掉了 package batch 保存时包含的 `build/**/.stamp_*`。GitHub Actions
+cache version 包含 path 集合，故即使文本 key 相同也会被当作 cache miss；此修复把 merge restore
+path 与 package-batch restore path 完全对齐。它不会重建 SDK、不会改 ABI identity，也不会把
+`fail-on-cache-miss` 放宽为继续执行。
 
 特别地，当前 staging K230 output 已选择 `BR2_PACKAGE_POPT=y` 并拥有
 `/usr/lib/libpopt.so.0`。这使 `libpopt` 的普通 feed provider 被 base-overlay gate 拒绝，

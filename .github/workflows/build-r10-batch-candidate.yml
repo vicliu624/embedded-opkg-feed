@@ -509,6 +509,7 @@ jobs:
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config.old
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/Makefile
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
           key: ${{ env.TDVP_SDK_CACHE_KEY }}

@@ -50,11 +50,20 @@ test -f "$overlay_source_lock/source.lock"
 bash "$repo_root/scripts/verify-source-lock.sh" --package-dir "$overlay_source_lock" >/dev/null
 grep -Fqx "SOURCE_ARTIFACT_1_FILE='freetype-2.13.3.tar.xz'" "$overlay_source_lock/source.lock"
 grep -Fqx "SOURCE_ARTIFACT_1_SHA256='0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289'" "$overlay_source_lock/source.lock"
+grep -Fqx "SOURCE_ARTIFACT_1_URL='https://sources.buildroot.net/freetype/freetype-2.13.3.tar.xz'" "$overlay_source_lock/source.lock"
 grep -Fq 'matching Buildroot FreeType SHA-256 is missing' "$overlay_helper"
 grep -Fq 'FreeType source archive is missing from locked development source cache' "$overlay_helper"
 grep -Fq 'FreeType source archive hash differs from matching Buildroot metadata' "$overlay_helper"
 grep -Fq 'archive="$source_cache_root/sha256/$expected_sha/$source_name"' "$overlay_helper"
 grep -Fq 'tar -xf "$archive" -C "$freetype_source_temp"' "$overlay_helper"
 grep -Fq 'neither host headers nor an undeclared target runtime provider are used' "$overlay_helper"
+
+# Cache identity includes its exact path list.  The merge job must request the
+# same SDK cache layout as a package batch, otherwise a matching textual key
+# is still a GitHub Actions cache miss before it can validate any IPK.
+merge_sdk_restore=$(sed -n \
+  '/name: Restore the reviewed SDK base required for closure validation/,/name: Download compatible unsigned batches/p' \
+  "$workflow")
+grep -Fq 'output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*' <<<"$merge_sdk_restore"
 
 echo 'retro-gba package policy test passed'

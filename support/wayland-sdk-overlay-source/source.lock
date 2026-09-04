@@ -14,6 +14,6 @@ SECURITY_STATUS='The FreeType archive SHA-256 is pinned from the locked Buildroo
 VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 freetype.hash'
 VERIFIED_AT='2026-09-05'
 VERIFICATION_REFERENCE='https://github.com/buildroot/buildroot/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/freetype/freetype.hash'
-SOURCE_ARTIFACT_1_URL='https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.13.3.tar.xz'
+SOURCE_ARTIFACT_1_URL='https://sources.buildroot.net/freetype/freetype-2.13.3.tar.xz'
 SOURCE_ARTIFACT_1_FILE='freetype-2.13.3.tar.xz'
 SOURCE_ARTIFACT_1_SHA256='0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289'

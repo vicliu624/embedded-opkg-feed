@@ -6,8 +6,9 @@ tools using exact dependencies:
 
 * `tree`, `less`, `file`, and `which` for layout, log inspection, type detection,
   and command discovery;
-* `wget` for simple scripted HTTPS/FTP retrieval, using the reviewed OpenSSL,
-  zlib, and CA-store closure without GnuTLS, PSL, IDN/IRI, or c-ares;
+* `tdvp-wget` for simple scripted HTTPS/FTP retrieval, using the reviewed
+  OpenSSL, zlib, and CA-store closure without GnuTLS, PSL, IDN/IRI, or c-ares;
+  the firmware's base `wget` is not replaced;
 * `dos2unix`, `grep`, `sed`, `findutils`, and `gawk`/`tdvp-awk` for source-tree
   and text maintenance; the firmware's base `awk` is not replaced;
 * `jq` for JSON inspection and transformation.
@@ -35,8 +36,8 @@ After installing the unsigned r10 candidate on a real K230 device, verify:
     less --version
     file --version
     tdvp-which grep
-    wget --version
-    wget --https-only -O /tmp/tdvp-wget-example.html https://example.com/
+    tdvp-wget --version
+    tdvp-wget --https-only -O /tmp/tdvp-wget-example.html https://example.com/
     printf '{"answer":42}\n' | jq .answer
     printf 'A\r\nB\r\n' > /tmp/tdvp-crlf.txt && tdvp-dos2unix /tmp/tdvp-crlf.txt
     printf 'alpha\nbeta\n' | grep -P '^a'

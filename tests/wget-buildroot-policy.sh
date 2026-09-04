@@ -119,16 +119,24 @@ for record in \
   enable:BR2_PACKAGE_WGET; do
   grep -Fqx "$record" "$output/.tdvp-kconfig.log"
 done
-grep -Fqx 'WGET_DEPENDENCIES=host-pkgconf openssl zlib' "$output/.tdvp-make.log"
-grep -Fqx 'WGET_CONF_OPTS=--without-libpsl --with-ssl openssl --disable-iri --without-libuuid --with-zlib --without-cares --disable-pcre --disable-pcre2' "$output/.tdvp-make.log"
+for make_variable in \
+  BR2_PACKAGE_LIBPSL=n \
+  BR2_PACKAGE_GNUTLS=n \
+  BR2_PACKAGE_LIBIDN2=n \
+  BR2_PACKAGE_C_ARES=n \
+  BR2_PACKAGE_PCRE=n \
+  BR2_PACKAGE_PCRE2=n \
+  BR2_PACKAGE_UTIL_LINUX_LIBUUID=n; do
+  grep -Fqx "$make_variable" "$output/.tdvp-make.log"
+done
 
 payload_dir=$(readlink -f -- "$package_dir/root")
 test -f "$payload_dir/usr/libexec/tdvp-wget/wget"
 test ! -L "$payload_dir/usr/libexec/tdvp-wget/wget"
 test "$(stat -c '%a' "$payload_dir/usr/libexec/tdvp-wget/wget")" = 755
 grep -Fqx 'fixture wget command' "$payload_dir/usr/libexec/tdvp-wget/wget"
-test -f "$payload_dir/usr/bin/wget"
-grep -Fqx 'exec /usr/libexec/tdvp-wget/wget "$@"' "$payload_dir/usr/bin/wget"
+test -f "$payload_dir/usr/bin/tdvp-wget"
+grep -Fqx 'exec /usr/libexec/tdvp-wget/wget "$@"' "$payload_dir/usr/bin/tdvp-wget"
 rm -f -- "$package_dir/root"
 rm -rf -- "$payload_dir"
 

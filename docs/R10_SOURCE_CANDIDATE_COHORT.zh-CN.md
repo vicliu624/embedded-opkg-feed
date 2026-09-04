@@ -142,10 +142,9 @@ target-runtime IPK 直接保留在部分 feed 中，不重新编译、不要求�
 改变其 ABI owner；真正需要 source build 的依赖仍会在 CI 预取并锁定校验。
 
 在该修正后的 run `33907526598` 中，`wget` 已到达自己的 Buildroot configure gate。
-该 SDK 全局启用了 GnuTLS，故旧的 Kconfig 禁用断言正确地拒绝了它；但 Wget 的实际
-Buildroot recipe允许命令行覆盖 `WGET_CONF_OPTS` 与 `WGET_DEPENDENCIES`。r10 现在将
-这些变量固定为仅 `host-pkgconf openssl zlib` 和 OpenSSL/zlib/无 PSL、IDN、UUID、c-ares、
-PCRE 的配置。这样不会改写 SDK `.config`，也不会使 Wget 链接 GnuTLS；后续 CI 必须以
+该 SDK 全局启用了 GnuTLS，故旧的 Kconfig 禁用断言正确地拒绝了它。r10 改为仅在
+该次 Buildroot make 调用传入 `BR2_PACKAGE_GNUTLS=n` 等七个可选 closure 变量；这样
+`wget.mk` 选择 OpenSSL/zlib 分支，而 SDK `.config` 仍保持字节不变。后续 CI 必须以
 ELF runtime-closure gate 证明确实只使用已声明的 provider。
 
 run `33908264128` 证实该 Wget 配置已经进入 Buildroot 解包阶段，但 `wget-1.25.0.tar.lz`
@@ -163,6 +162,14 @@ run `33907529611` 已用锁定 GitHub CLI source、Go 1.26.7 host archive、`go.
 `6ae99bb890f2dd7ccc92d7041d94147a650f21b666c807c24dd3e59082e6d3c6` 同步写入
 `gh/source.lock`。下一次 CI 必须重新生成相同 vendor archive 后才会继续交叉编译，不能
 把先前失败产生的临时目录或未验证 cache 当作输入。
+
+run `33908926617` 已证明 host-lzip 作为锁定输入成功到达 Wget 编译阶段，但也证明先前
+通过 `WGET_CONF_OPTS` 的覆盖会被 `wget.mk` 的追加分支重新引入 GnuTLS。新的 make-time
+Kconfig view 解决该问题。同时，完整 GNU Wget 的源码 payload 与固件 `/usr/bin/wget`
+不同，base-overlay gate 正确拒绝覆盖。因此 Wget 更新为 `1.25.0-2`，仅公开
+`/usr/bin/tdvp-wget`；固件 wget 保持不变。依赖它的 `tdvp-source-tools` 更新为 `1.6-4`，
+设备验收命令也使用 `tdvp-wget`。这与 `tdvp-awk` 前端相同：新能力通过明确名称加入，不
+以替换 firmware command 的方式取得 PATH 优先级。
 
 ## 设备生命周期记录
 

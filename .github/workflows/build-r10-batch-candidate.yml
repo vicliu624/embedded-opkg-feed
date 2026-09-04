@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, development-tools, nodejs]
+        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -71,6 +71,7 @@ jobs:
           bash ./tests/build-all-source-lock-policy.sh
           bash ./tests/audacious-package-policy.sh
           bash ./tests/archive-package-policy.sh
+          bash ./tests/retro-gba-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -322,6 +323,7 @@ jobs:
           bash ./tests/build-all-source-lock-policy.sh
           bash ./tests/audacious-package-policy.sh
           bash ./tests/archive-package-policy.sh
+          bash ./tests/retro-gba-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -369,6 +371,13 @@ jobs:
               package_args=(--package vim --package vim-plugin-gitgutter --package tdvp-mpv --package tdvp-netsurf)
               expected_packages=(vim-runtime vim vim-plugin-gitgutter tdvp-mpv tdvp-netsurf)
               ;;
+            retro-gba)
+              # Build the emulator and every feed-owned runtime it needs from
+              # its locked source archives.  sdl2-ttf is a runtime-only edge,
+              # so select it explicitly in addition to tdvp-gba's build deps.
+              package_args=(--package sdl2-ttf --package tdvp-gba)
+              expected_packages=(sdl2 sdl2-ttf libmgba tdvp-gba)
+              ;;
             development-tools)
               package_args=(--package tdvp-source-tools --package tdvp-dev-tools)
               expected_packages=(tdvp-source-tools tdvp-dev-tools)
@@ -392,6 +401,14 @@ jobs:
           export TDVP_NODE22_BUILDROOT_OUTPUT="$build_output"
           export TDVP_BUILDROOT_BASE_DOWNLOAD_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl"
           export TDVP_NODE22_SOURCE_CACHE="${RUNNER_TEMP}/tdvp-r10-source-cache/nodejs"
+
+          # Do not admit a legacy r2/r3 payload as the source of an r10 GBA
+          # runtime.  This remains explicit even if a future recipe gains a
+          # reuse URL: every selected retro-gba package must prove its own
+          # locked-source K230 build in this incremental batch.
+          if [ "${{ inputs.batch }}" = retro-gba ]; then
+            export TDVP_REUSE_PUBLISHED_PAYLOADS=0
+          fi
 
           # Only selected SHA-256-locked source inputs are fetched. The result
           # is an unsigned partial candidate; it does not publish a release.

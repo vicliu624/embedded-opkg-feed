@@ -98,9 +98,17 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 7 | `htop`（暂缓）、`nano`、`dialog`、`ncdu`、`pv` | 3.3.0、8.2、1.3-20220117、1.21、1.9.0 | 真实终端、locale/宽字符和小屏交互验收；`htop` 需先有独立的 libcap provider |
 | 8 | `tmux`（暂缓） | 3.3a | 需先准入 OpenSSL-capable libevent runtime；再验证 detached session、capture、kill-session |
 | 9 | `tdvp-source-tools`、`tdvp-diagnostics` | 1.6、1.1 | 仅元数据 profile；安装/卸载不得复制或误删工具/共享库 |
+| 10 | `sdl2`、`sdl2-ttf`、`libmgba`、`tdvp-gba` | 2.30.11、2.22.0、0.10.5、0.2.3 | `retro-gba` 独立增量批次；四个 IPK 必须全部由来源锁重建，不能复用历史 r2/r3 payload；验证 Wayland/ALSA runtime closure、`tdvp-gba` 动态依赖及 `/opt/tdvp-gba` 的非覆盖安装。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
+
+`tdvp-gba` 的锁定 commit `4c82b09e1bf042d0709c26ed6c4e5098a283a908` 已由 GitHub commit
+API 和其固定 HTTPS archive endpoint 复核可达。早期 “仅本地 source cache、不可公开下载” 的
+说明不再适用；package metadata 现已与 `source.lock` 对齐。`retro-gba` batch 仍只允许将该
+archive 以 SHA-256 写入受控 source cache，最终交叉编译只读取缓存，并明确设置
+`TDVP_REUSE_PUBLISHED_PAYLOADS=0`。这使旧 feed 的 SDL2/mGBA IPK 不能成为 r10 的隐式
+二进制输入。
 
 特别地，当前 staging K230 output 已选择 `BR2_PACKAGE_POPT=y` 并拥有
 `/usr/lib/libpopt.so.0`。这使 `libpopt` 的普通 feed provider 被 base-overlay gate 拒绝，

@@ -161,7 +161,11 @@ one hash-locked archive in the controlled source cache, and the recipe's
 `source.lock` records that exact archive, commit, filename, and SHA-256. The
 release build must consume that cache artifact and fail if it is absent; it
 must not fetch a different public snapshot, a moving branch, or an arbitrary
-working tree. `tdvp-gba` is the r10 example of this cache-only input.
+working tree. This remains available for a genuinely unpublished future input.
+`tdvp-gba` used to be documented as this exception, but its locked
+`4c82b09e1bf042d0709c26ed6c4e5098a283a908` commit and exact HTTPS archive are
+now publicly retrievable and hash-locked, so r10 treats it as an ordinary
+controlled GitHub cache seed instead.
 
 `--offline-source-cache` also disables historical `REUSE_IPK_URL` payload
 reuse. In that mode, a selected recipe is rebuilt from its verified source

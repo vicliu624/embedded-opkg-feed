@@ -77,7 +77,10 @@ TDVP 自有或尚未公开的 Git commit 只能作为例外的**候选源码**�
 在经过审查的本地 checkout 中确实存在该精确 commit、用 `git archive` 生成一个写入受控 source
 cache 的哈希锁定归档，并由 recipe 的 `source.lock` 记录该归档、commit、文件名和 SHA-256 时，
 它才可准入。release build 必须消费这一 cache 制品，缺失即失败；不得改抓另一个公开 snapshot、
-可变分支或任意工作树。r10 的 `tdvp-gba` 是当前这一“仅缓存输入”的实例。
+可变分支或任意工作树。这个例外仍可供未来真正未公开的输入使用。`tdvp-gba` 曾被记录为
+这一例外，但其锁定的 `4c82b09e1bf042d0709c26ed6c4e5098a283a908` commit 与精确 HTTPS
+archive 现已可公开取得且受哈希锁定，因此 r10 将它作为普通的受控 GitHub cache seed，而不再
+视为仅缓存输入。
 
 `--offline-source-cache` 还会禁用历史 `REUSE_IPK_URL` 载荷复用。在该模式下，选中的 recipe
 只能从已验证的 source cache 重建，或由经过审查的非源码豁免明确拒绝/说明；先前 feed 的 IPK

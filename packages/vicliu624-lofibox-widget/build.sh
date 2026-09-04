@@ -43,8 +43,12 @@ scanner="$buildroot_output/host/bin/wayland-scanner"
 
 xdg_shell_xml=$(find "$buildroot_output/build" -type f \
   -path '*/stable/xdg-shell/xdg-shell.xml' -print -quit)
+if [[ -z "$xdg_shell_xml" ]]; then
+  overlay_xdg_shell_xml="$TDVP_K230_WAYLAND_SDK_OVERLAY/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml"
+  [[ -f "$overlay_xdg_shell_xml" ]] && xdg_shell_xml=$overlay_xdg_shell_xml
+fi
 [[ -n "$xdg_shell_xml" ]] || {
-  echo "matching Buildroot wayland-protocols XML is missing: stable/xdg-shell/xdg-shell.xml" >&2
+  echo "matching Buildroot wayland-protocols XML is missing from both the SDK build tree and verified development overlay: stable/xdg-shell/xdg-shell.xml" >&2
   exit 68
 }
 protocols_dir=$(cd -- "$(dirname -- "$xdg_shell_xml")/../.." && pwd)

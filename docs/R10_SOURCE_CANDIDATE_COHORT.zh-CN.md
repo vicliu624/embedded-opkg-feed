@@ -284,6 +284,26 @@ wrapper 的失败。r10 因而改回 Node/GYP 的默认 Make generator，并用�
 QEMU wrapper 执行，全部 source lock、ELF、RPATH 与 runtime-closure gates 均保持。下一次仅
 Node.js 的 GitHub Actions 批次必须从头证明这个 generator 路径能完成实际 K230 IPK 构建。
 
+在 SDL2 patch 修复和 runtime-base 刷新 `33925822425` 成功后，新的 `retro-gba` run
+`33926416128` 已恢复同一 K230 SDK、工具链、Buildroot download cache、FreeType source cache 和
+更新后的 target-runtime base。它随后从锁定来源实际构建并封装 `libmgba`、`sdl2` 与
+`sdl2-ttf`，但 `tdvp-gba` 在生成 Wayland 绑定前以 exit 67 停止：package-only SDK cache 虽保留
+`wayland-protocols` 的 Buildroot stamp，却不保留 build tree 中
+`unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml`。这不是 SDL patch、目标 ABI、ELF runtime
+closure 或此前 runtime cache 的失败；该 run 没有上传 unsigned batch，必须排除出 merge。
+
+修复把 development-only overlay 的来源锁扩展为 Buildroot 2025.02.1 固定提交
+`3815d578c5759fa824322ea3d95ad51b55ab888e` 所审计的 `wayland-protocols-1.39.tar.xz`：文件名和
+SHA-256 `e1dcdcbbf08e2e0a8a02ee5d9a0be3a6aafc39a4b51fa7e0d2f1a16411cb72fa` 必须先进入内容寻址
+source cache，overlay helper 再读取同一 restored SDK 的
+`package/wayland-protocols/wayland-protocols.mk`/`.hash` 重新验证版本与摘要。若 SDK staging
+已带有同一匹配 XML，它优先使用该输入；否则只从已验证 archive 解出 `stable`、`staging` 与
+`unstable` 协议树到 runner 临时 overlay 的 `share/wayland-protocols`。GBA 的 linux-dmabuf 和未来
+LoFiBox 的 xdg-shell/xdg-decoration 都先查 matching build tree、再查这个 verified overlay。协议
+XML 不进入任何 IPK、不是 runtime provider，也不得改用 host 文件、任意 target-root copy、手工
+生成 XML 或未锁定网络下载。新的 retry 仍必须完成实际 K230 编译、IPK SHA manifest、ELF 和
+runtime-closure gate 后才能成为 merge 输入。
+
 ## 设备生命周期记录
 
 每一个 unsigned candidate 都要独立记录：

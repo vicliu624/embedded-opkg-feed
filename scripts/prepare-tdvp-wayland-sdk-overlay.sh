@@ -33,16 +33,19 @@ overlay_name=$(basename -- "$overlay_input")
 overlay="$overlay_parent/$overlay_name"
 [[ ! -e "$overlay" ]] || die "refusing to replace an existing overlay: $overlay"
 
-# Both directories are owned by this invocation.  Keeping the FreeType source
-# extraction separate from the overlay makes it impossible for source-only
-# build inputs to be published as SDK overlay files.
+# Every temporary source extraction is owned by this invocation. Keeping those
+# development-only inputs separate from the overlay makes it impossible for a
+# source archive to be published as an SDK-overlay or IPK payload.
 temporary=
 freetype_source_temp=
+wayland_protocols_source_temp=
 cleanup() {
   local status=$?
   [[ -z "$temporary" || ! -e "$temporary" ]] || rm -rf -- "$temporary"
   [[ -z "$freetype_source_temp" || ! -e "$freetype_source_temp" ]] || \
     rm -rf -- "$freetype_source_temp"
+  [[ -z "$wayland_protocols_source_temp" || ! -e "$wayland_protocols_source_temp" ]] || \
+    rm -rf -- "$wayland_protocols_source_temp"
   return "$status"
 }
 trap cleanup EXIT
@@ -134,6 +137,65 @@ find_freetype_build_dir() {
     return 0
   fi
   extract_freetype_source_headers
+}
+
+# The package-only SDK cache may omit Buildroot's wayland-protocols build tree
+# and its staging data. Prefer the restored matching SDK's staging directory;
+# if that too is absent, extract only the protocol XML from the source-lock
+# verified archive. This is development metadata, not a target runtime or an
+# IPK payload, and its archive hash is checked again against the matching
+# Buildroot package metadata before it can enter the disposable overlay.
+wayland_protocols_source_dir=
+extract_wayland_protocols_source() {
+  local sdk_workspace source_cache_root package_mk hash_file version source_name expected_sha archive actual_sha
+  local source_root
+  local -a package_mks=() source_roots=()
+
+  sdk_workspace=$(cd -- "$build_root/../.." && pwd)
+  mapfile -t package_mks < <(
+    find "$sdk_workspace/output" -type f -path '*/package/wayland-protocols/wayland-protocols.mk' -print |
+      LC_ALL=C sort
+  )
+  [[ ${#package_mks[@]} -eq 1 ]] || die \
+    'the restored SDK omits Wayland protocol XML and has no unique Buildroot wayland-protocols package definition'
+
+  package_mk=${package_mks[0]}
+  hash_file=${package_mk%.mk}.hash
+  [[ -f "$hash_file" ]] || die "matching Buildroot wayland-protocols hash file is missing: $hash_file"
+  version=$(sed -nE \
+    's/^WAYLAND_PROTOCOLS_VERSION[[:space:]]*=[[:space:]]*([0-9]+([.][0-9]+)*)[[:space:]]*$/\1/p' \
+    "$package_mk")
+  [[ "$version" =~ ^[0-9]+([.][0-9]+)*$ ]] || die \
+    "matching Buildroot wayland-protocols version is invalid: $package_mk"
+
+  source_name="wayland-protocols-$version.tar.xz"
+  expected_sha=$(awk -v source="$source_name" \
+    '$1 == "sha256" && $3 == source && length($2) == 64 && $2 ~ /^[0-9a-f]+$/ { print $2; exit }' \
+    "$hash_file")
+  [[ "$expected_sha" =~ ^[0-9a-f]{64}$ ]] || die \
+    "matching Buildroot wayland-protocols SHA-256 is missing: $hash_file"
+
+  source_cache_root=${TDVP_K230_WAYLAND_SDK_SOURCE_CACHE:-}
+  [[ -n "$source_cache_root" && -d "$source_cache_root" && ! -L "$source_cache_root" ]] || die \
+    'the restored SDK omits Wayland protocol XML and the required locked development source cache is unavailable'
+  archive="$source_cache_root/sha256/$expected_sha/$source_name"
+  [[ -f "$archive" && ! -L "$archive" ]] || die \
+    "Wayland protocols source archive is missing from locked development source cache: $archive"
+  actual_sha=$(sha256sum "$archive" | awk '{print $1}')
+  [[ "$actual_sha" == "$expected_sha" ]] || die \
+    "Wayland protocols source archive hash differs from matching Buildroot metadata: $archive"
+
+  wayland_protocols_source_temp=$(mktemp -d "$overlay_parent/.${overlay_name}.wayland-protocols-source.XXXXXX")
+  tar -xf "$archive" -C "$wayland_protocols_source_temp"
+  mapfile -t source_roots < <(
+    find "$wayland_protocols_source_temp" -mindepth 1 -maxdepth 1 -type d -print | LC_ALL=C sort
+  )
+  [[ ${#source_roots[@]} -eq 1 ]] || die \
+    "verified Wayland protocols source archive has an unexpected layout: $archive"
+  source_root=${source_roots[0]}
+  [[ -f "$source_root/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml" ]] || die \
+    "verified Wayland protocols source archive lacks linux-dmabuf XML: $archive"
+  wayland_protocols_source_dir=$source_root
 }
 
 has_freetype_headers=0
@@ -239,6 +301,34 @@ copy_link_input() {
   fi
 }
 
+copy_wayland_protocols() {
+  local source='' directory tree
+  local -a protocol_sources=(
+    "$sysroot/usr/share/wayland-protocols"
+    "$build_root/target/usr/share/wayland-protocols"
+  )
+  for directory in "${protocol_sources[@]}"; do
+    if [[ -f "$directory/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml" ]]; then
+      source=$directory
+      break
+    fi
+  done
+  if [[ -z "$source" ]]; then
+    extract_wayland_protocols_source
+    source=$wayland_protocols_source_dir
+  fi
+  [[ -d "$source/stable" && -d "$source/unstable" ]] || die \
+    "matching Wayland protocol source is incomplete: $source"
+
+  mkdir -p "$temporary/share/wayland-protocols"
+  for tree in stable staging unstable; do
+    [[ -d "$source/$tree" ]] || continue
+    cp -a -- "$source/$tree" "$temporary/share/wayland-protocols/$tree"
+  done
+  [[ -f "$temporary/share/wayland-protocols/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml" ]] || die \
+    'Wayland development overlay omitted linux-dmabuf XML'
+}
+
 copy_header_file wayland-client.h
 copy_header_file wayland-client-core.h
 copy_header_file wayland-client-protocol.h
@@ -262,12 +352,18 @@ done
 for library in wayland-client wayland-cursor wayland-egl xkbcommon EGL asound pulse ffi freetype; do
   copy_link_input "$library"
 done
+copy_wayland_protocols
 
-# Headers copied from the verified source archive are development-only staging
-# inputs.  Remove their extraction tree before the overlay is finalised.
+# Development-only headers and protocol XML copied from verified source archives
+# are staging inputs only. Remove their extraction trees before finalising the
+# overlay.
 if [[ -n "$freetype_source_temp" ]]; then
   rm -rf -- "$freetype_source_temp"
   freetype_source_temp=
+fi
+if [[ -n "$wayland_protocols_source_temp" ]]; then
+  rm -rf -- "$wayland_protocols_source_temp"
+  wayland_protocols_source_temp=
 fi
 
 {
@@ -279,7 +375,7 @@ fi
 } > "$temporary/tdvp-sdk-overlay.manifest"
 (
   cd "$temporary"
-  find include lib -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum > SHA256SUMS
+  find include lib share -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum > SHA256SUMS
 )
 
 mv -- "$temporary" "$overlay"

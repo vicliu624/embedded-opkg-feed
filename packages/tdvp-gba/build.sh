@@ -34,8 +34,9 @@ tdvp_require_wayland_sdk_overlay
 tdvp_prepare_pkg_config
 
 # The generated bindings are target-ABI neutral, but the scanner and XML must
-# come from the completed firmware Buildroot tree so a feed build never uses a
-# random release-builder protocol version.
+# come from the completed firmware Buildroot tree or its source-lock-verified
+# development overlay so a feed build never uses a random release-builder
+# protocol version.
 buildroot_output=$(tdvp_buildroot_output_from_sdk "$4" "${TDVP_GBA_BUILDROOT_OUTPUT:-}")
 scanner="$buildroot_output/host/bin/wayland-scanner"
 [[ -x "$scanner" ]] || {
@@ -44,8 +45,12 @@ scanner="$buildroot_output/host/bin/wayland-scanner"
 }
 linux_dmabuf_xml=$(find "$buildroot_output/build" -type f \
   -path '*/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' -print -quit)
+if [[ -z "$linux_dmabuf_xml" ]]; then
+  overlay_dmabuf_xml="$TDVP_K230_WAYLAND_SDK_OVERLAY/share/wayland-protocols/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml"
+  [[ -f "$overlay_dmabuf_xml" ]] && linux_dmabuf_xml=$overlay_dmabuf_xml
+fi
 [[ -n "$linux_dmabuf_xml" ]] || {
-  echo 'matching Buildroot wayland-protocols XML is missing: unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' >&2
+  echo 'matching Buildroot wayland-protocols XML is missing from both the SDK build tree and verified development overlay: unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' >&2
   exit 67
 }
 protocols_dir=$(cd -- "$(dirname -- "$linux_dmabuf_xml")/../.." && pwd)

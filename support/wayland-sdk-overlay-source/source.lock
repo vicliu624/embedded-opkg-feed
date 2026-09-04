@@ -1,19 +1,23 @@
-# Development-only source input for the TDVP Wayland SDK overlay.  This is not
-# a feed recipe and never creates an IPK: it restores the public FreeType
-# headers omitted from the package-only SDK cache into a disposable CI overlay.
+# Development-only source inputs for the TDVP Wayland SDK overlay. This is not
+# a feed recipe and never creates an IPK: it restores public FreeType headers
+# and Wayland protocol XML omitted from a package-only SDK cache into a
+# disposable CI overlay.
 FORMAT_VERSION='1'
 SOURCE_TYPE='buildroot-derived'
-UPSTREAM_NAME='FreeType development headers for TDVP Wayland SDK overlay'
-UPSTREAM_LICENSE='FTL or GPL-2.0+'
-UPSTREAM_VERSION='2.13.3'
+UPSTREAM_NAME='FreeType headers and Wayland protocol XML for TDVP Wayland SDK overlay'
+UPSTREAM_LICENSE='FTL or GPL-2.0+; MIT'
+UPSTREAM_VERSION='FreeType 2.13.3 and wayland-protocols 1.39'
 UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
-SOURCE_SNAPSHOT='https://github.com/buildroot/buildroot/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/freetype/freetype.mk'
-SOURCE_SELECTION_REASON='The incremental retro-gba SDK cache intentionally retains Buildroot stamps but not FreeType source-tree headers. This record supplies only the exact Buildroot 2025.02.1 FreeType public-header source needed for the disposable Wayland development overlay; it is never a runtime provider or IPK payload.'
-NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 freetype.mk and freetype.hash at the locked commit, the content-addressed TDVP source cache, and the matching K230 SDK. No host header, target-root copy, generated pkg-config metadata, or live network fetch is permitted after the cache retrieval gate.'
-SECURITY_STATUS='The FreeType archive SHA-256 is pinned from the locked Buildroot freetype.hash and verified both by the source cache and by the overlay helper before extraction.'
-VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 freetype.hash'
+SOURCE_SNAPSHOT='https://github.com/buildroot/buildroot/tree/3815d578c5759fa824322ea3d95ad51b55ab888e/package'
+SOURCE_SELECTION_REASON='The incremental retro-gba SDK cache intentionally retains Buildroot stamps but can omit both FreeType public headers and wayland-protocols XML. This record supplies only the exact Buildroot 2025.02.1 development sources needed for the disposable Wayland overlay; neither archive is a runtime provider or IPK payload.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 freetype.mk/freetype.hash and wayland-protocols.mk/wayland-protocols.hash at the locked commit, the content-addressed TDVP source cache, and the matching K230 SDK. No host header, arbitrary target-root copy, generated protocol metadata, or live network fetch is permitted after the cache retrieval gate.'
+SECURITY_STATUS='Both archive SHA-256 values are pinned from the locked Buildroot hashes and verified by the source cache and again by the overlay helper before extraction.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 freetype.hash and wayland-protocols.hash'
 VERIFIED_AT='2026-09-05'
-VERIFICATION_REFERENCE='https://github.com/buildroot/buildroot/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/freetype/freetype.hash'
+VERIFICATION_REFERENCE='https://github.com/buildroot/buildroot/tree/3815d578c5759fa824322ea3d95ad51b55ab888e/package'
 SOURCE_ARTIFACT_1_URL='https://sources.buildroot.net/freetype/freetype-2.13.3.tar.xz'
 SOURCE_ARTIFACT_1_FILE='freetype-2.13.3.tar.xz'
 SOURCE_ARTIFACT_1_SHA256='0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289'
+SOURCE_ARTIFACT_2_URL='https://sources.buildroot.net/wayland-protocols/wayland-protocols-1.39.tar.xz'
+SOURCE_ARTIFACT_2_FILE='wayland-protocols-1.39.tar.xz'
+SOURCE_ARTIFACT_2_SHA256='e1dcdcbbf08e2e0a8a02ee5d9a0be3a6aafc39a4b51fa7e0d2f1a16411cb72fa'

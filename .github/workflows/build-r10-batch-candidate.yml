@@ -86,8 +86,16 @@ jobs:
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
           key: ${{ env.TDVP_SDK_CACHE_KEY }}
 
+      # The Buildroot SDK uses the reviewed external Xuantie toolchain through
+      # absolute /opt links. Cache it independently of the SDK output so a
+      # fresh runner can recreate those links without recompiling the SDK.
+      - name: Restore the pinned K230 external toolchain
+        uses: actions/cache@v4
+        with:
+          path: firmware/.ci-cache/toolchain
+          key: tdvp-k230-r1-external-toolchain-${{ hashFiles('firmware/buildroot/tools/ci-prepare-host.sh') }}
+
       - name: Install reproducible TDVP build host
-        if: steps.restore-sdk.outputs.cache-hit != 'true'
         working-directory: firmware
         run: |
           chmod +x buildroot/tools/*.sh
@@ -203,6 +211,16 @@ jobs:
     steps:
       - name: Check out the feed recipe revision
         uses: actions/checkout@v6
+
+      - name: Restore the pinned K230 external toolchain
+        uses: actions/cache@v4
+        with:
+          path: firmware/.ci-cache/toolchain
+          key: tdvp-k230-r1-external-toolchain-${{ hashFiles('firmware/buildroot/tools/ci-prepare-host.sh') }}
+
+      - name: Prepare the K230 external toolchain for package builds
+        working-directory: firmware
+        run: bash buildroot/tools/ci-prepare-host.sh
 
       - name: Restore the required reviewed SDK base
         uses: actions/cache/restore@v4
@@ -358,6 +376,16 @@ jobs:
     steps:
       - name: Check out the feed recipe revision
         uses: actions/checkout@v6
+
+      - name: Restore the pinned K230 external toolchain
+        uses: actions/cache@v4
+        with:
+          path: firmware/.ci-cache/toolchain
+          key: tdvp-k230-r1-external-toolchain-${{ hashFiles('firmware/buildroot/tools/ci-prepare-host.sh') }}
+
+      - name: Prepare the K230 external toolchain for closure validation
+        working-directory: firmware
+        run: bash buildroot/tools/ci-prepare-host.sh
 
       - name: Restore the reviewed SDK base required for closure validation
         uses: actions/cache/restore@v4

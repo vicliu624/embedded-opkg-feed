@@ -124,7 +124,11 @@ source_dir="$work_root/openssh-${VERSION%-*}"
   make -j"$(nproc)"
 )
 
-required_paths=(ssh scp sftp ssh-agent ssh-add)
+# The verified firmware target already owns /usr/bin/ssh-agent.  Keep the
+# client package additive so its strict base-overlay policy cannot replace a
+# platform command; the remaining SSH transport and key-management commands
+# are source-built from this same reviewed archive.
+required_paths=(ssh scp sftp ssh-add)
 for program in "${required_paths[@]}"; do
   [[ -x "$source_dir/$program" ]] || {
     echo "OpenSSH client build omitted executable: $program" >&2

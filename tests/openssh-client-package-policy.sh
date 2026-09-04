@@ -30,5 +30,7 @@ expect_line "^SOURCE_ARTIFACT_1_FILE='openssh-9[.]9p2[.]tar[.]gz'$" "$package_di
 expect_line 'matching SDK compiler/sysroot' "$package_dir/source.lock"
 expect_line 'openssh-client must not package /etc/ssh' "$package_dir/build.sh"
 expect_line tdvp_remove_elf_runtime_search_paths "$package_dir/build.sh"
+expect_line 'firmware target already owns /usr/bin/ssh-agent' "$package_dir/build.sh"
+expect_line 'required_paths=\(ssh scp sftp ssh-add\)' "$package_dir/build.sh"
 
 echo 'source-built client-only OpenSSH transport policy: PASS'

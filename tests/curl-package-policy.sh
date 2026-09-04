@@ -23,6 +23,7 @@ expect_line "^PACKAGE_DEPENDS='libcurl-4 \\(= 8[.]12[.]1-1\\), ca-certificates \
 expect_line "^PACKAGE_BUILD_DEPENDS='libcurl-4'$" "$package_dir/package.env"
 expect_line "^PACKAGE_STAGE_BUILD_DEPENDS='libcurl-4'$" "$package_dir/package.env"
 expect_line '^PACKAGE_AUTO_RUNTIME_DEPENDS=1$' "$package_dir/package.env"
+expect_line "^PACKAGE_BASE_OVERLAY='identical'$" "$package_dir/package.env"
 
 test -f "$package_dir/source.lock"
 expect_line "^UPSTREAM_NAME='curl'$" "$package_dir/source.lock"

@@ -14,10 +14,10 @@ on TDVP K230.
 +++ b/meson.build
 @@ -174,7 +174,7 @@ if intl_found
  endif
- 
- 
+
+
 -install_plugindir = audacious_dep.get_variable(pkgconfig: 'plugin_dir')
 +install_plugindir = join_paths(get_option('prefix'), get_option('libdir'), 'audacious')
- 
- 
+
+
  conf.set_quoted('INSTALL_PLUGINDIR', install_plugindir)

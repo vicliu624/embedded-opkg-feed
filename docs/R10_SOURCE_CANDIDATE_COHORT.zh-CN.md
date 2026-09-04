@@ -71,8 +71,8 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 1 | `libncursesw`、`libreadline` | 6.4-20230603、8.2 | 已拥有的终端 ABI；先确认其候选与平台 ABI 一致 |
 | 2 | `libpopt`、`libz` | 1.19、1.3.1 | rsync 的公共 provider；不得私藏在 leaf 中 |
 | 3 | `libevent` | 2.1.12 | 唯一拥有四个 `libevent*.so.7`；OpenSSL event 支持关闭 |
-| 4 | `libcurl-4`、`curl` | 8.12.1 | 同一事务 stage `curl`，验证 `libcurl.so.4`、RISC-V ELF 和 RPATH/RUNPATH |
-| 5 | `wget`、`rsync` | 1.25.0、3.4.1 | Wget 只允许 CA/OpenSSL/zlib；rsync 只允许 popt/zlib/OpenSSH |
+| 4 | `libcurl-4`、`curl` | 8.12.1 | `libcurl-4` 是 target provider；`curl` 的锁定源码构建与 base `/usr/bin/curl` 字节不同，CI 拒绝发布 |
+| 5 | `wget`、`rsync` | 1.25.0、3.4.1 | Wget 只允许 CA/OpenSSL/zlib；`rsync` 在 `libpopt` 仍为 target provider 时暂停 |
 | 6 | `iperf3`、`netcat`、`lsof` | 3.18、0.7.1、4.99.4 | 受控 LAN、无公开 listener；lsof 还需记录权限可见性 |
 | 7 | `htop`、`nano`、`dialog`、`ncdu`、`pv` | 3.3.0、8.2、1.3-20220117、1.21、1.9.0 | 真实终端、locale/宽字符和小屏交互验收 |
 | 8 | `tmux` | 3.3a | 仅复用 libevent/ncurses；验证 detached session、capture、kill-session |
@@ -85,6 +85,12 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 `/usr/lib/libpopt.so.0`。这使 `libpopt` 的普通 feed provider 被 base-overlay gate 拒绝，
 从而也暂停 `rsync`；详情及可接受的后续路径见上述本地证据台账。不得把这份基础库当作
 rsync 的隐式 runtime，也不得以同内容覆盖绕过 gate。
+
+GitHub Actions 的增量准入证据同样是候选台账的一部分：run `33901074012` 已从
+`source.lock` 审核的 Buildroot 输入重新构建 `curl`，但字节级 base-overlay gate 报告
+`/usr/bin/curl` 与目标不同，因此 `curl` 不得进入 r10 feed。run `33901555917` 对
+`openssh-client` 的 `/usr/bin/ssh-agent` 得到相同结论。两者保留为
+`tdvp-k230-r1` base 能力，不能以“已有路径”或放宽 overlay 策略的方式伪装成 feed IPK。
 
 ## 设备生命周期记录
 

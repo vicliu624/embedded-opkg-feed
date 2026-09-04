@@ -6,12 +6,8 @@ tools using exact dependencies:
 
 * `tree`, `less`, `file`, and `which` for layout, log inspection, type detection,
   and command discovery;
-* `curl` for explicit HTTPS transfer, reusing the separately owned `libcurl-4`
-  runtime and the CA certificate store;
 * `wget` for simple scripted HTTPS/FTP retrieval, using the reviewed OpenSSL,
   zlib, and CA-store closure without GnuTLS, PSL, IDN/IRI, or c-ares;
-* `rsync` for local trees and remote-shell synchronization, using separately
-  owned `libpopt`, `libz`, and `openssh-client` rather than private copies;
 * `tmux` for persistent multi-window terminal sessions, using separately owned
   `libevent` and `libncursesw` without systemd, utf8proc, or OpenSSL event
   support;
@@ -25,19 +21,21 @@ The runtime libraries remain independently owned and are pulled transitively:
 uninstalling it does not remove tools that are still required by another
 installed package.
 
+`curl` and `rsync` are deliberately not r10 feed dependencies. The K230 base
+already owns `curl`, but the locked source build differs byte-for-byte and was
+rejected by CI run `33901074012`; `rsync` remains paused while its `libpopt`
+provider is target-owned. This profile neither replaces those base commands
+nor claims that their candidate IPKs are installable.
+
 After installing the unsigned r10 candidate on a real K230 device, verify:
 
     tdvp-tree --version
     less --version
     file --version
     tdvp-which grep
-    curl --version
-    curl --fail --show-error --location https://example.com/ -o /tmp/tdvp-curl-example.html
     wget --version
     wget --https-only -O /tmp/tdvp-wget-example.html https://example.com/
-    rsync --version
     tmux -V
-    mkdir -p /tmp/tdvp-rsync-source /tmp/tdvp-rsync-destination && printf 'sync\n' > /tmp/tdvp-rsync-source/example && rsync -a /tmp/tdvp-rsync-source/ /tmp/tdvp-rsync-destination/
     printf '{"answer":42}\n' | jq .answer
     printf 'A\r\nB\r\n' > /tmp/tdvp-crlf.txt && tdvp-dos2unix /tmp/tdvp-crlf.txt
     printf 'alpha\nbeta\n' | grep -P '^a'

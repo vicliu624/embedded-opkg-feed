@@ -357,8 +357,11 @@ jobs:
               expected_packages=(audacious-core audacious-plugins audacious)
               ;;
             network-tools)
-              package_args=(--package curl --package wget --package rsync --package iperf3 --package lsof --package netcat --package htop --package nano --package dialog --package ncdu --package pv --package tmux)
-              expected_packages=(curl wget rsync iperf3 lsof netcat htop nano dialog ncdu pv tmux)
+              # curl differs from the target-owned command (run 33901074012),
+              # and rsync is paused while libpopt remains target-provided.
+              # Neither candidate may be published by this ABI-safe batch.
+              package_args=(--package wget --package iperf3 --package lsof --package netcat --package htop --package nano --package dialog --package ncdu --package pv --package tmux)
+              expected_packages=(wget iperf3 lsof netcat htop nano dialog ncdu pv tmux)
               ;;
             desktop-tools)
               package_args=(--package vim --package vim-plugin-gitgutter --package tdvp-mpv --package tdvp-netsurf)

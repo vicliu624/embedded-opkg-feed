@@ -35,8 +35,10 @@ expect_line "^PACKAGE_BUILD_DEPENDS='libz libssl-3 libcrypto-3 libcurl-4 libexpa
 expect_line "^PACKAGE_DEPENDS='ca-certificates \\(= 2025[.]02[.]1-1\\)'$" \
   "$repo_root/packages/git-runtime/package.env"
 expect_line "^PACKAGE_KIND='application'$" "$repo_root/packages/git/package.env"
-expect_line "^PACKAGE_DEPENDS='git-runtime \\(= 2[.]48[.]1-1\\), ca-certificates \\(= 2025[.]02[.]1-1\\), openssh-client \\(= 9[.]9p2-1\\)'$" \
+expect_line "^PACKAGE_DEPENDS='git-runtime \\(= 2[.]48[.]1-1\\), ca-certificates \\(= 2025[.]02[.]1-1\\)'$" \
   "$repo_root/packages/git/package.env"
+expect_line 'immutable base image' "$repo_root/packages/git/package.env"
+expect_line 'not an installable feed dependency' "$repo_root/packages/git/package.env"
 
 runtime_build="$repo_root/packages/git-runtime/build.sh"
 expect_line 'TDVP_SOURCE_CACHE_ROOT' "$runtime_build"

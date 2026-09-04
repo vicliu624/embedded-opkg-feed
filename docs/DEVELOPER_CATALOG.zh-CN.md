@@ -50,6 +50,10 @@ Python 的 `libpython3.13` 是原生扩展的公共 ABI；标准库和 `lib-dynl
 | 调试 | `strace`、`lsof`、`gdbserver`，其后是带 TUI 的 target `gdb` | `strace true`、远程调试握手、TUI 在 Foot 中可用 |
 | C/C++ 本地开发 | 目标 sysroot、headers、`pkg-config` metadata、native GCC/G++ | 这不是把 x86 SDK 复制进设备；必须构建真正的 riscv64 native compiler，并单独测编译/执行 Hello World |
 
+当某个 GNU 工具的标准前端已由固件拥有时，TDVP 使用显式命名的前端而非覆盖它：例如
+`gawk` 保持 `/usr/bin/gawk`，其 GNU `awk` 兼容入口为 `/usr/bin/tdvp-awk`，而固件
+`/usr/bin/awk` 保持不变。
+
 ## r10：Node.js v22.23.2 源码交叉构建候选
 
 Node 的选择固定为 **v22.23.2**（LTS `Jod`）。它不是下载 upstream 的预编译

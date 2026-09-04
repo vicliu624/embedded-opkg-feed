@@ -84,6 +84,8 @@ grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='sed=tdvp-sed'" "$repo_root/packages/sed/b
 grep -Fq "'find xargs'" "$repo_root/packages/findutils/build.sh"
 grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='find=tdvp-find xargs=tdvp-xargs'" "$repo_root/packages/findutils/build.sh"
 grep -Fq "'gawk awk'" "$repo_root/packages/gawk/build.sh"
+grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='awk=tdvp-awk'" "$repo_root/packages/gawk/build.sh"
+grep -Fqx "VERSION='5.3.1-2'" "$repo_root/packages/gawk/package.env"
 grep -Fq "'htop'" "$repo_root/packages/htop/build.sh"
 grep -Fqx "PACKAGE_DEPENDS='libncursesw (= 6.4-20230603-1)'" "$repo_root/packages/htop/package.env"
 grep -Fq "TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS='BR2_PACKAGE_LIBCAP'" "$repo_root/packages/htop/build.sh"

@@ -127,6 +127,13 @@ run `33904931122` 验证了 Dialog 的新锁定来源，随后在 `htop` 上被
 排除 `tmux`。它只能在具有独立、版本化、已验收的 OpenSSL-capable libevent runtime
 provider 后重新准入；不能借用目标镜像已有文件，或把未声明的 TLS ABI 藏在命令 IPK 中。
 
+run `33905941863` 已构建到 GNU awk 的 payload gate，随后因它试图发布
+`/usr/bin/awk` 而被 exit 77 拒绝。该路径属于固件命令，不能被 source-tools profile
+覆盖。`gawk` 因此更新为 `5.3.1-2`：GNU 实现仍以 `/usr/bin/gawk` 提供，兼容前端改为
+`/usr/bin/tdvp-awk`，其私有 `awk -> gawk` 关系仍只存在 IPK 自己的 libexec 目录。与之
+精确依赖的 `tdvp-source-tools` 同步更新到 `1.6-3`。这保留 GNU awk 能力，同时确保卸载
+该 IPK 不会改变固件的 `/usr/bin/awk`。
+
 ## 设备生命周期记录
 
 每一个 unsigned candidate 都要独立记录：

@@ -8,11 +8,8 @@ tools using exact dependencies:
   and command discovery;
 * `wget` for simple scripted HTTPS/FTP retrieval, using the reviewed OpenSSL,
   zlib, and CA-store closure without GnuTLS, PSL, IDN/IRI, or c-ares;
-* `tmux` for persistent multi-window terminal sessions, using separately owned
-  `libevent` and `libncursesw` without systemd, utf8proc, or OpenSSL event
-  support;
-* `dos2unix`, `grep`, `sed`, `findutils`, and `gawk` for source-tree and text
-  maintenance;
+* `dos2unix`, `grep`, `sed`, `findutils`, and `gawk`/`tdvp-awk` for source-tree
+  and text maintenance; the firmware's base `awk` is not replaced;
 * `jq` for JSON inspection and transformation.
 
 The runtime libraries remain independently owned and are pulled transitively:
@@ -27,6 +24,11 @@ rejected by CI run `33901074012`; `rsync` remains paused while its `libpopt`
 provider is target-owned. This profile neither replaces those base commands
 nor claims that their candidate IPKs are installable.
 
+`tmux` is also deliberately absent until TDVP has independently owned,
+OpenSSL-capable libevent runtime packages. The matching firmware SDK enables
+that optional branch globally, so accepting the current command leaf would
+otherwise create an undeclared OpenSSL runtime dependency.
+
 After installing the unsigned r10 candidate on a real K230 device, verify:
 
     tdvp-tree --version
@@ -35,13 +37,12 @@ After installing the unsigned r10 candidate on a real K230 device, verify:
     tdvp-which grep
     wget --version
     wget --https-only -O /tmp/tdvp-wget-example.html https://example.com/
-    tmux -V
     printf '{"answer":42}\n' | jq .answer
     printf 'A\r\nB\r\n' > /tmp/tdvp-crlf.txt && tdvp-dos2unix /tmp/tdvp-crlf.txt
     printf 'alpha\nbeta\n' | grep -P '^a'
     printf 'alpha\n' | tdvp-sed 's/a/A/'
     tdvp-find /tmp -maxdepth 1 -type f -print | tdvp-xargs -r -n1 basename
-    awk 'BEGIN { print 1 + 1 }'
+    tdvp-awk 'BEGIN { print 1 + 1 }'
 
 Before this real-device install/run/uninstall/rollback test succeeds, r10
 remains an unsigned candidate and must not be promoted to the public feed.

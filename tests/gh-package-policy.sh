@@ -16,7 +16,7 @@ bash "$repo_root/scripts/verify-source-lock.sh" --package-dir "$repo_root/packag
 grep -Fqx "UPSTREAM_VERSION='2.98.0'" "$source_lock"
 grep -Fqx "GO_TOOLCHAIN_VERSION='1.26.7'" "$module_lock"
 grep -Fqx "GO_RESOLVED_SUM_SHA256='86ab1fe26ef974a5ebd5745f3f0b48cf32b42cfbaad173569113254e8aab67d8'" "$module_lock"
-grep -Fqx "GO_MODULE_VENDOR_ARCHIVE_SHA256='7d0291b6670a81ad46c701bac86e87bd4e9b4198301d831882e6f7533dd9c6ea'" "$module_lock"
+grep -Fqx "GO_MODULE_VENDOR_ARCHIVE_SHA256='1b974e17d52a82d09d02032442f15c171734974bb43f3bb5f49b8751dd22dfa1'" "$module_lock"
 grep -Fq 'tdvp_prepare_locked_go_host_toolchain' "$build_file"
 grep -Fq 'tdvp_prepare_go_module_vendor_cache' "$build_file"
 grep -Fq 'tdvp_extract_go_module_vendor_cache' "$build_file"

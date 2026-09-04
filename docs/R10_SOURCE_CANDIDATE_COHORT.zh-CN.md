@@ -148,6 +148,22 @@ Buildroot recipe允许命令行覆盖 `WGET_CONF_OPTS` 与 `WGET_DEPENDENCIES`�
 PCRE 的配置。这样不会改写 SDK `.config`，也不会使 Wget 链接 GnuTLS；后续 CI 必须以
 ELF runtime-closure gate 证明确实只使用已声明的 provider。
 
+run `33908264128` 证实该 Wget 配置已经进入 Buildroot 解包阶段，但 `wget-1.25.0.tar.lz`
+需要 host `lzip-1.25`，而 base download cache 中并没有该 host helper。Wget 的 `source.lock`
+因此新增同一份 Buildroot 审核的 host-lzip 归档：Savannah mirror URL、文件名
+`lzip-1.25.tar.gz` 与 SHA-256
+`09418a6d8fb83f5113f5bd856e09703df5d37bae0308c668d0f346e3d3f0a56f`。它是这个 .tar.lz
+构建输入的一部分，CI 会先通过 source-cache 锁验证再放入私有 Buildroot 下载目录。
+
+run `33907529611` 已用锁定 GitHub CLI source、Go 1.26.7 host archive、`go.mod`/`go.sum`
+和 `vendor/modules.txt` 生成 vendor bundle；前一条记录的 archive SHA-256
+`7d0291b6670a81ad46c701bac86e87bd4e9b4198301d831882e6f7533dd9c6ea` 不匹配。CI 产生的
+实际摘要为 `1b974e17d52a82d09d02032442f15c171734974bb43f3bb5f49b8751dd22dfa1`，现已写入
+`go-modules.lock`；其变更后的文本摘要
+`6ae99bb890f2dd7ccc92d7041d94147a650f21b666c807c24dd3e59082e6d3c6` 同步写入
+`gh/source.lock`。下一次 CI 必须重新生成相同 vendor archive 后才会继续交叉编译，不能
+把先前失败产生的临时目录或未验证 cache 当作输入。
+
 ## 设备生命周期记录
 
 每一个 unsigned candidate 都要独立记录：

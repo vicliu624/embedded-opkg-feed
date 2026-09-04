@@ -1,7 +1,10 @@
 # Buildroot owns the cross-compile configuration. This lock includes GNU Wget
 # and host-pkgconf, the only non-platform archive inputs consumed by the Wget
 # target recipe. TLS and zlib are provided by separately owned, locked TDVP
-# runtime packages through the matching K230 SDK/sysroot.
+# runtime packages through the matching K230 SDK/sysroot. The primary GNU FTP
+# endpoint timed out in Actions run 33902479037, so artifact 1 uses GNU's
+# official mirror selector. The filename, upstream version, and reviewed
+# SHA-256 remain unchanged; redirecting to a mirror never relaxes validation.
 FORMAT_VERSION='1'
 SOURCE_TYPE='buildroot-derived'
 UPSTREAM_NAME='GNU Wget'
@@ -15,7 +18,7 @@ SECURITY_STATUS='Wget, OpenSSL, zlib, and the CA store require release-candidate
 VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 wget and pkgconf package hashes'
 VERIFIED_AT='2026-09-03'
 VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/wget/wget.hash'
-SOURCE_ARTIFACT_1_URL='https://ftp.gnu.org/gnu/wget/wget-1.25.0.tar.lz'
+SOURCE_ARTIFACT_1_URL='https://ftpmirror.gnu.org/wget/wget-1.25.0.tar.lz'
 SOURCE_ARTIFACT_1_FILE='wget-1.25.0.tar.lz'
 SOURCE_ARTIFACT_1_SHA256='19225cc756b0a088fc81148dc6a40a0c8f329af7fd8483f1c7b2fe50f4e08a1f'
 SOURCE_ARTIFACT_2_URL='https://distfiles.ariadne.space/pkgconf/pkgconf-2.3.0.tar.xz'

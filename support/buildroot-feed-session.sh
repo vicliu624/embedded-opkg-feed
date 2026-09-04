@@ -64,7 +64,7 @@ tdvp_buildroot_install() (
   local target_root=$2
   shift 2
   local tree config_backup config_hash config_saved=0
-  local config_old_backup= config_old_hash= config_old_saved=0 rc download_dir=
+  local config_old_backup= config_old_hash= config_old_saved=0 rc download_dir= base_download_dir=
   local -a enable=() disable=() make_variables=() targets=()
 
   while [[ $# -gt 0 ]]; do
@@ -106,6 +106,14 @@ tdvp_buildroot_install() (
     esac
   done
   [[ ${#targets[@]} -gt 0 ]] || { echo 'tdvp_buildroot_install needs at least one --target' >&2; exit 69; }
+  base_download_dir=${TDVP_BUILDROOT_BASE_DOWNLOAD_DIR:-}
+  if [[ -n "$base_download_dir" ]]; then
+    [[ -d "$base_download_dir" && ! -L "$base_download_dir" ]] || {
+      echo "baseline Buildroot download directory is not a regular directory: $base_download_dir" >&2
+      exit 69
+    }
+    base_download_dir=$(cd -- "$base_download_dir" && pwd)
+  fi
   [[ -d "$target_root" && ! -L "$target_root" ]] || {
     echo "temporary Buildroot target root is not a regular directory: $target_root" >&2
     exit 69
@@ -125,7 +133,14 @@ tdvp_buildroot_install() (
   }
 
   tdvp_buildroot_target_make() {
-    if [[ -n "$download_dir" ]]; then
+    if [[ -n "$download_dir" && -n "$base_download_dir" ]]; then
+      env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
+        PATH="$output/host/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+        BR2_DL_DIR="$base_download_dir" \
+        make -C "$output" \
+          "BR2_PRIMARY_SITE=file://$download_dir" \
+          BR2_PRIMARY_SITE_ONLY=y "${make_variables[@]}" "$@"
+    elif [[ -n "$download_dir" ]]; then
       env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
         PATH="$output/host/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
         BR2_DL_DIR="$download_dir" \
@@ -194,15 +209,15 @@ tdvp_buildroot_install() (
 )
 
 # Create a private Buildroot download directory containing every source
-# artifact approved by a source.lock-backed package.  Some target recipes
-# trigger a Buildroot host helper (for example, gawk can require host-ncurses
-# when the baseline has ncurses enabled), so the lock must be allowed to name
-# each source archive that this exact build path consumes. It returns the
-# directory path on stdout; the caller owns and removes it. Copying, instead
-# of linking, ensures an unexpected Buildroot cleanup can never modify TDVP's
-# immutable shared source cache.
+# artifact approved by a source.lock-backed package. Some target recipes also
+# trigger baseline Buildroot host helpers. When TDVP_BUILDROOT_BASE_DOWNLOAD_DIR
+# is set, those reviewed baseline inputs remain in that immutable cache, while
+# this private directory is the primary site for the source.lock-approved
+# package archives. It returns the private directory path on stdout; the
+# caller owns and removes it. Copying, instead of linking, ensures an
+# unexpected Buildroot cleanup can never modify TDVP's immutable source cache.
 tdvp_prepare_locked_buildroot_download() {
-  local package_dir=$1 repo_root verifier cache_root
+  local package_dir=$1 repo_root verifier cache_root base_download_dir=
   local -a artifact_rows=()
   local artifact_row artifact_url artifact_file artifact_hash ignored cached_archive download_dir
   local -A seen_artifact_files=()
@@ -219,6 +234,14 @@ tdvp_prepare_locked_buildroot_download() {
     return 71
   }
   cache_root=$(cd -- "$TDVP_SOURCE_CACHE_ROOT" && pwd)
+  base_download_dir=${TDVP_BUILDROOT_BASE_DOWNLOAD_DIR:-}
+  if [[ -n "$base_download_dir" ]]; then
+    [[ -d "$base_download_dir" && ! -L "$base_download_dir" ]] || {
+      echo "baseline Buildroot download directory is not a regular directory: $base_download_dir" >&2
+      return 71
+    }
+    base_download_dir=$(cd -- "$base_download_dir" && pwd)
+  fi
   repo_root=$(cd -- "$package_dir/../.." && pwd)
   verifier="$repo_root/scripts/verify-source-lock.sh"
   [[ -f "$verifier" ]] || { echo "source lock verifier is missing: $verifier" >&2; return 71; }
@@ -252,6 +275,14 @@ tdvp_prepare_locked_buildroot_download() {
       rm -rf -- "$download_dir"
       return 74
     }
+    if [[ -n "$base_download_dir" && -e "$base_download_dir/$artifact_file" ]]; then
+      [[ -f "$base_download_dir/$artifact_file" && ! -L "$base_download_dir/$artifact_file" ]] && \
+        [[ "$(sha256sum "$base_download_dir/$artifact_file" | awk '{print $1}')" == "$artifact_hash" ]] || {
+          echo "baseline Buildroot archive differs from source.lock: $base_download_dir/$artifact_file" >&2
+          rm -rf -- "$download_dir"
+          return 74
+        }
+    fi
     if ! cp --no-preserve=mode -- "$cached_archive" "$download_dir/$artifact_file"; then
       rm -rf -- "$download_dir"
       return 75

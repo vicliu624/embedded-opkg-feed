@@ -197,6 +197,16 @@ repository 中的验证器以 `bash` 调用本来是正确的，但 Python helpe
 路径一样只接受 regular、non-symlink verifier，并显式以 `bash` 运行它。这保留安全文件检查和
 完整 SHA-256 验证，不改变 CPython 源码、交叉构建 flags、任何动态库 provider 或 IPK 内容。
 
+run `33918586751` 已通过 `libcares`、`libuv`、`libnghttp2`、ICU 等直接 source provider 的
+构建，并完成 Node `configure.py`；失败发生在真正目标编译之前。跨编译时显式选择的
+`--ninja` generator 为 V8 的 `v8_inspector_headers` 同时生成 host 与 target rule，而两者均声明
+同一个 `gen/inspector-generated-output-root/src/js_protocol.stamp` 输出。Ninja 正确地以
+“multiple rules generate”拒绝该图；这不是 RISC-V ABI、来源锁、provider 闭包或 QEMU action
+wrapper 的失败。r10 因而改回 Node/GYP 的默认 Make generator，并用源码级策略测试禁止配方重新
+引入 `--ninja`。这不是 `-w dupbuild=warn` 一类掩盖重复输出的变通；target action 仍由原有
+QEMU wrapper 执行，全部 source lock、ELF、RPATH 与 runtime-closure gates 均保持。下一次仅
+Node.js 的 GitHub Actions 批次必须从头证明这个 generator 路径能完成实际 K230 IPK 构建。
+
 ## 设备生命周期记录
 
 每一个 unsigned candidate 都要独立记录：

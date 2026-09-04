@@ -290,7 +290,6 @@ EOF
       --dest-os=linux \
       --dest-cpu=riscv64 \
       --cross-compiling \
-      --ninja \
       --shared \
       --shared-zlib \
       --shared-cares \
@@ -298,9 +297,10 @@ EOF
       --shared-nghttp2 \
       --shared-openssl \
       --with-intl=system-icu
-    # GNU make jobserver exports a bare `-j` in MAKEFLAGS on this host. Node's
-    # generated Makefile forwards that literal flag to Ninja unless JOBS is
-    # explicit, so pass the validated build concurrency in both interfaces.
+    # Deliberately use Node/GYP's default Make generator for this cross build.
+    # The Ninja generator creates duplicate host/target inspector stamp outputs
+    # before compilation starts.  Keep validated concurrency explicit instead
+    # of inheriting an unbounded runner-provided MAKEFLAGS value.
     make -j"$jobs" JOBS="$jobs"
     make install DESTDIR="$install_root"
   )

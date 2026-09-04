@@ -81,6 +81,10 @@ grep -Fq 'riscv64-unknown-linux-gnu-gcc' "$node_build"
 grep -Fq '/opt/tdvp-qemu/qemu-riscv64-static' "$node_build"
 grep -Fq 'patches/node22-lazy-bz2-import.patch' "$node_build"
 grep -Fq 'make -j"$jobs" JOBS="$jobs"' "$node_build"
+if grep -Fq -- '--ninja' "$node_build"; then
+  echo 'Node 22 cross build must use the default Make generator; Ninja rejects the duplicate host/target inspector stamp output' >&2
+  exit 1
+fi
 grep -Fq 'install_root="$build_root/install-root"' "$node_build"
 grep -Fq '"$TDVP_K230_READELF" -h "$elf" >/dev/null 2>&1 || continue' "$node_build"
 grep -Fq 'tdvp_remove_elf_runtime_search_paths "$TDVP_K230_READELF" "$elf"' "$node_build"

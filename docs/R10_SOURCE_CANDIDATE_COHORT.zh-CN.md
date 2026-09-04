@@ -95,7 +95,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 4 | `libcurl-4`、`curl` | 8.12.1 | `libcurl-4` 是 target provider；`curl` 的锁定源码构建与 base `/usr/bin/curl` 字节不同，CI 拒绝发布 |
 | 5 | `wget`、`rsync` | 1.25.0、3.4.1 | Wget 只允许 CA/OpenSSL/zlib；`rsync` 在 `libpopt` 仍为 target provider 时暂停 |
 | 6 | `iperf3`、`netcat`、`lsof` | 3.18、0.7.1、4.99.4 | 受控 LAN、无公开 listener；lsof 还需记录权限可见性 |
-| 7 | `htop`、`nano`、`dialog`、`ncdu`、`pv` | 3.3.0、8.2、1.3-20220117、1.21、1.9.0 | 真实终端、locale/宽字符和小屏交互验收 |
+| 7 | `htop`（暂缓）、`nano`、`dialog`、`ncdu`、`pv` | 3.3.0、8.2、1.3-20220117、1.21、1.9.0 | 真实终端、locale/宽字符和小屏交互验收；`htop` 需先有独立的 libcap provider |
 | 8 | `tmux` | 3.3a | 仅复用 libevent/ncurses；验证 detached session、capture、kill-session |
 | 9 | `tdvp-source-tools`、`tdvp-diagnostics` | 1.6、1.1 | 仅元数据 profile；安装/卸载不得复制或误删工具/共享库 |
 
@@ -112,6 +112,14 @@ GitHub Actions 的增量准入证据同样是候选台账的一部分：run `339
 `/usr/bin/curl` 与目标不同，因此 `curl` 不得进入 r10 feed。run `33901555917` 对
 `openssh-client` 的 `/usr/bin/ssh-agent` 得到相同结论。两者保留为
 `tdvp-k230-r1` base 能力，不能以“已有路径”或放宽 overlay 策略的方式伪装成 feed IPK。
+
+run `33904931122` 验证了 Dialog 的新锁定来源，随后在 `htop` 上被
+`BR2_PACKAGE_LIBCAP` 的禁用断言停止。匹配 SDK 会把该 Kconfig 符号恢复为启用状态，
+而 `tdvp-k230-r1` 的 seed ABI 清单只声明 loader/glibc/编译器运行时，并没有可在
+`Depends` 中声明的独立 `libcap` owner。因此 r10 的 `network-tools` 批次暂时排除
+`htop`；不得把目标镜像中碰巧存在的 `libcap` 当作隐式依赖，也不得伪造 seed owner。
+后续只有在 `libcap` 以自己的来源锁、ABI owner、版本化 IPK 与设备验收记录通过准入后，
+才可以重新评审 capability 支持的 `htop`。
 
 ## 设备生命周期记录
 

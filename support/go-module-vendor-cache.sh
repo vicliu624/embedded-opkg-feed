@@ -190,7 +190,7 @@ tdvp_prepare_locked_go_host_toolchain() {
 }
 
 tdvp_prepare_go_module_vendor_cache() {
-  local source_root=$1 go_binary=$2 work_root=$3 cache_file cache_dir temporary
+  local source_root=$1 go_binary=$2 work_root=$3 cache_file cache_dir temporary actual_archive_hash
   [[ -d "$source_root" && ! -L "$source_root" ]] || {
     echo "Go module vendor source root is unsafe: $source_root" >&2
     return 85
@@ -268,9 +268,11 @@ tdvp_prepare_go_module_vendor_cache() {
     tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --format=gnu \
       -cf - vendor | gzip -n >"$temporary"
   )
-  [[ "$(sha256sum "$temporary" | awk '{print $1}')" == "${TDVP_GO_VENDOR_LOCK_VALUES[GO_MODULE_VENDOR_ARCHIVE_SHA256]}" ]] || {
+  actual_archive_hash=$(sha256sum "$temporary" | awk '{print $1}')
+  [[ "$actual_archive_hash" == "${TDVP_GO_VENDOR_LOCK_VALUES[GO_MODULE_VENDOR_ARCHIVE_SHA256]}" ]] || {
     rm -f -- "$temporary"
     echo "generated Go vendor bundle is not reproducible from the locked inputs: $source_root" >&2
+    echo "Go vendor bundle SHA-256 expected ${TDVP_GO_VENDOR_LOCK_VALUES[GO_MODULE_VENDOR_ARCHIVE_SHA256]}, got $actual_archive_hash" >&2
     return 91
   }
   chmod 0444 -- "$temporary"

@@ -140,6 +140,14 @@ pkg-config metadata。失败 run `33921909790`、`33922256133`、`33922965456` �
 被 merge；只有修正后的独立 retry 通过全部 source、ELF、payload 和 runtime-closure gates 后才是可
 合并候选。
 
+第五次 retry `33924007401` 已在 GitHub Actions runner 中从锁定源码完成 `libmgba` 0.10.5 的
+实际 K230 编译并生成 `libmgba_0.10.5-1_riscv64.ipk`，但在随后 SDL2/GBA 共用的 overlay 准入处以
+exit 69 停止，明确缺少 `include/zlib.h`。该失败只说明新 overlay 没有实现既有 K230 development
+contract 的两个公共 zlib 头；不是可接受的 IPK 产物，也不得 merge。修复只从同一匹配 SDK 复制
+`zlib.h` 与其包含的 `zconf.h` 作为 runner 临时编译输入；不复制 `libz.so`、不合成 `zlib.pc`、不将
+它们写入 overlay 以外的位置。`libz` 仍由候选 feed 的唯一 `libz` provider 拥有，runtime closure
+gate 继续验证这一点。
+
 五个已成功 batch 的首次 partial merge `33923703593` 也在下载 artifact 之前停止，原因是 merge
 job 的 SDK cache `path` 集合漏掉了 package batch 保存时包含的 `build/**/.stamp_*`。GitHub Actions
 cache version 包含 path 集合，故即使文本 key 相同也会被当作 cache miss；此修复把 merge restore
@@ -151,6 +159,14 @@ path 与 package-batch restore path 完全对齐。它不会重建 SDK、不会�
 调用同一 Actions run artifacts REST API，再保持 `gh run download --name`、manifest SHA-256 比对和
 所有后续 closure gates。这个调整不会从本地下载 artifact，也不会接受零个、多个或名称不符合
 `tdvp-k230-r10-*-unsigned-*` 的 artifact。
+
+下一次 partial merge 还必须区分“SDK ABI”与“GitHub Actions cache 布局”。已成功的 archive batch
+`33878735088` 记录的是同一固件/profile 的 cache `v2`，后续成功 batch 记录 `v3`；`v3` 只增加了
+Buildroot package stamp 的缓存路径，不能成为要求全部旧 IPK 重编的 ABI 变化。新 manifest 记录不带
+缓存后缀的 `sdk_abi_id`（固件固定 revision + RM69A10 profile）；merge 对新 batch 精确比较该字段。
+为保留已审查的增量成果，缺少该字段的历史 manifest 仅显式接纳这两个已审查的 `v2`/`v3` key，其他
+旧 key 一律拒绝。平台、release path、artifact 名称、每个 IPK SHA-256、SDK 恢复、索引和最终 runtime
+closure/coverage gate 都没有放宽。
 
 特别地，当前 staging K230 output 已选择 `BR2_PACKAGE_POPT=y` 并拥有
 `/usr/lib/libpopt.so.0`。这使 `libpopt` 的普通 feed provider 被 base-overlay gate 拒绝，

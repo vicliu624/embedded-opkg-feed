@@ -35,6 +35,11 @@ concurrency:
 env:
   TDVP_FIRMWARE_REVISION: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
   TDVP_PROFILE: k230_canmv_t_display_rm69a10_labwc_desktop_defconfig
+  # This is the immutable platform identity recorded in every new partial
+  # batch manifest.  It intentionally has no cache-layout suffix: changing
+  # what Actions stores to make a package-only restore work must not force
+  # already-verified, ABI-identical package batches to rebuild.
+  TDVP_SDK_ABI_ID: tdvp-k230-r1-abi-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10
   # Change when the reviewed platform SDK identity or the cached build
   # interface changes. Package source locks deliberately do not affect this key.
   # v3 preserves Buildroot's completed package stamps alongside the staged
@@ -453,6 +458,7 @@ jobs:
             printf 'format\t1\n'
             printf 'platform\ttdvp-k230-r1\n'
             printf 'release_path\t%s\n' "$(realpath --relative-to=candidate-dist "$feed_dir")"
+            printf 'sdk_abi_id\t%s\n' "$TDVP_SDK_ABI_ID"
             printf 'sdk_cache_key\t%s\n' "$TDVP_SDK_CACHE_KEY"
             printf 'recipe_revision\t%s\n' "$GITHUB_SHA"
             printf 'batch\t%s\n' "${{ inputs.batch }}"
@@ -562,7 +568,23 @@ jobs:
             [[ "$(manifest_value "$manifest" format)" == 1 ]] || { echo "run $run_id has an unknown manifest format" >&2; exit 67; }
             [[ "$(manifest_value "$manifest" platform)" == tdvp-k230-r1 ]] || { echo "run $run_id targets another platform" >&2; exit 67; }
             [[ "$(manifest_value "$manifest" release_path)" == "$expected_release_path" ]] || { echo "run $run_id targets another release path" >&2; exit 67; }
-            [[ "$(manifest_value "$manifest" sdk_cache_key)" == "$TDVP_SDK_CACHE_KEY" ]] || { echo "run $run_id has a different SDK/ABI cache identity" >&2; exit 67; }
+            incoming_sdk_abi_id=$(manifest_value "$manifest" sdk_abi_id)
+            if [[ -z "$incoming_sdk_abi_id" ]]; then
+              # Before sdk_abi_id was recorded, v2/v3 were cache-layout
+              # revisions of this exact firmware/profile ABI—not ABI changes.
+              # Keep that compatibility finite and explicit.  Any other old
+              # artifact must be rebuilt under the manifest-based contract.
+              case "$(manifest_value "$manifest" sdk_cache_key)" in
+                tdvp-k230-r1-sdk-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10-v2|tdvp-k230-r1-sdk-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10-v3)
+                  incoming_sdk_abi_id="$TDVP_SDK_ABI_ID"
+                  ;;
+                *)
+                  echo "run $run_id has no recognized immutable SDK ABI identity" >&2
+                  exit 67
+                  ;;
+              esac
+            fi
+            [[ "$incoming_sdk_abi_id" == "$TDVP_SDK_ABI_ID" ]] || { echo "run $run_id has a different firmware/profile ABI identity" >&2; exit 67; }
 
             mapfile -t feed_dirs < <(find "$run_dir" -type d -path "*/$expected_release_path" -print | LC_ALL=C sort)
             [[ ${#feed_dirs[@]} -eq 1 ]] || { echo "run $run_id has no unambiguous feed directory" >&2; exit 68; }

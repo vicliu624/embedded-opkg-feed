@@ -249,6 +249,12 @@ copy_header_dir freetype
 copy_header_dir pulse
 copy_header_dir xkbcommon
 copy_header_file ft2build.h
+# zlib.h includes zconf.h from the same public SDK include directory.  These
+# are compile-only SDK headers for SDL_ttf/GBA discovery; the libz runtime
+# remains owned by the feed's libz provider and is deliberately not copied to
+# this development overlay.
+copy_header_file zlib.h
+copy_header_file zconf.h
 
 for pc in wayland-client wayland-cursor wayland-egl xkbcommon alsa libpulse freetype2; do
   copy_pc_file "$pc"

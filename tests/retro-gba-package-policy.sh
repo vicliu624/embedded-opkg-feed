@@ -57,6 +57,16 @@ grep -Fq 'FreeType source archive hash differs from matching Buildroot metadata'
 grep -Fq 'archive="$source_cache_root/sha256/$expected_sha/$source_name"' "$overlay_helper"
 grep -Fq 'tar -xf "$archive" -C "$freetype_source_temp"' "$overlay_helper"
 grep -Fq 'neither host headers nor an undeclared target runtime provider are used' "$overlay_helper"
+# zlib's two public headers are compile-only development inputs.  They must
+# come from the matched SDK and must not cause a base runtime library, a host
+# header, or made-up pkg-config metadata to enter the overlay.
+grep -Fq 'copy_header_file zlib.h' "$overlay_helper"
+grep -Fq 'copy_header_file zconf.h' "$overlay_helper"
+grep -Fq 'the libz runtime' "$overlay_helper"
+if grep -Fq 'copy_link_input z' "$overlay_helper" || grep -Fq 'copy_pc_file zlib' "$overlay_helper"; then
+  echo 'Wayland SDK overlay incorrectly materializes the libz runtime development link input' >&2
+  exit 1
+fi
 
 # Cache identity includes its exact path list.  The merge job must request the
 # same SDK cache layout as a package batch, otherwise a matching textual key

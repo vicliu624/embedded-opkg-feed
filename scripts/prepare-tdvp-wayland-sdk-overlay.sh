@@ -65,13 +65,13 @@ fi
 # matching completed firmware build remains the authoritative fallback.  A
 # package-only SDK cache may preserve its build stamps without preserving those
 # headers, so the fallback can additionally extract headers from the exact
-# FreeType source archive already restored in Buildroot's reviewed dl cache.
-# The archive digest is verified against the matching Buildroot source tree;
+# FreeType source archive in the dedicated, source-lock-verified cache.  The
+# archive digest is also verified against the matching Buildroot source tree;
 # neither host headers nor an undeclared target runtime provider are used.
 header_sources=("$include_source" "$sysroot/usr/include" "$build_root/target/usr/include")
 freetype_build_dir=
 extract_freetype_source_headers() {
-  local sdk_workspace package_mk hash_file version source_name expected_sha archive actual_sha
+  local sdk_workspace source_cache_root package_mk hash_file version source_name expected_sha archive actual_sha
   local source_root
   local -a package_mks=() source_roots=()
 
@@ -99,9 +99,12 @@ extract_freetype_source_headers() {
   [[ "$expected_sha" =~ ^[0-9a-f]{64}$ ]] || die \
     "matching Buildroot FreeType SHA-256 is missing: $hash_file"
 
-  archive="$sdk_workspace/dl/$source_name"
+  source_cache_root=${TDVP_K230_WAYLAND_SDK_SOURCE_CACHE:-}
+  [[ -n "$source_cache_root" && -d "$source_cache_root" && ! -L "$source_cache_root" ]] || die \
+    'the SDK and target roots omit FreeType development files, and the required locked development-header source cache is unavailable'
+  archive="$source_cache_root/sha256/$expected_sha/$source_name"
   [[ -f "$archive" && ! -L "$archive" ]] || die \
-    "FreeType source archive is missing from restored Buildroot download cache: $archive"
+    "FreeType source archive is missing from locked development source cache: $archive"
   actual_sha=$(sha256sum "$archive" | awk '{print $1}')
   [[ "$actual_sha" == "$expected_sha" ]] || die \
     "FreeType source archive hash differs from matching Buildroot metadata: $archive"

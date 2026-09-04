@@ -121,13 +121,17 @@ rootfs 复制一个未声明的 runtime provider。
 第二次 retry `33922256133` 已正确生成并导出该 overlay，但在它的 FreeType headers fallback
 处停止。SDK 的 package-only cache 保留了 `build/freetype-2.13.3` 的 stamp，却没有保留其
 `include/` 源码头文件；这不是 SDL2/mGBA/GBA 的 source lock、目标 ABI 或 runtime closure
-失败。后续 retry 的 helper 优先使用完整 build tree；若 cache 仍缺头文件，只能定位同一 restored
-SDK 中唯一的 Buildroot `package/freetype/freetype.mk`/`.hash`，核验 `${workspace}/dl` 内对应
-`freetype-<version>.tar.xz` 的 SHA-256 后，在 runner 临时目录解出 `ft2build.h` 与
-`include/freetype`。该临时目录会在最终 overlay 前删除，既不会进入 IPK，也不会使用 host headers、
-网络下载、target rootfs 的未声明 provider 或手写/合成的 pkg-config metadata。失败 run
-`33921909790` 与 `33922256133` 都不得被 merge；只有修正后的独立 retry 通过全部 source、ELF、
-payload 和 runtime-closure gates 后才是可合并候选。
+失败。第三次 retry `33922965456` 又证明 restored SDK 的 `dl` base 并不含
+`freetype-2.13.3.tar.xz`，所以也不能把该下载缓存误当作这个 header fallback 的来源契约。
+
+后续 retry 的 helper 仍优先使用完整 build tree；若 cache 仍缺头文件，CI 必须先通过独立的
+`support/wayland-sdk-overlay-source/source.lock` 将 FreeType 2.13.3 放入内容寻址的 source
+cache。helper 只接受该 cache 中按 SHA-256 定位的 archive，并再次读取同一 restored SDK 中唯一的
+Buildroot `package/freetype/freetype.mk`/`.hash` 核验版本与摘要；两份不可变记录必须一致，才会在
+runner 临时目录解出 `ft2build.h` 与 `include/freetype`。该临时目录会在最终 overlay 前删除，既不会
+进入 IPK，也不会使用 host headers、未锁定网络下载、target rootfs 的未声明 provider 或手写/合成的
+pkg-config metadata。失败 run `33921909790`、`33922256133` 与 `33922965456` 都不得被 merge；只有
+修正后的独立 retry 通过全部 source、ELF、payload 和 runtime-closure gates 后才是可合并候选。
 
 特别地，当前 staging K230 output 已选择 `BR2_PACKAGE_POPT=y` 并拥有
 `/usr/lib/libpopt.so.0`。这使 `libpopt` 的普通 feed provider 被 base-overlay gate 拒绝，

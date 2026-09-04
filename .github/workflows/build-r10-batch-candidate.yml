@@ -300,7 +300,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ runner.temp }}/tdvp-r10-source-cache
-          key: tdvp-k230-r10-source-${{ hashFiles('packages/**/source.lock') }}
+          key: tdvp-k230-r10-source-${{ hashFiles('packages/**/source.lock', 'support/wayland-sdk-overlay-source/source.lock') }}
+
+      - name: Populate the locked FreeType development-header source for retro-gba
+        if: inputs.batch == 'retro-gba'
+        run: |
+          set -Eeuo pipefail
+          # This is a source-cache retrieval only.  The overlay helper verifies
+          # this archive again against the matching Buildroot package hash and
+          # extracts only public headers into a disposable runner directory.
+          bash ./scripts/fetch-source-cache.sh \
+            --cache "${RUNNER_TEMP}/tdvp-r10-source-cache" \
+            --package-dir ./support/wayland-sdk-overlay-source
 
       - name: Restore the required target-runtime IPK base
         uses: actions/cache/restore@v4
@@ -401,6 +412,7 @@ jobs:
           export TDVP_NODE22_BUILDROOT_OUTPUT="$build_output"
           export TDVP_BUILDROOT_BASE_DOWNLOAD_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl"
           export TDVP_NODE22_SOURCE_CACHE="${RUNNER_TEMP}/tdvp-r10-source-cache/nodejs"
+          export TDVP_K230_WAYLAND_SDK_SOURCE_CACHE="${RUNNER_TEMP}/tdvp-r10-source-cache"
 
           # SDL2, SDL_ttf, and the GBA frontend need a development-only view
           # of the firmware's Wayland, audio, and FreeType ABI.  Generate it

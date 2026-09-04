@@ -37,10 +37,12 @@ env:
   TDVP_PROFILE: k230_canmv_t_display_rm69a10_labwc_desktop_defconfig
   # Change when the reviewed platform SDK identity or the cached build
   # interface changes. Package source locks deliberately do not affect this key.
-  # v2 adds the staged baseline manifest.  The cache deliberately excludes
-  # flash images: the first base run validates them in full, while later
-  # package-only runs need only the host toolchain and target sysroot.
-  TDVP_SDK_CACHE_KEY: tdvp-k230-r1-sdk-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10-v2
+  # v3 preserves Buildroot's completed package stamps alongside the staged
+  # baseline manifest.  A package-only invocation must see those stamps, or
+  # Buildroot would re-run prerequisite packages (including the external
+  # toolchain) despite the restored host toolchain and target sysroot.  The
+  # cache deliberately excludes flash images.
+  TDVP_SDK_CACHE_KEY: tdvp-k230-r1-sdk-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10-v3
   TDVP_BUILDROOT_DL_CACHE_KEY: tdvp-k230-r1-buildroot-dl-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10-v1
 
 jobs:
@@ -83,6 +85,7 @@ jobs:
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config.old
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/Makefile
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
           key: ${{ env.TDVP_SDK_CACHE_KEY }}
@@ -149,6 +152,7 @@ jobs:
           fi
           test -x "$worktree/output/$TDVP_PROFILE/host/bin/riscv64-unknown-linux-gnu-readelf"
           test -d "$worktree/output/$TDVP_PROFILE/target"
+          test -f "$worktree/output/$TDVP_PROFILE/build/toolchain-external-custom/.stamp_staging_installed"
 
       - name: Check reviewed SDK base cache size
         if: steps.restore-sdk.outputs.cache-hit != 'true'
@@ -178,6 +182,7 @@ jobs:
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config.old
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/Makefile
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
           key: ${{ env.TDVP_SDK_CACHE_KEY }}
@@ -269,10 +274,19 @@ jobs:
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config.old
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/Makefile
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
           key: ${{ env.TDVP_SDK_CACHE_KEY }}
           fail-on-cache-miss: true
+
+      - name: Verify the restored Buildroot package state
+        run: |
+          set -Eeuo pipefail
+          output="${RUNNER_TEMP}/tdvp-k230-sdk/output/$TDVP_PROFILE"
+          test -x "$output/host/bin/riscv64-unknown-linux-gnu-readelf"
+          test -d "$output/target"
+          test -f "$output/build/toolchain-external-custom/.stamp_staging_installed"
 
       - name: Restore the reviewed Buildroot source-download base
         uses: actions/cache/restore@v4

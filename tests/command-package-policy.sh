@@ -78,6 +78,7 @@ grep -Fqx "PACKAGE_BUILD_DEPENDS='libreadline'" "$repo_root/packages/gawk/packag
 grep -Fq "'dos2unix'" "$repo_root/packages/dos2unix/build.sh"
 grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='dos2unix=tdvp-dos2unix'" "$repo_root/packages/dos2unix/build.sh"
 grep -Fq "'grep'" "$repo_root/packages/grep/build.sh"
+grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='grep=tdvp-grep'" "$repo_root/packages/grep/build.sh"
 ! grep -Fq 'egrep fgrep' "$repo_root/packages/grep/build.sh"
 grep -Fq "'sed'" "$repo_root/packages/sed/build.sh"
 grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='sed=tdvp-sed'" "$repo_root/packages/sed/build.sh"

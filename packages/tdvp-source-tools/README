@@ -9,12 +9,13 @@ tools using exact dependencies:
 * `tdvp-wget` for simple scripted HTTPS/FTP retrieval, using the reviewed
   OpenSSL, zlib, and CA-store closure without GnuTLS, PSL, IDN/IRI, or c-ares;
   the firmware's base `wget` is not replaced;
-* `dos2unix`, `grep`, `sed`, `findutils`, and `gawk`/`tdvp-awk` for source-tree
-  and text maintenance; the firmware's base `awk` is not replaced;
+* `dos2unix`, GNU `tdvp-grep`, `sed`, `findutils`, and `gawk`/`tdvp-awk` for
+  source-tree and text maintenance; the firmware's base `grep` and `awk` are
+  not replaced;
 * `jq` for JSON inspection and transformation.
 
 The runtime libraries remain independently owned and are pulled transitively:
-`jq -> libjq`, `grep -> libpcre2-8`, and
+`jq -> libjq`, `tdvp-grep -> libpcre2-8`, and
 `gawk -> libreadline -> libncursesw`. The profile carries only this document;
 uninstalling it does not remove tools that are still required by another
 installed package.
@@ -40,7 +41,7 @@ After installing the unsigned r10 candidate on a real K230 device, verify:
     tdvp-wget --https-only -O /tmp/tdvp-wget-example.html https://example.com/
     printf '{"answer":42}\n' | jq .answer
     printf 'A\r\nB\r\n' > /tmp/tdvp-crlf.txt && tdvp-dos2unix /tmp/tdvp-crlf.txt
-    printf 'alpha\nbeta\n' | grep -P '^a'
+    printf 'alpha\nbeta\n' | tdvp-grep -P '^a'
     printf 'alpha\n' | tdvp-sed 's/a/A/'
     tdvp-find /tmp -maxdepth 1 -type f -print | tdvp-xargs -r -n1 basename
     tdvp-awk 'BEGIN { print 1 + 1 }'

@@ -178,6 +178,13 @@ Kconfig view 解决该问题。同时，完整 GNU Wget 的源码 payload 与固
 设备验收命令也使用 `tdvp-wget`。这与 `tdvp-awk` 前端相同：新能力通过明确名称加入，不
 以替换 firmware command 的方式取得 PATH 优先级。
 
+run `33910604255` 已证明 GitHub CLI 的 vendor-cache stdout 修复生效：构建越过 `gh` 后继续
+到 GNU grep 的 payload gate。该 gate 按设计拒绝其默认 `/usr/bin/grep`，因为该路径由固件
+拥有；这既不是 ABI 问题，也不是放宽 gate 的理由。`grep` 因而更新为 `3.11-2`，私有 GNU
+二进制仍保留在该 IPK 的 libexec 目录，唯一公开入口改为 `/usr/bin/tdvp-grep`。依赖它的
+`tdvp-source-tools` 更新为 `1.6-5`，设备验收使用 `tdvp-grep -P`；固件 grep 和 IPK 卸载
+后的行为均不受影响。
+
 ## 设备生命周期记录
 
 每一个 unsigned candidate 都要独立记录：

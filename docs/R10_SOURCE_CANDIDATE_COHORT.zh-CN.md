@@ -66,6 +66,13 @@ run `33902479037` 随后对 `wget-1.25.0.tar.lz` 的 `ftp.gnu.org:443` 连接等
 `19225cc756b0a088fc81148dc6a40a0c8f329af7fd8483f1c7b2fe50f4e08a1f` 完全不变。
 它是 Buildroot 维护的备份下载端，不是未审核的独立来源；下载结果仍必须命中此 SHA-256。
 
+run `33904493372` 对 `dialog-1.3-20220117.tgz` 得到的仅约 7 KiB 内容，其 SHA-256 为
+`b19714c4c4de88cf005f92c9bc88e9f8dc4ddebeab9f734a500253b0bf06c1b9`，与 Buildroot
+审核值 `754cb6bf7dc6a9ac5c1f80c13caa4d976e30a5a6e8b46f17b3bb9b080c31041f` 不同，因而被
+CI 以 exit 69 拒绝。`packages/dialog/source.lock` 改用 Dialog 维护者的官方
+`https://invisible-island.net/archives/dialog/`；归档文件名、版本和审核 SHA-256 保持不变。
+这说明“镜像可访问”不足以准入，任何内容差异都必须停止，而不能修改锁定散列来迁就下载结果。
+
 收到完成态 SDK 后，再运行只读 cohort 门：
 
 ```sh

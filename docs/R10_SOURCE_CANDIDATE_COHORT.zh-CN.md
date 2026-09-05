@@ -254,6 +254,13 @@ IPK 的唯一公开入口为 `/usr/bin/tdvp-less`，不会覆盖 firmware/BusyBo
 `lesskey`、`lessecho` 或共享库。GitHub Actions 只构建、封装并审计；不得执行 interactive
 pager 或把终端会话作为 CI 验收。成功前它仍只是 source-lock candidate。
 
+run `33975682895` 已从该锁定 Less archive 完成 K230 RISC-V 单包 source closure、私有
+payload 提取、无 RPATH/RUNPATH、runtime closure 与 base-overlay gate，并上传 unsigned
+artifact `9972273878`。随后 run `33975892465` 对此前 16 个成功 source batch 加入 Less 后
+逐 IPK 比较 SHA-256、重新索引并再次验证 runtime/target coverage；该 merge 未运行任何
+Buildroot package 编译，生成 unsigned merged artifact `9972335828`。这些是候选构建/合并
+证据，不是签名、公开发布、部署或实机 pager 执行授权。
+
 `system-tools` 是一个单包、无新增共享运行时 provider 的增量 batch。它从 Buildroot
 2025.02.1 审核的 util-linux 2.40.2 archive 离线构建，仅启用 cal、fallocate、IPC、
 last/utmp、调度与 namespace 等明确命名的前端。所有 RISC-V ELF

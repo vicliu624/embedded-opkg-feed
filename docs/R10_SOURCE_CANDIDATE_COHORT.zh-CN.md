@@ -99,7 +99,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 6 | `iperf3`、`netcat`、`lsof` | 3.18、0.7.1、4.99.4 | 受控 LAN、无公开 listener；lsof 还需记录权限可见性 |
 | 7 | `libcap-2`（target provider）、`htop`（候选）、`nano`、`dialog`、`ncdu`、`pv` | 2025.02.1、3.3.0、8.2、1.3-20220117、1.21、1.9.0 | immutable catalogue 已拥有 `libcap.so.2`；`htop` 只能精确依赖 `libcap-2 (= 2025.02.1-1)` 以启用 capability view，绝不重建或覆盖该 ABI。真实终端、locale/宽字符和小屏交互验收仍是独立门禁。 |
 | 8 | `libevent`、`tmux`（已通过 CI/无重编 merge，待实机） | 2.1.12、3.3a | cohort 从锁定源码构建 `libevent (= 2.1.12-1)`，tmux 精确消费它与 immutable catalogue 的 `libncursesw (= 6.4-20230603-1)`；`libevent` 的 TLS closure 精确使用 target `libcrypto-3`。仍需验证 detached session、capture、kill-session。 |
-| 9 | `tdvp-source-tools`、`tdvp-diagnostics` | 1.6、1.1 | 仅元数据 profile；安装/卸载不得复制或误删工具/共享库 |
+| 9 | `tdvp-source-tools`、`tdvp-diagnostics`（待 hydrate CI） | 1.6、1.1 | 仅元数据 profile；`tdvp-diagnostics` 必须先在 GitHub Actions hydrate 已验证的 merged candidate，再只封装 profile，绝不重编已准入的诊断工具。安装/卸载不得复制或误删工具/共享库。 |
 | 10 | `sdl2`、`sdl2-ttf`、`libmgba`、`tdvp-gba` | 2.30.11、2.22.0、0.10.5、0.2.3 | `retro-gba` 独立增量批次；四个 IPK 必须全部由来源锁重建，不能复用历史 r2/r3 payload；验证 Wayland/ALSA runtime closure、`tdvp-gba` 动态依赖及 `/opt/tdvp-gba` 的非覆盖安装。 |
 | 11 | `sqlite3` | 3.48.0 | `database-tools` 只从 `libsqlite3-0` 同一次锁定源码构建的私有 staging 取得 CLI；仍验证 RISC-V ELF、`libsqlite3.so.0`、精确 readline/ncurses 依赖及无 base-path 覆盖。 |
 | 12 | `bc` | 1.07.1 | `calculator-tools` 锁定 GNU bc 与 host-flex/host-m4 输入；只公开 `tdvp-bc`，不替换 firmware `bc`，并验证 RISC-V ELF、无 RPATH/RUNPATH 与 base-overlay。 |
@@ -123,6 +123,17 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 在遇到不同 payload 的同名 `diffutils_3.10-1` 后以 exit 70 fail-closed。该 artifact 不是 merge
 source，batch 入口和配方改动均已撤回；旧的成功 source batch 是这六个包的唯一 r10 构建证据。
 以后新增候选必须先比对成功 batch 的实际 IPK 清单，不能以“仓库中有配方”误判为尚未构建。
+
+**r10 实际 package inventory（2026-09-05）。** 对上述 23 个成功 source batch 的 GitHub Actions
+`built *.ipk` 记录逐一去重后，98 个 r10 recipe 中已有 82 个 recipe package 具备实际 source-build
+证据。其余 12 个通用 package 是 immutable target catalogue provider：`ca-certificates`、`libatomic-1`、
+`libcrypto-3`、`libcurl-4`、`libexpat-1`、`libffi-8`、`libncursesw`、`libpcre2-8`、`libpopt`、
+`libreadline`、`libssl-3` 与 `libz`；它们只能复用，不能为补齐数量重编。其余未进入 r10 merged
+candidate 的 package 中，只有 `tdvp-diagnostics` 属于 r10 范围；`tdvp-hello`、LoFiBox 与 Cardputer
+应用不属于本 release。为使这个 metadata profile 也真正增量，`diagnostics-profile` 必须提供成功的
+`base_merged_run_id`：CI 只接受一份未过期的 merged unsigned artifact，校验 run 成功态、唯一 artifact、
+feed 路径、无顶层 symlink 和与 immutable target IPK 的逐字节一致性，再复用已验证 IPK 并仅封装
+`tdvp-diagnostics`。它不触发历史 source package 的再次构建。
 
 **CA 信任库所有权结论（2026-09-05）。** `runtime-data-packages.tsv` 已把固定 target 的 `/etc/ssl`
 明确归属为 `ca-certificates`。`trust-store-runtime` run `33977596329` 成功恢复 SDK、source cache、

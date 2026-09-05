@@ -170,6 +170,11 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
   merged unsigned artifact
   [`9975077200`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33985545990/artifacts/9975077200)
   （195,989,739 bytes）。所有 artifact 仍未签名、发布或部署，且需要实机会话生命周期证据；
+- 增量元数据 profile：像 `tdvp-diagnostics` 一样依赖已准入 source package 的 profile，必须向
+  GitHub Actions batch 提供 `base_merged_run_id`。CI 只接受一个来自 successful run、未过期的
+  merged-unsigned artifact；它会拒绝含糊 feed 路径、顶层 symlink 或与 immutable target IPK
+  字节不同的内容，再把已验证 IPK hydrate 到私有 candidate 后封装 profile。这样可以验证 profile
+  dependency closure，而不重新编译历史 source package；
 - 纯元数据诊断 profile：`tdvp-diagnostics` 仅包含仓库自有说明文档及精确的
   `strace`/`htop`/`lsof`/`iperf3`/`netcat` 依赖元数据，因此具有狭窄 source-lock 豁免；它不拥有
   可执行文件、共享库、SDK 制品或任何固件路径；

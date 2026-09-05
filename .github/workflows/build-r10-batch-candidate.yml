@@ -17,9 +17,14 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
+        required: false
+        default: ''
+        type: string
+      base_merged_run_id:
+        description: Optional successful merged-candidate run to hydrate for a dependent incremental batch
         required: false
         default: ''
         type: string
@@ -358,6 +363,69 @@ jobs:
           mkdir -p candidate-dist
           cp -a "${RUNNER_TEMP}/tdvp-r10-runtime-base/." candidate-dist/
 
+      - name: Hydrate a verified prior merged candidate when requested
+        if: inputs.mode == 'build-package-batch' && inputs.base_merged_run_id != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TDVP_BASE_MERGED_RUN_ID: ${{ inputs.base_merged_run_id }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$TDVP_BASE_MERGED_RUN_ID" =~ ^[0-9]+$ ]] || {
+            echo 'base_merged_run_id must be one successful GitHub Actions run ID' >&2
+            exit 64
+          }
+          [[ "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$TDVP_BASE_MERGED_RUN_ID" --jq '.conclusion')" == success ]] || {
+            echo "base_merged_run_id is not a successful run: $TDVP_BASE_MERGED_RUN_ID" >&2
+            exit 65
+          }
+          mapfile -t artifacts < <(
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$TDVP_BASE_MERGED_RUN_ID/artifacts" \
+              --jq '.artifacts[] | select(.expired == false) | .name | select(test("^tdvp-k230-r10-merged-unsigned-"))'
+          )
+          [[ ${#artifacts[@]} -eq 1 ]] || {
+            echo "base_merged_run_id must expose exactly one live merged unsigned artifact: $TDVP_BASE_MERGED_RUN_ID" >&2
+            exit 66
+          }
+          incoming_root="$RUNNER_TEMP/tdvp-r10-prior-merged"
+          mkdir -p "$incoming_root"
+          gh run download "$TDVP_BASE_MERGED_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --name "${artifacts[0]}" --dir "$incoming_root"
+          expected_release_path='tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          mapfile -t prior_feed_dirs < <(find "$incoming_root" -type d -path "*/$expected_release_path" -print | LC_ALL=C sort)
+          [[ ${#prior_feed_dirs[@]} -eq 1 ]] || {
+            echo 'prior merged artifact has no unambiguous r10 feed directory' >&2
+            exit 67
+          }
+          prior_feed=${prior_feed_dirs[0]}
+          find "$prior_feed" -maxdepth 1 -type l -print -quit | grep -q . && {
+            echo 'prior merged feed must not contain top-level symlinks' >&2
+            exit 68
+          }
+          feed_dir='candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          copied=0
+          while IFS= read -r source_ipk; do
+            filename=$(basename "$source_ipk")
+            destination_ipk="$feed_dir/$filename"
+            if [[ -e "$destination_ipk" ]]; then
+              [[ -f "$destination_ipk" && ! -L "$destination_ipk" ]] || {
+                echo "candidate base has an unsafe existing IPK path: $filename" >&2
+                exit 69
+              }
+              cmp -s "$source_ipk" "$destination_ipk" || {
+                echo "prior merged artifact disagrees with immutable target runtime: $filename" >&2
+                exit 70
+              }
+            else
+              install -m 0644 "$source_ipk" "$destination_ipk"
+            fi
+            copied=$((copied + 1))
+          done < <(find "$prior_feed" -maxdepth 1 -type f -name '*.ipk' -print | LC_ALL=C sort)
+          [[ "$copied" -gt 0 ]] || {
+            echo 'prior merged artifact contains no IPKs to hydrate' >&2
+            exit 71
+          }
+          printf 'hydrated %s verified IPKs from merged run %s\n' "$copied" "$TDVP_BASE_MERGED_RUN_ID"
+
       - name: Refresh source-built runtime owners in this private candidate
         run: |
           set -Eeuo pipefail
@@ -384,6 +452,9 @@ jobs:
           bash ./tests/memtester-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
+          bash ./tests/diagnostics-package-policy.sh
+          bash ./tests/tmux-package-policy.sh
+          bash ./tests/incremental-base-merge-hydration-policy.sh
           bash ./tests/curl-package-policy.sh
           bash ./tests/openssh-client-package-policy.sh
           bash ./tests/ffprobe-package-policy.sh
@@ -415,6 +486,7 @@ jobs:
       - name: Build only the selected package dependency closure
         run: |
           set -Eeuo pipefail
+          requires_prior_merged_candidate=0
           case "${{ inputs.batch }}" in
             archive)
               package_args=(--package archive-tools)
@@ -457,9 +529,8 @@ jobs:
               expected_packages=(rsync)
               ;;
             terminal-session-tools)
-              # tmux directly consumes only the versioned target catalogue
-              # libevent/libncursesw providers.  libevent owns its own
-              # OpenSSL closure, so no library source provider is rebuilt here.
+              # tmux source-builds the versioned libevent provider, while it
+              # consumes the immutable target libncursesw/libcrypto closure.
               package_args=(--package tmux)
               expected_packages=(tmux)
               ;;
@@ -469,6 +540,14 @@ jobs:
               # source; no libcap source payload is rebuilt or published.
               package_args=(--package htop)
               expected_packages=(htop)
+              ;;
+            diagnostics-profile)
+              # This metadata-only profile depends on source-built packages
+              # already admitted by a prior merged candidate. Hydrate those
+              # verified IPKs instead of recompiling its historical closure.
+              requires_prior_merged_candidate=1
+              package_args=(--package tdvp-diagnostics)
+              expected_packages=(tdvp-diagnostics)
               ;;
             desktop-tools)
               package_args=(--package vim --package vim-plugin-gitgutter --package tdvp-mpv --package tdvp-netsurf)
@@ -568,6 +647,13 @@ jobs:
               ;;
             *) echo 'unreviewed batch input' >&2; exit 64 ;;
           esac
+
+          if [[ "$requires_prior_merged_candidate" -eq 1 ]]; then
+            [[ "${{ inputs.base_merged_run_id }}" =~ ^[0-9]+$ ]] || {
+              echo 'this batch requires a successful base_merged_run_id' >&2
+              exit 64
+            }
+          fi
 
           build_output="${RUNNER_TEMP}/tdvp-k230-sdk/output/$TDVP_PROFILE"
           export TDVP_SDK_ROOT="$build_output/host"

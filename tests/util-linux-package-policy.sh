@@ -32,7 +32,7 @@ expect_line "^SOURCE_ARTIFACT_1_SHA256='d78b37a66f5922d70edf3bdfb01a6b33d34ed3c3
 build_file="$package_dir/build.sh"
 expect_line 'UTIL_LINUX_VERSION_MAJOR = 2[.]40' "$build_file"
 expect_line 'UTIL_LINUX_VERSION = \$\(UTIL_LINUX_VERSION_MAJOR\)[.]2' "$build_file"
-expect_line "--make-variable 'UTIL_LINUX_CONF_OPTS=--disable-nls'" "$build_file"
+expect_line "--make-variable 'UTIL_LINUX_CONF_OPTS=--disable-nls --disable-liblastlog2'" "$build_file"
 for symbol in \
   BR2_PACKAGE_UTIL_LINUX \
   BR2_PACKAGE_UTIL_LINUX_CAL \

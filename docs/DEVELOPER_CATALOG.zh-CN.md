@@ -89,7 +89,7 @@ util-linux 2.40.2 archive 构建命名维护命令，并把 ELF 放在
 `tdvp-util-linux-<command>`。首批包括日历、文件预分配、IPC 观察/控制、last/utmp
 记录、调度、namespace、terminal message 等工具；不启用 basic set、mount、分区、文件
 系统、loop、wipefs、login/su/runuser/setpriv，也不选择
-libblkid/libfdisk/libmount/libsmartcols/libuuid。这样不把基础系统现有库变成隐式
+liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid。这样不把基础系统现有库变成隐式
 runtime；后者必须先作为独立、版本化的 provider 准入。部分前端在用户执行时可改变 IPC、
 进程、namespace、文件或终端状态，因此 CI 永不执行它们；实机验证只可由使用者在非生产
 设备上显式选择目标、记录安装/卸载与回滚后进行。

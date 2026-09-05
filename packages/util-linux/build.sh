@@ -84,7 +84,7 @@ tdvp_buildroot_install "$output" "$install_root" \
   --enable BR2_PACKAGE_UTIL_LINUX_WAITPID \
   --enable BR2_PACKAGE_UTIL_LINUX_WALL \
   --enable BR2_PACKAGE_UTIL_LINUX_WRITE \
-  --make-variable 'UTIL_LINUX_CONF_OPTS=--disable-nls' \
+  --make-variable 'UTIL_LINUX_CONF_OPTS=--disable-nls --disable-liblastlog2' \
   --target util-linux
 
 # Keep only an explicit, reviewable command boundary. Partition, mount,

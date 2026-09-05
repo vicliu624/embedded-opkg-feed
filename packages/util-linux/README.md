@@ -15,6 +15,9 @@ select util-linux basic binaries, mount/umount, filesystem/partition/loop
 device utilities, wipefs, login/su/runuser, setpriv, or the
 libblkid/libfdisk/libmount/libsmartcols/libuuid feature families. Those
 capabilities require a separately versioned shared-library/provider review.
+The recipe also disables util-linux liblastlog2 for this one transaction, so
+the selected last command does not pull a SQLite-backed runtime into this
+otherwise library-free cohort.
 
 Several selected commands can change process, IPC, namespace, filesystem, or
 terminal state when a device user invokes them. CI only obtains locked source,

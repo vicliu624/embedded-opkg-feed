@@ -441,12 +441,14 @@ This document fixes the governance rule first. Implement automation in order:
    `libinotifytools`, exposed only private `inotifywait`/`inotifywatch`
    command ELF files, and never started a watcher or observed a filesystem
    path in CI; then
-9. Source batch completed: GitHub Actions source batch
+9. Completed: GitHub Actions source batch
    [`33991963284`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991963284)
-   has admitted the locked command-only `logrotate` leaf pending a
-   no-recompile merge. It disabled SELinux/ACL, reused only the immutable
-   target `libpopt` provider, excluded `/etc` configuration, timer and daemon
-   payloads, and never ran a log rotation operation in CI; then
+   has admitted the locked command-only `logrotate` leaf, and no-recompile
+   merge [`33992249214`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33992249214)
+   then admitted its verified artifact without recompiling. It disabled
+   SELinux/ACL, reused only the immutable target `libpopt` provider, excluded
+   `/etc` configuration, timer and daemon payloads, and never ran a log
+   rotation operation in CI; then
 10. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
 11. Introduce reviewed general libraries incrementally, retaining shared-runtime

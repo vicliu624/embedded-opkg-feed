@@ -22,4 +22,5 @@ source "$package_dir/package.env"
 source "$package_dir/../../support/buildroot-archive-library.sh"
 
 tdvp_build_archive_library "$package_dir" "$sdk_root" "$configured_output" \
-  BR2_PACKAGE_SQLITE sqlite 'libsqlite3.so*' 'SQLITE_VERSION = 3.48.0'
+  BR2_PACKAGE_SQLITE sqlite 'libsqlite3.so*' 'SQLITE_VERSION = 3.48.0' \
+  --stage-command /usr/bin/sqlite3

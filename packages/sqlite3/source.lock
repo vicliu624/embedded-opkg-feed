@@ -1,0 +1,19 @@
+# The sqlite3 command is staged only by libsqlite3-0's exact Buildroot SQLite
+# source transaction. This duplicate lock makes the command leaf independently
+# auditable and forces the same SHA-256 cache admission before any build hook.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='SQLite'
+UPSTREAM_LICENSE='blessing'
+UPSTREAM_VERSION='3.48.0'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/sqlite/sqlite.mk'
+SOURCE_SELECTION_REASON='The SQLite CLI is separated from libsqlite3.so.0, whose sole feed owner is libsqlite3-0. It accepts only /usr/bin/sqlite3 staged by libsqlite3-0 from the same locked SQLite 3.48.0 source build.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 sqlite.mk/sqlite.hash and the separately owned libreadline/libncursesw runtime providers; no target-root command copy, Debian package, or TDVP-specific patch.'
+SECURITY_STATUS='The SQLite archive SHA-256 is verified before the offline candidate build; a source-path, ELF, runtime-closure, and base-overlay rejection blocks candidate upload.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
+VERIFIED_AT='2026-09-05'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/sqlite/sqlite.hash'
+SOURCE_ARTIFACT_1_URL='https://www.sqlite.org/2025/sqlite-autoconf-3480000.tar.gz'
+SOURCE_ARTIFACT_1_FILE='sqlite-autoconf-3480000.tar.gz'
+SOURCE_ARTIFACT_1_SHA256='ac992f7fca3989de7ed1fe99c16363f848794c8c32a158dafd4eb927a2e02fd5'

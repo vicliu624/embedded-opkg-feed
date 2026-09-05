@@ -101,9 +101,18 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 8 | `tmux`（暂缓） | 3.3a | 需先准入 OpenSSL-capable libevent runtime；再验证 detached session、capture、kill-session |
 | 9 | `tdvp-source-tools`、`tdvp-diagnostics` | 1.6、1.1 | 仅元数据 profile；安装/卸载不得复制或误删工具/共享库 |
 | 10 | `sdl2`、`sdl2-ttf`、`libmgba`、`tdvp-gba` | 2.30.11、2.22.0、0.10.5、0.2.3 | `retro-gba` 独立增量批次；四个 IPK 必须全部由来源锁重建，不能复用历史 r2/r3 payload；验证 Wayland/ALSA runtime closure、`tdvp-gba` 动态依赖及 `/opt/tdvp-gba` 的非覆盖安装。 |
+| 11 | `sqlite3` | 3.48.0 | `database-tools` 只从 `libsqlite3-0` 同一次锁定源码构建的私有 staging 取得 CLI；仍验证 RISC-V ELF、`libsqlite3.so.0`、精确 readline/ncurses 依赖及无 base-path 覆盖。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
+
+`database-tools` 是与已合并的开发工具 batch 分离的 SQLite CLI 增量批次。它选择
+`sqlite3` leaf，使闭包同时重建唯一的 `libsqlite3-0` provider；library IPK 仍只拥有
+`libsqlite3.so*`。`libsqlite3-0` 只在同一个私有 `build-all` transaction 中 stage
+`/usr/bin/sqlite3`，leaf 会核验 staging proof、RISC-V ELF、`DT_NEEDED` 的
+`libsqlite3.so.0` 并执行 `deny` base-overlay gate。它不得使用固件中的命令、目标 root
+copy、Debian binary 或其他 SQLite source。只有 GitHub Actions batch、后续 merge 和实机
+`sqlite3 --version` / create-query-uninstall-rollback 记录都通过，才可作为 unsigned candidate。
 
 `tdvp-gba` 的锁定 commit `4c82b09e1bf042d0709c26ed6c4e5098a283a908` 已由 GitHub commit
 API 和其固定 HTTPS archive endpoint 复核可达。早期 “仅本地 source cache、不可公开下载” 的

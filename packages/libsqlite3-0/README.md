@@ -12,10 +12,13 @@ the base firmware.
 
 The recipe locks Buildroot 2025.02.1's reviewed SQLite 3.48.0 archive in
 `source.lock`, uses the verified content-addressed source cache, and extracts
-only `libsqlite3.so*`. It excludes the `sqlite3` command, headers, static
-archive, pkg-config metadata, and Buildroot staging data. Candidate checks
-require RISC-V ELF64, SONAME `libsqlite3.so.0`, no RPATH/RUNPATH, and exact
-runtime providers.
+only `libsqlite3.so*` into this shared-library IPK. It excludes the `sqlite3`
+command, headers, static archive, pkg-config metadata, and Buildroot staging
+data from this payload. During an explicitly selected `sqlite3` CLI build it
+may stage one checked RISC-V `/usr/bin/sqlite3` from that exact same source
+transaction into the private release staging root; only the separate `sqlite3`
+leaf may package that staged command. Candidate checks require RISC-V ELF64,
+SONAME `libsqlite3.so.0`, no RPATH/RUNPATH, and exact runtime providers.
 
 Candidate admission is not release promotion: matching K230 install, database
 consumer functionality, uninstall, and rollback tests remain required before

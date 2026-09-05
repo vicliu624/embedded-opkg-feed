@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, process-monitoring-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, process-monitoring-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -444,6 +444,15 @@ jobs:
               # never replace target-owned /usr/bin SSH client commands.
               package_args=(--package openssh-client)
               expected_packages=(openssh-client)
+              ;;
+            file-sync-tools)
+              # The immutable target catalogue owns libpopt/libz at the exact
+              # versions declared by rsync. They are deferred, never rebuilt.
+              # SSH is a user-selected rsync transport (-e tdvp-ssh), not an
+              # rsync link-time or package dependency, so this batch builds
+              # only the locked rsync leaf.
+              package_args=(--package rsync)
+              expected_packages=(rsync)
               ;;
             process-monitoring-tools)
               # libcap-2 is a versioned immutable target-runtime provider.

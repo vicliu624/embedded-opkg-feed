@@ -240,14 +240,17 @@ below; it is not an upstream-source exception for ordinary packages.
   exemption because it contains only repository-owned instructions and exact
   `strace`/`htop`/`lsof`/`iperf3`/`netcat` dependency metadata. It owns no executable,
   shared library, SDK artifact, or firmware path;
-- source-admitted rsync split: `libpopt` locks the popt 1.19 source and is the
-  unique `libpopt.so.0` provider, with external libiconv explicitly disabled.
-  `rsync` locks rsync 3.4.1, popt, zlib, host-pkgconf, and the reviewed
-  Buildroot autoreconf patch. It depends on `libpopt`, `libz`, and
-  `openssh-client`, and explicitly disables ACL, LZ4, OpenSSL daemon TLS,
-  xxHash, and Zstd. The recipes reject both a changed Buildroot patch and a
-  candidate SDK without zlib; actual candidate IPKs still require a matching
-  K230 SDK and device lifecycle evidence;
+- target-attested rsync dependencies: the immutable catalogue is the unique
+  `libpopt.so.0` / `libz.so.1` provider at `libpopt (= 1.19-1)` and
+  `libz (= 1.3.1-1)`; rsync never rebuilds or replaces either ABI. `rsync`
+  locks rsync 3.4.1, popt, zlib, host-pkgconf, and the reviewed Buildroot
+  autoreconf patch. Its remote shell is deliberately not an OpenSSH package
+  dependency: it uses platform `ssh` by default or an explicitly requested
+  `-e /usr/bin/tdvp-ssh` transport. It explicitly disables ACL, LZ4, OpenSSL
+  daemon TLS, xxHash, and Zstd. The recipes reject both a changed Buildroot
+  patch and a candidate SDK without zlib; the `file-sync-tools` GitHub batch
+  and subsequent no-recompile merge remain required before it can be an
+  unsigned candidate, followed by on-device lifecycle evidence;
 - matched target-derived compiler runtime: `libatomic-1`, the sole explicit
   non-profile `SOURCE_LOCK_EXEMPT_REASON`. It transfers only
   `libatomic.so.1 -> libatomic.so.1.2.0` from the completed matching target;

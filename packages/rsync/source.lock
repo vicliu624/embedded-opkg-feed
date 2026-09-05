@@ -1,6 +1,10 @@
 # Buildroot's rsync recipe uses the local patch below during autoreconf. It
-# builds against zlib and popt, each explicitly owned by this release; OpenSSL
-# daemon TLS and optional ACL/LZ4/xxHash/Zstd support are disabled by build.sh.
+# builds against zlib and popt, each explicitly owned by the immutable target
+# catalogue with an exact package version. SSH is an rsync command selection,
+# not an ELF or package-provider dependency: the platform ssh remains the
+# default, while an installed TDVP namespaced client is selected explicitly
+# with `-e /usr/bin/tdvp-ssh`. OpenSSL daemon TLS and optional
+# ACL/LZ4/xxHash/Zstd support are disabled by build.sh.
 FORMAT_VERSION='1'
 SOURCE_TYPE='buildroot-derived'
 UPSTREAM_NAME='rsync'
@@ -8,7 +12,7 @@ UPSTREAM_LICENSE='GPL-3.0-or-later WITH OpenSSL-exception'
 UPSTREAM_VERSION='3.4.1'
 UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
 SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/rsync/rsync.mk'
-SOURCE_SELECTION_REASON='Rsync is a high-value source-maintenance and deployment command. The leaf contains only the command implementation and depends on shared libpopt/libz providers plus OpenSSH for the standard remote-shell transport.'
+SOURCE_SELECTION_REASON='Rsync is a high-value source-maintenance and deployment command. The leaf contains only the command implementation and has exact libpopt/libz target-catalogue dependencies. Remote-shell selection is external to the package relationship: use the platform ssh by default or explicitly select an installed tdvp-ssh wrapper with -e.'
 NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 rsync.mk/rsync.hash and the reviewed local autoreconf patch; host-pkgconf, popt, and zlib archives needed by the bounded Buildroot target build. The completed matching SDK supplies host autoreconf tooling; no TDVP-specific source modification.'
 SECURITY_STATUS='Rsync, OpenSSH, popt, and zlib advisory review remains a candidate-release gate. Every listed archive and the local Buildroot patch is SHA-256 verified before the private offline build.'
 VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 rsync, popt, zlib, and pkgconf package hashes'

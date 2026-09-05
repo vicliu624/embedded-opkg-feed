@@ -40,10 +40,14 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
   `trust-store-runtime` run `33977596329` 证明它不是可迁移的 source candidate：选择该同名 recipe 时，
   `build-all` 正确复用 target provider 并停止，而非重新构建或覆盖信任库。未来 TLS consumer 只能引用
   target catalogue 的精确 provider，不能复制 Debian 或 host 生成的 bundle；
-- OpenSSH client（不准入）：`openssh-client` 锁定 portable 9.9p2 source archive，并只产生 `ssh`、`scp`、
-  `sftp`、`ssh-agent`、`ssh-add` client 工具。run `33977961721` 已在 GitHub Actions 交叉编译完成，但
-  identical overlay gate 发现 `/usr/bin/ssh-agent` 与固定 target 的同路径字节不同而以 exit 79 拒绝；
-  因而它不是 feed provider，也不得成为后续依赖的依据；
+- OpenSSH client（命名空间候选，普通路径不准入）：`openssh-client` 锁定 portable 9.9p2 source archive，
+  并只构建 `ssh`、`scp`、`sftp`、`ssh-agent`、`ssh-add` client 工具。run `33977961721` 已在 GitHub
+  Actions 交叉编译完成，但 identical overlay gate 发现 `/usr/bin/ssh-agent` 与固定 target 的同路径字节
+  不同而以 exit 79 拒绝；普通 `/usr/bin/ssh*` 路径仍永远不是此 feed 的发布目标。独立的
+  `secure-transfer-tools` 只可将 RISC-V ELF 私有保存在 `/usr/libexec/tdvp-openssh-client/`，并提供
+  `tdvp-ssh`、`tdvp-scp`、`tdvp-sftp`、`tdvp-ssh-agent`、`tdvp-ssh-add` wrapper；它仍须通过新的
+  GitHub Actions source/closure/deny-overlay/IPK-index 准入和无重编 merge，当前尚无成功 artifact，
+  也不得成为后续 consumer 的已拥有 dependency；
 - 媒体探测 leaf（候选）：`ffprobe` 从 r7 配方迁移到 r10，锁定 Buildroot 2025.02.1 的 FFmpeg 4.4.4
   archive/hash，只 stage `ffprobe` frontend。首次 run `33978610176` 已完成 RISC-V FFmpeg 构建，但
   Buildroot Debian side-artifact 目录在恢复 SDK 中不存在而 exit 2，未上传 artifact；修正仅在 Actions
@@ -76,9 +80,10 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
 - TLS 信任库：`ca-certificates` 由固定 K230 target catalogue 的 `/etc/ssl` 提供。它不是 source
   candidate；run `33977596329` 已证明同名 source recipe 会被正确地保留 target provider 而停止，
   不能以 Debian source 或 host 生成的 bundle 覆盖它；
-- SSH transport 客户端（不准入）：`openssh-client` 的锁定 OpenSSH 9.9p2 source 和 client-only
-  构建边界可供审计，但 run `33977961721` 的 `/usr/bin/ssh-agent` identical-overlay 检查失败。
-  它不得生成 r10 IPK、替换 firmware 文件或被其他 recipe 当作 feed provider；
+- SSH transport 客户端（仅命名空间候选）：`openssh-client` 的锁定 OpenSSH 9.9p2 source 和 client-only
+  构建边界可供审计，但 run `33977961721` 的 `/usr/bin/ssh-agent` identical-overlay 检查失败，因此它
+  不得替换 firmware 文件。后续候选只允许私有 ELF 和 `tdvp-*` wrapper；在新的 GitHub Actions batch
+  与无重编 merge 成功前，它不是 feed provider；
 - Git 客户端拆分：`git-runtime` 与 `git` 均锁定 Buildroot 2025.02.1 选定且给出哈希的
   Git 2.48.1 release archive，再以匹配 SDK/sysroot 和已校验的离线 source cache 直接
   交叉构建。`git` 仅拥有 `/usr/bin/git`；`git-runtime` 只拥有明确白名单中的客户端

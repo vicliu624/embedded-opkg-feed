@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -88,6 +88,7 @@ jobs:
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/curl-package-policy.sh
+          bash ./tests/openssh-client-package-policy.sh
           bash ./tests/ffprobe-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
@@ -383,6 +384,7 @@ jobs:
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/curl-package-policy.sh
+          bash ./tests/openssh-client-package-policy.sh
           bash ./tests/ffprobe-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
@@ -435,6 +437,13 @@ jobs:
               # replaces the target-owned /usr/bin/curl path.
               package_args=(--package curl)
               expected_packages=(curl)
+              ;;
+            secure-transfer-tools)
+              # The locked OpenSSH client ELFs remain private beneath
+              # /usr/libexec/tdvp-openssh-client. The public tdvp-* wrappers
+              # never replace target-owned /usr/bin SSH client commands.
+              package_args=(--package openssh-client)
+              expected_packages=(openssh-client)
               ;;
             desktop-tools)
               package_args=(--package vim --package vim-plugin-gitgutter --package tdvp-mpv --package tdvp-netsurf)

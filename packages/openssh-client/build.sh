@@ -124,9 +124,9 @@ source_dir="$work_root/openssh-${VERSION%-*}"
   make -j"$(nproc)"
 )
 
-# Each client command is checked against the base image by the package's
-# identical-overlay policy. Keeping this complete set makes an ABI or command
-# divergence a hard candidate-build failure instead of silently dropping it.
+# Keep the complete source-built client set, but never claim the firmware's
+# ordinary /usr/bin/{ssh,scp,sftp,ssh-agent,ssh-add} paths. Each ELF is
+# private and its tdvp-* wrapper is a distinct, deny-overlay-protected path.
 required_paths=(ssh scp sftp ssh-agent ssh-add)
 for program in "${required_paths[@]}"; do
   [[ -x "$source_dir/$program" ]] || {
@@ -151,13 +151,22 @@ fi
 payload_dir=$(mktemp -d "${temporary_prefix}XXXXXX")
 chmod 0755 -- "$payload_dir"
 ln -s -- "$payload_dir" "$payload_link"
-mkdir -p -- "$payload_dir/usr/bin"
+mkdir -p -- "$payload_dir/usr/libexec/tdvp-openssh-client" "$payload_dir/usr/bin"
 for program in "${required_paths[@]}"; do
-  cp -a -- "$source_dir/$program" "$payload_dir/usr/bin/$program"
+  cp -a -- "$source_dir/$program" "$payload_dir/usr/libexec/tdvp-openssh-client/$program"
 done
 while IFS= read -r elf; do
   tdvp_remove_elf_runtime_search_paths "$readelf_tool" "$elf"
-done < <(find "$payload_dir/usr/bin" -type f -perm -u+x -print | LC_ALL=C sort)
+  tdvp_assert_elf_without_runtime_search_path "$readelf_tool" "$elf"
+done < <(find "$payload_dir/usr/libexec/tdvp-openssh-client" -type f -perm -u+x -print | LC_ALL=C sort)
+for program in "${required_paths[@]}"; do
+  wrapper_name="tdvp-${program}"
+  cat >"$payload_dir/usr/bin/$wrapper_name" <<EOF
+#!/bin/sh
+exec /usr/libexec/tdvp-openssh-client/$program "\$@"
+EOF
+  chmod 0755 -- "$payload_dir/usr/bin/$wrapper_name"
+done
 [[ ! -e "$payload_dir/etc/ssh" ]] || { echo 'openssh-client must not package /etc/ssh' >&2; exit 80; }
 payload_ready=1
-echo "openssh-client payload ready: $payload_dir"
+echo "tdvp-openssh-client payload ready from locked OpenSSH source build: $payload_dir"

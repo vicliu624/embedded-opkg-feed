@@ -36,12 +36,17 @@ below; it is not an upstream-source exception for ordinary packages.
   same-named source recipe retains the target provider and stops; it is not a
   source candidate and must not be replaced by a Debian-source or host-made
   bundle;
-- OpenSSH client (not admitted): `openssh-client` locks the portable 9.9p2
-  archive and limits its payload to `ssh`, `scp`, `sftp`, `ssh-agent`, and
-  `ssh-add`. GitHub Actions run `33977961721` completed the cross-build but
-  rejected the non-identical `/usr/bin/ssh-agent` payload against the fixed
-  target at the identical-overlay gate (exit 79). It is not a feed provider
-  and cannot satisfy a later recipe dependency;
+- OpenSSH client (namespaced candidate; ordinary paths are not admitted):
+  `openssh-client` locks the portable 9.9p2 archive and limits its source
+  build to `ssh`, `scp`, `sftp`, `ssh-agent`, and `ssh-add`. GitHub Actions
+  run `33977961721` completed the cross-build but rejected the non-identical
+  `/usr/bin/ssh-agent` payload against the fixed target with exit 79. Those
+  ordinary paths remain excluded. The separate `secure-transfer-tools`
+  candidate may retain RISC-V ELFs only below `/usr/libexec/tdvp-openssh-client/`
+  and expose `tdvp-ssh`, `tdvp-scp`, `tdvp-sftp`, `tdvp-ssh-agent`, and
+  `tdvp-ssh-add` wrappers. It still requires a new GitHub Actions source,
+  closure, deny-overlay, IPK-index, and no-recompile merge admission; it has
+  no successful artifact yet and cannot support later dependencies;
 - media-inspection leaf (candidate): `ffprobe` is migrated from its r7 recipe
   to r10 with the Buildroot 2025.02.1 FFmpeg 4.4.4 archive/hash locked. It
   stages only the `ffprobe` frontend. Run `33978610176` completed the RISC-V

@@ -136,9 +136,14 @@ target-runtime base 并通过所有静态 gate，随后 `build-all` 复用该 ta
 OpenSSH 9.9p2 的 RISC-V client 编译；不含 server、`/etc/ssh`、setuid helper 或 key 工具。但封装前的
 `PACKAGE_BASE_OVERLAY=identical` gate 发现 `/usr/bin/ssh-agent` 与固定 target 的同一路径字节不同，
 以 exit 79 fail-closed，未上传 batch artifact。故 `openssh-client` 已从 r10 candidate cohort 和
-workflow dispatch matrix 移除；其 `source.lock` 与 client-only recipe 仅保留作可复核的上游输入记录，
-不能作为 feed IPK 发布、覆盖 target 命令或被 `rsync` 等后续候选当作已拥有的 provider。任何重新评审
-都必须先提出不替换该 target 路径的独立设计，并经过新的 GitHub Actions 准入和设备生命周期验证。
+旧的 direct-path workflow dispatch matrix 移除；其 `source.lock` 与 client-only recipe 保留作可复核的
+上游输入记录，不能作为覆盖 target 命令的 feed IPK 或被 `rsync` 等后续候选当作已拥有的 provider。
+新的 `secure-transfer-tools` 是独立的命名空间候选设计：它只允许私有
+`/usr/libexec/tdvp-openssh-client/{ssh,scp,sftp,ssh-agent,ssh-add}` 和
+`/usr/bin/tdvp-{ssh,scp,sftp,ssh-agent,ssh-add}` wrapper，使用 `deny` overlay 并继续拒绝任何 target
+路径、`/etc/ssh`、server、setuid helper 或 key 工具。它必须经过新的 GitHub Actions source/RISC-V/
+runtime-closure/IPK-index gate 与后续无重编 merge 后，才能成为 unsigned candidate；此时尚无新的
+成功 artifact，更不授权签名、发布或设备生命周期操作。
 
 `media-inspection-tools` 是从 r7 历史配方迁移的单叶 r10 候选。`ffprobe` 的 `source.lock` 固定
 Buildroot 2025.02.1 审查的 FFmpeg 4.4.4 archive 与 SHA-256；GitHub Actions 只允许匹配 K230 SDK 的

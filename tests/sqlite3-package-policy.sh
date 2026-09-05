@@ -23,9 +23,12 @@ expect_line "^VERSION='3[.]48[.]0-1'$" "$package_dir/package.env"
 expect_line "^PACKAGE_KIND='application'$" "$package_dir/package.env"
 expect_line "^PACKAGE_DEPENDS='libsqlite3-0 \\(= 3[.]48[.]0-1\\), libreadline \\(= 8[.]2-1\\), libncursesw \\(= 6[.]4-20230603-1\\)'$" "$package_dir/package.env"
 expect_line "^PACKAGE_BUILD_DEPENDS='libsqlite3-0 libreadline libncursesw'$" "$package_dir/package.env"
-expect_line "^PACKAGE_STAGE_BUILD_DEPENDS='libsqlite3-0'$" "$package_dir/package.env"
 expect_line "^PACKAGE_AUTO_RUNTIME_DEPENDS=1$" "$package_dir/package.env"
 expect_line "^PACKAGE_BASE_OVERLAY='deny'$" "$package_dir/package.env"
+if grep -Eq '^PACKAGE_STAGE_BUILD_DEPENDS=' "$package_dir/package.env"; then
+  echo 'sqlite3 must use normal source build ordering, not a deferred target-runtime staging dependency' >&2
+  exit 1
+fi
 test -f "$package_dir/source.lock"
 expect_line "^UPSTREAM_NAME='SQLite'$" "$package_dir/source.lock"
 expect_line "^SOURCE_ARTIFACT_1_FILE='sqlite-autoconf-3480000[.]tar[.]gz'$" "$package_dir/source.lock"

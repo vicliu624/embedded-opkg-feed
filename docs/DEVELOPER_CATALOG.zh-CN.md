@@ -88,9 +88,10 @@ util-linux 2.40.2 archive 构建命名维护命令，并把 ELF 放在
 `/usr/libexec/tdvp-util-linux/`，公开入口统一为
 `tdvp-util-linux-<command>`。首批包括日历、文件预分配、IPC 观察/控制、last/utmp
 记录、调度和 namespace 工具；不启用 basic set、mount、分区、文件
-系统、loop、wipefs、login/su/runuser/setpriv，也不选择
-liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid。其余 util-linux Kconfig
-feature 也在私有 transaction 中显式设为 n，避免基线启用的宽配置泄入候选。这样不把基础系统现有库变成隐式
+系统、loop、wipefs、login/su/runuser/setpriv，并在私有 configure 中禁用
+liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid。desktop baseline 的 systemd
+会 Kconfig select 部分 util-linux feature，recipe 不改动这种平台选择，而是在私有 make
+调用完整覆写 `UTIL_LINUX_CONF_OPTS`：先关闭全部 programs 和未拥有库，再只开启候选命令，避免宽配置泄入候选。这样不把基础系统现有库变成隐式
 runtime；后者必须先作为独立、版本化的 provider 准入。部分前端在用户执行时可改变 IPC、
 进程、namespace、文件或终端状态，因此 CI 永不执行它们；实机验证只可由使用者在非生产
 设备上显式选择目标、记录安装/卸载与回滚后进行。

@@ -56,10 +56,37 @@ cleanup() {
 trap cleanup EXIT
 
 # The parent feature is required by Buildroot. The individually enabled
-# commands below deliberately avoid util-linux's libblkid/libfdisk/libmount/
-# libsmartcols/libuuid feature families, so this first cohort does not create
-# an undeclared shared-library ABI provider. NLS is disabled per this private
-# make transaction rather than by changing the immutable firmware Kconfig.
+# commands below are configured without util-linux's libblkid/libfdisk/
+# libmount/libsmartcols/libuuid feature families, so this first cohort does
+# not create an undeclared shared-library ABI provider.
+#
+# This K230 desktop baseline selects systemd, which in turn selects agetty,
+# mount, fsck and sulogin. A Kconfig --disable cannot override that select.
+# Supply the complete configure value on this one make invocation instead:
+# a command-line make variable overrides util-linux.mk's Kconfig-derived
+# value, while the source's --disable-all-programs boundary is followed only
+# by the reviewed commands below. The immutable firmware Kconfig is still
+# saved and restored by tdvp_buildroot_install.
+util_linux_conf_opts=(
+  --disable-rpath --disable-makeinstall-chown --disable-year2038
+  --disable-nls --disable-liblastlog2
+  --without-systemd --with-systemdsystemunitdir=no --without-udev
+  --disable-widechar --without-ncurses --without-ncursesw --without-selinux
+  --without-python --disable-pylibmount --without-readline --without-audit
+  --without-libmagic
+  --disable-libblkid --disable-libfdisk --disable-libmount
+  --disable-libsmartcols --disable-libuuid
+  --disable-all-programs
+  --enable-cal --enable-fallocate --enable-ipcmk --enable-ipcrm --enable-ipcs
+  --enable-kill --enable-last --enable-line --enable-logger --enable-mesg
+  --enable-nologin --enable-nsenter --enable-pivot_root --enable-rename
+  --enable-schedutils --enable-unshare --enable-utmpdump --enable-waitpid
+)
+util_linux_conf_opts="$(
+  IFS=' '
+  printf '%s' "${util_linux_conf_opts[*]}"
+)"
+
 tdvp_buildroot_install "$output" "$install_root" \
   --offline-download-dir "$download_dir" \
   --enable BR2_PACKAGE_BUSYBOX_SHOW_OTHERS \
@@ -82,53 +109,7 @@ tdvp_buildroot_install "$output" "$install_root" \
   --enable BR2_PACKAGE_UTIL_LINUX_UNSHARE \
   --enable BR2_PACKAGE_UTIL_LINUX_UTMPDUMP \
   --enable BR2_PACKAGE_UTIL_LINUX_WAITPID \
-  --disable BR2_PACKAGE_UTIL_LINUX_BINARIES \
-  --disable BR2_PACKAGE_UTIL_LINUX_AGETTY \
-  --disable BR2_PACKAGE_UTIL_LINUX_BFS \
-  --disable BR2_PACKAGE_UTIL_LINUX_CHFN_CHSH \
-  --disable BR2_PACKAGE_UTIL_LINUX_CHMEM \
-  --disable BR2_PACKAGE_UTIL_LINUX_CRAMFS \
-  --disable BR2_PACKAGE_UTIL_LINUX_EJECT \
-  --disable BR2_PACKAGE_UTIL_LINUX_FDFORMAT \
-  --disable BR2_PACKAGE_UTIL_LINUX_FSCK \
-  --disable BR2_PACKAGE_UTIL_LINUX_HARDLINK \
-  --disable BR2_PACKAGE_UTIL_LINUX_HWCLOCK \
-  --disable BR2_PACKAGE_UTIL_LINUX_IRQTOP \
-  --disable BR2_PACKAGE_UTIL_LINUX_LIBBLKID \
-  --disable BR2_PACKAGE_UTIL_LINUX_LIBFDISK \
-  --disable BR2_PACKAGE_UTIL_LINUX_LIBMOUNT \
-  --disable BR2_PACKAGE_UTIL_LINUX_LIBSMARTCOLS \
-  --disable BR2_PACKAGE_UTIL_LINUX_LIBUUID \
-  --disable BR2_PACKAGE_UTIL_LINUX_LOGIN \
-  --disable BR2_PACKAGE_UTIL_LINUX_LOSETUP \
-  --disable BR2_PACKAGE_UTIL_LINUX_LSFD \
-  --disable BR2_PACKAGE_UTIL_LINUX_LSLOGINS \
-  --disable BR2_PACKAGE_UTIL_LINUX_LSMEM \
-  --disable BR2_PACKAGE_UTIL_LINUX_MINIX \
-  --disable BR2_PACKAGE_UTIL_LINUX_MORE \
-  --disable BR2_PACKAGE_UTIL_LINUX_MOUNT \
-  --disable BR2_PACKAGE_UTIL_LINUX_MOUNTPOINT \
-  --disable BR2_PACKAGE_UTIL_LINUX_NEWGRP \
-  --disable BR2_PACKAGE_UTIL_LINUX_PARTX \
-  --disable BR2_PACKAGE_UTIL_LINUX_PG \
-  --disable BR2_PACKAGE_UTIL_LINUX_RAW \
-  --disable BR2_PACKAGE_UTIL_LINUX_RFKILL \
-  --disable BR2_PACKAGE_UTIL_LINUX_RUNUSER \
-  --disable BR2_PACKAGE_UTIL_LINUX_SETPRIV \
-  --disable BR2_PACKAGE_UTIL_LINUX_SETTERM \
-  --disable BR2_PACKAGE_UTIL_LINUX_SU \
-  --disable BR2_PACKAGE_UTIL_LINUX_SULOGIN \
-  --disable BR2_PACKAGE_UTIL_LINUX_SWITCH_ROOT \
-  --disable BR2_PACKAGE_UTIL_LINUX_TUNELP \
-  --disable BR2_PACKAGE_UTIL_LINUX_UL \
-  --disable BR2_PACKAGE_UTIL_LINUX_UUIDD \
-  --disable BR2_PACKAGE_UTIL_LINUX_VIPW \
-  --disable BR2_PACKAGE_UTIL_LINUX_WALL \
-  --disable BR2_PACKAGE_UTIL_LINUX_WDCTL \
-  --disable BR2_PACKAGE_UTIL_LINUX_WIPEFS \
-  --disable BR2_PACKAGE_UTIL_LINUX_WRITE \
-  --disable BR2_PACKAGE_UTIL_LINUX_ZRAMCTL \
-  --make-variable 'UTIL_LINUX_CONF_OPTS=--disable-nls --disable-liblastlog2' \
+  --make-variable "UTIL_LINUX_CONF_OPTS=$util_linux_conf_opts" \
   --target util-linux
 
 # Keep only an explicit, reviewable command boundary. Partition, mount,

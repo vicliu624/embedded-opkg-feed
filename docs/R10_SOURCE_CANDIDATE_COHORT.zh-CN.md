@@ -174,9 +174,10 @@ lock、runtime closure 与 base-overlay gate。格式化/检查的实机验证�
 last/utmp、调度与 namespace 等明确命名的前端。所有 RISC-V ELF
 都位于 `/usr/libexec/tdvp-util-linux/`，所有公开入口都为
 `/usr/bin/tdvp-util-linux-<command>`；它不使用 basic set，也不选择 mount、分区、
-文件系统、loop、wipefs、login/su/runuser/setpriv 或
-liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid。所有其余 util-linux
-Kconfig feature 都在私有 transaction 中显式关闭，因此不能把固件现存库变为隐式依赖，
+文件系统、loop、wipefs、login/su/runuser/setpriv，并在私有 configure 中禁用
+liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid。desktop baseline 的 systemd
+select 保持不变，但私有 make 调用完整覆写 `UTIL_LINUX_CONF_OPTS`：关闭所有 programs 和
+未拥有库后，仅开启该 cohort，因此不能把固件现存库变为隐式依赖，
 也不能占用 firmware/BusyBox 路径。GitHub Actions 只从锁定源码构建、封装并审核
 RISC-V ELF、RPATH/RUNPATH、base-overlay 和 runtime closure，绝不执行这些前端。
 IPC、进程、namespace、文件或 terminal state 的实机操作须由使用者在非生产设备上显式
@@ -188,8 +189,12 @@ recipe 因此在该次 private transaction 的 configure 参数中关闭 liblast
 `33968909916` 已越过该 configure 问题并开始目标编译，但也证明不可变 SDK baseline 可以
 预先启用宽泛的 util-linux feature：未受约束的临时 install 尝试安装 wall 与 mount，触发其
 chgrp/chown hook 后在 staging 失败，同样没有 artifact。当前 recipe 不以放宽权限、复制
-target root 文件或跳过 gate 来规避此情况；它逐一显式关闭所有非 cohort Kconfig feature，
-再由下一次 GitHub Actions source batch 验证隔离边界。
+target root 文件或跳过 gate 来规避此情况；它先尝试逐一关闭非 cohort Kconfig feature，
+再由下一次 GitHub Actions source batch 验证隔离边界。第三次 run `33969473024` 使这一
+Kconfig 事实可复现：Buildroot 在 `olddefconfig` 后报告 `BR2_PACKAGE_UTIL_LINUX_AGETTY` 仍为 y，
+因为 desktop baseline 的 systemd 明确 select 该 feature；该 guard 正确停止且没有 artifact。
+修复不再试图以被选择项覆盖 select，而是以本段所述的完整 configure-option 覆写建立 source
+边界。
 
 `tdvp-gba` 的锁定 commit `4c82b09e1bf042d0709c26ed6c4e5098a283a908` 已由 GitHub commit
 API 和其固定 HTTPS archive endpoint 复核可达。早期 “仅本地 source cache、不可公开下载” 的

@@ -32,7 +32,27 @@ expect_line "^SOURCE_ARTIFACT_1_SHA256='d78b37a66f5922d70edf3bdfb01a6b33d34ed3c3
 build_file="$package_dir/build.sh"
 expect_line 'UTIL_LINUX_VERSION_MAJOR = 2[.]40' "$build_file"
 expect_line 'UTIL_LINUX_VERSION = \$\(UTIL_LINUX_VERSION_MAJOR\)[.]2' "$build_file"
-expect_line "--make-variable 'UTIL_LINUX_CONF_OPTS=--disable-nls --disable-liblastlog2'" "$build_file"
+grep -Fq 'util_linux_conf_opts=(' "$build_file"
+grep -Fq 'UTIL_LINUX_CONF_OPTS=$util_linux_conf_opts' "$build_file"
+for configure_option in \
+  --disable-rpath --disable-makeinstall-chown --disable-year2038 \
+  --disable-nls --disable-liblastlog2 \
+  --without-systemd --with-systemdsystemunitdir=no --without-udev \
+  --disable-widechar --without-ncurses --without-ncursesw --without-selinux \
+  --without-python --disable-pylibmount --without-readline --without-audit \
+  --without-libmagic \
+  --disable-libblkid --disable-libfdisk --disable-libmount \
+  --disable-libsmartcols --disable-libuuid --disable-all-programs \
+  --enable-cal --enable-fallocate --enable-ipcmk --enable-ipcrm --enable-ipcs \
+  --enable-kill --enable-last --enable-line --enable-logger --enable-mesg \
+  --enable-nologin --enable-nsenter --enable-pivot_root --enable-rename \
+  --enable-schedutils --enable-unshare --enable-utmpdump --enable-waitpid; do
+  grep -Fq -- "$configure_option" "$build_file"
+done
+if grep -Fq -- '--enable-all-programs' "$build_file"; then
+  echo 'util-linux narrow cohort must not enable util-linux all-programs' >&2
+  exit 1
+fi
 for symbol in \
   BR2_PACKAGE_UTIL_LINUX \
   BR2_PACKAGE_UTIL_LINUX_CAL \
@@ -110,7 +130,6 @@ for forbidden in \
     echo "util-linux narrow cohort must not enable $forbidden" >&2
     exit 1
   fi
-  grep -Fq -- "--disable $forbidden" "$build_file"
 done
 if grep -Eq '(^|[^A-Za-z0-9_])(apt|dpkg|debian)([^A-Za-z0-9_]|$)' "$build_file"; then
   echo 'util-linux build must not import a Debian package or binary' >&2

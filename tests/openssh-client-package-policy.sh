@@ -7,6 +7,7 @@ IFS=$'\n\t'
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd -- "$script_dir/.." && pwd)
 package_dir="$repo_root/packages/openssh-client"
+workflow="$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 
 expect_line() {
   local pattern=$1 path=$2 normalized
@@ -32,5 +33,10 @@ expect_line 'openssh-client must not package /etc/ssh' "$package_dir/build.sh"
 expect_line tdvp_remove_elf_runtime_search_paths "$package_dir/build.sh"
 expect_line 'identical-overlay policy' "$package_dir/build.sh"
 expect_line 'required_paths=\(ssh scp sftp ssh-agent ssh-add\)' "$package_dir/build.sh"
+
+grep -Fq 'secure-transfer-tools)' "$workflow"
+grep -Fq 'package_args=(--package openssh-client)' "$workflow"
+grep -Fq 'expected_packages=(openssh-client)' "$workflow"
+grep -Fq 'bash ./tests/openssh-client-package-policy.sh' "$workflow"
 
 echo 'source-built client-only OpenSSH transport policy: PASS'

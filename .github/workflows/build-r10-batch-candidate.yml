@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, system-tools, nodejs]
+        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, secure-transfer-tools, system-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -87,6 +87,7 @@ jobs:
           bash ./tests/memtester-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
+          bash ./tests/openssh-client-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
           bash ./tests/util-linux-package-policy.sh
@@ -380,6 +381,7 @@ jobs:
           bash ./tests/memtester-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
+          bash ./tests/openssh-client-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
           bash ./tests/util-linux-package-policy.sh
@@ -501,6 +503,14 @@ jobs:
               # wrapper is tdvp-less, never the firmware/BusyBox pager path.
               package_args=(--package less)
               expected_packages=(less)
+              ;;
+            secure-transfer-tools)
+              # OpenSSH is a locked-source client-only closure: the normal
+              # SSH, copy, SFTP, and agent tools reuse only the owned TLS/zlib
+              # ABI.  Its identical-overlay policy rejects a non-identical
+              # replacement for any command the firmware already owns.
+              package_args=(--package openssh-client)
+              expected_packages=(openssh-client)
               ;;
             system-tools)
               # This deliberately narrow util-linux cohort avoids the

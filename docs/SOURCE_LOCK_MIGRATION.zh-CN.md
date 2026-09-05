@@ -40,6 +40,10 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
   `trust-store-runtime` run `33977596329` 证明它不是可迁移的 source candidate：选择该同名 recipe 时，
   `build-all` 正确复用 target provider 并停止，而非重新构建或覆盖信任库。未来 TLS consumer 只能引用
   target catalogue 的精确 provider，不能复制 Debian 或 host 生成的 bundle；
+- OpenSSH client：`openssh-client` 锁定 portable 9.9p2 source archive，并只产生 `ssh`、`scp`、`sftp`、
+  `ssh-agent`、`ssh-add` client 工具。它精确依赖 target catalogue 的 OpenSSL/zlib provider，排除 server、
+  setuid helper、key tools 与 `/etc/ssh`；任何与固定 target 已有命令不字节相同的 payload 均由 identical
+  overlay gate 拒绝；
 - r10 文本/搜索/终端诊断工具：`tree`、`less`、`file`、`which`、`curl`、`wget`、`iperf3`、`lsof`、`netcat`、`rsync`、`dos2unix`、`jq`、`bc`、
   `grep`、`sed`、`findutils`、`diffutils`、`gawk`、`htop`、`nano`、`tmux`；`htop` 明确关闭未准入的可选
   `libcap` feature，`nano` 保持当前 SDK 未选中 `file/libmagic` 的终端编辑配置；二者

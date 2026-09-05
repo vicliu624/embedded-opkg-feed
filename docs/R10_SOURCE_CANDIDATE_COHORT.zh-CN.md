@@ -111,6 +111,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 18 | `memtester` | 4.5.1 | `memory-diagnostic-tools` 只构建一个锁定源码的内存诊断 ELF；私有 payload 位于 `/usr/libexec/tdvp-memtester/`，公开入口仅为 `tdvp-memtester`，不占用 firmware/BusyBox 路径，也不新增共享运行时 provider。 |
 | 19 | `tree` | 2.1.1 | `directory-tree-tools` 只构建一个锁定源码的目录树 ELF；唯一公开入口为 `tdvp-tree`，不替换 firmware/BusyBox `tree` 路径，也不新增共享运行时 provider。 |
 | 20 | `less` | 661 | `terminal-pager-tools` 只构建一个锁定源码 pager ELF；唯一公开入口为 `tdvp-less`，精确复用 target catalogue 的 `libncursesw`，不替换 firmware/BusyBox `less` 路径。 |
+| 21 | `openssh-client` | 9.9p2 | `secure-transfer-tools` 只从 OpenSSH portable 锁定 archive 构建 `ssh`、`scp`、`sftp`、`ssh-agent`、`ssh-add`。它复用已拥有的 OpenSSL/zlib ABI，不构建 server、setuid helper、key 工具或 `/etc/ssh`；若 target 已有同名命令，`identical` overlay 要求字节相同。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -129,6 +130,14 @@ target-runtime base 并通过所有静态 gate，随后 `build-all` 复用该 ta
 构建 source recipe 以 exit 68 停止，未上传 artifact。这是正确的“已有 target provider”结论：不应以
 同名 Debian source recipe 重建、覆盖或重新发布 CA bundle。此 package 已随每个 runtime base 入候选
 目录；未来 TLS consumer 必须引用该 target-derived catalogue provider 的精确版本。
+
+`secure-transfer-tools` 是一个 client-only 远程传输候选，不授权在设备上启动 SSH server。它先对
+OpenSSH 9.9p2 source archive 做 SHA-256 校验，再仅使用匹配 K230 SDK 的 compiler、sysroot、`pkgconf`
+和 target catalogue 中精确版本的 `libssl-3`、`libcrypto-3`、`libz` 进行交叉构建。payload 不包含
+server、`sshd_config`、`/etc/ssh`、setuid helper 或 key-generation 工具；五个 client ELF 均在封装前
+去除 RPATH/RUNPATH。若 firmware 目标拥有任何同名命令，`PACKAGE_BASE_OVERLAY=identical` 会比较它们，
+并拒绝任何不同字节的替换。只有 GitHub Actions 完成 source、RISC-V ELF、runtime closure 与该路径门禁
+后，才会上传未签名候选；远端 endpoint、安全策略、实机安装、卸载及回滚验证仍是发布前的单独门禁。
 
 `database-tools` 是与已合并的开发工具 batch 分离的 SQLite CLI 增量批次。它选择
 `sqlite3` leaf，使闭包同时重建唯一的 `libsqlite3-0` provider；library IPK 仍只拥有

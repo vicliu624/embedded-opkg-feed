@@ -151,8 +151,14 @@ feed candidate，实机媒体、安装、卸载和回滚仍是独立门禁。
 和 policy，且完成 FFmpeg 4.4.4 的 RISC-V 构建；但该 Buildroot recipe 还会生成私有 Debian-format
 side artifact，恢复的 Actions SDK 不保留空的 `output/images/deb` 目录，令 `dpkg-deb` 因目标目录不存在
 而 exit 2。它不是 ABI、ELF、路径所有权或 source hash 的放宽理由，也没有上传 artifact。配方现在仅在
-Actions SDK workspace 中显式创建此 Buildroot-required 目录，随后必须重新执行同一单包 batch；该目录和
-side artifact 不会 stage 到 IPK payload、target runtime 或 SDK cache。
+Actions SDK workspace 中显式创建此 Buildroot-required 目录；该目录和 side artifact 不会 stage 到 IPK
+payload、target runtime 或 SDK cache。重试 run `33979150084` 成功完成 source、RISC-V、runtime closure、
+`deny` overlay 与 feed verification，上传 artifact `9973352053`
+(`tdvp-k230-r10-media-inspection-tools-unsigned-fc77690…`，90,343,614 bytes)，其中含
+`ffprobe_4.4.4-1_riscv64.ipk`。随后无重编 merge run `33979683310` 对全部 18 个 source batch 比对
+IPK hash、重新索引并验证完整 closure，上传 merged artifact `9973413113`
+(`tdvp-k230-r10-merged-unsigned-fc77690…`，193,564,339 bytes)。两者均为 unsigned candidate；未签名、
+未 release/publish、未安装到设备，也未执行任何实机媒体、卸载或回滚操作。
 
 `database-tools` 是与已合并的开发工具 batch 分离的 SQLite CLI 增量批次。它选择
 `sqlite3` leaf，使闭包同时重建唯一的 `libsqlite3-0` provider；library IPK 仍只拥有

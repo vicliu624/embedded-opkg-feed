@@ -47,8 +47,10 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
 - 媒体探测 leaf（候选）：`ffprobe` 从 r7 配方迁移到 r10，锁定 Buildroot 2025.02.1 的 FFmpeg 4.4.4
   archive/hash，只 stage `ffprobe` frontend。首次 run `33978610176` 已完成 RISC-V FFmpeg 构建，但
   Buildroot Debian side-artifact 目录在恢复 SDK 中不存在而 exit 2，未上传 artifact；修正仅在 Actions
-  workspace 创建该非 payload 目录。重试仍必须证明无 target 路径冲突与完整 runtime closure 后才可成为
-  unsigned candidate；
+  workspace 创建该非 payload 目录。重试 run `33979150084` 通过 source、RISC-V、runtime closure、
+  deny overlay 与 feed verification，上传 `ffprobe_4.4.4-1_riscv64.ipk` batch artifact `9973352053`；
+  随后的无重编 18-batch merge run `33979683310` 成功并上传 merged artifact `9973413113`。它仍是 unsigned
+  candidate，尚未签名、发布或执行实机生命周期门禁；
 - r10 文本/搜索/终端诊断工具：`tree`、`less`、`file`、`which`、`curl`、`wget`、`iperf3`、`lsof`、`netcat`、`rsync`、`dos2unix`、`jq`、`bc`、
   `grep`、`sed`、`findutils`、`diffutils`、`gawk`、`htop`、`nano`、`tmux`；`htop` 明确关闭未准入的可选
   `libcap` feature，`nano` 保持当前 SDK 未选中 `file/libmagic` 的终端编辑配置；二者

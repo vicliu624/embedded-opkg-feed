@@ -47,9 +47,13 @@ below; it is not an upstream-source exception for ordinary packages.
   stages only the `ffprobe` frontend. Run `33978610176` completed the RISC-V
   FFmpeg build but stopped when the restored SDK lacked the Buildroot Debian
   side-artifact directory (exit 2), so it uploaded no artifact. The retry
-  creates that non-payload directory only in the Actions SDK workspace; it
-  must still prove no target-path conflict and a complete runtime closure
-  before it can become an unsigned candidate;
+  creates that non-payload directory only in the Actions SDK workspace. Retry
+  run `33979150084` passed source, RISC-V, runtime-closure, deny-overlay, and
+  feed verification gates and uploaded batch artifact `9973352053` containing
+  `ffprobe_4.4.4-1_riscv64.ipk`; no-recompile 18-batch merge run `33979683310`
+  then succeeded and uploaded merged artifact `9973413113`. It remains an
+  unsigned candidate, with no signing, release/publishing, or on-device
+  lifecycle evidence;
 - r10 text/search/terminal-diagnostic commands: `tree`, `less`, `file`,
   `which`, `curl`, `wget`, `iperf3`, `lsof`, `netcat`, `rsync`, `dos2unix`, `jq`, `grep`, `sed`, `findutils`, `gawk`, `htop`, `nano`, and `tmux`;
   `nano`; `htop` explicitly disables the unadmitted optional `libcap` feature,

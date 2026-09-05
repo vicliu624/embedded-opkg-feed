@@ -5,7 +5,7 @@
 set -Eeuo pipefail
 IFS=$'\n\t'
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-owner_map=$(sed 's/\r$//' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv")
+owner_map=$(sed 's/\r$//' "$repo_root/platforms/tdvp-k230-r1/source-runtime-owners.tsv")
 
 for package in libbz2 liblzma libzstd archive-tools; do
   test -f "$repo_root/packages/$package/package.env"

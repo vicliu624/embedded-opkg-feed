@@ -35,7 +35,6 @@ Buildroot 交叉构建、IPK 运行时闭包审计和实机启动测试均通过
 | FAT 文件系统维护 | `dosfstools` | `tdvp-dosfstools-mkfs-fat`、`tdvp-dosfstools-fsck-fat`、`tdvp-dosfstools-fatlabel`；格式化/修复前必须由设备使用者确认目标块设备 |
 | exFAT 文件系统维护 | `exfatprogs` | `tdvp-exfat-mkfs`、`tdvp-exfat-fsck`、`tdvp-exfat-dump`、`tdvp-exfat-image`、`tdvp-exfat-tune`、`tdvp-exfat-label`；只能在非生产测试介质上显式选择目标后使用 |
 | 内存诊断 | `memtester` | `tdvp-memtester`；可能占用并写入选定内存，实机仅可在非生产设备、保守内存预算和明确目标下运行 |
-| YAML C 运行时 ABI | `libyaml-0` | 唯一拥有 `libyaml-0.so.2`；未来 YAML 程序以精确 `Depends` 复用，不得携带私有 YAML parser |
 | 窄 util-linux 系统维护组 | `util-linux-tools` | `tdvp-util-linux-cal`、`tdvp-util-linux-ipcs`、`tdvp-util-linux-last`、`tdvp-util-linux-taskset`；所有公开入口均不替换固件命令 |
 | 编辑 | `vim-runtime`、`vim`、四个纯 Vimscript 插件 | `vim --version`；触控不抢占 Foot 的文本选择 |
 | 最小构建/维护/诊断 | `make`、`pkgconf`、`patch`、`diffutils`、`strace` | `make --version`、`pkg-config --version`、`patch --version`、`diff --version`、`strace true` |
@@ -103,11 +102,10 @@ target root、Debian 二进制或共享库，且候选闭包仍须由 CI 实测�
 用户指定的内存，物理地址模式风险更高；CI 永不执行它。实机验证只能在非生产设备上以
 保守、明确的内存预算执行，并完整记录安装、卸载和回滚。
 
-`libyaml-0` 是一个可复用的 YAML C ABI provider：它只从 Buildroot 2025.02.1 锁定的
-0.2.5 archive 构建 `libyaml-0.so.2` 及其必要的相对 runtime symlink，并作为唯一
-IPK owner 放到 `/usr/lib/`。不携带头文件、静态库、pkg-config metadata、命令、target root
-或 Debian 内容。未来 YAML 工具/应用必须先通过各自的 source-built K230 closure，再以精确
-`Depends` 复用该 provider，不能把 parser 私藏到 leaf 包。
+`libyaml-0.so.2` 已由固定 K230 target runtime 提供，而不是本 feed 的 source-built 增补。
+Actions run `33973838867` 在 source build 前已证实这一点并拒绝生成重复 provider。未来 YAML
+工具/应用应以精确依赖复用 target catalogue 的 `libyaml-0`，不得把 parser 私藏到 leaf 包或
+以 source recipe 覆盖平台 ABI。
 
 `util-linux-tools` 是另一种更窄的增补方式：只从 Buildroot 2025.02.1 锁定的
 util-linux 2.40.2 archive 构建命名维护命令，并把 ELF 放在

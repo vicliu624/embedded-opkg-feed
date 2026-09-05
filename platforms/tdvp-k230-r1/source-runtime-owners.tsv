@@ -1,0 +1,10 @@
+# SONAME|Package|Version
+# This registry is only for source-built providers that have been verified
+# absent from the matching K230 target runtime.  It is merged into a copied
+# candidate-private owner map after the target-runtime cache is restored, so a
+# future provider does not regenerate target-derived IPKs or recompile older
+# source closures.  A SONAME found in the target belongs instead in the
+# target-runtime catalogue / attestation path and must not be listed here.
+libbz2.so.1.0|libbz2|1.0.8-1
+liblzma.so.5|liblzma|5.6.4-1
+libzstd.so.1|libzstd|1.5.7-1

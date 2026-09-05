@@ -1,9 +1,10 @@
 # SONAME|Package|Version
-# These owners are built outside the firmware target.  They are peers of every
-# target-derived runtime in the r10 closure, not application-bundled blobs.
-# The exact versions below must follow the locked SDL source patch and its
-# dependent metadata releases, so the runtime owner map cannot attest an old
-# package after a source-input correction.
+# This legacy/attestation registry participates in construction of the
+# target-runtime catalogue, so it is deliberately part of that cache key.
+# New providers proved absent from the matching target go in the separate
+# source-runtime-owners.tsv candidate registry instead.  Keep entries here
+# only when they attest a target-derived provider or preserve an already
+# reviewed target-catalogue contract.
 libSDL2-2.0.so.0|sdl2|2.30.11-3
 libSDL2_ttf-2.0.so.0|sdl2-ttf|2.22.0-3
 libmgba.so.0.10|libmgba|0.10.5-1
@@ -14,13 +15,6 @@ libmgba.so.0.10|libmgba|0.10.5-1
 libaudcore.so.6|audacious-core|4.6.1-1
 libaudtag.so.4|audacious-core|4.6.1-1
 libaudgui.so.7|audacious-core|4.6.1-1
-# Archive utilities add three public compression-library SONAMEs that do not
-# exist in the immutable r9 firmware target. Each SONAME has one independently
-# installable IPK owner; archive applications depend on them instead of copying
-# a private library into a command package.
-libbz2.so.1.0|libbz2|1.0.8-1
-liblzma.so.5|liblzma|5.6.4-1
-libzstd.so.1|libzstd|1.5.7-1
 # Python's libpython is public ABI for native extension modules and therefore
 # is split from the standard library data and the interpreter executable.
 libpython3.13.so.1.0|libpython3.13|3.13.3-1
@@ -50,9 +44,6 @@ libsqlite3.so.0|libsqlite3-0|3.48.0-1
 # CPython _decimal is configured to use the public mpdecimal ABI. It remains
 # a dedicated source-built provider instead of a private interpreter payload.
 libmpdec.so.4|libmpdec-4|4.0.0-1
-# LibYAML is a reusable parser/emitter ABI for future YAML-consuming tools.
-# Keep the public SONAME owned by one source-built provider from the outset.
-libyaml-0.so.2|libyaml-0|0.2.5-1
 # Split OpenSSL's two public SONAMEs into explicit providers before Git, curl,
 # Python, or Node may depend on TLS. They are built from one locked source tree.
 libcrypto.so.3|libcrypto-3|3.4.1-1

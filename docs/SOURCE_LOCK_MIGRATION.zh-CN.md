@@ -18,15 +18,16 @@ find packages -mindepth 2 -maxdepth 2 -name package.env -type f | LC_ALL=C sort
 第三方 recipe 由 CI 的 changed-recipe gate 强制要求锁文件，不能借由“历史迁移尚未完成”
 绕过准入。
 
-对于 r10 的共享库 provider，`extra-runtime-owners.tsv` 是随准入递增的**源码所有权注册表**，
-不是 K230 target-derived runtime catalogue 的输入。GitHub Actions 的 runtime-base cache 只由
-固定平台身份、`runtime-data-packages.tsv` 与 catalogue/IPK 实现失效；每一个 source batch
-在 runner 中复制该 private base 后，才用 `refresh-extra-runtime-owners.sh` 对私有 owner map
-追加当前 release 的已审核 provider。helper 会核对 `package.env` 的 `PACKAGE`、`VERSION` 和
-`PACKAGE_RELEASES`，同一 SONAME 的任何不一致均失败；它不生成 IPK、更不修改共享 cache。
-因此新增 library recipe 只触发自身 source closure，而不是历史库的全量重编。若 runtime-base
-实现或 target runtime 数据确实变化，才允许以 GitHub Actions 的 `build-sdk-base` 迁移这份
-target-derived cache；这一步不构建 feed source package，也不签名、发布或部署。
+对于 r10 的共享库 provider，必须区分两类注册表。`extra-runtime-owners.tsv` 是
+target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固定 K230 target 提取的 IPK
+名称或版本，故必须进入 GitHub Actions runtime-base cache key。`source-runtime-owners.tsv`
+仅容纳已由匹配 target 验证为**不存在**的 source-built SONAME；每个 source batch 在 runner
+中复制 private runtime base 后，才用 `refresh-extra-runtime-owners.sh` 合并后一份清单。helper
+会核对 `package.env` 的 `PACKAGE`、`VERSION` 和 `PACKAGE_RELEASES`，同一 SONAME 的任何不一致
+均失败；它不生成 IPK、更不修改共享 cache。因此新增、确实不在 target 中的 library recipe
+只触发自身 source closure，而不是历史库的全量重编。若 target ABI、attestation、runtime-base
+实现或 target runtime 数据变化，才允许以 GitHub Actions 的 `build-sdk-base` 迁移该 cache；这一步
+不构建 feed source package，也不签名、发布或部署。
 
 ## 已迁移并可离线审计的基础工具链
 
@@ -153,11 +154,10 @@ target-derived cache；这一步不构建 feed source package，也不签名、�
   只位于 `/usr/libexec/tdvp-memtester/`，公开入口仅为 `/usr/bin/tdvp-memtester`，
   不覆盖 firmware/BusyBox 路径，不复制 Debian binary、target root 文件或共享库。
   GitHub Actions 只构建、封装和审核，绝不执行会分配和写入设备内存的诊断程序；
-- YAML C 运行时 ABI：`libyaml-0` 锁定 Buildroot 2025.02.1 审核的 libyaml 0.2.5
-  archive。原始 recipe endpoint 是 HTTP，因此 source lock 只从 Buildroot HTTPS archive
-  mirror 取得同一 SHA-256 验证 archive。该 shared-library IPK 唯一拥有
-  `libyaml-0.so.2` 及必要相对 symlink，不携带开发文件、静态库、命令、Debian binary 或
-  target root copy；任何未来 consumer 只能用精确 versioned `Depends` 复用它；
+- YAML C 运行时 ABI：`libyaml-0.so.2` 已由固定 K230 target runtime 提供。Actions retry
+  `33973838867` 在真正 source build 前确认了这一点并 fail-closed，因而它不属于 source-lock
+  migration candidate；未来 consumer 只能复用 target catalogue 的精确 provider，不能私藏 parser
+  或重复编译相同 SONAME；
 - 十进制运算运行时：`libmpdec-4` 锁定 Buildroot 2025.02.1 审查的 mpdecimal 4.0.0
   归档，只将 `libmpdec.so.4 -> libmpdec.so.4.0.0` 制作成独立 IPK。候选为 RISC-V ELF64
   共享对象、无 RPATH/RUNPATH，且仅依赖平台 ABI，因此它是 CPython `_decimal` 的唯一可复用

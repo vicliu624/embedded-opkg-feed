@@ -46,7 +46,7 @@ grep -Fqx "PACKAGE_DEPENDS='sdl2 (= 2.30.11-3), sdl2-ttf (= 2.22.0-3), libmgba (
 grep -Fqx 'libSDL2-2.0.so.0|sdl2|2.30.11-3' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
 grep -Fqx 'libSDL2_ttf-2.0.so.0|sdl2-ttf|2.22.0-3' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
 
-grep -Fq 'options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, yaml-runtime, system-tools, nodejs]' "$workflow"
+grep -Fq 'options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, system-tools, nodejs]' "$workflow"
 grep -Fq 'retro-gba)' "$workflow"
 grep -Fq 'package_args=(--package sdl2-ttf --package tdvp-gba)' "$workflow"
 grep -Fq 'expected_packages=(sdl2 sdl2-ttf libmgba tdvp-gba)' "$workflow"

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Refresh only the source-built provider records in a copied private runtime
-# catalogue.  The target-derived IPKs and their ownership evidence remain the
-# immutable SDK/target-runtime cache; a newly admitted source provider must
-# not invalidate or regenerate that completed platform catalogue.
+# catalogue. The separate source registry is allowed to contain only SONAMEs
+# proved absent from the matching K230 target. Target-derived attestations
+# remain an explicit runtime-base cache input, so changing either class cannot
+# silently alter the other's package identity.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -46,14 +47,14 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd -- "$script_dir/.." && pwd)
 feed_dir=$(cd -- "$feed_dir" && pwd)
 owner_map="$feed_dir/.tdvp-runtime-owners.tsv"
-extra_owner_manifest="$repo_root/platforms/$platform_slug/extra-runtime-owners.tsv"
+source_owner_manifest="$repo_root/platforms/$platform_slug/source-runtime-owners.tsv"
 
 [[ -f "$owner_map" && ! -L "$owner_map" ]] || {
   echo "missing regular private runtime owner map: $owner_map" >&2
   exit 65
 }
-[[ -f "$extra_owner_manifest" && ! -L "$extra_owner_manifest" ]] || {
-  echo "missing regular extra runtime owner manifest: $extra_owner_manifest" >&2
+[[ -f "$source_owner_manifest" && ! -L "$source_owner_manifest" ]] || {
+  echo "missing regular source runtime owner manifest: $source_owner_manifest" >&2
   exit 65
 }
 
@@ -86,19 +87,19 @@ while IFS='|' read -r soname package version trailing; do
   owner_version[$soname]=$version
 done <"$owner_map"
 
-mapfile -t owner_lines < <(sed 's/\r$//' "$extra_owner_manifest")
+mapfile -t owner_lines < <(sed 's/\r$//' "$source_owner_manifest")
 added=0
 for owner_line in "${owner_lines[@]}"; do
   [[ -n "$owner_line" && "$owner_line" != \#* ]] || continue
   IFS='|' read -r soname package version trailing <<<"$owner_line"
   [[ -z "${trailing:-}" ]] && valid_soname "$soname" && valid_package "$package" && valid_version "$version" || {
-    echo "invalid extra runtime owner record: $owner_line" >&2
+    echo "invalid source runtime owner record: $owner_line" >&2
     exit 67
   }
 
   package_env="$repo_root/packages/$package/package.env"
   [[ -f "$package_env" && ! -L "$package_env" ]] || {
-    echo "extra runtime owner package has no regular recipe: $package" >&2
+    echo "source runtime owner package has no regular recipe: $package" >&2
     exit 67
   }
   mapfile -t package_metadata < <(bash -c '
@@ -108,7 +109,7 @@ for owner_line in "${owner_lines[@]}"; do
   ' bash "$package_env")
   [[ ${#package_metadata[@]} -eq 3 && "${package_metadata[0]}" == "$package" && \
      "${package_metadata[1]}" == "$version" ]] || {
-    echo "extra runtime owner metadata is not attested by recipe: $soname" >&2
+    echo "source runtime owner metadata is not attested by recipe: $soname" >&2
     exit 68
   }
   [[ " ${package_metadata[2]} " == *" $release "* ]] || continue

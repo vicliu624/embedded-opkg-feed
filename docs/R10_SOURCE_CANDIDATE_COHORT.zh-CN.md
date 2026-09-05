@@ -109,7 +109,6 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 16 | `util-linux-tools` | 2.40.2 | `system-tools` 只启用命名的无 liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid 闭包命令；全部以 `tdvp-util-linux-*` 公开，不替换 firmware/BusyBox 路径，也不把基础镜像库作为隐式 provider。 |
 | 17 | `exfatprogs` | 1.2.5 | `exfat-filesystem-tools` 仅提取 6 个锁定源码构建的 exFAT 命令；私有 ELF 位于 `/usr/libexec/tdvp-exfatprogs/`，公开入口均为 `tdvp-exfat-*`，不占用 `/usr/sbin/*`、firmware 或 BusyBox 路径，也不新增共享运行时 provider。 |
 | 18 | `memtester` | 4.5.1 | `memory-diagnostic-tools` 只构建一个锁定源码的内存诊断 ELF；私有 payload 位于 `/usr/libexec/tdvp-memtester/`，公开入口仅为 `tdvp-memtester`，不占用 firmware/BusyBox 路径，也不新增共享运行时 provider。 |
-| 19 | `libyaml-0` | 0.2.5 | `yaml-runtime` 构建唯一的 `libyaml-0.so.2` provider；不携带 command、开发文件或私有 consumer copy，未来 YAML 应用必须精确依赖它。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -209,28 +208,25 @@ run `33972330479` 中逐 IPK 比较 hash、重新索引并在无编译模式下�
 未签名 merged artifact `9971324996`。这些 run 是候选构建/合并证据，不是签名、公开
 发布、部署或实机运行内存诊断的授权。
 
-`yaml-runtime` 是一个单 provider 的增量 batch。`libyaml-0` 从 Buildroot 2025.02.1
-审核并给出 SHA-256 的 libyaml 0.2.5 archive 构建；原始 recipe endpoint 是 HTTP，因而
-source lock 只通过 Buildroot HTTPS archive mirror 检索同一 hash 的 archive。候选 payload
-只拥有 `/usr/lib/libyaml-0.so.2` 及其相对 runtime symlink；不包含 headers、static archive、
-pkg-config metadata、command、Debian binary 或 target root copy。它在 runtime-owner map 中
-成为 `libyaml-0.so.2` 的唯一 package owner；未来 YAML consumer 必须先通过自己的 K230
-source-build closure，再精确依赖 `libyaml-0`，不得携带私有 parser。GitHub Actions 会验证
-RISC-V ELF、无 RPATH/RUNPATH、runtime closure 和 base-overlay，成功后也仍只是 unsigned
-candidate，而非签名/发布授权。
+**LibYAML 准入结论（2026-09-05）。** `libyaml-0.so.2` 已在固定 K230 target runtime 中，
+所以它是 target-derived provider，不是可新增的 source-built provider。首次 `yaml-runtime`
+run `33972857828` 在 source-cache、Buildroot、K230 编译和 artifact 上传之前因 runtime-base
+cache miss 停止；用于验证缓存路径的迁移 run `33973476445` 成功恢复已有 SDK、跳过 SDK build，
+只重新生成 target-derived catalogue。随后 retry `33973838867` 已实际恢复新的 runtime-base、
+刷新候选私有 owner map 并通过全部静态 gate，但 `build-all` 明确报告
+`source runtime recipe deferred; target owns libyaml-0.so.2`，随后以“没有可构建 recipe”
+fail-closed 结束，未上传 artifact。这是正确拒绝，不是需要靠关闭 gate 或重复编译解决的故障；
+强行将同一 SONAME 再编译成 IPK 会替换/复制平台 ABI。因此本候选、其 source lock 与 batch
+入口均已撤回；未来 YAML consumer 应精确依赖 target catalogue 中的 `libyaml-0` provider，
+而非携带私有 parser。
 
-run `33972857828` 在任何 source-cache 下载、Buildroot 调用、K230 编译或 artifact 上传之前，
-于 Actions 的 target-runtime cache restore 以 `fail-on-cache-miss` 停止。原因是旧 cache key
-错误地把 `extra-runtime-owners.tsv`（它是随每一个新 source provider 增长的注册表）和
-target-derived runtime catalogue 放在同一失效域。这个失败 run 不是 merge source，也不表示
-`libyaml-0` 构建或 ABI gate 失败。修复后，runtime-base key 只覆盖平台身份、
-`runtime-data-packages.tsv` 与产生 target IPK 的实现；每次 source batch 先复制该私有 base，
-再由 `refresh-extra-runtime-owners.sh` 根据当前、已审核 recipe 的 `PACKAGE`、`VERSION` 与
-`PACKAGE_RELEASES` 把适用于 r10 的额外 SONAME owner 合并进**候选副本**。已有记录必须完全
-一致，冲突会 fail-closed；缓存本身不会被改写。因新 key 需要一次 GitHub-only runtime-base
-迁移，`build-sdk-base` 只从已有 SDK cache 制作 target-derived IPK catalogue 并保存它，绝不
-重新编译任意 source package。之后只重试同一 `yaml-runtime` source closure；旧成功 batch
-不会被重新构建。
+缓存边界也据此更正：`extra-runtime-owners.tsv` 是可能改变 target-derived IPK 名称或版本的
+legacy/attestation 输入，必须仍进入 runtime-base key；只有已经由 GitHub Actions 证明**不存在于
+matching target** 的 source provider 才可写入 `source-runtime-owners.tsv`。每个 source batch
+复制 runtime-base 后由 `refresh-extra-runtime-owners.sh` 将后一份清单合并进候选私有 owner map，
+严格核对 `PACKAGE`、`VERSION` 和 `PACKAGE_RELEASES`，冲突立即拒绝且不会修改共享 cache。这样
+新增真实 source provider 只构建自身 closure；target ABI 的身份或版本声明变化才会在 GitHub
+Actions 中重建 runtime-base，且仍不会重编既有 source package。
 
 `system-tools` 是一个单包、无新增共享运行时 provider 的增量 batch。它从 Buildroot
 2025.02.1 审核的 util-linux 2.40.2 archive 离线构建，仅启用 cal、fallocate、IPC、

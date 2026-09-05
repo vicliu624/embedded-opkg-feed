@@ -29,6 +29,8 @@ expect_line "^UPSTREAM_NAME='GNU mtools'$" "$package_dir/source.lock"
 expect_line "^UPSTREAM_VERSION='4[.]0[.]47'$" "$package_dir/source.lock"
 expect_line "^SOURCE_ARTIFACT_1_FILE='mtools-4[.]0[.]47[.]tar[.]lz'$" "$package_dir/source.lock"
 expect_line "^SOURCE_ARTIFACT_1_SHA256='2709cd2f42d65500829b056cb0630edd515d7060b4865bad31277f0da9f9e9d5'$" "$package_dir/source.lock"
+expect_line "^SOURCE_ARTIFACT_2_FILE='lzip-1[.]25[.]tar[.]gz'$" "$package_dir/source.lock"
+expect_line "^SOURCE_ARTIFACT_2_SHA256='09418a6d8fb83f5113f5bd856e09703df5d37bae0308c668d0f346e3d3f0a56f'$" "$package_dir/source.lock"
 
 build_file="$package_dir/build.sh"
 expect_line 'MTOOLS_VERSION = 4[.]0[.]47' "$build_file"

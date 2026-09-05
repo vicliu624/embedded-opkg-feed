@@ -117,7 +117,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 24 | `inotify-tools`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 3.20.2.2 | `filesystem-event-tools` 只允许与私有 static `libinotifytools` implementation 链接的 ELF，及 `tdvp-inotify-wait`、`tdvp-inotify-watch`。run [`33991128904`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991128904) 实际传入 `--disable-shared --enable-static --enable-static-binary --disable-doxygen`，产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33991417095`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991417095) 只 hash-merge 27 个 artifact、重建索引并再次通过 closure/target-runtime coverage。任何 `libinotifytools`、头文件或普通 firmware 路径均未进入 IPK；CI 不得启动 watcher、传入路径或观察真实 filesystem event。 |
 | 25 | `logrotate`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 3.22.0 | `log-maintenance-tools` 只允许私有 ELF 与 `tdvp-logrotate`，精确复用 immutable target `libpopt (= 1.19-1)`。run [`33991963284`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991963284) 实际禁用 SELinux/ACL 并传入 `--without-selinux --without-acl`，产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33992249214`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33992249214) 只 hash-merge 28 个 artifact、重建索引并再次通过 closure/target-runtime coverage。任何 `/etc/logrotate.conf`、`/etc/logrotate.d`、timer、daemon 或普通 firmware 路径均未进入 IPK；CI 不得执行该命令、传入路径或读写、重命名、压缩、删除/轮转任何日志。 |
 | 26 | `jo`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 1.6 | `json-construction-tools` 只允许私有 ELF 与 `tdvp-jo`，不引入新的 non-platform shared-runtime provider，也不覆盖 firmware 路径。run [`33992855036`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33992855036) 产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33993109744`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993109744) 只 hash-merge 29 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不得执行该命令或传入 JSON input。 |
-| 27 | `ed`（GitHub Actions source batch 已通过，待无重编 merge / 实机） | 1.20.2 | `line-editor-tools` 只允许私有 GNU `ed` ELF 与 `tdvp-ed`；`.tar.lz` 的 host-lzip 仅作 runner 解包器，不进入 target IPK。run [`33993563150`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993563150) 产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；仍须通过无重编 merge。CI 不得启动编辑器、传入文件或执行修改。 |
+| 27 | `ed`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 1.20.2 | `line-editor-tools` 只允许私有 GNU `ed` ELF 与 `tdvp-ed`；`.tar.lz` 的 host-lzip 仅作 runner 解包器，不进入 target IPK。run [`33993563150`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993563150) 产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33993808518`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993808518) 只 hash-merge 30 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不得启动编辑器、传入文件或执行修改。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -217,7 +217,12 @@ merged unsigned artifact 为 [`9977279738`](https://github.com/vicliu624/embedde
 交叉构建的 `ed_1.20.2-1_riscv64.ipk` 通过 feed verification，并上传 artifact
 [`9977399730`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993563150/artifacts/9977399730)
 （90,119,822 bytes；zip SHA-256 `bb44609d5f990773e17464851bd3f398e40270562c3fbd38ba87aec4abc99f65`）。
-它计入 89，但在无重编 merge 成功前尚不属于 merged candidate；CI 未执行编辑器或传入文件。
+它计入 89，并已由 30-artifact no-recompile merge run
+[`33993808518`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993808518) 纳入 merged candidate：run 下载并比对全部 30 个
+compatible artifact 的 IPK hash，只重建 `Packages` 索引、验证 runtime closure 和 445 个 non-ABI dynamic objects 的
+target-runtime coverage；SDK-build 与 package-build job 都是 skipped。最终 merged unsigned artifact 为
+[`9977497916`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993808518/artifacts/9977497916)
+（196,503,290 bytes；zip SHA-256 `3ccc25ebc3b92dafddf153adc7381e65b57c32a293d8c4fe78934e7277e8d648`）。CI 未执行编辑器或传入文件。
 为使这个 metadata profile 也真正增量，`diagnostics-profile` 必须提供成功的
 `base_merged_run_id`：CI 只接受一份未过期的 merged unsigned artifact，校验 run 成功态、唯一 artifact、
 feed 路径和无顶层 symlink；若 prior artifact 含有同名 target-runtime IPK，则保留本次新恢复、权威的

@@ -449,14 +449,19 @@ This document fixes the governance rule first. Implement automation in order:
    SELinux/ACL, reused only the immutable target `libpopt` provider, excluded
    `/etc` configuration, timer and daemon payloads, and never ran a log
    rotation operation in CI; then
-10. Source batch completed: GitHub Actions source batch
+10. Completed: GitHub Actions source batch
     [`33992855036`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33992855036)
-    has admitted the locked standalone `jo` command pending a no-recompile
-    merge. It remains private, introduces no shared provider, and was never
-    invoked or given JSON input in CI; then
-11. In progress: admit the locked GNU `ed` line-editor command through a
-    GitHub Actions source batch, then a no-recompile merge. host-lzip may only
-    unpack the runner source; CI must never invoke the editor or supply a file;
+    has admitted the locked standalone `jo` command, and no-recompile merge
+    [`33993109744`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993109744)
+    then admitted its verified artifact without recompiling. It remains private,
+    introduces no shared provider, and was never invoked or given JSON input in
+    CI; then
+11. Completed: GitHub Actions source batch
+    [`33993563150`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993563150)
+    has admitted the locked GNU `ed` line-editor command, and no-recompile merge
+    [`33993808518`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993808518)
+    then admitted its verified artifact without recompiling. host-lzip only
+    unpacked the runner source; CI never invoked the editor or supplied a file;
     then
 12. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then

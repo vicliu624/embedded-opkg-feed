@@ -506,9 +506,16 @@ This document fixes the governance rule first. Implement automation in order:
     compared 35 input artifacts by hash, rebuilt the index, and passed runtime
     closure plus 445-object target coverage without compiling. It admitted
     merged artifact [`9978839795`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33998522557/artifacts/9978839795); then
-17. Emit source provenance/SBOM material for each release and bind source, SDK,
+17. Planned: admit the private `xxhash`/`tdvp-xxhsum` leaf only through its own
+   GitHub Actions source batch. Its Buildroot 2025.02.1 source and official
+   tag archive hash are locked; the transaction must build/install only the
+   directly-linked CLI, no `libxxhash` provider, headers, or pkg-config data.
+   xxHash is non-cryptographic and is prohibited for authentication, signatures,
+   or security decisions. A successful source batch and later no-recompile merge
+   are still required before it becomes unsigned candidate evidence; then
+18. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
-18. Introduce reviewed general libraries incrementally, retaining shared-runtime
+19. Introduce reviewed general libraries incrementally, retaining shared-runtime
    and on-device test gates each time.
 
 Until all automation is complete, this contract remains the admission standard

@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools, json-construction-tools, line-editor-tools, cpio-archive-tools, process-timing-tools, cpu-limit-tools, bandwidth-monitor-tools, checksum-tools]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools, json-construction-tools, line-editor-tools, cpio-archive-tools, process-timing-tools, cpu-limit-tools, bandwidth-monitor-tools, checksum-tools, filesystem-search-tools]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -101,6 +101,7 @@ jobs:
           bash ./tests/cpulimit-package-policy.sh
           bash ./tests/bwm-ng-package-policy.sh
           bash ./tests/rhash-package-policy.sh
+          bash ./tests/findutils-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/tmux-package-policy.sh
@@ -474,6 +475,7 @@ jobs:
           bash ./tests/cpulimit-package-policy.sh
           bash ./tests/bwm-ng-package-policy.sh
           bash ./tests/rhash-package-policy.sh
+          bash ./tests/findutils-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/diagnostics-package-policy.sh
@@ -737,6 +739,13 @@ jobs:
               # Build/audit only: never invoke rhash or supply it a file path.
               package_args=(--package rhash)
               expected_packages=(rhash)
+              ;;
+            filesystem-search-tools)
+              # Build/audit only: retain only private find/xargs ELF files and
+              # TDVP-prefixed frontends. CI never calls find, passes it a
+              # filesystem path, executes xargs, or starts a child command.
+              package_args=(--package findutils)
+              expected_packages=(findutils)
               ;;
             *) echo 'unreviewed batch input' >&2; exit 64 ;;
           esac

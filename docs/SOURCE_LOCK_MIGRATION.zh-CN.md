@@ -37,11 +37,7 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
 
 - Buildroot-derived 维护命令：`make`、`pkgconf`、`patch`、`diffutils`、`strace`；
 - r10 文本/搜索/终端诊断工具：`tree`、`less`、`file`、`which`、`curl`、`wget`、`iperf3`、`lsof`、`netcat`、`rsync`、`dos2unix`、`jq`、`bc`、
-  `grep`、`sed`、`findutils`、`diffutils`、`gawk`、`htop`、`nano`、`tmux`；其中
-  `source-navigation-tools` 将 `which`、`findutils`、`diffutils`、`grep`、`sed`、`gawk` 作为一个
-  仅含锁定源码 closure 的增量 batch。所有命令保留私有 ELF 并公开 `tdvp-*` 名称；`grep` 只能依赖
-  已拥有的 `libpcre2-8`，`gawk` 只能依赖已拥有的 `libreadline`，不新增或替换共享 runtime provider。
-  `htop` 明确关闭未准入的可选
+  `grep`、`sed`、`findutils`、`diffutils`、`gawk`、`htop`、`nano`、`tmux`；`htop` 明确关闭未准入的可选
   `libcap` feature，`nano` 保持当前 SDK 未选中 `file/libmagic` 的终端编辑配置；二者
   都只复用已拥有的 `libncursesw`；
 - Vim 终端编辑器：`vim-runtime`、`vim`；二者锁定同一 Buildroot 2025.02.1 审查的

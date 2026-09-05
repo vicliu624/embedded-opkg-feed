@@ -111,20 +111,17 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 18 | `memtester` | 4.5.1 | `memory-diagnostic-tools` 只构建一个锁定源码的内存诊断 ELF；私有 payload 位于 `/usr/libexec/tdvp-memtester/`，公开入口仅为 `tdvp-memtester`，不占用 firmware/BusyBox 路径，也不新增共享运行时 provider。 |
 | 19 | `tree` | 2.1.1 | `directory-tree-tools` 只构建一个锁定源码的目录树 ELF；唯一公开入口为 `tdvp-tree`，不替换 firmware/BusyBox `tree` 路径，也不新增共享运行时 provider。 |
 | 20 | `less` | 661 | `terminal-pager-tools` 只构建一个锁定源码 pager ELF；唯一公开入口为 `tdvp-less`，精确复用 target catalogue 的 `libncursesw`，不替换 firmware/BusyBox `less` 路径。 |
-| 21 | `which`、`findutils`、`diffutils`、`grep`、`sed`、`gawk` | 2.21、4.10.0、3.10、3.11、4.9、5.3.1 | `source-navigation-tools` 将六个固定 GNU 源码闭包作为一个独立增量批次；所有 RISC-V ELF 私有化并只公开 `tdvp-*` 前端。`grep` 精确复用已拥有的 `libpcre2-8`，`gawk` 精确复用已拥有的 `libreadline`，不新增 provider 或覆盖 firmware/BusyBox。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
 
-`source-navigation-tools` 是用于设备端源码浏览、搜索和小范围修改的独立增量批次，而不是把
-GNU 工具装进 firmware 的替换包。`which`、`find`/`xargs`、`diff`/`cmp`/`diff3`/`sdiff`、`grep`、
-`sed` 和 `gawk` 均由 Buildroot 2025.02.1 对应的固定 archive 离线交叉构建；真实 ELF 保存于各自
-`/usr/libexec/tdvp-<package>/`，公开入口保持为 `tdvp-which`、`tdvp-find`、`tdvp-xargs`、
-`tdvp-diff`、`tdvp-cmp`、`tdvp-diff3`、`tdvp-sdiff`、`tdvp-grep`、`tdvp-sed`、`tdvp-gawk` 和
-`tdvp-awk`。因此即使固定目标基线将来增添同名标准命令，该批次也不会占用其路径。该批次只在
-GitHub Actions 成功完成锁定来源、RISC-V ELF、无 RPATH/RUNPATH、runtime closure 与 base-overlay
-检查，并由后续无编译 merge run 验证 manifest 后，才是 unsigned candidate；实机安装、卸载与回滚
-记录仍是任何签名/发布之前的独立门禁。
+**源码导航包的去重结论（2026-09-05）。** `development-tools` run `33948462622` 已从锁定来源
+实际构建 `diffutils_3.10-1`、`findutils_4.10.0-1`、`gawk_5.3.1-2`、`grep_3.11-2`、`sed_4.9-1`
+和 `which_2.21-1`。为验证增量路径而启动的 `source-navigation-tools` run `33976531692` 也通过了
+构建、ELF、runtime closure 与 base-overlay gate，但它完全重复这些已有包；merge run `33976943804`
+在遇到不同 payload 的同名 `diffutils_3.10-1` 后以 exit 70 fail-closed。该 artifact 不是 merge
+source，batch 入口和配方改动均已撤回；旧的成功 source batch 是这六个包的唯一 r10 构建证据。
+以后新增候选必须先比对成功 batch 的实际 IPK 清单，不能以“仓库中有配方”误判为尚未构建。
 
 `database-tools` 是与已合并的开发工具 batch 分离的 SQLite CLI 增量批次。它选择
 `sqlite3` leaf，使闭包同时重建唯一的 `libsqlite3-0` provider；library IPK 仍只拥有

@@ -8,6 +8,11 @@ IFS=$'\n\t'
 TDVP_PYTHON3_VERSION='3.13.3'
 TDVP_PYTHON3_ARCHIVE='Python-3.13.3.tar.xz'
 TDVP_PYTHON3_ARCHIVE_SHA256='40f868bcbdeb8149a3149580bb9bfd407b3321cd48f0be631af955ac92c0e041'
+# Immutable v3.13.3 upstream-tag commit metadata.  CPython otherwise embeds
+# the wall-clock compiler date and time in libpython's public build info.
+TDVP_PYTHON3_BUILD_INFO_DATE='Apr 08 2025'
+TDVP_PYTHON3_BUILD_INFO_TIME='13:54:08'
+TDVP_PYTHON3_SOURCE_DATE_EPOCH='1744120448'
 
 tdvp_python3_stage_dir() {
   local stage_root=${TDVP_FEED_STAGING_ROOT:-}
@@ -105,10 +110,15 @@ tdvp_python3_assert_stage_marker() {
     echo "CPython source staging has no verified marker: $stage_dir" >&2
     return 75
   }
-  grep -Fqx 'format=1' "$marker" &&
+  grep -Fqx 'format=2' "$marker" &&
     grep -Fqx "version=$TDVP_PYTHON3_VERSION" "$marker" &&
     grep -Fqx "source-sha256=$TDVP_PYTHON3_ARCHIVE_SHA256" "$marker" &&
     grep -Fqx 'build-mode=direct-cross' "$marker" &&
+    grep -Fqx "build-info-date=$TDVP_PYTHON3_BUILD_INFO_DATE" "$marker" &&
+    grep -Fqx "build-info-time=$TDVP_PYTHON3_BUILD_INFO_TIME" "$marker" &&
+    grep -Fqx "source-date-epoch=$TDVP_PYTHON3_SOURCE_DATE_EPOCH" "$marker" &&
+    grep -Fqx "source-path=/usr/src/Python-$TDVP_PYTHON3_VERSION" "$marker" &&
+    grep -Fqx 'sysconfig-paths=normalized' "$marker" &&
     grep -Fqx 'system-expat=libexpat.so.1' "$marker" &&
     grep -Fqx 'curses-panel=disabled' "$marker" || {
       echo "CPython source staging marker is not the reviewed direct build: $marker" >&2
@@ -154,6 +164,8 @@ tdvp_python3_assert_runtime_exclusions() {
 tdvp_build_python3_source_stage() {
   local package_dir=$1 sdk_root=$2 configured_output=${3:-}
   local output tree sysroot readelf_tool strip_tool host_python archive stage_dir work_root source_root install_root
+  local buildinfo_source reproducible_source_root sysconfig_source
+  local -a sysconfig_sources=()
   local build_triplet jobs dynload pyexpat extension
   local -a required_extensions=(
     _ssl _hashlib _ctypes _decimal _sqlite3 _bz2 _lzma _curses readline
@@ -225,12 +237,39 @@ tdvp_build_python3_source_stage() {
     echo "locked CPython archive has an unexpected source directory: $source_root" >&2
     return 89
   }
+  # The release source deliberately falls back to __DATE__/__TIME__ in
+  # Modules/getbuildinfo.c.  Its value is part of libpython, so use the
+  # immutable upstream tag commit time instead of the GitHub runner clock.
+  buildinfo_source="$source_root/Modules/getbuildinfo.c"
+  [[ -f "$buildinfo_source" && ! -L "$buildinfo_source" ]] || {
+    echo "locked CPython source lacks a regular build-info source: $buildinfo_source" >&2
+    return 104
+  }
+  grep -Fqx '#define DATE __DATE__' "$buildinfo_source" &&
+    grep -Fqx '#define TIME __TIME__' "$buildinfo_source" || {
+      echo 'locked CPython build-info source no longer has the reviewed time fallbacks' >&2
+      return 105
+    }
+  sed -i \
+    -e "s|^#define DATE __DATE__$|#define DATE \"$TDVP_PYTHON3_BUILD_INFO_DATE\"|" \
+    -e "s|^#define TIME __TIME__$|#define TIME \"$TDVP_PYTHON3_BUILD_INFO_TIME\"|" \
+    "$buildinfo_source"
+  grep -Fqx "#define DATE \"$TDVP_PYTHON3_BUILD_INFO_DATE\"" "$buildinfo_source" &&
+    grep -Fqx "#define TIME \"$TDVP_PYTHON3_BUILD_INFO_TIME\"" "$buildinfo_source" || {
+      echo 'could not normalize CPython build-info metadata' >&2
+      return 106
+    }
   install_root="$work_root/install-root"
+  reproducible_source_root="/usr/src/Python-$TDVP_PYTHON3_VERSION"
 
   (
     cd -- "$source_root"
     export PATH="$sdk_root/bin:$PATH"
     export LD_LIBRARY_PATH="$sdk_root/lib:$sdk_root/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    export LC_ALL=C
+    export TZ=UTC
+    export SOURCE_DATE_EPOCH="$TDVP_PYTHON3_SOURCE_DATE_EPOCH"
+    export PYTHONHASHSEED=0
     export CC="$sdk_root/bin/riscv64-unknown-linux-gnu-gcc --sysroot=$sysroot"
     export CXX="$sdk_root/bin/riscv64-unknown-linux-gnu-g++ --sysroot=$sysroot"
     export AR="$sdk_root/bin/riscv64-unknown-linux-gnu-gcc-ar"
@@ -240,6 +279,7 @@ tdvp_build_python3_source_stage() {
     export PKG_CONFIG_SYSROOT_DIR="$sysroot"
     export PKG_CONFIG_LIBDIR="$sysroot/usr/lib/pkgconfig:$sysroot/usr/share/pkgconfig"
     export PKG_CONFIG_PATH=''
+    export CFLAGS="-ffile-prefix-map=$work_root=$reproducible_source_root -fdebug-prefix-map=$work_root=$reproducible_source_root -fmacro-prefix-map=$work_root=$reproducible_source_root"
     export CPPFLAGS="-I$sysroot/usr/include"
     export LDFLAGS="-L$sysroot/usr/lib -Wl,-rpath-link,$sysroot/usr/lib"
     export ac_cv_buggy_getaddrinfo=no
@@ -265,6 +305,23 @@ tdvp_build_python3_source_stage() {
       --with-openssl-rpath=no \
       --disable-test-modules
     make -j"$jobs"
+    # The generated sysconfig module is installed as a runtime .py file and
+    # then compiled to .pyc.  It records abs_srcdir/abs_builddir and would
+    # otherwise preserve this mktemp path even when ELF debug paths are mapped.
+    mapfile -t sysconfig_sources < <(
+      find "$source_root" -maxdepth 2 -type f -name '_sysconfigdata_*.py' -print | LC_ALL=C sort
+    )
+    [[ ${#sysconfig_sources[@]} -eq 1 ]] || {
+      echo "CPython build produced an ambiguous sysconfig-data set: ${#sysconfig_sources[@]}" >&2
+      return 107
+    }
+    for sysconfig_source in "${sysconfig_sources[@]}"; do
+      sed -i "s|$work_root|$reproducible_source_root|g" "$sysconfig_source"
+      if grep -Fq "$work_root" "$sysconfig_source"; then
+        echo "CPython sysconfig still exposes the temporary build root: $sysconfig_source" >&2
+        return 108
+      fi
+    done
     make DESTDIR="$install_root" install
   )
 
@@ -317,10 +374,15 @@ tdvp_build_python3_source_stage() {
   mkdir -p -- "$stage_dir"
   cp -a -- "$install_root/usr" "$stage_dir/usr"
   cat >"$stage_dir/.tdvp-python3-source-build" <<EOF
-format=1
+format=2
 version=$TDVP_PYTHON3_VERSION
 source-sha256=$TDVP_PYTHON3_ARCHIVE_SHA256
 build-mode=direct-cross
+build-info-date=$TDVP_PYTHON3_BUILD_INFO_DATE
+build-info-time=$TDVP_PYTHON3_BUILD_INFO_TIME
+source-date-epoch=$TDVP_PYTHON3_SOURCE_DATE_EPOCH
+source-path=/usr/src/Python-$TDVP_PYTHON3_VERSION
+sysconfig-paths=normalized
 system-expat=libexpat.so.1
 curses-panel=disabled
 EOF

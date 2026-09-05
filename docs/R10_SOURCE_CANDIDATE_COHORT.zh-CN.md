@@ -173,15 +173,27 @@ path 与 package-batch restore path 完全对齐。它不会重建 SDK、不会�
 所有后续 closure gates。这个调整不会从本地下载 artifact，也不会接受零个、多个或名称不符合
 `tdvp-k230-r10-*-unsigned-*` 的 artifact。
 
-final merge `33942996461` 进一步证明 partial artifact 的私有 runtime-base 不能被误当作
-source-built payload：它在 IPK hash 比对阶段发现 development batch 与 Node batch 都带有
-`libpython3.13_3.13.3-1_riscv64.ipk`，但包裹字节不同，因而以 exit 70 停止；没有进入索引、
-closure 或上传步骤。该包在匹配 SDK 的
-`.tdvp-target-runtime-packages.tsv` 中是 target-derived provider，`build-all.sh` 已禁止 source
-batch 重建 catalog owner。后续 merge 只恢复这份私有 manifest 来分类，仍从第一个已验证的
-source artifact 取得最终 IPK：仅当同名同版本明确属于该 manifest 时才保留先到副本；任何其他
-重复包仍必须有完全相同的 SHA-256，否则 exit 70。manifest 不提供 payload、不会生成 IPK，
-也不会放宽 source-built 包、ABI identity、index、runtime closure 或 coverage gate。
+final merge `33942996461` 在 IPK hash 比对阶段发现 development batch 与 Node batch 都带有
+`libpython3.13_3.13.3-1_riscv64.ipk`，但 SHA-256 不同，因而以 exit 70 停止；没有进入索引、
+closure 或上传步骤。最初把它归类为 private runtime-base 的假设是错误的：替代 merge
+`33943923122` 恢复 catalog manifest 后仍以同一 exit 70 停止，因为该 manifest 不包含
+`libpython3.13`。两个 source-batch 日志都显示它由锁定的 CPython 3.13.3 archive 直接交叉构建，
+而非从 target runtime 复制；两次失败 run 均永久排除，不能产生或合并候选 feed。
+
+`scripts/build-ipk.sh` 已以固定排序、epoch mtime、numeric owner 和 deterministic ar 创建 IPK，
+所以不同外层 SHA-256 表示 payload 已不同，不能用“保留先到副本”掩盖。CPython 上游
+`Modules/getbuildinfo.c` 的已知 fallback 会把编译时的 `__DATE__` 与 `__TIME__` 写入公共
+`libpython`；原 direct-cross helper 也使用随机的 `/tmp/tdvp-python-build.*` source root。helper
+现在在验证锁定源码仍具有该已审查 fallback 后，将 build-info 固定为 v3.13.3 upstream tag commit
+`2025-04-08T13:54:08Z`，并固定 `SOURCE_DATE_EPOCH`、locale/time zone、Python hash seed 和
+compiler source-path remap。`make` 后、`make install` 前会把生成的
+`_sysconfigdata_*.py` 中的临时 `abs_srcdir`/`abs_builddir` 规范化；因此随后生成的 `.pyc`
+也不保留 runner 的随机工作路径。它把 staging marker 升为 format 2，防止旧 staging 被误复用。
+
+merge 已恢复最严格的规则：无论来源、provider 或 artifact 顺序，同名同版本 IPK 都必须逐字节
+SHA-256 相同，否则 exit 70。只重跑受此 CPython closure 影响的 development 与 Node batch；其余
+五个已成功 source batch 保持可复用。仅当两个替代 artifact 的 Python IPK 相同，最终 GitHub
+merge 才会继续执行 index、runtime closure 和 coverage gates。
 
 下一次 partial merge 还必须区分“SDK ABI”与“GitHub Actions cache 布局”。已成功的 archive batch
 `33878735088` 记录的是同一固件/profile 的 cache `v2`，后续成功 batch 记录 `v3`；`v3` 只增加了

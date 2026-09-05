@@ -14,11 +14,8 @@ grep -Fq 'gh api --paginate' "$workflow"
 grep -Fq 'repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100' "$workflow"
 grep -Fq -- "--jq '.artifacts[].name | select(test(\"^tdvp-k230-r10-.*-unsigned-\"))'" "$workflow"
 grep -Fq 'gh run download "$run_id" --repo "$GITHUB_REPOSITORY"' "$workflow"
-grep -Fq 'Restore the target-runtime provenance manifest for merge' "$workflow"
-grep -Fq 'target_runtime_manifest="$RUNNER_TEMP/tdvp-r10-runtime-base/' "$workflow"
-grep -Fq 'is_target_runtime_ipk()' "$workflow"
-grep -Fq 'retaining first verified target-runtime IPK: $filename' "$workflow"
 grep -Fq 'incompatible duplicate IPK: $filename' "$workflow"
+grep -Fq 'exit 70' "$workflow"
 grep -Fq 'Re-index and validate the merged candidate without compiling' "$workflow"
 grep -Fq 'TDVP_SDK_ABI_ID: tdvp-k230-r1-abi-' "$workflow"
 grep -Fq "printf 'sdk_abi_id\\t%s\\n' \"\$TDVP_SDK_ABI_ID\"" "$workflow"
@@ -32,6 +29,10 @@ if grep -Fq 'sdk_cache_key)" == "$TDVP_SDK_CACHE_KEY"' "$workflow"; then
 fi
 if grep -Fq 'gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json artifacts' "$workflow"; then
   echo 'merge workflow uses an unavailable gh run view artifacts field' >&2
+  exit 1
+fi
+if grep -Eq 'target_runtime_manifest|is_target_runtime_ipk|retaining first verified target-runtime IPK' "$workflow"; then
+  echo 'merge workflow must not waive mismatched duplicate IPKs by provenance class' >&2
   exit 1
 fi
 

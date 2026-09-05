@@ -118,6 +118,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 25 | `logrotate`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 3.22.0 | `log-maintenance-tools` 只允许私有 ELF 与 `tdvp-logrotate`，精确复用 immutable target `libpopt (= 1.19-1)`。run [`33991963284`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991963284) 实际禁用 SELinux/ACL 并传入 `--without-selinux --without-acl`，产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33992249214`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33992249214) 只 hash-merge 28 个 artifact、重建索引并再次通过 closure/target-runtime coverage。任何 `/etc/logrotate.conf`、`/etc/logrotate.d`、timer、daemon 或普通 firmware 路径均未进入 IPK；CI 不得执行该命令、传入路径或读写、重命名、压缩、删除/轮转任何日志。 |
 | 26 | `jo`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 1.6 | `json-construction-tools` 只允许私有 ELF 与 `tdvp-jo`，不引入新的 non-platform shared-runtime provider，也不覆盖 firmware 路径。run [`33992855036`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33992855036) 产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33993109744`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993109744) 只 hash-merge 29 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不得执行该命令或传入 JSON input。 |
 | 27 | `ed`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 1.20.2 | `line-editor-tools` 只允许私有 GNU `ed` ELF 与 `tdvp-ed`；`.tar.lz` 的 host-lzip 仅作 runner 解包器，不进入 target IPK。run [`33993563150`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993563150) 产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33993808518`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993808518) 只 hash-merge 30 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不得启动编辑器、传入文件或执行修改。 |
+| 28 | `cpio`（GitHub Actions source batch 已通过，待无重编 merge / 实机） | 2.15 | `cpio-archive-tools` 只允许私有 GNU `cpio` ELF 与 `tdvp-cpio`；K230 的 glibc/wchar profile 不触发仅为 musl/uClibc 选择的 `argp-standalone`，不引入 shared-runtime provider。run [`33994423195`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33994423195) 产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；仍须通过无重编 merge。CI 不得执行该命令、传入 archive 或 filesystem path，也不得创建、解包、读取或写入 archive payload。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -136,8 +137,8 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 source，batch 入口和配方改动均已撤回；旧的成功 source batch 是这六个包的唯一 r10 构建证据。
 以后新增候选必须先比对成功 batch 的实际 IPK 清单，不能以“仓库中有配方”误判为尚未构建。
 
-**r10 实际 package inventory（2026-09-06）。** 对 30 个成功 source batch 的 GitHub Actions
-`built *.ipk` 记录逐一去重后，105 个 r10 recipe 中已有 89 个 recipe package 具备实际 source-build
+**r10 实际 package inventory（2026-09-06）。** 对 31 个成功 source batch 的 GitHub Actions
+`built *.ipk` 记录逐一去重后，106 个 r10 recipe 中已有 90 个 recipe package 具备实际 source-build
 证据。其余 12 个通用 package 是 immutable target catalogue provider：`ca-certificates`、`libatomic-1`、
 `libcrypto-3`、`libcurl-4`、`libexpat-1`、`libffi-8`、`libncursesw`、`libpcre2-8`、`libpopt`、
 `libreadline`、`libssl-3` 与 `libz`；它们只能复用，不能为补齐数量重编。metadata-only
@@ -223,6 +224,12 @@ compatible artifact 的 IPK hash，只重建 `Packages` 索引、验证 runtime 
 target-runtime coverage；SDK-build 与 package-build job 都是 skipped。最终 merged unsigned artifact 为
 [`9977497916`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993808518/artifacts/9977497916)
 （196,503,290 bytes；zip SHA-256 `3ccc25ebc3b92dafddf153adc7381e65b57c32a293d8c4fe78934e7277e8d648`）。CI 未执行编辑器或传入文件。
+`cpio` 的 source lock、私有命令路径和独立 `cpio-archive-tools` Actions batch 已由 run
+[`33994423195`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33994423195) 实际验证：从锁定 cache
+交叉构建的 `cpio_2.15-1_riscv64.ipk` 通过 feed verification，并上传 artifact
+[`9977656642`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33994423195/artifacts/9977656642)
+（90,181,109 bytes；zip SHA-256 `08a3d956249cb46ec3627f70d9c16d1d9f3cc476ce5727c9cfc6ba5a76c21bb3`）。
+它计入 90，但在无重编 merge 成功前尚不属于 merged candidate；CI 未执行 `cpio`、传入 archive 或 filesystem path，也未创建、解包、读取或写入 archive payload。
 为使这个 metadata profile 也真正增量，`diagnostics-profile` 必须提供成功的
 `base_merged_run_id`：CI 只接受一份未过期的 merged unsigned artifact，校验 run 成功态、唯一 artifact、
 feed 路径和无顶层 symlink；若 prior artifact 含有同名 target-runtime IPK，则保留本次新恢复、权威的

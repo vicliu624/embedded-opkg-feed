@@ -463,9 +463,15 @@ This document fixes the governance rule first. Implement automation in order:
     then admitted its verified artifact without recompiling. host-lzip only
     unpacked the runner source; CI never invoked the editor or supplied a file;
     then
-12. Emit source provenance/SBOM material for each release and bind source, SDK,
+12. Source batch completed: GitHub Actions source batch
+    [`33994423195`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33994423195)
+    has admitted the locked GNU `cpio` archive command pending a no-recompile
+    merge. Its glibc/wchar K230 profile did not select the musl/uClibc-only
+    argp-standalone branch; it remains private, introduces no shared provider,
+    and was never invoked or given an archive or filesystem path in CI; then
+13. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
-13. Introduce reviewed general libraries incrementally, retaining shared-runtime
+14. Introduce reviewed general libraries incrementally, retaining shared-runtime
    and on-device test gates each time.
 
 Until all automation is complete, this contract remains the admission standard

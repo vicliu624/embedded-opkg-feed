@@ -62,8 +62,9 @@ GNU coreutils 使用更严格的整组命名边界：包内只保留一个
 `/usr/libexec/tdvp-coreutils/coreutils` multi-call ELF，公开命令均为
 `tdvp-coreutils-<command>`，例如 `tdvp-coreutils-ls`、`tdvp-coreutils-cp`、
 `tdvp-coreutils-mktemp` 与 `tdvp-coreutils-chroot`。这既保留 BusyBox/firmware 命令，
-又避免把几十份相同的 multi-call ELF 复制进 IPK。它在 CI 中明确关闭所有会引入未准入的
-ACL、attribute、libcap、SELinux、OpenSSL 或 NLS target provider 的可选 Buildroot 分支。
+又避免把几十份相同的 multi-call ELF 复制进 IPK。它不改动 immutable platform Kconfig，
+而只以 coreutils 专用 configure override 关闭会引入未准入 ACL、attribute、libcap、SELinux、
+OpenSSL 或 NLS target provider 的可选功能。
 
 ## r10：Node.js v22.23.2 源码交叉构建候选
 

@@ -8,12 +8,13 @@ each GNU applet's required `argv[0]`; its public commands are only explicit
 unprefixed `/usr/bin/*`, a firmware file, a copied target-root library, or a
 Debian binary.
 
-The private Buildroot transaction disables ACL, attr, libcap, libselinux,
-OpenSSL, and NLS branches. This keeps the package's runtime closure limited to
-the reviewed K230 ABI seeds unless a future, independently source-built
-provider undergoes a separate admission. GitHub Actions must validate the
-source lock, RISC-V ELF machine, no RPATH/RUNPATH, IPK runtime closure, and
-base-overlay policy before it uploads an unsigned candidate.
+The private Buildroot transaction preserves the immutable platform Kconfig
+byte-for-byte. Its reviewed `COREUTILS_CONF_OPTS` disables coreutils ACL, attr,
+libcap, libselinux, OpenSSL, and NLS features, keeping the package's runtime
+closure limited to reviewed K230 ABI seeds unless a future, independently
+source-built provider undergoes a separate admission. GitHub Actions must
+validate the source lock, RISC-V ELF machine, no RPATH/RUNPATH, IPK runtime
+closure, and base-overlay policy before it uploads an unsigned candidate.
 
 Candidate admission is not release promotion. K230 device validation still
 needs representative wrapper execution, removal, and rollback before signing

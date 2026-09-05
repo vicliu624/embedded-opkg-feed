@@ -50,19 +50,17 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Do not inherit feature branches that would introduce non-ABI target
-# providers into the candidate. Each requested command still comes from one
-# locked GNU source archive and one matching Buildroot transaction.
+# The immutable TDVP configuration may legitimately select libcap (or other
+# platform features) for unrelated firmware components. Do not mutate those
+# global Kconfig choices: override *only coreutils' configure options through
+# the reviewed make-variable interface. `--enable-single-binary` defaults to
+# a multi-call payload; private relative symlinks below provide each selected
+# applet with the argv[0] it needs.
 tdvp_buildroot_install "$output" "$install_root" \
   --offline-download-dir "$download_dir" \
   --enable BR2_PACKAGE_BUSYBOX_SHOW_OTHERS \
   --enable BR2_PACKAGE_COREUTILS \
-  --disable BR2_PACKAGE_ACL \
-  --disable BR2_PACKAGE_ATTR \
-  --disable BR2_PACKAGE_LIBCAP \
-  --disable BR2_PACKAGE_LIBSELINUX \
-  --disable BR2_PACKAGE_OPENSSL \
-  --disable BR2_ENABLE_LOCALE \
+  --make-variable 'COREUTILS_CONF_OPTS=--disable-rpath --enable-single-binary --disable-acl --disable-xattr --disable-libcap --without-selinux --without-openssl --disable-nls' \
   --target coreutils
 
 coreutils_elf="$install_root/usr/bin/coreutils"

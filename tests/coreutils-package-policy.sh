@@ -32,12 +32,11 @@ expect_line "^SOURCE_ARTIFACT_1_SHA256='cd328edeac92f6a665de9f323c93b712af1858bc
 build_file="$package_dir/build.sh"
 expect_line "COREUTILS_VERSION = 9[.]5" "$build_file"
 expect_line "--enable BR2_PACKAGE_COREUTILS" "$build_file"
-expect_line "--disable BR2_PACKAGE_ACL" "$build_file"
-expect_line "--disable BR2_PACKAGE_ATTR" "$build_file"
-expect_line "--disable BR2_PACKAGE_LIBCAP" "$build_file"
-expect_line "--disable BR2_PACKAGE_LIBSELINUX" "$build_file"
-expect_line "--disable BR2_PACKAGE_OPENSSL" "$build_file"
-expect_line "--disable BR2_ENABLE_LOCALE" "$build_file"
+expect_line "--make-variable 'COREUTILS_CONF_OPTS=--disable-rpath --enable-single-binary --disable-acl --disable-xattr --disable-libcap --without-selinux --without-openssl --disable-nls'" "$build_file"
+if grep -Eq -- '--disable BR2_(PACKAGE_ACL|PACKAGE_ATTR|PACKAGE_LIBCAP|PACKAGE_LIBSELINUX|PACKAGE_OPENSSL|ENABLE_LOCALE)' "$build_file"; then
+  echo 'coreutils must not modify a global TDVP Kconfig provider choice' >&2
+  exit 1
+fi
 expect_line "/usr/libexec/tdvp-coreutils/coreutils" "$build_file"
 expect_line "tdvp-coreutils-" "$build_file"
 expect_line "ln -s -- coreutils" "$build_file"

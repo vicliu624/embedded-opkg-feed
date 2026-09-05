@@ -103,7 +103,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 10 | `sdl2`、`sdl2-ttf`、`libmgba`、`tdvp-gba` | 2.30.11、2.22.0、0.10.5、0.2.3 | `retro-gba` 独立增量批次；四个 IPK 必须全部由来源锁重建，不能复用历史 r2/r3 payload；验证 Wayland/ALSA runtime closure、`tdvp-gba` 动态依赖及 `/opt/tdvp-gba` 的非覆盖安装。 |
 | 11 | `sqlite3` | 3.48.0 | `database-tools` 只从 `libsqlite3-0` 同一次锁定源码构建的私有 staging 取得 CLI；仍验证 RISC-V ELF、`libsqlite3.so.0`、精确 readline/ncurses 依赖及无 base-path 覆盖。 |
 | 12 | `bc` | 1.07.1 | `calculator-tools` 锁定 GNU bc 与 host-flex/host-m4 输入；只公开 `tdvp-bc`，不替换 firmware `bc`，并验证 RISC-V ELF、无 RPATH/RUNPATH 与 base-overlay。 |
-| 13 | `coreutils` | 9.5 | `coreutils-tools` 只封装一个 GNU multi-call ELF，并以 `tdvp-coreutils-*` 公开 35 个基础命令；禁用 ACL/attr/libcap/libselinux/OpenSSL/NLS 可选分支，不覆盖 firmware/BusyBox 路径。 |
+| 13 | `coreutils` | 9.5 | `coreutils-tools` 只封装一个 GNU multi-call ELF，并以 `tdvp-coreutils-*` 公开 35 个基础命令；保留平台 Kconfig，以 coreutils 专用 configure override 禁用 ACL/attr/libcap/libselinux/OpenSSL/NLS，不覆盖 firmware/BusyBox 路径。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -129,8 +129,9 @@ coreutils 9.5 archive 构建一个 RISC-V multi-call ELF，保存为
 `/usr/libexec/tdvp-coreutils/coreutils`；每个公开入口都是独立的
 `/usr/bin/tdvp-coreutils-<command>` wrapper。例如 `tdvp-coreutils-ls`、
 `tdvp-coreutils-mktemp` 与 `tdvp-coreutils-chroot` 都不会占用 `/bin`、`/usr/bin/ls`
-或其他 firmware 命令路径。recipe 在私有 Buildroot transaction 中显式关闭 ACL、attr、
-libcap、libselinux、OpenSSL 与 NLS 分支，避免把尚未准入的 target provider 带入 closure。
+或其他 firmware 命令路径。recipe 不会修改 immutable platform Kconfig；它只在私有
+Buildroot transaction 中以 `COREUTILS_CONF_OPTS` 显式关闭 coreutils 的 ACL、attr、libcap、
+libselinux、OpenSSL 与 NLS 功能，避免把尚未准入的 target provider 链接进 closure。
 它必须证明 locked source、RISC-V ELF、无 RPATH/RUNPATH、唯一 payload owner、runtime
 closure 和 base-overlay gate；之后仍须在 K230 上记录 wrapper 功能、卸载和回滚，才可进入
 unsigned candidate。

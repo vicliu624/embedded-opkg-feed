@@ -230,14 +230,15 @@ below; it is not an upstream-source exception for ordinary packages.
   shared-library closure; its `nc` command is still private to the IPK and
   must pass the base-overlay collision check before publication. Device tests
   use only controlled endpoints and never expose an unauthenticated listener;
-- source-admitted terminal multiplexer: `tmux` declares exact target-catalogue
-  libevent/libncursesw dependencies.  Its Buildroot 2025.02.1 closure locks
-  tmux, libevent, host-pkgconf, and the OpenSSL archive matching the
-  target-attested libevent provider closure.  tmux does not link OpenSSL
-  directly and must not override the matching SDK's global OpenSSL choice; it
-  checks matching-SDK MMU, wchar, locale, and ncurses capabilities and disables
-  systemd/utf8proc. Actual IPKs still require matching-SDK and on-device
-  session lifecycle evidence;
+- source-admitted terminal multiplexer: `libevent` is a locked-source shared
+  provider for its four public event-loop SONAMEs, while `tmux` declares exact
+  libevent/target-catalogue-libncursesw dependencies. Its Buildroot 2025.02.1
+  closure locks tmux, libevent, host-pkgconf, and the OpenSSL archive matching
+  libevent's target-attested libcrypto closure. tmux does not link OpenSSL or
+  systemd directly and must not override the matching SDK's global feature
+  choices: recipe-scoped `TMUX_CONF_OPTS` disables systemd/utf8proc and the
+  fixed `TMUX_DEPENDENCIES` prevents their build-time import. Actual IPKs still
+  require matching-SDK and on-device session lifecycle evidence;
 - metadata-only diagnostic profile: `tdvp-diagnostics` has a narrow source-lock
   exemption because it contains only repository-owned instructions and exact
   `strace`/`htop`/`lsof`/`iperf3`/`netcat` dependency metadata. It owns no executable,

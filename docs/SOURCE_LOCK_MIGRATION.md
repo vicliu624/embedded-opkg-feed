@@ -31,6 +31,17 @@ below; it is not an upstream-source exception for ordinary packages.
 
 - Buildroot-derived maintenance commands: `make`, `pkgconf`, `patch`,
   `diffutils`, and `strace`;
+- TLS trust store: `ca-certificates` is owned by the fixed K230 target
+  catalogue's `/etc/ssl` data. Run `33977596329` proves that selecting its
+  same-named source recipe retains the target provider and stops; it is not a
+  source candidate and must not be replaced by a Debian-source or host-made
+  bundle;
+- OpenSSH client (not admitted): `openssh-client` locks the portable 9.9p2
+  archive and limits its payload to `ssh`, `scp`, `sftp`, `ssh-agent`, and
+  `ssh-add`. GitHub Actions run `33977961721` completed the cross-build but
+  rejected the non-identical `/usr/bin/ssh-agent` payload against the fixed
+  target at the identical-overlay gate (exit 79). It is not a feed provider
+  and cannot satisfy a later recipe dependency;
 - r10 text/search/terminal-diagnostic commands: `tree`, `less`, `file`,
   `which`, `curl`, `wget`, `iperf3`, `lsof`, `netcat`, `rsync`, `dos2unix`, `jq`, `grep`, `sed`, `findutils`, `gawk`, `htop`, `nano`, and `tmux`;
   `nano`; `htop` explicitly disables the unadmitted optional `libcap` feature,
@@ -43,18 +54,6 @@ below; it is not an upstream-source exception for ordinary packages.
   TDVP configuration. Its sole non-platform ELF dependency is the owned
   `libncursesw`, and the resulting ELF has been audited to contain no
   RPATH/RUNPATH;
-- shared TLS trust store: `ca-certificates`; it builds from the locked Debian
-  20230311 source snapshot, with the matching SDK's `c_rehash` generating the
-  `/etc/ssl/certs` bundle and hash links in a private target root. The package
-  owns both those links and their `/usr/share/ca-certificates` targets, so it
-  never relies on certificate files left by an old release or base firmware;
-- SSH transport client: `openssh-client`; it cross-builds locked OpenSSH 9.9p2
-  source directly with the matching SDK/sysroot and the reviewed Buildroot
-  options, explicitly avoiding this desktop SDK's unrelated PAM/server graph.
-  Its payload is limited to `ssh`, `scp`, `sftp`, `ssh-agent`, and `ssh-add`;
-  it contains no server, setuid helper, key-generation utility, or `/etc/ssh`
-  configuration. All five RISC-V ELFs were audited with no RPATH/RUNPATH and
-  exact owned OpenSSL/zlib dependencies;
 - Git client split: `git-runtime` and `git`; both lock the Git 2.48.1 release
   archive selected and hashed by Buildroot 2025.02.1, then cross-build it
   directly against the matching SDK/sysroot and a verified offline source

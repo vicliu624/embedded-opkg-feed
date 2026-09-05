@@ -40,10 +40,10 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
   `trust-store-runtime` run `33977596329` 证明它不是可迁移的 source candidate：选择该同名 recipe 时，
   `build-all` 正确复用 target provider 并停止，而非重新构建或覆盖信任库。未来 TLS consumer 只能引用
   target catalogue 的精确 provider，不能复制 Debian 或 host 生成的 bundle；
-- OpenSSH client：`openssh-client` 锁定 portable 9.9p2 source archive，并只产生 `ssh`、`scp`、`sftp`、
-  `ssh-agent`、`ssh-add` client 工具。它精确依赖 target catalogue 的 OpenSSL/zlib provider，排除 server、
-  setuid helper、key tools 与 `/etc/ssh`；任何与固定 target 已有命令不字节相同的 payload 均由 identical
-  overlay gate 拒绝；
+- OpenSSH client（不准入）：`openssh-client` 锁定 portable 9.9p2 source archive，并只产生 `ssh`、`scp`、
+  `sftp`、`ssh-agent`、`ssh-add` client 工具。run `33977961721` 已在 GitHub Actions 交叉编译完成，但
+  identical overlay gate 发现 `/usr/bin/ssh-agent` 与固定 target 的同路径字节不同而以 exit 79 拒绝；
+  因而它不是 feed provider，也不得成为后续依赖的依据；
 - r10 文本/搜索/终端诊断工具：`tree`、`less`、`file`、`which`、`curl`、`wget`、`iperf3`、`lsof`、`netcat`、`rsync`、`dos2unix`、`jq`、`bc`、
   `grep`、`sed`、`findutils`、`diffutils`、`gawk`、`htop`、`nano`、`tmux`；`htop` 明确关闭未准入的可选
   `libcap` feature，`nano` 保持当前 SDK 未选中 `file/libmagic` 的终端编辑配置；二者
@@ -52,15 +52,12 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
   Vim 9.1.0145 源归档，并在私有离线 `BR2_DL_DIR` 中交叉构建。`vim-runtime` 仅拥有
   runtime 数据和许可证；`vim` 仅拥有私有 ELF、`/usr/bin/vim` 包装器及 TDVP 配置，
   其唯一的非平台 ELF 依赖为已拥有的 `libncursesw`，并已审计无 RPATH/RUNPATH；
-- 共享 TLS 信任库：`ca-certificates`；它从锁定的 Debian 20230311 源快照构建，并由
-  匹配 SDK 的 `c_rehash` 在私有目标根生成 `/etc/ssl/certs` bundle 和哈希链接。该包
-  同时拥有这些链接指向的 `/usr/share/ca-certificates` 证书数据，因而不依赖旧 release
-  或基础固件残留的证书文件；
-- SSH transport 客户端：`openssh-client`；它以匹配的 SDK/sysroot、按审查过的
-  Buildroot 参数直接交叉构建锁定的 OpenSSH 9.9p2 源码，明确避开这个桌面 SDK 中无关的
-  PAM/server 依赖图。载荷只含 `ssh`、`scp`、`sftp`、`ssh-agent`、`ssh-add`，不含 server、
-  setuid helper、密钥生成工具或 `/etc/ssh` 配置；五个 RISC-V ELF 均已审计无
-  RPATH/RUNPATH，且只精确依赖已拥有的 OpenSSL/zlib；
+- TLS 信任库：`ca-certificates` 由固定 K230 target catalogue 的 `/etc/ssl` 提供。它不是 source
+  candidate；run `33977596329` 已证明同名 source recipe 会被正确地保留 target provider 而停止，
+  不能以 Debian source 或 host 生成的 bundle 覆盖它；
+- SSH transport 客户端（不准入）：`openssh-client` 的锁定 OpenSSH 9.9p2 source 和 client-only
+  构建边界可供审计，但 run `33977961721` 的 `/usr/bin/ssh-agent` identical-overlay 检查失败。
+  它不得生成 r10 IPK、替换 firmware 文件或被其他 recipe 当作 feed provider；
 - Git 客户端拆分：`git-runtime` 与 `git` 均锁定 Buildroot 2025.02.1 选定且给出哈希的
   Git 2.48.1 release archive，再以匹配 SDK/sysroot 和已校验的离线 source cache 直接
   交叉构建。`git` 仅拥有 `/usr/bin/git`；`git-runtime` 只拥有明确白名单中的客户端

@@ -115,6 +115,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 22 | `gdbserver`、`ethtool`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 15.1、6.14 | `debug-network-tools` 只允许私有 ELF 与 `tdvp-gdbserver`、`tdvp-ethtool`。gdbserver 清空 Buildroot 的 SDK `debug-root` post-install hook，并关闭 full GDB/TUI/Python；ethtool 关闭 netlink/libmnl 和 pretty-print。run `33988534267` 验证 source cache、RISC-V ELF、runtime closure 和 deny overlay 并产生两个 IPK；run `33988940718` 只 hash-merge 25 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不启动 debug server 或变更网络接口。 |
 | 23 | `i2c-tools`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 4.4 | `i2c-inspection-tools` 只允许私有静态链接 ELF 与 `tdvp-i2c-{detect,dump,set,get,transfer}`。run `33989899026` 禁用 `BR2_PACKAGE_PYTHON3`/`py-smbus`，并实际传入 `BUILD_DYNAMIC_LIB=0`、`BUILD_STATIC_LIB=1`、`USE_STATIC_LIB=1`；临时 `libi2c.a` 和任何 `libi2c.so` 均未进入 IPK。run `33990178543` 只 hash-merge 26 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不得探测、读取、写入或枚举 I2C 总线。 |
 | 24 | `inotify-tools`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 3.20.2.2 | `filesystem-event-tools` 只允许与私有 static `libinotifytools` implementation 链接的 ELF，及 `tdvp-inotify-wait`、`tdvp-inotify-watch`。run [`33991128904`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991128904) 实际传入 `--disable-shared --enable-static --enable-static-binary --disable-doxygen`，产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33991417095`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991417095) 只 hash-merge 27 个 artifact、重建索引并再次通过 closure/target-runtime coverage。任何 `libinotifytools`、头文件或普通 firmware 路径均未进入 IPK；CI 不得启动 watcher、传入路径或观察真实 filesystem event。 |
+| 25 | `logrotate`（配方/锁/命令边界已完成，待 GitHub Actions） | 3.22.0 | `log-maintenance-tools` 只允许私有 ELF 与 `tdvp-logrotate`，精确复用 immutable target `libpopt (= 1.19-1)`。必须禁用 SELinux/ACL 分支并强制 `--without-selinux --without-acl`；任何 `/etc/logrotate.conf`、`/etc/logrotate.d`、timer、daemon 或普通 firmware 路径均不可进入 IPK。GitHub Actions 仍须证明 source cache、RISC-V ELF、runtime closure、deny overlay 和无重编 merge，CI 不得执行该命令、传入路径或读写、重命名、压缩、删除/轮转任何日志。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -134,7 +135,7 @@ source，batch 入口和配方改动均已撤回；旧的成功 source batch 是
 以后新增候选必须先比对成功 batch 的实际 IPK 清单，不能以“仓库中有配方”误判为尚未构建。
 
 **r10 实际 package inventory（2026-09-06）。** 对 27 个成功 source batch 的 GitHub Actions
-`built *.ipk` 记录逐一去重后，102 个 r10 recipe 中已有 86 个 recipe package 具备实际 source-build
+`built *.ipk` 记录逐一去重后，103 个 r10 recipe 中已有 86 个 recipe package 具备实际 source-build
 证据。其余 12 个通用 package 是 immutable target catalogue provider：`ca-certificates`、`libatomic-1`、
 `libcrypto-3`、`libcurl-4`、`libexpat-1`、`libffi-8`、`libncursesw`、`libpcre2-8`、`libpopt`、
 `libreadline`、`libssl-3` 与 `libz`；它们只能复用，不能为补齐数量重编。metadata-only

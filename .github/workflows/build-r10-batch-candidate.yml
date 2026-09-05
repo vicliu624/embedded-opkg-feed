@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -93,6 +93,7 @@ jobs:
           bash ./tests/debug-network-tools-policy.sh
           bash ./tests/i2c-tools-package-policy.sh
           bash ./tests/inotify-tools-package-policy.sh
+          bash ./tests/logrotate-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/tmux-package-policy.sh
@@ -458,6 +459,7 @@ jobs:
           bash ./tests/debug-network-tools-policy.sh
           bash ./tests/i2c-tools-package-policy.sh
           bash ./tests/inotify-tools-package-policy.sh
+          bash ./tests/logrotate-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/diagnostics-package-policy.sh
@@ -673,6 +675,13 @@ jobs:
               # implementation. CI never starts a watcher or observes a path.
               package_args=(--package inotify-tools)
               expected_packages=(inotify-tools)
+              ;;
+            log-maintenance-tools)
+              # Keep logrotate command-only: its private transaction disables
+              # SELinux/ACL, and no /etc configuration, timer or daemon enters
+              # the IPK. CI never invokes it or supplies a path to rotate.
+              package_args=(--package logrotate)
+              expected_packages=(logrotate)
               ;;
             *) echo 'unreviewed batch input' >&2; exit 64 ;;
           esac

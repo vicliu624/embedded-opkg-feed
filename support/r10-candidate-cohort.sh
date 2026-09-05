@@ -12,4 +12,5 @@ TDVP_R10_CANDIDATE_COHORT=(
   gdbserver ethtool
   i2c-tools
   inotify-tools
+  logrotate
 )

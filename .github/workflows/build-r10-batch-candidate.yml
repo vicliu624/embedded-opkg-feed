@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, process-monitoring-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -87,6 +87,7 @@ jobs:
           bash ./tests/memtester-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
+          bash ./tests/tmux-package-policy.sh
           bash ./tests/curl-package-policy.sh
           bash ./tests/openssh-client-package-policy.sh
           bash ./tests/ffprobe-package-policy.sh
@@ -454,6 +455,13 @@ jobs:
               # only the locked rsync leaf.
               package_args=(--package rsync)
               expected_packages=(rsync)
+              ;;
+            terminal-session-tools)
+              # tmux directly consumes only the versioned target catalogue
+              # libevent/libncursesw providers.  libevent owns its own
+              # OpenSSL closure, so no library source provider is rebuilt here.
+              package_args=(--package tmux)
+              expected_packages=(tmux)
               ;;
             process-monitoring-tools)
               # libcap-2 is a versioned immutable target-runtime provider.

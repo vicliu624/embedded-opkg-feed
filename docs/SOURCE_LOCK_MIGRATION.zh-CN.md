@@ -155,10 +155,12 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
   Netcat 0.7.1 归档。它的 target recipe 没有可选共享库闭包；但 `nc` 仍是 IPK 私有
   命令，发布前必须通过 base-overlay 路径冲突检查。实机测试只针对受控 endpoint，
   不得暴露未认证 listener；
-- 已完成来源准入的终端多路复用器：`libevent` 先唯一拥有四个公共 event-loop SONAME，
-  并明确关闭 OpenSSL 支持；`tmux` 随后精确依赖 `libevent` 与 `libncursesw`，同时锁定
-  tmux、libevent 和 host-pkgconf 归档。它会检查匹配 SDK 的 MMU、宽字符、locale 与
-  ncurses 能力，并关闭 systemd/utf8proc；实际 IPK 仍须经匹配 SDK 与实机会话生命周期验证；
+- 已完成来源准入的终端多路复用器：`tmux` 精确依赖 target catalogue 的 `libevent` 与
+  `libncursesw`。其 Buildroot 2025.02.1 closure 锁定 tmux、libevent、host-pkgconf 以及
+  与 target-attested libevent provider closure 匹配的 OpenSSL 归档。tmux 本身不直接链接
+  OpenSSL，也不可覆盖匹配 SDK 的全局 OpenSSL 选择；它会检查匹配 SDK 的 MMU、宽字符、
+  locale 与 ncurses 能力，并关闭 systemd/utf8proc；实际 IPK 仍须经匹配 SDK 与实机会话
+  生命周期验证；
 - 纯元数据诊断 profile：`tdvp-diagnostics` 仅包含仓库自有说明文档及精确的
   `strace`/`htop`/`lsof`/`iperf3`/`netcat` 依赖元数据，因此具有狭窄 source-lock 豁免；它不拥有
   可执行文件、共享库、SDK 制品或任何固件路径；

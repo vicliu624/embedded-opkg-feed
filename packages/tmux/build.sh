@@ -12,6 +12,10 @@ for required_config in BR2_USE_MMU=y BR2_USE_WCHAR=y BR2_ENABLE_LOCALE=y BR2_PAC
 done
 # shellcheck source=../../support/buildroot-command-package.sh
 source "$package_dir/../../support/buildroot-command-package.sh"
-TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS='BR2_PACKAGE_OPENSSL BR2_PACKAGE_SYSTEMD BR2_PACKAGE_UTF8PROC' \
+# libevent is an independently versioned target-runtime provider.  Its OpenSSL
+# closure is attested by the target catalogue, so tmux must not attempt to
+# override the matching SDK's global OpenSSL choice.  tmux itself does not
+# link OpenSSL directly.
+TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS='BR2_PACKAGE_SYSTEMD BR2_PACKAGE_UTF8PROC' \
   tdvp_buildroot_command_package "$package_dir" "$sdk_root" "${TDVP_DEVEL_BUILDROOT_OUTPUT:-}" \
     BR2_PACKAGE_TMUX tmux 'TMUX_VERSION = 3.3a' 'tmux'

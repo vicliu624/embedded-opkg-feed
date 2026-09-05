@@ -98,7 +98,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 5 | `wget`、`rsync` | 1.25.0、3.4.1 | Wget 只允许 CA/OpenSSL/zlib；匹配 SDK 的 rsync 事务保留 OpenSSL 分支，因此 `rsync` 精确依赖 immutable target catalogue 的 `libpopt (= 1.19-1)`、`libz (= 1.3.1-1)`、`libcrypto-3 (= 3.4.1-1)`，不重建三者。SSH 是用户以默认 platform `ssh` 或 `-e /usr/bin/tdvp-ssh` 明确选择的传输命令，不是 rsync 的 ELF/包 provider 依赖；ACL/LZ4/xxHash/Zstd 仍关闭，`file-sync-tools` 仍须通过 GitHub Actions。 |
 | 6 | `iperf3`、`netcat`、`lsof` | 3.18、0.7.1、4.99.4 | 受控 LAN、无公开 listener；lsof 还需记录权限可见性 |
 | 7 | `libcap-2`（target provider）、`htop`（候选）、`nano`、`dialog`、`ncdu`、`pv` | 2025.02.1、3.3.0、8.2、1.3-20220117、1.21、1.9.0 | immutable catalogue 已拥有 `libcap.so.2`；`htop` 只能精确依赖 `libcap-2 (= 2025.02.1-1)` 以启用 capability view，绝不重建或覆盖该 ABI。真实终端、locale/宽字符和小屏交互验收仍是独立门禁。 |
-| 8 | `tmux`（暂缓） | 3.3a | 需先准入 OpenSSL-capable libevent runtime；再验证 detached session、capture、kill-session |
+| 8 | `tmux`（待 CI 构建） | 3.3a | 精确消费 immutable catalogue 的 `libevent (= 2.1.12-1)` 与 `libncursesw (= 6.4-20230603-1)`；`libevent` 自己拥有已 attest 的 OpenSSL closure。仍需验证 detached session、capture、kill-session。 |
 | 9 | `tdvp-source-tools`、`tdvp-diagnostics` | 1.6、1.1 | 仅元数据 profile；安装/卸载不得复制或误删工具/共享库 |
 | 10 | `sdl2`、`sdl2-ttf`、`libmgba`、`tdvp-gba` | 2.30.11、2.22.0、0.10.5、0.2.3 | `retro-gba` 独立增量批次；四个 IPK 必须全部由来源锁重建，不能复用历史 r2/r3 payload；验证 Wayland/ALSA runtime closure、`tdvp-gba` 动态依赖及 `/opt/tdvp-gba` 的非覆盖安装。 |
 | 11 | `sqlite3` | 3.48.0 | `database-tools` 只从 `libsqlite3-0` 同一次锁定源码构建的私有 staging 取得 CLI；仍验证 RISC-V ELF、`libsqlite3.so.0`、精确 readline/ncurses 依赖及无 base-path 覆盖。 |
@@ -570,11 +570,13 @@ unsigned batch artifact [`9974194807`](https://github.com/vicliu624/embedded-opk
 （`tdvp-k230-r10-merged-unsigned-c4fc7b28…`，194,891,156 bytes）。两个 artifact 均未签名、未 release/publish、
 未部署或安装到设备，也没有实机生命周期验证记录。
 
-同一 run 在 `tmux` 的 `BR2_PACKAGE_OPENSSL` 禁用断言处停止。`tmux` 的 Buildroot
-路径通过 libevent 的可选 TLS 分支间接继承 OpenSSL；当前 SDK 把该符号恢复为启用状态，
-而 TDVP 的窄 seed ABI 也不声明 `libssl`/`libcrypto` 为基础 owner。因此 r10 批次也暂时
-排除 `tmux`。它只能在具有独立、版本化、已验收的 OpenSSL-capable libevent runtime
-provider 后重新准入；不能借用目标镜像已有文件，或把未声明的 TLS ABI 藏在命令 IPK 中。
+同一 run 曾在 `tmux` 的 `BR2_PACKAGE_OPENSSL` 禁用断言处停止。之后已复核 pin 到
+Buildroot 2025.02.1 的 `tmux.mk`：tmux 直接依赖仅为 `libevent`、`ncurses` 与
+`host-pkgconf`；OpenSSL 只是 `libevent.mk` 的可选分支。因而 `tmux` 不再试图关闭匹配
+SDK 的全局 OpenSSL，而是精确消费 immutable catalogue 中版本化的 `libevent` 和
+`libncursesw`；`libevent` provider 自己声明并拥有它的 OpenSSL/runtime closure。新增
+`terminal-session-tools` batch 只构建 tmux leaf，仍须先通过 GitHub Actions 的 matching-SDK
+构建、无 base-path 覆盖门禁以及后续实机会话生命周期验证，才可加入 unsigned candidate。
 
 run `33905941863` 已构建到 GNU awk 的 payload gate，随后因它试图发布
 `/usr/bin/awk` 而被 exit 77 拒绝。该路径属于固件命令，不能被 source-tools profile

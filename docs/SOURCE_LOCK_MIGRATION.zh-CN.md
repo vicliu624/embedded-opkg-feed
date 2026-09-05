@@ -137,6 +137,12 @@ find packages -mindepth 2 -maxdepth 2 -name package.env -type f | LC_ALL=C sort
   binary 或 target root 文件，也不把共享库当作隐式 provider。GitHub Actions 必须在
   source lock、RPATH/RUNPATH、runtime closure 与 base-overlay gate 全部通过后才上传
   unsigned candidate；CI 永不运行会创建、修复、调优、标签或写入镜像的文件系统命令；
+- 内存诊断：`memtester` 锁定 Buildroot 2025.02.1 审核的 4.5.1 archive；因原始
+  HTTP 端点不构成可审核的 HTTPS fetch 输入，source lock 使用 Buildroot HTTPS archive
+  mirror，但仍以该 Buildroot recipe 的 SHA-256 验证同一个 archive。唯一 RISC-V ELF
+  只位于 `/usr/libexec/tdvp-memtester/`，公开入口仅为 `/usr/bin/tdvp-memtester`，
+  不覆盖 firmware/BusyBox 路径，不复制 Debian binary、target root 文件或共享库。
+  GitHub Actions 只构建、封装和审核，绝不执行会分配和写入设备内存的诊断程序；
 - 十进制运算运行时：`libmpdec-4` 锁定 Buildroot 2025.02.1 审查的 mpdecimal 4.0.0
   归档，只将 `libmpdec.so.4 -> libmpdec.so.4.0.0` 制作成独立 IPK。候选为 RISC-V ELF64
   共享对象、无 RPATH/RUNPATH，且仅依赖平台 ABI，因此它是 CPython `_decimal` 的唯一可复用

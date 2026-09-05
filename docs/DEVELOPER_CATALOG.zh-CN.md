@@ -34,6 +34,7 @@ Buildroot 交叉构建、IPK 运行时闭包审计和实机启动测试均通过
 | FAT/MS-DOS 介质工具组 | `mtools` | `tdvp-mtools-mdir`、`tdvp-mtools-mcopy`、`tdvp-mtools-mformat`、`tdvp-mtools-mlabel`；无需挂载即可检查或管理 FAT 介质 |
 | FAT 文件系统维护 | `dosfstools` | `tdvp-dosfstools-mkfs-fat`、`tdvp-dosfstools-fsck-fat`、`tdvp-dosfstools-fatlabel`；格式化/修复前必须由设备使用者确认目标块设备 |
 | exFAT 文件系统维护 | `exfatprogs` | `tdvp-exfat-mkfs`、`tdvp-exfat-fsck`、`tdvp-exfat-dump`、`tdvp-exfat-image`、`tdvp-exfat-tune`、`tdvp-exfat-label`；只能在非生产测试介质上显式选择目标后使用 |
+| 内存诊断 | `memtester` | `tdvp-memtester`；可能占用并写入选定内存，实机仅可在非生产设备、保守内存预算和明确目标下运行 |
 | 窄 util-linux 系统维护组 | `util-linux-tools` | `tdvp-util-linux-cal`、`tdvp-util-linux-ipcs`、`tdvp-util-linux-last`、`tdvp-util-linux-taskset`；所有公开入口均不替换固件命令 |
 | 编辑 | `vim-runtime`、`vim`、四个纯 Vimscript 插件 | `vim --version`；触控不抢占 Foot 的文本选择 |
 | 最小构建/维护/诊断 | `make`、`pkgconf`、`patch`、`diffutils`、`strace` | `make --version`、`pkg-config --version`、`patch --version`、`diff --version`、`strace true` |
@@ -93,6 +94,13 @@ archive 只构建 `mkfs.exfat`、`fsck.exfat`、`dump.exfat`、`exfat2img`、`tu
 BusyBox 路径，也不复制 target root、Debian 二进制或共享库。创建、修复、调优、标签
 和写镜像都可能改变介质；CI 永不执行它们。实机验证必须由设备使用者选择非生产介质、
 记录安装/卸载和回滚后进行。
+
+`memtester` 是单命令的内存诊断增补：Buildroot 2025.02.1 锁定 4.5.1 archive，
+候选 payload 只有 `/usr/libexec/tdvp-memtester/memtester` 这个 source-built ELF，
+公开入口只有 `/usr/bin/tdvp-memtester`。它不占用 firmware/BusyBox 路径、不复制
+target root、Debian 二进制或共享库，且候选闭包仍须由 CI 实测。该程序会分配并写入
+用户指定的内存，物理地址模式风险更高；CI 永不执行它。实机验证只能在非生产设备上以
+保守、明确的内存预算执行，并完整记录安装、卸载和回滚。
 
 `util-linux-tools` 是另一种更窄的增补方式：只从 Buildroot 2025.02.1 锁定的
 util-linux 2.40.2 archive 构建命名维护命令，并把 ELF 放在

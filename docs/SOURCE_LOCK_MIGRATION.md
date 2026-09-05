@@ -74,11 +74,22 @@ below; it is not an upstream-source exception for ordinary packages.
   `which`, `curl`, `wget`, `iperf3`, `lsof`, `netcat`, `rsync`, `dos2unix`, `jq`, `grep`, `sed`, `findutils`, `gawk`, `htop`, `nano`, and `tmux`;
   htop's capability view may use only the immutable target-catalogue
   `libcap-2 (= 2025.02.1-1)` / `libcap.so.2` owner; it never rebuilds,
-  replaces, or implicitly borrows that firmware ABI. Run `33982220719`
+  replaces, or implicitly borrows that firmware ABI. Run
+  [`33982220719`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982220719)
   correctly rejected an attempted `2.73-1` source provider at the owner map
   before compiling or uploading an artifact. The corrected
-  `process-monitoring-tools` candidate still requires GitHub Actions htop
-  source/closure/deny-overlay admission and a no-recompile merge. `nano`
+  `process-monitoring-tools` completed GitHub Actions htop source/closure/
+  deny-overlay admission in run
+  [`33982469638`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982469638),
+  uploading unsigned batch artifact
+  [`9974194807`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982469638/artifacts/9974194807)
+  (90,244,788 bytes). The no-recompile 21-batch merge in run
+  [`33982760512`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982760512)
+  compared every input IPK hash, re-indexed, and validated closure/base-overlay;
+  it uploaded merged unsigned artifact
+  [`9974285835`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982760512/artifacts/9974285835)
+  (194,891,156 bytes). Both remain unsigned candidates: neither was signed,
+  released/published, deployed, nor executed on a device. `nano`
   preserves the current SDK's disabled file/libmagic integration; both reuse
   only the owned `libncursesw` runtime;
 - terminal Vim: `vim-runtime` and `vim`; both lock the same reviewed

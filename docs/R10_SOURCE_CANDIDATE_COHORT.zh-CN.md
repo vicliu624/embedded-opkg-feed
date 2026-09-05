@@ -546,8 +546,15 @@ target 版本、使用 `identical` overlay 或发布同路径 source library 绕
 因此新的 `process-monitoring-tools` 只 source-build `htop (= 3.3.0-1)`；它以精确
 `Depends: libcap-2 (= 2025.02.1-1)` 使用 immutable target catalogue 的 owner，同时保留 capability
 view。它不重建、复制、覆盖或隐式借用 `libcap.so.2`，也不打包 `capsh`/`setcap`/`getcap`。修正后的
-batch 仍须由 GitHub Actions 实际证明 htop source lock、RISC-V ELF、无 RPATH/RUNPATH、runtime closure
-和 `deny` base-overlay；当前尚无成功 batch artifact、签名、发布、安装或设备验证记录。
+GitHub Actions run [`33982469638`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982469638)
+已实际通过 htop source lock、RISC-V ELF、无 RPATH/RUNPATH、runtime closure 与 `deny` base-overlay；它上传
+unsigned batch artifact [`9974194807`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982469638/artifacts/9974194807)
+（`tdvp-k230-r10-process-monitoring-tools-unsigned-c4fc7b28…`，90,244,788 bytes）。随后 no-recompile
+21-batch merge run [`33982760512`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982760512) 比对每个
+输入 IPK hash，并重新索引验证合并 candidate 的路径归属与 runtime closure；它上传 merged unsigned artifact
+[`9974285835`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982760512/artifacts/9974285835)
+（`tdvp-k230-r10-merged-unsigned-c4fc7b28…`，194,891,156 bytes）。两个 artifact 均未签名、未 release/publish、
+未部署或安装到设备，也没有实机生命周期验证记录。
 
 同一 run 在 `tmux` 的 `BR2_PACKAGE_OPENSSL` 禁用断言处停止。`tmux` 的 Buildroot
 路径通过 libevent 的可选 TLS 分支间接继承 OpenSSL；当前 SDK 把该符号恢复为启用状态，

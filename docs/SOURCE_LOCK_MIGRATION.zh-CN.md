@@ -80,9 +80,16 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
 - r10 文本/搜索/终端诊断工具：`tree`、`less`、`file`、`which`、`curl`、`wget`、`iperf3`、`lsof`、`netcat`、`rsync`、`dos2unix`、`jq`、`bc`、
   `grep`、`sed`、`findutils`、`diffutils`、`gawk`、`htop`、`nano`、`tmux`；`htop` 的 capability view
   仅可精确使用 immutable target catalogue 的 `libcap-2 (= 2025.02.1-1)`、`libcap.so.2` owner，绝不重建、
-  覆盖或隐式借用 firmware library。run `33982220719` 已以 source-owner conflict 正确拒绝尝试把它改为
-  `2.73-1` source provider，且在编译前未上传 artifact；修正后的 `process-monitoring-tools` 仍须通过
-  GitHub Actions htop source/closure/deny-overlay 准入和无重编 merge，才可成为 unsigned candidate。
+  覆盖或隐式借用 firmware library。run [`33982220719`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982220719)
+  已以 source-owner conflict 正确拒绝尝试把它改为 `2.73-1` source provider，且在编译前未上传 artifact；修正后的
+  `process-monitoring-tools` 在 run [`33982469638`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982469638)
+  实际通过 htop source/closure/deny-overlay 准入，并上传 unsigned batch artifact
+  [`9974194807`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982469638/artifacts/9974194807)
+  （90,244,788 bytes）。不重新编译的 21-batch merge run
+  [`33982760512`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982760512) 进一步比较全部输入 IPK hash、
+  重新索引并验证 closure/base-overlay，上传 merged unsigned artifact
+  [`9974285835`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982760512/artifacts/9974285835)
+  （194,891,156 bytes）。这些仍是 unsigned candidate；未签名、发布、部署或在设备执行。
   `nano` 保持当前 SDK 未选中 `file/libmagic` 的终端编辑配置；
   二者都只复用已拥有的 `libncursesw`；
 - Vim 终端编辑器：`vim-runtime`、`vim`；二者锁定同一 Buildroot 2025.02.1 审查的

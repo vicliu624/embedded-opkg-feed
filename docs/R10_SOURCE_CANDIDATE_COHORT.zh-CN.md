@@ -104,6 +104,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 11 | `sqlite3` | 3.48.0 | `database-tools` 只从 `libsqlite3-0` 同一次锁定源码构建的私有 staging 取得 CLI；仍验证 RISC-V ELF、`libsqlite3.so.0`、精确 readline/ncurses 依赖及无 base-path 覆盖。 |
 | 12 | `bc` | 1.07.1 | `calculator-tools` 锁定 GNU bc 与 host-flex/host-m4 输入；只公开 `tdvp-bc`，不替换 firmware `bc`，并验证 RISC-V ELF、无 RPATH/RUNPATH 与 base-overlay。 |
 | 13 | `coreutils` | 9.5 | `coreutils-tools` 只封装一个 GNU multi-call ELF，并以 `tdvp-coreutils-*` 公开 35 个基础命令；保留平台 Kconfig，以 coreutils 专用 configure override 禁用 ACL/attr/libcap/libselinux/OpenSSL/NLS，不覆盖 firmware/BusyBox 路径。 |
+| 14 | `mtools` | 4.0.47 | `fat-media-tools` 只从锁定的 GNU mtools archive 构建 FAT/MS-DOS 用户态工具组；全部以 `tdvp-mtools-*` 公开，私有 multi-call ELF/applet symlink 保留 `argv[0]` 语义，绝不覆盖 firmware/BusyBox 或未来标准路径。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -135,6 +136,16 @@ libselinux、OpenSSL 与 NLS 功能，避免把尚未准入的 target provider �
 它必须证明 locked source、RISC-V ELF、无 RPATH/RUNPATH、唯一 payload owner、runtime
 closure 和 base-overlay gate；之后仍须在 K230 上记录 wrapper 功能、卸载和回滚，才可进入
 unsigned candidate。
+
+`fat-media-tools` 是独立的单包增量 batch。`mtools` 4.0.47 只从 Buildroot 2025.02.1
+审核的 GNU archive 编译；package payload 在私有 `/usr/libexec/tdvp-mtools/` 中保存
+`mtools` multi-call ELF、`mkmanifest` 和选定 applet 的相对 symlink，以保持 mtools 根据
+`argv[0]` 分派的行为。公开命令全部是 `/usr/bin/tdvp-mtools-*` wrapper，例如
+`tdvp-mtools-mdir`、`tdvp-mtools-mcopy`、`tdvp-mtools-mformat`、`tdvp-mtools-mlabel`。
+因此候选不占用 `/usr/bin/mcopy`、`/usr/bin/mdir`、`/bin/*` 或 target firmware 文件；不复制
+Debian package、target root 文件或共享库。GitHub Actions 必须从锁定 archive 离线构建，验证
+RISC-V ELF、无 RPATH/RUNPATH、IPK runtime closure 和 base-overlay；实机仍须验证只读
+列目录、复制、小心使用的格式化/label 流程、卸载及回滚，才可进入 signed feed。
 
 `tdvp-gba` 的锁定 commit `4c82b09e1bf042d0709c26ed6c4e5098a283a908` 已由 GitHub commit
 API 和其固定 HTTPS archive endpoint 复核可达。早期 “仅本地 source cache、不可公开下载” 的

@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, nodejs]
+        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -81,6 +81,7 @@ jobs:
           bash ./tests/sqlite3-package-policy.sh
           bash ./tests/bc-package-policy.sh
           bash ./tests/coreutils-package-policy.sh
+          bash ./tests/mtools-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -351,6 +352,7 @@ jobs:
           bash ./tests/sqlite3-package-policy.sh
           bash ./tests/bc-package-policy.sh
           bash ./tests/coreutils-package-policy.sh
+          bash ./tests/mtools-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -430,6 +432,13 @@ jobs:
               # explicitly disabled by the recipe rather than inherited.
               package_args=(--package coreutils)
               expected_packages=(coreutils)
+              ;;
+            fat-media-tools)
+              # mtools is a locked-source, private multi-call FAT/MS-DOS
+              # utility suite. Every public command is tdvp-mtools-* so no
+              # firmware, BusyBox, or future standard command path is claimed.
+              package_args=(--package mtools)
+              expected_packages=(mtools)
               ;;
             nodejs)
               package_args=(--package tdvp-nodejs-tools)

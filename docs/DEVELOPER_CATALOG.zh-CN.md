@@ -31,6 +31,7 @@ Buildroot 交叉构建、IPK 运行时闭包审计和实机启动测试均通过
 | SQLite 数据库 CLI | `libsqlite3-0`、`sqlite3` | `sqlite3 --version`；创建、查询、关闭一个临时数据库 |
 | 任意精度计算器 | `bc` | `tdvp-bc --version`；`printf 'scale=30; 4*a(1)\n' | tdvp-bc -l` |
 | GNU 基础命令组 | `coreutils` | `tdvp-coreutils-ls --version`、`tdvp-coreutils-mktemp`、`tdvp-coreutils-date --iso-8601=seconds` |
+| FAT/MS-DOS 介质工具组 | `mtools` | `tdvp-mtools-mdir`、`tdvp-mtools-mcopy`、`tdvp-mtools-mformat`、`tdvp-mtools-mlabel`；无需挂载即可检查或管理 FAT 介质 |
 | 编辑 | `vim-runtime`、`vim`、四个纯 Vimscript 插件 | `vim --version`；触控不抢占 Foot 的文本选择 |
 | 最小构建/维护/诊断 | `make`、`pkgconf`、`patch`、`diffutils`、`strace` | `make --version`、`pkg-config --version`、`patch --version`、`diff --version`、`strace true` |
 
@@ -65,6 +66,13 @@ GNU coreutils 使用更严格的整组命名边界：包内只保留一个
 又避免把几十份相同的 multi-call ELF 复制进 IPK。它不改动 immutable platform Kconfig，
 而只以 coreutils 专用 configure override 关闭会引入未准入 ACL、attribute、libcap、SELinux、
 OpenSSL 或 NLS target provider 的可选功能。
+
+`mtools` 同样采用独立命名空间：私有目录内保留 Buildroot 生成的 multi-call ELF 及其
+相对 applet symlink，所有公开入口则为 `tdvp-mtools-*`，例如
+`tdvp-mtools-mdir`、`tdvp-mtools-mcopy`、`tdvp-mtools-mformat` 和
+`tdvp-mtools-mlabel`。这样可提供 FAT/MS-DOS 介质管理能力，同时不占用 `/usr/bin/mcopy`、
+`/usr/bin/mdir` 或任何 firmware/BusyBox 路径；包不携带从 target root、Debian 二进制或
+未声明共享库复制而来的内容。
 
 ## r10：Node.js v22.23.2 源码交叉构建候选
 

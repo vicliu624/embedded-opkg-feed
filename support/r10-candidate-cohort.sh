@@ -8,5 +8,5 @@ IFS=$'\n\t'
 TDVP_R10_CANDIDATE_COHORT=(
   libpopt libevent libcurl-4 curl wget rsync iperf3 lsof netcat
   htop nano dialog ncdu pv tmux
-  sqlite3 bc coreutils
+  sqlite3 bc coreutils mtools
 )

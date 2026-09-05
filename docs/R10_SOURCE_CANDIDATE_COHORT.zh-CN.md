@@ -182,6 +182,13 @@ lock、runtime closure 与 base-overlay gate。格式化/检查的实机验证�
 gate；CI 不执行任何会创建、修复、调优、标签或写镜像的前端。实机只能在设备使用者
 显式选择的非生产介质上进行，并记录安装、卸载和回滚后才可成为发布证据。
 
+Actions run `33971280098` 已完成该锁定 archive 的 K230 RISC-V 构建、六个白名单
+命令的私有提取、无 RPATH/RUNPATH、runtime closure 与 base-overlay gate，并上传未签名
+exfat-filesystem-tools artifact `9971033517`。随后它和此前 13 个成功 source batch 在
+run `33971483972` 中逐 IPK 比较 hash、重新索引并在无编译模式下再次验证合并候选，生成
+未签名 merged artifact `9971101810`。这些 run 是候选构建/合并证据，不是签名、公开
+发布、部署或实机执行 exFAT 文件系统命令的授权。
+
 `system-tools` 是一个单包、无新增共享运行时 provider 的增量 batch。它从 Buildroot
 2025.02.1 审核的 util-linux 2.40.2 archive 离线构建，仅启用 cal、fallocate、IPC、
 last/utmp、调度与 namespace 等明确命名的前端。所有 RISC-V ELF

@@ -112,7 +112,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 19 | `tree` | 2.1.1 | `directory-tree-tools` 只构建一个锁定源码的目录树 ELF；唯一公开入口为 `tdvp-tree`，不替换 firmware/BusyBox `tree` 路径，也不新增共享运行时 provider。 |
 | 20 | `less` | 661 | `terminal-pager-tools` 只构建一个锁定源码 pager ELF；唯一公开入口为 `tdvp-less`，精确复用 target catalogue 的 `libncursesw`，不替换 firmware/BusyBox `less` 路径。 |
 | 21 | `ffprobe` | 4.4.4 | `media-inspection-tools` 只从锁定的 Buildroot FFmpeg 4.4.4 source build stage `ffprobe` frontend。它不导入 host binary、不接管 base 的 `ffmpeg`，且 `deny` overlay 会拒绝 target 已有的 `/usr/bin/ffprobe` 路径或任何未拥有的动态依赖。 |
-| 22 | `gdbserver`、`ethtool`（GitHub Actions source batch 已通过，待无重编 merge） | 15.1、6.14 | `debug-network-tools` 只允许私有 ELF 与 `tdvp-gdbserver`、`tdvp-ethtool`。gdbserver 清空 Buildroot 的 SDK `debug-root` post-install hook，并关闭 full GDB/TUI/Python；ethtool 关闭 netlink/libmnl 和 pretty-print。run `33988534267` 已验证 source cache、RISC-V ELF、runtime closure 和 deny overlay，并产生两个 IPK；下一步只可 hash-merge，CI 不启动 debug server 或变更网络接口。 |
+| 22 | `gdbserver`、`ethtool`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 15.1、6.14 | `debug-network-tools` 只允许私有 ELF 与 `tdvp-gdbserver`、`tdvp-ethtool`。gdbserver 清空 Buildroot 的 SDK `debug-root` post-install hook，并关闭 full GDB/TUI/Python；ethtool 关闭 netlink/libmnl 和 pretty-print。run `33988534267` 验证 source cache、RISC-V ELF、runtime closure 和 deny overlay 并产生两个 IPK；run `33988940718` 只 hash-merge 25 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不启动 debug server 或变更网络接口。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -137,7 +137,14 @@ merge run `33987408229` 纳入 r10 candidate。`gdbserver` 与 `ethtool` 的 sou
 cache 交叉构建的 `ethtool_6.14-1_riscv64.ipk` 与 `gdbserver_15.1-1_riscv64.ipk` 均通过 feed verification，
 并上传 artifact [`9975971554`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33988534267/artifacts/9975971554)
 （90,422,923 bytes；zip SHA-256 `999adf320af6631743463861159d7df9ffb46dad9bb46e06822a3e501b66c44a`）。
-二者计入 84，但在后续 no-recompile merge 成功前不计入 merged candidate。`tdvp-hello`、LoFiBox 与
+二者计入 84，并已由 25-batch no-recompile merge run
+[`33988940718`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33988940718) 纳入 merged candidate：
+它下载并比对 25 个 compatible artifact 的 IPK hash，只重建 `Packages` 索引、验证 runtime closure 和
+445 个 non-ABI dynamic objects 的 target-runtime coverage；其 SDK-build 与 package-build job 都是 skipped。
+最终 merged unsigned artifact 为
+[`9976065136`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33988940718/artifacts/9976065136)
+（`tdvp-k230-r10-merged-unsigned-341f925…`，196,327,304 bytes；zip SHA-256
+`b8a59e8356ed4865960056e629ecbcb355709a9b899e022923225f7bb114ae7d`）。`tdvp-hello`、LoFiBox 与
 Cardputer 应用不属于本 release。
 为使这个 metadata profile 也真正增量，`diagnostics-profile` 必须提供成功的
 `base_merged_run_id`：CI 只接受一份未过期的 merged unsigned artifact，校验 run 成功态、唯一 artifact、

@@ -237,6 +237,15 @@ RISC-V ELF，保存到 private payload；公开 `/usr/bin/tdvp-tree` wrapper 不
 tree 的文件遍历命令。成功后的 artifact 仍须通过 IPK、RPATH/RUNPATH、runtime closure 与
 base-overlay gate，且只作为 unsigned candidate。
 
+首次 `directory-tree-tools` run `33974767492` 已确认恢复 SDK、runtime-base 和 source cache 的
+增量路径均正常，但新增 batch 后有九个历史 policy test 仍将 workflow 选项写成旧的精确列表，
+故在 source build 前以 policy gate 停止；没有生成 IPK 或 artifact。该测试矩阵已在
+`3f79ddc` 同步，retry `33975012697` 仅从锁定 tree archive 完成 K230 RISC-V source closure、
+私有 payload 提取、RPATH/RUNPATH、runtime closure 与 base-overlay gate，并上传 unsigned
+artifact `9972102351`。随后 merge `33975265337` 对此前 15 个成功 source batch 加这一 batch
+逐 IPK 比较 SHA-256、重新索引并重新验证 runtime/target coverage，全程无编译，生成 unsigned
+merged artifact `9972160481`。这些均为候选证据，不是签名、发布、部署或实机执行授权。
+
 `system-tools` 是一个单包、无新增共享运行时 provider 的增量 batch。它从 Buildroot
 2025.02.1 审核的 util-linux 2.40.2 archive 离线构建，仅启用 cal、fallocate、IPC、
 last/utmp、调度与 namespace 等明确命名的前端。所有 RISC-V ELF

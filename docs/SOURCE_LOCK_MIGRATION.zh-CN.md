@@ -168,8 +168,18 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
   该精确 crypto ABI，不会尝试关闭全局 Kconfig 或重建/替换这些 runtime。它锁定 rsync 3.4.1、popt、zlib、
   OpenSSL、host-pkgconf 及审查过的 Buildroot autoreconf patch；远程 shell 刻意不作为 OpenSSH 包依赖：默认
   使用 platform `ssh`，或由用户通过 `-e /usr/bin/tdvp-ssh` 显式选择传输命令。它明确关闭 ACL、LZ4、xxHash
-  和 Zstd。配方会拒绝变化的 Buildroot patch 和缺少 zlib 的 candidate SDK；在成为 unsigned candidate 前仍须
-  通过 `file-sync-tools` GitHub batch 和后续无重编 merge，随后还需要匹配 K230 SDK 的实机生命周期证据；
+  和 Zstd。配方会拒绝变化的 Buildroot patch 和缺少 zlib 的 candidate SDK。首次 remote audit，
+  [run `33983507607`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33983507607)，已正确 defer
+  这三个 target provider，但旧配方断言 Buildroot 禁用 OpenSSL，故在上传 artifact 前停止。修正后的精确
+  libcrypto revision 在 [run `33983785585`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33983785585)
+  成功，并上传 unsigned batch artifact
+  [`9974581047`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33983785585/artifacts/9974581047)
+  （90,386,375 bytes）。无重编 22-batch merge，
+  [run `33984054059`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33984054059)，比较每个输入
+  IPK hash、重新索引并验证 closure/base-overlay，上传 merged unsigned artifact
+  [`9974652475`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33984054059/artifacts/9974652475)
+  （195,190,117 bytes）。两个 artifact 均未签名、未 release/publish、未部署或安装到设备，也没有实机生命周期
+  证据；仍需记录匹配 K230 SDK 的实机生命周期验证；
 - SQL 数据库运行时：`libsqlite3-0` 锁定 Buildroot 2025.02.1 审查的 SQLite 3.48.0
   归档，只将 `libsqlite3.so.0 -> libsqlite3.so.0.8.6` 制作成独立 IPK。已完成校验过的
   离线源码构建和候选审计，因此它是 CPython `_sqlite3` 及后续数据库 client 的唯一可复用

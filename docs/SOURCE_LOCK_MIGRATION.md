@@ -250,10 +250,22 @@ below; it is not an upstream-source exception for ordinary packages.
   remote shell is deliberately not an OpenSSH package dependency: it uses
   platform `ssh` by default or an explicitly requested `-e /usr/bin/tdvp-ssh`
   transport. It explicitly disables ACL, LZ4, xxHash, and Zstd. The recipes
-  reject both a changed Buildroot patch and a candidate SDK without zlib; the
-  `file-sync-tools` GitHub batch and subsequent no-recompile merge remain
-  required before it can be an unsigned candidate, followed by on-device
-  lifecycle evidence;
+  reject both a changed Buildroot patch and a candidate SDK without zlib. The
+  first remote audit, [run `33983507607`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33983507607),
+  correctly deferred all three target providers but stopped before an artifact
+  when the former recipe asserted that Buildroot had disabled OpenSSL. The
+  corrected exact-libcrypto revision completed in
+  [run `33983785585`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33983785585)
+  and uploaded unsigned batch artifact
+  [`9974581047`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33983785585/artifacts/9974581047)
+  (90,386,375 bytes). The no-recompile 22-batch merge,
+  [run `33984054059`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33984054059),
+  compared every input IPK hash, re-indexed, and validated closure/base-overlay;
+  it uploaded merged unsigned artifact
+  [`9974652475`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33984054059/artifacts/9974652475)
+  (195,190,117 bytes). Both artifacts remain unsigned, unreleased/unpublished,
+  undeployed, and unexecuted on a device; on-device lifecycle evidence remains
+  required;
 - matched target-derived compiler runtime: `libatomic-1`, the sole explicit
   non-profile `SOURCE_LOCK_EXEMPT_REASON`. It transfers only
   `libatomic.so.1 -> libatomic.so.1.2.0` from the completed matching target;

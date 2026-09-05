@@ -498,8 +498,19 @@ closure/coverage gate 都没有放宽。
 成为这两个 SONAME 的唯一 provider。匹配 SDK 又会恢复 `BR2_PACKAGE_OPENSSL=y`，使锁定的 Buildroot rsync
 transaction 启用 OpenSSL 分支；它只能精确声明现有的 `libcrypto-3 (= 3.4.1-1)`，而不能关闭全局 Kconfig
 或重建/覆盖这三个 ABI。远程 shell 同样不是 package ABI：默认使用 platform `ssh`，或由用户通过
-`-e /usr/bin/tdvp-ssh` 显式选择已安装的 namespaced client。`file-sync-tools` 仍须由 GitHub Actions
-实际证明锁定源码、RISC-V ELF、runtime closure 与 deny base-overlay，不能以同内容覆盖绕过 gate。
+`-e /usr/bin/tdvp-ssh` 显式选择已安装的 namespaced client。首次 `file-sync-tools` remote audit
+[`33983507607`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33983507607) 已证明三个 target
+provider 都会被 defer，但旧配方错误断言 OpenSSL 已关闭，故在 Buildroot configuration 以
+`Buildroot did not disable BR2_PACKAGE_OPENSSL`（exit 71）停止；没有编译完成或上传 artifact。修正后的
+run [`33983785585`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33983785585) 使用精确
+`libcrypto-3` ABI，实际通过锁定源码、RISC-V ELF、runtime closure 与 deny base-overlay，并上传 unsigned
+batch artifact [`9974581047`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33983785585/artifacts/9974581047)
+（`tdvp-k230-r10-file-sync-tools-unsigned-fd0c34a3…`，90,386,375 bytes）。随后的 22-batch no-recompile
+merge run [`33984054059`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33984054059) 比对每个
+输入 IPK hash，重新索引并验证 runtime closure/base-overlay，上传 merged unsigned artifact
+[`9974652475`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33984054059/artifacts/9974652475)
+（`tdvp-k230-r10-merged-unsigned-fd0c34a3…`，195,190,117 bytes）。这些 artifact 均未签名、未 release/publish、
+未部署或安装到设备，也没有实机生命周期验证记录。
 
 GitHub Actions 的增量准入证据同样是候选台账的一部分：run `33901074012` 已从
 `source.lock` 审核的 Buildroot 输入重新构建 `curl`，但字节级 base-overlay gate 报告

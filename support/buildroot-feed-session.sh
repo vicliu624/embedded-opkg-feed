@@ -124,7 +124,7 @@ tdvp_buildroot_install() (
   # This affects only the caller's temporary TARGET_DIR, never the firmware
   # target or the SDK sysroot.
   mkdir -p -- "$target_root/bin" "$target_root/etc" "$target_root/usr/bin" \
-    "$target_root/usr/lib" "$target_root/usr/share"
+    "$target_root/usr/lib" "$target_root/usr/sbin" "$target_root/usr/share"
 
   tdvp_buildroot_configure() {
     env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \

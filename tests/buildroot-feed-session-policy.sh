@@ -81,7 +81,7 @@ run_fixture
 [[ "$(grep -Fc 'olddefconfig' "$output/.tdvp-make.log")" -eq 1 ]]
 grep -Fq 'FIXTURE_CONF_OPTS=--no-optional-feature' "$output/.tdvp-make.log"
 grep -Fq 'FIXTURE_DEPENDENCIES=' "$output/.tdvp-make.log"
-for directory in bin etc usr/bin usr/lib usr/share; do
+for directory in bin etc usr/bin usr/lib usr/sbin usr/share; do
   test -d "$install_root/$directory"
 done
 

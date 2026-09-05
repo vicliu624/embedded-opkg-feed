@@ -42,6 +42,7 @@ expect_line "tdvp-coreutils-" "$build_file"
 expect_line "ln -s -- coreutils" "$build_file"
 expect_line 'exec /usr/libexec/tdvp-coreutils/\$command' "$build_file"
 expect_line "coreutils target install omitted approved applet" "$build_file"
+grep -Fq '"$target_root/usr/sbin"' "$repo_root/support/buildroot-feed-session.sh"
 if grep -Eq '(^|[^A-Za-z0-9_])(apt|dpkg|debian)([^A-Za-z0-9_]|$)' "$build_file"; then
   echo 'coreutils build must not import a Debian package or binary' >&2
   exit 1

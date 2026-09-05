@@ -44,8 +44,11 @@ below; it is not an upstream-source exception for ordinary packages.
   and cannot satisfy a later recipe dependency;
 - media-inspection leaf (candidate): `ffprobe` is migrated from its r7 recipe
   to r10 with the Buildroot 2025.02.1 FFmpeg 4.4.4 archive/hash locked. It
-  stages only the `ffprobe` frontend and has no r10 artifact yet; GitHub
-  Actions must prove no target-path conflict and a complete runtime closure
+  stages only the `ffprobe` frontend. Run `33978610176` completed the RISC-V
+  FFmpeg build but stopped when the restored SDK lacked the Buildroot Debian
+  side-artifact directory (exit 2), so it uploaded no artifact. The retry
+  creates that non-payload directory only in the Actions SDK workspace; it
+  must still prove no target-path conflict and a complete runtime closure
   before it can become an unsigned candidate;
 - r10 text/search/terminal-diagnostic commands: `tree`, `less`, `file`,
   `which`, `curl`, `wget`, `iperf3`, `lsof`, `netcat`, `rsync`, `dos2unix`, `jq`, `grep`, `sed`, `findutils`, `gawk`, `htop`, `nano`, and `tmux`;

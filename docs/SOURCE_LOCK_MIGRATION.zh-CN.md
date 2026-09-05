@@ -45,8 +45,10 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
   identical overlay gate 发现 `/usr/bin/ssh-agent` 与固定 target 的同路径字节不同而以 exit 79 拒绝；
   因而它不是 feed provider，也不得成为后续依赖的依据；
 - 媒体探测 leaf（候选）：`ffprobe` 从 r7 配方迁移到 r10，锁定 Buildroot 2025.02.1 的 FFmpeg 4.4.4
-  archive/hash，只 stage `ffprobe` frontend。它尚未取得 r10 artifact；GitHub Actions 必须证明无 target
-  路径冲突与完整 runtime closure 后才可成为 unsigned candidate；
+  archive/hash，只 stage `ffprobe` frontend。首次 run `33978610176` 已完成 RISC-V FFmpeg 构建，但
+  Buildroot Debian side-artifact 目录在恢复 SDK 中不存在而 exit 2，未上传 artifact；修正仅在 Actions
+  workspace 创建该非 payload 目录。重试仍必须证明无 target 路径冲突与完整 runtime closure 后才可成为
+  unsigned candidate；
 - r10 文本/搜索/终端诊断工具：`tree`、`less`、`file`、`which`、`curl`、`wget`、`iperf3`、`lsof`、`netcat`、`rsync`、`dos2unix`、`jq`、`bc`、
   `grep`、`sed`、`findutils`、`diffutils`、`gawk`、`htop`、`nano`、`tmux`；`htop` 明确关闭未准入的可选
   `libcap` feature，`nano` 保持当前 SDK 未选中 `file/libmagic` 的终端编辑配置；二者

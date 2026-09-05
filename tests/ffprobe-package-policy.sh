@@ -18,6 +18,7 @@ grep -Fqx "SOURCE_ARTIFACT_1_FILE='ffmpeg-4.4.4.tar.xz'" "$package_dir/source.lo
 grep -Fqx "SOURCE_ARTIFACT_1_SHA256='e80b380d595c809060f66f96a5d849511ef4a76a26b76eacf5778b94c3570309'" "$package_dir/source.lock"
 grep -Fq "BR2_PACKAGE_FFMPEG_FFPROBE" "$package_dir/build.sh"
 grep -Fq "install_root/usr/bin/ffprobe" "$package_dir/build.sh"
+grep -Fq 'mkdir -p -- "$output/images/deb"' "$package_dir/build.sh"
 grep -Fq 'media-inspection-tools)' "$workflow"
 grep -Fq 'package_args=(--package ffprobe)' "$workflow"
 grep -Fq 'expected_packages=(ffprobe)' "$workflow"

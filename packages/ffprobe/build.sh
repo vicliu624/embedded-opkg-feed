@@ -33,6 +33,11 @@ grep -Fqx 'sha256  e80b380d595c809060f66f96a5d849511ef4a76a26b76eacf5778b94c3570
 install_root=$(mktemp -d)
 cleanup() { rm -rf -- "$install_root"; }
 trap cleanup EXIT
+# The locked TDVP FFmpeg recipe emits a Debian-format side artifact during
+# install-target. The restored Actions SDK excludes empty output/images/deb
+# directories from its cache, so create that SDK-workspace directory before
+# Buildroot invokes dpkg-deb. It is never staged into the feed payload.
+mkdir -p -- "$output/images/deb"
 tdvp_buildroot_install "$output" "$install_root" \
   --enable BR2_PACKAGE_FFMPEG \
   --enable BR2_PACKAGE_FFMPEG_FFPROBE \

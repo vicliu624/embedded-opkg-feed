@@ -147,6 +147,13 @@ Buildroot 2025.02.1 审查的 FFmpeg 4.4.4 archive 与 SHA-256；GitHub Actions 
 base-overlay gate；只有 batch 与后续无重编 merge 都成功、上传 unsigned artifact 后，才可记为
 feed candidate，实机媒体、安装、卸载和回滚仍是独立门禁。
 
+首次 `media-inspection-tools` run `33978610176` 已验证来源锁、toolchain、SDK、target-runtime
+和 policy，且完成 FFmpeg 4.4.4 的 RISC-V 构建；但该 Buildroot recipe 还会生成私有 Debian-format
+side artifact，恢复的 Actions SDK 不保留空的 `output/images/deb` 目录，令 `dpkg-deb` 因目标目录不存在
+而 exit 2。它不是 ABI、ELF、路径所有权或 source hash 的放宽理由，也没有上传 artifact。配方现在仅在
+Actions SDK workspace 中显式创建此 Buildroot-required 目录，随后必须重新执行同一单包 batch；该目录和
+side artifact 不会 stage 到 IPK payload、target runtime 或 SDK cache。
+
 `database-tools` 是与已合并的开发工具 batch 分离的 SQLite CLI 增量批次。它选择
 `sqlite3` leaf，使闭包同时重建唯一的 `libsqlite3-0` provider；library IPK 仍只拥有
 `libsqlite3.so*`。`libsqlite3-0` 只在同一个私有 `build-all` transaction 中 stage

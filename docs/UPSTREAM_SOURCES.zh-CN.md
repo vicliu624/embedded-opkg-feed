@@ -223,9 +223,10 @@ Debian、Buildroot 或上游发布的新版和安全公告会产生**候选更�
 2. 已完成：增加 HTTPS 内容寻址 source cache、SHA-256 校验和 offline 模式；
 3. 已完成：在构建脚本和 CI 中解析 `source.lock`，拒绝不完整、可变或哈希不匹配的来源；
 4. 已完成：把现有 Buildroot-derived `make`、`diffutils`、`pkgconf`、`strace` 与 `patch` 迁移到锁定 source cache；以私有离线 `BR2_DL_DIR` 重建验证 `diffutils`、`patch`、`htop`、`nano`、拆分的 `vim-runtime`/`vim`、自包含的 `ca-certificates`、`libexpat-1`、拆分的 `libcrypto-3`/`libssl-3`、带有锁定来源闭包的 `libcurl-4`，以及已通过来源准入、将从同一次 Buildroot 事务白名单 stage 后独立封装的 `curl` recipe、只复用 OpenSSL/zlib 的 `wget` recipe、明确关闭可选 OpenSSL 认证的 `iperf3` recipe、明确关闭可选 libtirpc 的 `lsof` recipe、无额外 runtime 的 `netcat` recipe、先拆分 libevent 再准入 tmux 的终端会话层、`libpopt`/`rsync`/OpenSSH 拆分、curl 所需的匹配 target `libatomic-1` 所有权转移、client-only 的 `openssh-client` 源码交叉构建，以及经校验的离线 source cache 中 client-only 的 `git-runtime`/`git` 源码拆分；并将审查后的 `tree`、`which`、文本工具链、`htop`、`nano`、`vim-runtime`/`vim`、`ca-certificates`、`libexpat-1`、`libcrypto-3`/`libssl-3`、`libcurl-4`、`libatomic-1`、`openssh-client`、`git-runtime`/`git` 以及带有 `libbz2`/`liblzma`/`libzstd` 运行时闭包的 `archive-tools` 构建为 r10 候选 RISC-V IPK；
-5. 下一步：以完成的匹配 K230 SDK 构建同事务 `curl` leaf、只复用 OpenSSL/zlib 的 `wget`、明确关闭可选 OpenSSL 认证的 `iperf3`、明确关闭可选 libtirpc 的 `lsof`、无额外 runtime 的 `netcat` 以及 `libpopt`/`rsync`，生成 unsigned candidate IPK，并记录实机安装、运行、卸载与回滚证据；
-6. 为每个 release 生成来源证明/SBOM，并把来源、SDK 和测试结果与签名 release 对应；
-7. 同时逐步引入经过审查的通用库，每次均保留共享运行时和实机测试门。
+5. 已完成：以增量 source batch 构建同事务 `curl` leaf、只复用 OpenSSL/zlib 的 `wget`、明确关闭可选 OpenSSL 认证的 `iperf3`、`lsof`、`netcat`、`libevent`/`tmux` 与 `libpopt`/`rsync`，并通过不重编历史 source package 的 hash merge 合入 unsigned candidate；
+6. 进行中：只通过 GitHub Actions source batch 和后续 no-recompile merge 准入已单独锁定、命名空间隔离的 `gdbserver` 与 `ethtool` debug/network leaf；其 recipe 不得改变 SDK host state、firmware command path 或网络接口；
+7. 为每个 release 生成来源证明/SBOM，并把来源、SDK 和测试结果与签名 release 对应；
+8. 同时逐步引入经过审查的通用库，每次均保留共享运行时和实机测试门。
 
 在自动化全部完成以前，本约定仍是所有新上游引入的准入标准；PR 模板、贡献说明和发布检查清单会引用它，确保维护者不会把“候选源码”误解为“可以直接安装的发行版包”。
 

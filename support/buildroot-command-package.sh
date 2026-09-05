@@ -10,10 +10,10 @@ IFS=$'\n\t'
 tdvp_buildroot_command_package() {
   local package_dir=$1 sdk_root=$2 configured_output=$3 config_symbol=$4
   local buildroot_package=$5 source_line=$6 commands=$7
-  local output tree install_root payload_dir= root_link= previous_payload= temporary_prefix= download_dir= command source destination link_target disabled_symbol make_variable frontend_name frontend_mapping mapping_source mapping_frontend
+  local output tree install_root payload_dir= root_link= previous_payload= temporary_prefix= download_dir= command source destination link_target enabled_symbol disabled_symbol make_variable frontend_name frontend_mapping mapping_source mapping_frontend
   local payload_ready=0
   local readelf_tool asset source_asset destination_asset
-  local -a command_list=() asset_list=() install_options=() disable_options=() disabled_symbols=() make_variable_options=() make_variables=() frontend_mappings=()
+  local -a command_list=() asset_list=() install_options=() enable_options=() enable_symbols=() disable_options=() disabled_symbols=() make_variable_options=() make_variables=() frontend_mappings=()
   local -A public_frontends=() explicit_frontends=() frontend_owners=()
   # shellcheck source=buildroot-feed-session.sh
   source "$package_dir/../../support/buildroot-feed-session.sh"
@@ -31,6 +31,24 @@ tdvp_buildroot_command_package() {
   if [[ -f "$package_dir/source.lock" ]]; then
     download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
     install_options+=(--offline-download-dir "$download_dir")
+  fi
+  # Some reviewed leafs require both a parent package symbol and a child
+  # feature symbol.  Keep those declarations recipe-local and validate them
+  # before they reach the private Buildroot transaction; they must never be
+  # inferred from the SDK's ambient configuration.
+  if [[ -n "${TDVP_COMMAND_BUILDROOT_ENABLE_SYMBOLS:-}" ]]; then
+    IFS=' ' read -r -a enable_symbols <<< "$TDVP_COMMAND_BUILDROOT_ENABLE_SYMBOLS"
+    for enabled_symbol in "${enable_symbols[@]}"; do
+      [[ "$enabled_symbol" =~ ^BR2_[A-Z0-9_]+$ ]] || {
+        echo "invalid Buildroot command-package enable symbol: $enabled_symbol" >&2
+        return 84
+      }
+      [[ "$enabled_symbol" != "$config_symbol" ]] || {
+        echo "Buildroot command-package repeats its primary enable symbol: $enabled_symbol" >&2
+        return 84
+      }
+      enable_options+=(--enable "$enabled_symbol")
+    done
   fi
   # A leaf command must not silently inherit an optional Buildroot feature
   # whose shared runtime has not been admitted into this feed. Recipes may
@@ -81,7 +99,7 @@ tdvp_buildroot_command_package() {
   trap cleanup_command_package RETURN
   tdvp_buildroot_install "$output" "$install_root" "${install_options[@]}" \
     --enable BR2_PACKAGE_BUSYBOX_SHOW_OTHERS \
-    --enable "$config_symbol" "${disable_options[@]}" \
+    --enable "$config_symbol" "${enable_options[@]}" "${disable_options[@]}" \
     "${make_variable_options[@]}" --target "$buildroot_package"
   # Keep generated payloads on a POSIX filesystem. The feed repository is
   # often a Windows drvfs mount where every copied file looks executable;

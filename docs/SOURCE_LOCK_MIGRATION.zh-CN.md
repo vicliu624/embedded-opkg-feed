@@ -310,16 +310,19 @@ target 安装/卸载、功能测试、签名与发布证据。
 符号链接只要有一项改变，构建都会失败。它不为其它编译器运行时或 target rootfs 文件建立
 通用豁免。
 
-## 下一批待迁移的高价值源码组
+## 下一批高价值源码组
 
-这些项目仍是历史 recipe，尚未完成 source-lock candidate 准入。它们应按“共享运行时
-先于 leaf application”的顺序迁移；在锁、离线构建和目标验证补齐前，不能被提升为新的
-source-lock release：
+Node.js 和多媒体/桌面图已经不属于“待迁移的历史 recipe”：它们的 r10 source batch 已进入成功的
+24-batch unsigned merge。它们剩余的是实机生命周期验证，不是再次 source build。
+
+下表单独记录 post-merge 扩展，防止把“已准备 recipe”误写为“已准入 candidate”。每项仍必须先通过
+GitHub Actions source batch，再通过无重编 merge，才可获得 candidate 证据。
 
 | 批次 | package | 先决条件与原因 |
 | --- | --- | --- |
-| Node.js 发布证明 | `libnode`、`node`、`npm-runtime`、`npm` | provider 的来源锁和 staging ABI 边界已经完成；需构建完整的锁定 Node 22.23.2 candidate、审计最终 ELF 闭包，并在 K230 上完成安装/核心功能/卸载/回滚测试后才可提升。 |
-| 多媒体/桌面 | `audacious-*`、`sdl2*`、`tdvp-mpv`、`tdvp-netsurf` | 依赖图与 Wayland/图形 ABI 较大，必须等完整匹配 SDK/sysroot 和实机桌面验收可用。 |
+| 调试/网络诊断 | `gdbserver`、`ethtool` | 已准备锁定的 Buildroot 2025.02.1 来源及私有 TDVP 前端。`gdbserver` 必须保持 server-only，且不得修改 SDK host `debug-root`；`ethtool` 必须保持 no-netlink/no-libmnl 边界。GitHub Actions 必须证明 cache、RISC-V ELF、closure 和 deny-overlay gate，且不启动 server 或修改网络接口。 |
+| I2C 硬件检查 | `i2c-tools` | 对 K230 bring-up 有价值，但 Buildroot 默认会产出 `libi2c`；须先决定并验证 static-only leaf 或独立拥有的 shared provider。CI 不得探测或写入任何总线。 |
+| 原生构建前端 | target CMake/Ninja | CMake 会带来较宽的 `libarchive`/`libuv`/JSON/rhash closure，必须先准入每个新 provider；Buildroot 的 Ninja 是 host-only，target-Ninja 需要单独锁定 bootstrap 设计。 |
 
 ## 提升规则
 

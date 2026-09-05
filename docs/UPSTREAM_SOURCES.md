@@ -413,13 +413,17 @@ This document fixes the governance rule first. Implement automation in order:
    `git-runtime`/`git`, and `archive-tools` with its
    `libbz2`/`liblzma`/`libzstd` runtime closure from locked sources into r10
    candidate RISC-V IPKs;
-5. Next: build the same-transaction `curl` leaf, OpenSSL/zlib-only `wget`,
-   plaintext-only `iperf3`, `lsof`, `netcat`, `libevent`/`tmux`, and `libpopt`/`rsync` command with a completed matching K230 SDK, produce their
-   unsigned candidate IPKs, and record real-device
-   install/run/uninstall/rollback evidence; then
-6. Emit source provenance/SBOM material for each release and bind source, SDK,
+5. Completed: build the incremental source batches for the same-transaction
+   `curl` leaf, OpenSSL/zlib-only `wget`, plaintext-only `iperf3`, `lsof`,
+   `netcat`, `libevent`/`tmux`, and `libpopt`/`rsync`, then hash-merge their
+   unsigned candidates without recompiling historical source packages;
+6. In progress: admit the separately locked, namespaced `gdbserver` and
+   `ethtool` debug/network leaves only through their GitHub Actions source
+   batch and later no-recompile merge; their recipes must not change SDK host
+   state, a firmware command path, or a network interface; then
+7. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
-7. Introduce reviewed general libraries incrementally, retaining shared-runtime
+8. Introduce reviewed general libraries incrementally, retaining shared-runtime
    and on-device test gates each time.
 
 Until all automation is complete, this contract remains the admission standard

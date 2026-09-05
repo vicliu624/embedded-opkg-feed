@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -90,6 +90,7 @@ jobs:
           bash ./tests/dosfstools-package-policy.sh
           bash ./tests/exfatprogs-package-policy.sh
           bash ./tests/memtester-package-policy.sh
+          bash ./tests/debug-network-tools-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/tmux-package-policy.sh
@@ -452,6 +453,7 @@ jobs:
           bash ./tests/dosfstools-package-policy.sh
           bash ./tests/exfatprogs-package-policy.sh
           bash ./tests/memtester-package-policy.sh
+          bash ./tests/debug-network-tools-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/diagnostics-package-policy.sh
@@ -646,6 +648,13 @@ jobs:
             nodejs)
               package_args=(--package tdvp-nodejs-tools)
               expected_packages=(libnode node npm-runtime npm tdvp-nodejs-tools)
+              ;;
+            debug-network-tools)
+              # Both commands remain package-private. gdbserver clears the
+              # Buildroot SDK-install hook, and ethtool clears optional
+              # netlink/libmnl branches; neither adds a shared runtime ABI.
+              package_args=(--package gdbserver --package ethtool)
+              expected_packages=(gdbserver ethtool)
               ;;
             *) echo 'unreviewed batch input' >&2; exit 64 ;;
           esac

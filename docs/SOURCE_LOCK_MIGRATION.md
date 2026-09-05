@@ -338,17 +338,23 @@ declared matching platform target. A changed toolchain, configuration, hash,
 SONAME, ELF ABI, mode, or symlink makes the build fail. It does not establish a
 general exemption for compiler runtimes or target-rootfs copies.
 
-## Next high-value source groups to migrate
+## Next high-value source groups
 
-These remain historical recipes and have not yet completed source-lock
-candidate admission. Migrate them with shared runtimes before leaf
-applications; do not promote them to a new source-lock release until their
-locks, offline build, and target validation are complete.
+Node.js and the multimedia/desktop graph are no longer un-migrated historical
+recipes: their r10 source batches are already part of the successful
+24-batch unsigned merge. Their remaining work is device lifecycle validation,
+not a second source build.
+
+The following post-merge expansion is documented separately so that a prepared
+recipe is never confused with an admitted candidate. It must still pass a
+GitHub Actions source batch and later a no-recompile merge before it receives
+candidate evidence.
 
 | Batch | Packages | Preconditions and reason |
 | --- | --- | --- |
-| Node.js release proof | `libnode`, `node`, `npm-runtime`, `npm` | Provider source locks and staged ABI boundary are complete. Build the complete locked Node 22.23.2 candidate, audit its final ELF closure, then perform K230 install/core-function/uninstall/rollback testing before promotion. |
-| Multimedia/desktop | `audacious-*`, `sdl2*`, `tdvp-mpv`, `tdvp-netsurf` | The Wayland/graphics ABI graph needs a complete matching SDK/sysroot and on-device desktop acceptance. |
+| Debug/network diagnostics | `gdbserver`, `ethtool` | Locked Buildroot 2025.02.1 sources and private TDVP frontends are prepared. `gdbserver` must remain server-only and must not modify the SDK host debug-root; `ethtool` must retain its no-netlink/no-libmnl boundary. GitHub Actions must prove cache, RISC-V ELF, closure, and deny-overlay gates without starting a server or changing an interface. |
+| I2C hardware inspection | `i2c-tools` | Valuable for K230 bring-up, but Buildroot normally emits `libi2c`; first decide and verify a static-only leaf or a separately owned shared provider. It must never probe/write a bus in CI. |
+| Native build frontend | target CMake/Ninja | CMake brings a broad `libarchive`/`libuv`/JSON/rhash closure. Admit every new provider before the command; Buildroot's Ninja package is host-only, so a target-Ninja recipe needs a separately locked bootstrap design. |
 
 ## Promotion rule
 

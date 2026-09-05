@@ -1,0 +1,18 @@
+# Buildroot owns the cross-compile configuration. This locks the exact GNU
+# GDB archive consumed by the private gdbserver-only transaction.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='GNU gdbserver'
+UPSTREAM_LICENSE='GPL-2.0-or-later, LGPL-2.0-or-later, GPL-3.0-or-later, LGPL-3.0-or-later'
+UPSTREAM_VERSION='15.1'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/gdb/gdb.mk'
+SOURCE_SELECTION_REASON='Target-only gdbserver gives a K230 developer a remote-debug stub without introducing full target GDB, TUI, Python, ncurses, zlib, GMP, or MPFR packages. The emitted ELF stays private and is exposed only through tdvp-gdbserver.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 gdb.mk, gdb.hash, Config.in and Config.in.host. The private transaction enables only BR2_PACKAGE_GDB and BR2_PACKAGE_GDB_SERVER, forces GDB_VERSION=15.1, disables full debugger/TUI/Python, and clears the SDK-install post hook so the restored SDK host debug-root is never modified.'
+SECURITY_STATUS='GNU GDB release integrity is recorded by the upstream release SHA-256. Candidate admission additionally requires the locked offline archive, RISC-V ELF, RPATH/RUNPATH, runtime-closure, and deny-overlay gates; CI never starts a debug server.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 gdb package hash and GNU GDB 15.1 release announcement'
+VERIFIED_AT='2026-09-06'
+VERIFICATION_REFERENCE='https://sourceware.org/pipermail/gdb-announce/2024/000140.html'
+SOURCE_ARTIFACT_1_URL='https://ftp.gnu.org/gnu/gdb/gdb-15.1.tar.xz'
+SOURCE_ARTIFACT_1_FILE='gdb-15.1.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='38254eacd4572134bca9c5a5aa4d4ca564cbbd30c369d881f733fb6b903354f2'

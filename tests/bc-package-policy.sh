@@ -31,7 +31,7 @@ expect_line "^SOURCE_ARTIFACT_3_FILE='m4-1[.]4[.]19[.]tar[.]xz'$" "$package_dir/
 expect_line "^SOURCE_ARTIFACT_3_SHA256='63aede5c6d33b6d9b13511cd0be2cac046f2e70fd0a07aa9573a04a82783af96'$" "$package_dir/source.lock"
 expect_line "TDVP_COMMAND_FRONTEND_NAMES='bc=tdvp-bc'" "$package_dir/build.sh"
 expect_line "BR2_PACKAGE_BC bc 'BC_VERSION = 1[.]07[.]1' 'bc'" "$package_dir/build.sh"
-grep -Fq 'options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, nodejs]' "$workflow"
+grep -Fq 'options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, nodejs]' "$workflow"
 grep -Fq 'calculator-tools)' "$workflow"
 grep -Fq 'package_args=(--package bc)' "$workflow"
 grep -Fq 'expected_packages=(bc)' "$workflow"

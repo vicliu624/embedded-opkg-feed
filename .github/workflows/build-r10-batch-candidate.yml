@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, nodejs]
+        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -80,6 +80,7 @@ jobs:
           bash ./tests/retro-gba-package-policy.sh
           bash ./tests/sqlite3-package-policy.sh
           bash ./tests/bc-package-policy.sh
+          bash ./tests/coreutils-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -349,6 +350,7 @@ jobs:
           bash ./tests/retro-gba-package-policy.sh
           bash ./tests/sqlite3-package-policy.sh
           bash ./tests/bc-package-policy.sh
+          bash ./tests/coreutils-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -420,6 +422,14 @@ jobs:
               # exposed as tdvp-bc, so it never replaces a BusyBox bc applet.
               package_args=(--package bc)
               expected_packages=(bc)
+              ;;
+            coreutils-tools)
+              # GNU coreutils is one locked multi-call RISC-V ELF with only
+              # tdvp-coreutils-* frontends.  It never claims a BusyBox or
+              # firmware command path, and optional non-base providers are
+              # explicitly disabled by the recipe rather than inherited.
+              package_args=(--package coreutils)
+              expected_packages=(coreutils)
               ;;
             nodejs)
               package_args=(--package tdvp-nodejs-tools)

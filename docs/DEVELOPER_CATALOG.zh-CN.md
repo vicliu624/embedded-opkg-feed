@@ -30,6 +30,7 @@ Buildroot 交叉构建、IPK 运行时闭包审计和实机启动测试均通过
 | Python 3.13 | `libpython3.13`、`python3-runtime`、`python3` | `python3 --version`、`python3 -c 'import ssl, sqlite3, bz2, lzma, curses, readline, xml.parsers.expat'` |
 | SQLite 数据库 CLI | `libsqlite3-0`、`sqlite3` | `sqlite3 --version`；创建、查询、关闭一个临时数据库 |
 | 任意精度计算器 | `bc` | `tdvp-bc --version`；`printf 'scale=30; 4*a(1)\n' | tdvp-bc -l` |
+| GNU 基础命令组 | `coreutils` | `tdvp-coreutils-ls --version`、`tdvp-coreutils-mktemp`、`tdvp-coreutils-date --iso-8601=seconds` |
 | 编辑 | `vim-runtime`、`vim`、四个纯 Vimscript 插件 | `vim --version`；触控不抢占 Foot 的文本选择 |
 | 最小构建/维护/诊断 | `make`、`pkgconf`、`patch`、`diffutils`、`strace` | `make --version`、`pkg-config --version`、`patch --version`、`diff --version`、`strace true` |
 
@@ -56,6 +57,13 @@ Python 的 `libpython3.13` 是原生扩展的公共 ABI；标准库和 `lib-dynl
 `gawk` 保持 `/usr/bin/gawk`，其 GNU `awk` 兼容入口为 `/usr/bin/tdvp-awk`；GNU grep
 的入口为 `/usr/bin/tdvp-grep`，GNU Less 的入口为 `/usr/bin/tdvp-less`。固件的
 `/usr/bin/awk`、`/usr/bin/grep` 和 `/usr/bin/less` 都保持不变。
+
+GNU coreutils 使用更严格的整组命名边界：包内只保留一个
+`/usr/libexec/tdvp-coreutils/coreutils` multi-call ELF，公开命令均为
+`tdvp-coreutils-<command>`，例如 `tdvp-coreutils-ls`、`tdvp-coreutils-cp`、
+`tdvp-coreutils-mktemp` 与 `tdvp-coreutils-chroot`。这既保留 BusyBox/firmware 命令，
+又避免把几十份相同的 multi-call ELF 复制进 IPK。它在 CI 中明确关闭所有会引入未准入的
+ACL、attribute、libcap、SELinux、OpenSSL 或 NLS target provider 的可选 Buildroot 分支。
 
 ## r10：Node.js v22.23.2 源码交叉构建候选
 

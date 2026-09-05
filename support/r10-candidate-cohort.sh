@@ -14,4 +14,5 @@ TDVP_R10_CANDIDATE_COHORT=(
   inotify-tools
   logrotate
   jo
+  ed
 )

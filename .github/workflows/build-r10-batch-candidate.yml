@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools, json-construction-tools]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools, json-construction-tools, line-editor-tools]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -95,6 +95,7 @@ jobs:
           bash ./tests/inotify-tools-package-policy.sh
           bash ./tests/logrotate-package-policy.sh
           bash ./tests/jo-package-policy.sh
+          bash ./tests/ed-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/tmux-package-policy.sh
@@ -462,6 +463,7 @@ jobs:
           bash ./tests/inotify-tools-package-policy.sh
           bash ./tests/logrotate-package-policy.sh
           bash ./tests/jo-package-policy.sh
+          bash ./tests/ed-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/diagnostics-package-policy.sh
@@ -690,6 +692,12 @@ jobs:
               # audits it but never invokes it or provides input data.
               package_args=(--package jo)
               expected_packages=(jo)
+              ;;
+            line-editor-tools)
+              # GNU ed is a private editor command. CI only builds/audits it
+              # and never supplies a file or performs an editing operation.
+              package_args=(--package ed)
+              expected_packages=(ed)
               ;;
             *) echo 'unreviewed batch input' >&2; exit 64 ;;
           esac

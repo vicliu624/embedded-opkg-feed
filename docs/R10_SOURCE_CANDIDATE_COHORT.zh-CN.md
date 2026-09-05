@@ -117,6 +117,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 24 | `inotify-tools`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 3.20.2.2 | `filesystem-event-tools` 只允许与私有 static `libinotifytools` implementation 链接的 ELF，及 `tdvp-inotify-wait`、`tdvp-inotify-watch`。run [`33991128904`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991128904) 实际传入 `--disable-shared --enable-static --enable-static-binary --disable-doxygen`，产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33991417095`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991417095) 只 hash-merge 27 个 artifact、重建索引并再次通过 closure/target-runtime coverage。任何 `libinotifytools`、头文件或普通 firmware 路径均未进入 IPK；CI 不得启动 watcher、传入路径或观察真实 filesystem event。 |
 | 25 | `logrotate`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 3.22.0 | `log-maintenance-tools` 只允许私有 ELF 与 `tdvp-logrotate`，精确复用 immutable target `libpopt (= 1.19-1)`。run [`33991963284`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991963284) 实际禁用 SELinux/ACL 并传入 `--without-selinux --without-acl`，产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33992249214`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33992249214) 只 hash-merge 28 个 artifact、重建索引并再次通过 closure/target-runtime coverage。任何 `/etc/logrotate.conf`、`/etc/logrotate.d`、timer、daemon 或普通 firmware 路径均未进入 IPK；CI 不得执行该命令、传入路径或读写、重命名、压缩、删除/轮转任何日志。 |
 | 26 | `jo`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 1.6 | `json-construction-tools` 只允许私有 ELF 与 `tdvp-jo`，不引入新的 non-platform shared-runtime provider，也不覆盖 firmware 路径。run [`33992855036`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33992855036) 产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33993109744`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993109744) 只 hash-merge 29 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不得执行该命令或传入 JSON input。 |
+| 27 | `ed`（配方/锁/命令边界已完成，待 GitHub Actions） | 1.20.2 | `line-editor-tools` 只允许私有 GNU `ed` ELF 与 `tdvp-ed`；`.tar.lz` 的 host-lzip 仅作 runner 解包器，不进入 target IPK。GitHub Actions 仍须证明 source cache、RISC-V ELF、runtime closure、deny overlay 和无重编 merge；CI 不得启动编辑器、传入文件或执行修改。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -136,7 +137,7 @@ source，batch 入口和配方改动均已撤回；旧的成功 source batch 是
 以后新增候选必须先比对成功 batch 的实际 IPK 清单，不能以“仓库中有配方”误判为尚未构建。
 
 **r10 实际 package inventory（2026-09-06）。** 对 29 个成功 source batch 的 GitHub Actions
-`built *.ipk` 记录逐一去重后，104 个 r10 recipe 中已有 88 个 recipe package 具备实际 source-build
+`built *.ipk` 记录逐一去重后，105 个 r10 recipe 中已有 88 个 recipe package 具备实际 source-build
 证据。其余 12 个通用 package 是 immutable target catalogue provider：`ca-certificates`、`libatomic-1`、
 `libcrypto-3`、`libcurl-4`、`libexpat-1`、`libffi-8`、`libncursesw`、`libpcre2-8`、`libpopt`、
 `libreadline`、`libssl-3` 与 `libz`；它们只能复用，不能为补齐数量重编。metadata-only

@@ -454,9 +454,13 @@ This document fixes the governance rule first. Implement automation in order:
     has admitted the locked standalone `jo` command pending a no-recompile
     merge. It remains private, introduces no shared provider, and was never
     invoked or given JSON input in CI; then
-11. Emit source provenance/SBOM material for each release and bind source, SDK,
+11. In progress: admit the locked GNU `ed` line-editor command through a
+    GitHub Actions source batch, then a no-recompile merge. host-lzip may only
+    unpack the runner source; CI must never invoke the editor or supply a file;
+    then
+12. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
-12. Introduce reviewed general libraries incrementally, retaining shared-runtime
+13. Introduce reviewed general libraries incrementally, retaining shared-runtime
    and on-device test gates each time.
 
 Until all automation is complete, this contract remains the admission standard

@@ -173,6 +173,16 @@ path 与 package-batch restore path 完全对齐。它不会重建 SDK、不会�
 所有后续 closure gates。这个调整不会从本地下载 artifact，也不会接受零个、多个或名称不符合
 `tdvp-k230-r10-*-unsigned-*` 的 artifact。
 
+final merge `33942996461` 进一步证明 partial artifact 的私有 runtime-base 不能被误当作
+source-built payload：它在 IPK hash 比对阶段发现 development batch 与 Node batch 都带有
+`libpython3.13_3.13.3-1_riscv64.ipk`，但包裹字节不同，因而以 exit 70 停止；没有进入索引、
+closure 或上传步骤。该包在匹配 SDK 的
+`.tdvp-target-runtime-packages.tsv` 中是 target-derived provider，`build-all.sh` 已禁止 source
+batch 重建 catalog owner。后续 merge 只恢复这份私有 manifest 来分类，仍从第一个已验证的
+source artifact 取得最终 IPK：仅当同名同版本明确属于该 manifest 时才保留先到副本；任何其他
+重复包仍必须有完全相同的 SHA-256，否则 exit 70。manifest 不提供 payload、不会生成 IPK，
+也不会放宽 source-built 包、ABI identity、index、runtime closure 或 coverage gate。
+
 下一次 partial merge 还必须区分“SDK ABI”与“GitHub Actions cache 布局”。已成功的 archive batch
 `33878735088` 记录的是同一固件/profile 的 cache `v2`，后续成功 batch 记录 `v3`；`v3` 只增加了
 Buildroot package stamp 的缓存路径，不能成为要求全部旧 IPK 重编的 ABI 变化。新 manifest 记录不带

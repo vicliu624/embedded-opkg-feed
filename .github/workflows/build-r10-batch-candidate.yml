@@ -526,6 +526,16 @@ jobs:
           key: ${{ env.TDVP_SDK_CACHE_KEY }}
           fail-on-cache-miss: true
 
+      - name: Restore the target-runtime provenance manifest for merge
+        # This private cache is used only to classify IPKs already carried by
+        # source-batch artifacts.  The merge never copies its payload or
+        # rebuilds a package from it.
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/tdvp-r10-runtime-base
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+          fail-on-cache-miss: true
+
       - name: Download compatible unsigned batches and compare every IPK hash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -540,12 +550,26 @@ jobs:
 
           incoming_root="$RUNNER_TEMP/tdvp-r10-incoming"
           merged_feed="candidate-merged/$expected_release_path"
+          target_runtime_manifest="$RUNNER_TEMP/tdvp-r10-runtime-base/$expected_release_path/.tdvp-target-runtime-packages.tsv"
           mkdir -p "$incoming_root" "$merged_feed"
+          [[ -s "$target_runtime_manifest" ]] || {
+            echo "missing immutable target-runtime provenance manifest: $target_runtime_manifest" >&2
+            exit 64
+          }
           IFS=',' read -r -a run_ids <<< "$TDVP_SOURCE_RUN_IDS"
 
           manifest_value() {
             local manifest=$1 key=$2
             awk -F '\t' -v key="$key" '$1 == key { print $2; exit }' "$manifest"
+          }
+
+          is_target_runtime_ipk() {
+            local filename=$1 package soname version
+            while IFS='|' read -r package soname version; do
+              [[ -n "$package" && -n "$version" ]] || continue
+              [[ "$filename" == "${package}_${version}_riscv64.ipk" ]] && return 0
+            done <"$target_runtime_manifest"
+            return 1
           }
 
           for run_id in "${run_ids[@]}"; do
@@ -608,10 +632,19 @@ jobs:
               }
               destination_ipk="$merged_feed/$filename"
               if [[ -e "$destination_ipk" ]]; then
-                [[ "$(sha256sum "$destination_ipk" | awk '{print $1}')" == "$digest" ]] || {
-                  echo "incompatible duplicate IPK: $filename" >&2
-                  exit 70
-                }
+                if [[ "$(sha256sum "$destination_ipk" | awk '{print $1}')" != "$digest" ]]; then
+                  # Every source batch carries a private target-runtime base.
+                  # Keep the first verified copy only for a package/version
+                  # explicitly owned by that immutable catalog.  A mismatch
+                  # for every other package is still an incompatible source
+                  # payload and must stop the merge.
+                  if is_target_runtime_ipk "$filename"; then
+                    echo "retaining first verified target-runtime IPK: $filename" >&2
+                  else
+                    echo "incompatible duplicate IPK: $filename" >&2
+                    exit 70
+                  fi
+                fi
               else
                 install -m 0644 "$source_ipk" "$destination_ipk"
               fi

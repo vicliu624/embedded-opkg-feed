@@ -162,13 +162,14 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
 - 纯元数据诊断 profile：`tdvp-diagnostics` 仅包含仓库自有说明文档及精确的
   `strace`/`htop`/`lsof`/`iperf3`/`netcat` 依赖元数据，因此具有狭窄 source-lock 豁免；它不拥有
   可执行文件、共享库、SDK 制品或任何固件路径；
-- rsync 的 target-attested 依赖：immutable catalogue 以 `libpopt (= 1.19-1)` 与
-  `libz (= 1.3.1-1)` 唯一拥有 `libpopt.so.0` / `libz.so.1`；rsync 绝不重建或替换这两个 ABI。
-  `rsync` 锁定 rsync 3.4.1、popt、zlib、host-pkgconf 及审查过的 Buildroot autoreconf patch；远程 shell
-  刻意不作为 OpenSSH 包依赖：默认使用 platform `ssh`，或由用户通过 `-e /usr/bin/tdvp-ssh` 显式选择传输命令。
-  它明确关闭 ACL、LZ4、OpenSSL daemon TLS、xxHash 和 Zstd。配方会拒绝变化的 Buildroot patch 和缺少 zlib 的
-  candidate SDK；在成为 unsigned candidate 前仍须通过 `file-sync-tools` GitHub batch 和后续无重编 merge，
-  随后还需要匹配 K230 SDK 的实机生命周期证据；
+- rsync 的 target-attested 依赖：immutable catalogue 以 `libpopt (= 1.19-1)`、
+  `libz (= 1.3.1-1)`、`libcrypto-3 (= 3.4.1-1)` 唯一拥有 `libpopt.so.0` / `libz.so.1` /
+  `libcrypto.so.3`。匹配 SDK 会恢复锁定 Buildroot rsync transaction 的 OpenSSL 分支，因此 rsync 只消费
+  该精确 crypto ABI，不会尝试关闭全局 Kconfig 或重建/替换这些 runtime。它锁定 rsync 3.4.1、popt、zlib、
+  OpenSSL、host-pkgconf 及审查过的 Buildroot autoreconf patch；远程 shell 刻意不作为 OpenSSH 包依赖：默认
+  使用 platform `ssh`，或由用户通过 `-e /usr/bin/tdvp-ssh` 显式选择传输命令。它明确关闭 ACL、LZ4、xxHash
+  和 Zstd。配方会拒绝变化的 Buildroot patch 和缺少 zlib 的 candidate SDK；在成为 unsigned candidate 前仍须
+  通过 `file-sync-tools` GitHub batch 和后续无重编 merge，随后还需要匹配 K230 SDK 的实机生命周期证据；
 - SQL 数据库运行时：`libsqlite3-0` 锁定 Buildroot 2025.02.1 审查的 SQLite 3.48.0
   归档，只将 `libsqlite3.so.0 -> libsqlite3.so.0.8.6` 制作成独立 IPK。已完成校验过的
   离线源码构建和候选审计，因此它是 CPython `_sqlite3` 及后续数据库 client 的唯一可复用

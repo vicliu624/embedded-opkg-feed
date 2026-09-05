@@ -446,8 +446,9 @@ jobs:
               expected_packages=(openssh-client)
               ;;
             file-sync-tools)
-              # The immutable target catalogue owns libpopt/libz at the exact
-              # versions declared by rsync. They are deferred, never rebuilt.
+              # The immutable target catalogue owns libpopt/libz/libcrypto-3
+              # at the exact versions declared by rsync. They are deferred,
+              # never rebuilt.
               # SSH is a user-selected rsync transport (-e tdvp-ssh), not an
               # rsync link-time or package dependency, so this batch builds
               # only the locked rsync leaf.

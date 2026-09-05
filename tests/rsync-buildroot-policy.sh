@@ -123,7 +123,6 @@ for record in \
   enable:BR2_PACKAGE_RSYNC \
   disable:BR2_PACKAGE_ACL \
   disable:BR2_PACKAGE_LZ4 \
-  disable:BR2_PACKAGE_OPENSSL \
   disable:BR2_PACKAGE_XXHASH \
   disable:BR2_PACKAGE_ZSTD; do
   grep -Fqx "$record" "$output/.tdvp-kconfig.log"

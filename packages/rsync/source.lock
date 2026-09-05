@@ -3,8 +3,9 @@
 # catalogue with an exact package version. SSH is an rsync command selection,
 # not an ELF or package-provider dependency: the platform ssh remains the
 # default, while an installed TDVP namespaced client is selected explicitly
-# with `-e /usr/bin/tdvp-ssh`. OpenSSL daemon TLS and optional
-# ACL/LZ4/xxHash/Zstd support are disabled by build.sh.
+# with `-e /usr/bin/tdvp-ssh`. The matched SDK enables rsync's Buildroot
+# OpenSSL branch, so the leaf has an exact libcrypto-3 target ABI dependency;
+# optional ACL/LZ4/xxHash/Zstd support is disabled by build.sh.
 FORMAT_VERSION='1'
 SOURCE_TYPE='buildroot-derived'
 UPSTREAM_NAME='rsync'
@@ -12,8 +13,8 @@ UPSTREAM_LICENSE='GPL-3.0-or-later WITH OpenSSL-exception'
 UPSTREAM_VERSION='3.4.1'
 UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
 SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/rsync/rsync.mk'
-SOURCE_SELECTION_REASON='Rsync is a high-value source-maintenance and deployment command. The leaf contains only the command implementation and has exact libpopt/libz target-catalogue dependencies. Remote-shell selection is external to the package relationship: use the platform ssh by default or explicitly select an installed tdvp-ssh wrapper with -e.'
-NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 rsync.mk/rsync.hash and the reviewed local autoreconf patch; host-pkgconf, popt, and zlib archives needed by the bounded Buildroot target build. The completed matching SDK supplies host autoreconf tooling; no TDVP-specific source modification.'
+SOURCE_SELECTION_REASON='Rsync is a high-value source-maintenance and deployment command. The leaf contains only the command implementation and has exact libpopt/libz/libcrypto-3 target-catalogue dependencies. Remote-shell selection is external to the package relationship: use the platform ssh by default or explicitly select an installed tdvp-ssh wrapper with -e.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 rsync.mk/rsync.hash and the reviewed local autoreconf patch; host-pkgconf, popt, zlib, and OpenSSL archives needed by the bounded Buildroot target build. The completed matching SDK supplies host autoreconf tooling; no TDVP-specific source modification.'
 SECURITY_STATUS='Rsync, OpenSSH, popt, and zlib advisory review remains a candidate-release gate. Every listed archive and the local Buildroot patch is SHA-256 verified before the private offline build.'
 VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 rsync, popt, zlib, and pkgconf package hashes'
 VERIFIED_AT='2026-09-03'
@@ -30,6 +31,9 @@ SOURCE_ARTIFACT_3_SHA256='38ef96b8dfe510d42707d9c781877914792541133e1870841463bf
 SOURCE_ARTIFACT_4_URL='https://distfiles.ariadne.space/pkgconf/pkgconf-2.3.0.tar.xz'
 SOURCE_ARTIFACT_4_FILE='pkgconf-2.3.0.tar.xz'
 SOURCE_ARTIFACT_4_SHA256='3a9080ac51d03615e7c1910a0a2a8df08424892b5f13b0628a204d3fcce0ea8b'
+SOURCE_ARTIFACT_5_URL='https://github.com/openssl/openssl/releases/download/openssl-3.4.1/openssl-3.4.1.tar.gz'
+SOURCE_ARTIFACT_5_FILE='openssl-3.4.1.tar.gz'
+SOURCE_ARTIFACT_5_SHA256='002a2d6b30b58bf4bea46c43bdd96365aaf8daa6c428782aa4feee06da197df3'
 SOURCE_PATCH_1_FILE='patches/0001-configure.ac-use-pkg-config-to-retrieve-openssl-depe.patch'
 SOURCE_PATCH_1_SHA256='a3f5df56f373e6fd72342338d1268ddf90a0754cb4dac18ab001b5f0093d2ee9'
 SOURCE_PATCH_1_REASON='Mirrored Buildroot 2025.02.1 rsync autoreconf patch; build.sh compares line-ending-and-trailing-blank-normalized content with the patch in the matching Buildroot tree before it invokes the target recipe.'

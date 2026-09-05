@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Build a compact rsync command from the reviewed Buildroot recipe. Remote
-# transport is supplied by the separately owned OpenSSH client; optional ACL,
-# LZ4, OpenSSL daemon TLS, xxHash, and Zstd features stay out of r10.
+# transport is supplied by a user-selected ssh command. The matching K230 SDK
+# retains OpenSSL, so the locked Buildroot recipe uses its exact target-owned
+# libcrypto ABI; optional ACL, LZ4, xxHash, and Zstd features stay out of r10.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -49,6 +50,6 @@ tree_patch_hash=$(normalised_patch_sha256 "$tree_patch") || {
 
 # shellcheck source=../../support/buildroot-command-package.sh
 source "$package_dir/../../support/buildroot-command-package.sh"
-TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS='BR2_PACKAGE_ACL BR2_PACKAGE_LZ4 BR2_PACKAGE_OPENSSL BR2_PACKAGE_XXHASH BR2_PACKAGE_ZSTD' \
+TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS='BR2_PACKAGE_ACL BR2_PACKAGE_LZ4 BR2_PACKAGE_XXHASH BR2_PACKAGE_ZSTD' \
   tdvp_buildroot_command_package "$package_dir" "$sdk_root" "$configured_output" \
     BR2_PACKAGE_RSYNC rsync 'RSYNC_VERSION = 3.4.1' 'rsync'

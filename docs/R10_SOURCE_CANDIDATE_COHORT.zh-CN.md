@@ -95,7 +95,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 2 | `libpopt`、`libz` | 1.19、1.3.1 | rsync 的公共 provider；不得私藏在 leaf 中 |
 | 3 | `libevent` | 2.1.12 | 唯一拥有四个 `libevent*.so.7`；OpenSSL event 支持关闭 |
 | 4 | `libcurl-4`、`curl` | 8.12.1 | `libcurl-4` 是 target provider；直接占用 `/usr/bin/curl` 的锁定源码构建曾被 CI 拒绝。`http-transfer-tools` 只从同一 source transaction stage ELF，私有保存为 `/usr/libexec/tdvp-curl/curl`，公开入口为 `/usr/bin/tdvp-curl`，不替换 target 命令。 |
-| 5 | `wget`、`rsync` | 1.25.0、3.4.1 | Wget 只允许 CA/OpenSSL/zlib；`rsync` 仅精确依赖 immutable target catalogue 的 `libpopt (= 1.19-1)`、`libz (= 1.3.1-1)`，不重建二者。SSH 是用户以默认 platform `ssh` 或 `-e /usr/bin/tdvp-ssh` 明确选择的传输命令，不是 rsync 的 ELF/包 provider 依赖；`file-sync-tools` 仍须通过 GitHub Actions。 |
+| 5 | `wget`、`rsync` | 1.25.0、3.4.1 | Wget 只允许 CA/OpenSSL/zlib；匹配 SDK 的 rsync 事务保留 OpenSSL 分支，因此 `rsync` 精确依赖 immutable target catalogue 的 `libpopt (= 1.19-1)`、`libz (= 1.3.1-1)`、`libcrypto-3 (= 3.4.1-1)`，不重建三者。SSH 是用户以默认 platform `ssh` 或 `-e /usr/bin/tdvp-ssh` 明确选择的传输命令，不是 rsync 的 ELF/包 provider 依赖；ACL/LZ4/xxHash/Zstd 仍关闭，`file-sync-tools` 仍须通过 GitHub Actions。 |
 | 6 | `iperf3`、`netcat`、`lsof` | 3.18、0.7.1、4.99.4 | 受控 LAN、无公开 listener；lsof 还需记录权限可见性 |
 | 7 | `libcap-2`（target provider）、`htop`（候选）、`nano`、`dialog`、`ncdu`、`pv` | 2025.02.1、3.3.0、8.2、1.3-20220117、1.21、1.9.0 | immutable catalogue 已拥有 `libcap.so.2`；`htop` 只能精确依赖 `libcap-2 (= 2025.02.1-1)` 以启用 capability view，绝不重建或覆盖该 ABI。真实终端、locale/宽字符和小屏交互验收仍是独立门禁。 |
 | 8 | `tmux`（暂缓） | 3.3a | 需先准入 OpenSSL-capable libevent runtime；再验证 detached session、capture、kill-session |
@@ -495,8 +495,9 @@ closure/coverage gate 都没有放宽。
 特别地，当前 staging K230 output 已选择 `BR2_PACKAGE_POPT=y` 并拥有
 `/usr/lib/libpopt.so.0`。这使普通 source-built `libpopt` feed provider 被 base-overlay gate 拒绝；
 其后 target-runtime catalogue 以 `libpopt (= 1.19-1)` 和 `libz (= 1.3.1-1)` 的版本化 attestation
-成为这两个 SONAME 的唯一 provider。`rsync` 只能精确声明这两个 catalogue owner，不能重建、覆盖或
-隐式借用它们。远程 shell 同样不是 package ABI：默认使用 platform `ssh`，或由用户通过
+成为这两个 SONAME 的唯一 provider。匹配 SDK 又会恢复 `BR2_PACKAGE_OPENSSL=y`，使锁定的 Buildroot rsync
+transaction 启用 OpenSSL 分支；它只能精确声明现有的 `libcrypto-3 (= 3.4.1-1)`，而不能关闭全局 Kconfig
+或重建/覆盖这三个 ABI。远程 shell 同样不是 package ABI：默认使用 platform `ssh`，或由用户通过
 `-e /usr/bin/tdvp-ssh` 显式选择已安装的 namespaced client。`file-sync-tools` 仍须由 GitHub Actions
 实际证明锁定源码、RISC-V ELF、runtime closure 与 deny base-overlay，不能以同内容覆盖绕过 gate。
 

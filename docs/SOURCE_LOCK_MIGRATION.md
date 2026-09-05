@@ -241,16 +241,19 @@ below; it is not an upstream-source exception for ordinary packages.
   `strace`/`htop`/`lsof`/`iperf3`/`netcat` dependency metadata. It owns no executable,
   shared library, SDK artifact, or firmware path;
 - target-attested rsync dependencies: the immutable catalogue is the unique
-  `libpopt.so.0` / `libz.so.1` provider at `libpopt (= 1.19-1)` and
-  `libz (= 1.3.1-1)`; rsync never rebuilds or replaces either ABI. `rsync`
-  locks rsync 3.4.1, popt, zlib, host-pkgconf, and the reviewed Buildroot
-  autoreconf patch. Its remote shell is deliberately not an OpenSSH package
-  dependency: it uses platform `ssh` by default or an explicitly requested
-  `-e /usr/bin/tdvp-ssh` transport. It explicitly disables ACL, LZ4, OpenSSL
-  daemon TLS, xxHash, and Zstd. The recipes reject both a changed Buildroot
-  patch and a candidate SDK without zlib; the `file-sync-tools` GitHub batch
-  and subsequent no-recompile merge remain required before it can be an
-  unsigned candidate, followed by on-device lifecycle evidence;
+  `libpopt.so.0` / `libz.so.1` / `libcrypto.so.3` provider at
+  `libpopt (= 1.19-1)`, `libz (= 1.3.1-1)`, and `libcrypto-3 (= 3.4.1-1)`.
+  The matching SDK restores the locked Buildroot rsync OpenSSL branch, so
+  rsync consumes that exact crypto ABI rather than trying to disable global
+  Kconfig or rebuild any of these runtimes. It locks rsync 3.4.1, popt, zlib,
+  OpenSSL, host-pkgconf, and the reviewed Buildroot autoreconf patch. Its
+  remote shell is deliberately not an OpenSSH package dependency: it uses
+  platform `ssh` by default or an explicitly requested `-e /usr/bin/tdvp-ssh`
+  transport. It explicitly disables ACL, LZ4, xxHash, and Zstd. The recipes
+  reject both a changed Buildroot patch and a candidate SDK without zlib; the
+  `file-sync-tools` GitHub batch and subsequent no-recompile merge remain
+  required before it can be an unsigned candidate, followed by on-device
+  lifecycle evidence;
 - matched target-derived compiler runtime: `libatomic-1`, the sole explicit
   non-profile `SOURCE_LOCK_EXEMPT_REASON`. It transfers only
   `libatomic.so.1 -> libatomic.so.1.2.0` from the completed matching target;

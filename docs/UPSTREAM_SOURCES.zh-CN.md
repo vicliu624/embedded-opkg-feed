@@ -232,8 +232,10 @@ Debian、Buildroot 或上游发布的新版和安全公告会产生**候选更�
 11. 已完成：GitHub Actions source batch [`33993563150`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993563150) 已准入锁定 GNU `ed` line-editor command，no-recompile merge [`33993808518`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993808518) 随后合入已验证 artifact，未重编 source package。host-lzip 仅解包 runner source，CI 未执行编辑器或传入文件；
 12. 已完成：GitHub Actions source batch [`33994423195`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33994423195) 已准入锁定 GNU `cpio` archive command，no-recompile merge [`33994729377`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33994729377) 随后合入已验证 artifact，未重编 source package。其 glibc/wchar K230 profile 不选择仅用于 musl/uClibc 的 argp-standalone branch；它保持私有、不引入 shared provider，CI 未执行或传入 archive 或 filesystem path；
 13. 已完成：GitHub Actions source batch [`33995251958`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33995251958) 已准入锁定 GNU `time` process-accounting command，no-recompile merge [`33995532939`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33995532939) 随后合入已验证 artifact，未重编 source package。K230 的 MMU/dynamic-library/BusyBox-show-others profile 满足上游条件；它保持私有、不引入 shared provider，CI 未执行它或为其启动被计时的命令；
-14. 为每个 release 生成来源证明/SBOM，并把来源、SDK 和测试结果与签名 release 对应；
-15. 同时逐步引入经过审查的通用库，每次均保留共享运行时和实机测试门。
+14. 已完成：GitHub Actions source batch [`33996029211`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33996029211) 已准入锁定的私有 `cpulimit` command，no-recompile merge [`33996322817`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33996322817) 随后合入已验证 artifact，未重编 source package。它保持私有、不引入 shared provider，CI 未执行它、传入 PID 或进程名、启动进程或节流进程；
+15. 进行中：GitHub Actions source batch [`33997001920`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997001920) 已构建锁定的私有 `bwm-ng` command，并上传 unsigned artifact [`9978397329`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997001920/artifacts/9978397329)。当经审查 SDK 启用可选 terminal view 时，它只消费 immutable target `libncursesw` provider，不引入 provider；CI 未执行它、读取 procfs、观察接口或观察磁盘 I/O。它尚待所需 no-recompile hash merge；
+16. 为每个 release 生成来源证明/SBOM，并把来源、SDK 和测试结果与签名 release 对应；
+17. 同时逐步引入经过审查的通用库，每次均保留共享运行时和实机测试门。
 
 在自动化全部完成以前，本约定仍是所有新上游引入的准入标准；PR 模板、贡献说明和发布检查清单会引用它，确保维护者不会把“候选源码”误解为“可以直接安装的发行版包”。
 

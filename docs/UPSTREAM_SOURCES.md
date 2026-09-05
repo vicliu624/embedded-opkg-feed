@@ -475,9 +475,24 @@ This document fixes the governance rule first. Implement automation in order:
     [`33995251958`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33995251958)
     has admitted the locked GNU `time` process-accounting command, and no-recompile
     merge [`33995532939`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33995532939) then admitted its verified artifact without recompiling. Its K230 MMU/dynamic-library/BusyBox-show-others profile satisfied the upstream conditions; it remains private, introduces no shared provider, and was never invoked or used to start a command in CI; then
-14. Emit source provenance/SBOM material for each release and bind source, SDK,
+14. Completed: GitHub Actions source batch
+    [`33996029211`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33996029211)
+    admitted the locked private `cpulimit` command, and no-recompile merge
+    [`33996322817`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33996322817)
+    admitted its verified artifact without recompiling. It remains private,
+    introduces no shared provider, and CI did not invoke it, supply a PID or
+    process name, start a process, or throttle a process; then
+15. In progress: GitHub Actions source batch
+    [`33997001920`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997001920)
+    built the locked private `bwm-ng` command and uploaded unsigned artifact
+    [`9978397329`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997001920/artifacts/9978397329).
+    It consumes only the immutable target `libncursesw` provider when the
+    reviewed SDK enables its optional terminal view, introduces no provider,
+    and CI did not invoke it, read procfs, observe an interface, or observe
+    disk I/O. It awaits the required no-recompile hash merge; then
+16. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
-15. Introduce reviewed general libraries incrementally, retaining shared-runtime
+17. Introduce reviewed general libraries incrementally, retaining shared-runtime
    and on-device test gates each time.
 
 Until all automation is complete, this contract remains the admission standard

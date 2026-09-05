@@ -121,6 +121,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 28 | `cpio`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 2.15 | `cpio-archive-tools` 只允许私有 GNU `cpio` ELF 与 `tdvp-cpio`；K230 的 glibc/wchar profile 不触发仅为 musl/uClibc 选择的 `argp-standalone`，不引入 shared-runtime provider。run [`33994423195`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33994423195) 产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33994729377`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33994729377) 只 hash-merge 31 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不得执行该命令、传入 archive 或 filesystem path，也不得创建、解包、读取或写入 archive payload。 |
 | 29 | `time`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 1.9 | `process-timing-tools` 只允许私有 GNU `time` ELF 与 `tdvp-time`；K230 的 MMU、动态库和 BusyBox show-others profile 满足上游条件，不引入 shared-runtime provider。run [`33995251958`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33995251958) 产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33995532939`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33995532939) 只 hash-merge 32 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不得执行该命令或为其启动被计时的子命令。 |
 | 30 | `cpulimit`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 0.2 | `cpu-limit-tools` 只允许私有 `cpulimit` ELF 与 `tdvp-cpulimit`；K230 的 MMU/thread profile 满足上游条件，不引入 shared-runtime provider。run [`33996029211`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33996029211) 产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33996322817`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33996322817) 只 hash-merge 33 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不得执行该命令、传入 PID/进程名、启动、暂停或节流任何进程。 |
+| 31 | `bwm-ng`（GitHub Actions source batch 已通过，待无重编 merge/实机） | 0.6.3 | `bandwidth-monitor-tools` 只允许私有 `bwm-ng` ELF 与 `tdvp-bwm-ng`。run [`33997001920`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997001920) 用锁定来源实际构建一个 IPK，并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；其可选 terminal view 只消费 immutable target `libncursesw`，不构建或发布 runtime provider。artifact [`9978397329`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997001920/artifacts/9978397329) 尚待 no-recompile hash merge。CI 未执行监视器、读取 procfs、观察网络接口或观察磁盘 I/O。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -139,8 +140,8 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 source，batch 入口和配方改动均已撤回；旧的成功 source batch 是这六个包的唯一 r10 构建证据。
 以后新增候选必须先比对成功 batch 的实际 IPK 清单，不能以“仓库中有配方”误判为尚未构建。
 
-**r10 实际 package inventory（2026-09-06）。** 对 33 个成功 source batch 的 GitHub Actions
-`built *.ipk` 记录逐一去重后，108 个 r10 recipe 中已有 92 个 recipe package 具备实际 source-build
+**r10 实际 package inventory（2026-09-06）。** 对 34 个成功 source batch 的 GitHub Actions
+`built *.ipk` 记录逐一去重后，109 个 r10 recipe 中已有 93 个 recipe package 具备实际 source-build
 证据。其余 12 个通用 package 是 immutable target catalogue provider：`ca-certificates`、`libatomic-1`、
 `libcrypto-3`、`libcurl-4`、`libexpat-1`、`libffi-8`、`libncursesw`、`libpcre2-8`、`libpopt`、
 `libreadline`、`libssl-3` 与 `libz`；它们只能复用，不能为补齐数量重编。metadata-only

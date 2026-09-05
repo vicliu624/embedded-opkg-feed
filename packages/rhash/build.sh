@@ -10,7 +10,7 @@ source "$package_dir/../../support/buildroot-command-package.sh"
 # no librhash shared provider or header is copied into the feed payload. CI
 # builds and audits the ELF only and never gives rhash a file path or payload.
 TDVP_COMMAND_BUILDROOT_ENABLE_SYMBOLS='BR2_PACKAGE_RHASH_BIN' \
-TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES=$'RHASH_CONF_OPTS=--disable-gettext --disable-openssl\nRHASH_BUILD_TARGETS=lib-static build\nRHASH_INSTALL_TARGETS=install-lib-static' \
+TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES=$'RHASH_CONF_OPTS=--disable-gettext --disable-openssl --enable-static=librhash --enable-lib-static --disable-lib-shared\nRHASH_BUILD_TARGETS=lib-static build\nRHASH_INSTALL_TARGETS=install-lib-static' \
 TDVP_COMMAND_FRONTEND_NAMES='rhash=tdvp-rhash' \
   tdvp_buildroot_command_package "$package_dir" "$4" "${TDVP_SYSTEM_BUILDROOT_OUTPUT:-}" \
     BR2_PACKAGE_RHASH rhash 'RHASH_VERSION = 1.4.4' 'rhash'

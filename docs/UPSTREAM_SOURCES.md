@@ -273,12 +273,18 @@ single library is admitted.  CI separates three immutable inputs:
 An incremental batch is an unsigned partial candidate.  A later merge gate
 may assemble compatible batches only when their platform identity, source
 locks, recipe/patch revisions, dependency metadata and IPK SHA-256 values are
-recorded and compatible.  It checks the SHA-256 of every declared archive,
-rejects non-identical duplicate archive names, regenerates the final index and
-runs both dependency-closure directions against the restored SDK target.  It
-must never substitute an IPK or silently trigger a full rebuild.  A cache miss
-is a hard error for a package batch: CI must run the explicit base job, not
-hide a platform rebuild inside a library job.
+recorded and compatible.  It checks the SHA-256 of every declared archive and
+rejects non-identical duplicate archive names, with one deliberately narrow
+catalogue rule: each batch includes an immutable, private target-runtime base;
+when and only when a duplicate filename exactly matches a `package + version`
+entry in that base's restored `.tdvp-target-runtime-packages.tsv`, the merge
+retains its first already manifest-verified copy.  The manifest supplies no
+payload and cannot exempt source-built packages—those must remain byte-for-byte
+identical.  The merge then regenerates the final index and runs both
+dependency-closure directions against the restored SDK target.  It must never
+substitute an IPK or silently trigger a full rebuild.  A cache miss is a hard
+error for a package batch: CI must run the explicit base job, not hide a
+platform rebuild inside a library job.
 
 `build.sh` builds only against the selected platform's pinned
 `TDVP_SDK_ROOT`, `TDVP_FEED_BASE_ROOT`, and temporary

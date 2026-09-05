@@ -190,10 +190,23 @@ compiler source-path remap。`make` 后、`make install` 前会把生成的
 `_sysconfigdata_*.py` 中的临时 `abs_srcdir`/`abs_builddir` 规范化；因此随后生成的 `.pyc`
 也不保留 runner 的随机工作路径。它把 staging marker 升为 format 2，防止旧 staging 被误复用。
 
-merge 已恢复最严格的规则：无论来源、provider 或 artifact 顺序，同名同版本 IPK 都必须逐字节
-SHA-256 相同，否则 exit 70。只重跑受此 CPython closure 影响的 development 与 Node batch；其余
-五个已成功 source batch 保持可复用。仅当两个替代 artifact 的 Python IPK 相同，最终 GitHub
-merge 才会继续执行 index、runtime closure 和 coverage gates。
+为避免误把 source-build 差异当成 runtime-base，merge 的默认规则仍是最严格的：任意同名同版本
+IPK 必须逐字节 SHA-256 相同，否则 exit 70。只重跑受 CPython closure 影响的 development 与 Node
+batch；其余五个已成功 source batch 保持可复用。两个替代 artifact 的 Python IPK 已相同，因此
+`libpython3.13`、`python3-runtime`、`python3` 以及所有其他不在 target-runtime provider manifest
+中的重复 source IPK 仍必须精确相同，不能以 artifact 顺序覆盖。
+
+随后 partial merge `33958358691` 在同一 hash gate 发现
+`tdvp-runtime-libexec_2025.02.1-1_riscv64.ipk` 的重复外层 SHA-256 不同而停止，尚未索引、closure
+或上传。该名称在平台受审查的 `runtime-data-packages.tsv` 中明确是 `@remaining-usr-libexec` 的
+target-runtime catalogue provider；它与 `libpython3.13` 的直接 source-build 身份不同。merge 因而
+只恢复一个受限的 provenance 分支：先以同一 SDK/ABI cache key 恢复不可变的
+`.tdvp-target-runtime-packages.tsv`，仅当重复文件名精确匹配其中的 `package + version + riscv64`
+记录时，保留先前已由其 batch manifest 校验过 SHA-256 的副本。manifest 不提供、更不复制 IPK
+内容；它只定义该私有 runtime catalogue 的 owner。所有不在 manifest 的差异一律 exit 70，故此前
+错误地被假设为 runtime-base 的 `libpython3.13` 仍受严格字节一致性约束。这个修复只重跑 merge
+job，不重建 SDK、target-runtime base 或任何 source batch，随后仍必须通过 index、runtime closure
+和 target-runtime coverage gates。
 
 development replacement `33946874048` 还证明 source lock 对上游分发漂移同样保持 fail-closed：
 `oldmanprogrammer.net/tar/tree/tree-2.1.1.tgz` 返回了 11,949-byte、SHA-256 为

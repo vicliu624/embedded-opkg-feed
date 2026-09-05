@@ -16,6 +16,11 @@ grep -Fq -- "--jq '.artifacts[].name | select(test(\"^tdvp-k230-r10-.*-unsigned-
 grep -Fq 'gh run download "$run_id" --repo "$GITHUB_REPOSITORY"' "$workflow"
 grep -Fq 'incompatible duplicate IPK: $filename' "$workflow"
 grep -Fq 'exit 70' "$workflow"
+grep -Fq 'Restore the target-runtime provenance manifest for merge' "$workflow"
+grep -Fq 'missing immutable target-runtime provenance manifest' "$workflow"
+grep -Fq 'is_target_runtime_ipk()' "$workflow"
+grep -Fq 'retaining first verified target-runtime IPK: $filename' "$workflow"
+grep -Fq 'including libpython3.13, must still match byte-for-byte' "$workflow"
 grep -Fq 'Re-index and validate the merged candidate without compiling' "$workflow"
 grep -Fq 'TDVP_SDK_ABI_ID: tdvp-k230-r1-abi-' "$workflow"
 grep -Fq "printf 'sdk_abi_id\\t%s\\n' \"\$TDVP_SDK_ABI_ID\"" "$workflow"
@@ -31,8 +36,10 @@ if grep -Fq 'gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json artifacts'
   echo 'merge workflow uses an unavailable gh run view artifacts field' >&2
   exit 1
 fi
-if grep -Eq 'target_runtime_manifest|is_target_runtime_ipk|retaining first verified target-runtime IPK' "$workflow"; then
-  echo 'merge workflow must not waive mismatched duplicate IPKs by provenance class' >&2
+if ! grep -Fq 'if is_target_runtime_ipk "$filename"; then' "$workflow" || \
+   ! grep -Fq 'else' "$workflow" || \
+   ! grep -Fq 'exit 70' "$workflow"; then
+  echo 'merge workflow must retain exit 70 for mismatched source-built IPKs' >&2
   exit 1
 fi
 

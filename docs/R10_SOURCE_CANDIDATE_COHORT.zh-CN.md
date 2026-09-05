@@ -118,6 +118,12 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
 
+**延后 socket relay 候选（2026-09-06）。** 不把当前 Buildroot 2025.02.1 的 `socat` 1.8.0.2
+直接纳入候选：其上游 HTTPS 下载端点在受审信任链中呈现自签名证书，且
+[NVD CVE-2026-56123](https://nvd.nist.gov/vuln/detail/CVE-2026-56123) 将 `< 1.8.1.2` 列为受影响范围。
+在有可验证的上游 HTTPS source artifact、经审查的较新 Buildroot source input 及独立 closure 设计之前，
+不得为 `socat` 创建 recipe、source batch 或 IPK。该延后决定不是 Debian/Buildroot 来源的通用否定。
+
 **源码导航包的去重结论（2026-09-05）。** `development-tools` run `33948462622` 已从锁定来源
 实际构建 `diffutils_3.10-1`、`findutils_4.10.0-1`、`gawk_5.3.1-2`、`grep_3.11-2`、`sed_4.9-1`
 和 `which_2.21-1`。为验证增量路径而启动的 `source-navigation-tools` run `33976531692` 也通过了

@@ -142,8 +142,25 @@ OpenSSH 9.9p2 的 RISC-V client 编译；不含 server、`/etc/ssh`、setuid hel
 `/usr/libexec/tdvp-openssh-client/{ssh,scp,sftp,ssh-agent,ssh-add}` 和
 `/usr/bin/tdvp-{ssh,scp,sftp,ssh-agent,ssh-add}` wrapper，使用 `deny` overlay 并继续拒绝任何 target
 路径、`/etc/ssh`、server、setuid helper 或 key 工具。它必须经过新的 GitHub Actions source/RISC-V/
-runtime-closure/IPK-index gate 与后续无重编 merge 后，才能成为 unsigned candidate；此时尚无新的
-成功 artifact，更不授权签名、发布或设备生命周期操作。
+runtime-closure/IPK-index gate 与后续无重编 merge 后，才能成为 unsigned candidate。
+
+**命名空间 OpenSSH 的 GitHub Actions 准入证据（2026-09-05）。** `secure-transfer-tools` run
+[`33981065347`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33981065347) 只选择
+`openssh-client`；固定 K230 toolchain、SDK、锁定 source cache、target-runtime catalogue 与 batch policy
+均通过，runner 随后完成唯一的 selected dependency closure。日志记录
+`tdvp-openssh-client payload ready from locked OpenSSH source build`，并产出
+`openssh-client_9.9p2-1_riscv64.ipk`；候选 feed verification 两次成功。它上传 unsigned batch artifact
+[`9973816789`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33981065347/artifacts/9973816789)
+（`tdvp-k230-r10-secure-transfer-tools-unsigned-e0cd6d5…`，91,164,015 bytes）。这是私有 ELF 和
+`tdvp-*` wrapper 的准入证据，绝不把 direct-path OpenSSH 失败 run 变为可接受输入。
+
+后续 merge run [`33981319632`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33981319632)
+只接收此前 19 个成功 source batch 与上述 batch：其 package-build/SDK-base jobs 均明确 skipped，
+成功比较 20 个输入 batch 的 IPK hash，并在 **without compiling** 模式完成 merged feed 的索引、runtime
+dependency closure 与 target-runtime coverage 验证。它上传 merged unsigned artifact
+[`9973893992`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33981319632/artifacts/9973893992)
+（`tdvp-k230-r10-merged-unsigned-e0cd6d5…`，194,733,782 bytes）。两个 artifact 都仍是 unsigned
+candidate；未签名、未 release/publish、未部署/安装到设备，也未执行实机生命周期操作。
 
 `media-inspection-tools` 是从 r7 历史配方迁移的单叶 r10 候选。`ffprobe` 的 `source.lock` 固定
 Buildroot 2025.02.1 审查的 FFmpeg 4.4.4 archive 与 SHA-256；GitHub Actions 只允许匹配 K230 SDK 的

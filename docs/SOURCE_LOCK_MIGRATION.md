@@ -45,8 +45,19 @@ below; it is not an upstream-source exception for ordinary packages.
   candidate may retain RISC-V ELFs only below `/usr/libexec/tdvp-openssh-client/`
   and expose `tdvp-ssh`, `tdvp-scp`, `tdvp-sftp`, `tdvp-ssh-agent`, and
   `tdvp-ssh-add` wrappers. It still requires a new GitHub Actions source,
-  closure, deny-overlay, IPK-index, and no-recompile merge admission; it has
-  no successful artifact yet and cannot support later dependencies;
+  closure, deny-overlay, IPK-index, and no-recompile merge admission. Run
+  [`33981065347`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33981065347)
+  completed that one client closure from the locked source, recorded the
+  private payload, passed feed verification, and uploaded
+  `openssh-client_9.9p2-1_riscv64.ipk` in artifact
+  [`9973816789`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33981065347/artifacts/9973816789)
+  (91,164,015 bytes). No-recompile 20-batch merge run
+  [`33981319632`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33981319632)
+  then compared every IPK hash, rebuilt the index, and validated runtime
+  closure/target coverage before uploading merged artifact
+  [`9973893992`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33981319632/artifacts/9973893992)
+  (194,733,782 bytes). Both remain unsigned candidates; neither signing,
+  release/publishing, deployment, nor device execution occurred;
 - media-inspection leaf (candidate): `ffprobe` is migrated from its r7 recipe
   to r10 with the Buildroot 2025.02.1 FFmpeg 4.4.4 archive/hash locked. It
   stages only the `ffprobe` frontend. Run `33978610176` completed the RISC-V

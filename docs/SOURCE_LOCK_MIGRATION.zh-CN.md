@@ -46,8 +46,16 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
   不同而以 exit 79 拒绝；普通 `/usr/bin/ssh*` 路径仍永远不是此 feed 的发布目标。独立的
   `secure-transfer-tools` 只可将 RISC-V ELF 私有保存在 `/usr/libexec/tdvp-openssh-client/`，并提供
   `tdvp-ssh`、`tdvp-scp`、`tdvp-sftp`、`tdvp-ssh-agent`、`tdvp-ssh-add` wrapper；它仍须通过新的
-  GitHub Actions source/closure/deny-overlay/IPK-index 准入和无重编 merge，当前尚无成功 artifact，
-  也不得成为后续 consumer 的已拥有 dependency；
+  GitHub Actions source/closure/deny-overlay/IPK-index 准入和无重编 merge。run
+  [`33981065347`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33981065347) 已从锁定 source
+  完成这一个 client closure、记录 private payload、通过 feed verification，并上传
+  `openssh-client_9.9p2-1_riscv64.ipk` artifact
+  [`9973816789`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33981065347/artifacts/9973816789)
+  （91,164,015 bytes）。merge run
+  [`33981319632`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33981319632) 对此前 19 个成功
+  batch 加此 batch 逐 IPK hash 比较、无编译重建索引并验证 runtime closure/target coverage，上传 merged
+  artifact [`9973893992`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33981319632/artifacts/9973893992)
+  （194,733,782 bytes）。两者仍为 unsigned candidate，未签名、发布、部署或在设备执行；
 - 媒体探测 leaf（候选）：`ffprobe` 从 r7 配方迁移到 r10，锁定 Buildroot 2025.02.1 的 FFmpeg 4.4.4
   archive/hash，只 stage `ffprobe` frontend。首次 run `33978610176` 已完成 RISC-V FFmpeg 构建，但
   Buildroot Debian side-artifact 目录在恢复 SDK 中不存在而 exit 2，未上传 artifact；修正仅在 Actions
@@ -83,7 +91,8 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
 - SSH transport 客户端（仅命名空间候选）：`openssh-client` 的锁定 OpenSSH 9.9p2 source 和 client-only
   构建边界可供审计，但 run `33977961721` 的 `/usr/bin/ssh-agent` identical-overlay 检查失败，因此它
   不得替换 firmware 文件。后续候选只允许私有 ELF 和 `tdvp-*` wrapper；在新的 GitHub Actions batch
-  与无重编 merge 成功前，它不是 feed provider；
+  与无重编 merge 成功前，它不是 feed provider。run `33981065347` 与 20-batch merge `33981319632`
+  现已提供 unsigned candidate evidence；签名 feed 准入及任何 consumer/device 生命周期验证仍独立未完成；
 - Git 客户端拆分：`git-runtime` 与 `git` 均锁定 Buildroot 2025.02.1 选定且给出哈希的
   Git 2.48.1 release archive，再以匹配 SDK/sysroot 和已校验的离线 source cache 直接
   交叉构建。`git` 仅拥有 `/usr/bin/git`；`git-runtime` 只拥有明确白名单中的客户端

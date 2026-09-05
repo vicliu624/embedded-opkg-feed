@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, system-tools, nodejs]
+        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, system-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -83,6 +83,7 @@ jobs:
           bash ./tests/coreutils-package-policy.sh
           bash ./tests/mtools-package-policy.sh
           bash ./tests/dosfstools-package-policy.sh
+          bash ./tests/exfatprogs-package-policy.sh
           bash ./tests/util-linux-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
@@ -356,6 +357,7 @@ jobs:
           bash ./tests/coreutils-package-policy.sh
           bash ./tests/mtools-package-policy.sh
           bash ./tests/dosfstools-package-policy.sh
+          bash ./tests/exfatprogs-package-policy.sh
           bash ./tests/util-linux-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
@@ -450,6 +452,13 @@ jobs:
               # therefore cannot replace firmware /sbin or BusyBox paths.
               package_args=(--package dosfstools)
               expected_packages=(dosfstools)
+              ;;
+            exfat-filesystem-tools)
+              # exfatprogs keeps filesystem creation, repair, metadata, and
+              # imaging ELF private. Every public tdvp-exfat-* wrapper is
+              # distinct from Buildroot's /usr/sbin paths and firmware paths.
+              package_args=(--package exfatprogs)
+              expected_packages=(exfatprogs)
               ;;
             system-tools)
               # This deliberately narrow util-linux cohort avoids the

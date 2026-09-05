@@ -129,6 +129,14 @@ find packages -mindepth 2 -maxdepth 2 -name package.env -type f | LC_ALL=C sort
   `/usr/bin/tdvp-util-linux-<command>`，不会覆盖 firmware 或 BusyBox 路径。候选
   CI 只构建、封装和审计，绝不执行可能改变 IPC、进程、namespace、文件或 terminal
   state 的命令；
+- exFAT 文件系统维护：`exfatprogs` 锁定 Buildroot 2025.02.1 审核的 1.2.5 archive，
+  仅从私有 Buildroot transaction 提取 `mkfs.exfat`、`fsck.exfat`、`dump.exfat`、
+  `exfat2img`、`tune.exfat` 与 `exfatlabel` 六个 RISC-V ELF。即使 Buildroot 临时安装
+  使用 `/usr/sbin`，最终 IPK 也只拥有 `/usr/libexec/tdvp-exfatprogs/` 和明确的
+  `/usr/bin/tdvp-exfat-*` wrapper，因此不覆盖 firmware/BusyBox 路径、不复制 Debian
+  binary 或 target root 文件，也不把共享库当作隐式 provider。GitHub Actions 必须在
+  source lock、RPATH/RUNPATH、runtime closure 与 base-overlay gate 全部通过后才上传
+  unsigned candidate；CI 永不运行会创建、修复、调优、标签或写入镜像的文件系统命令；
 - 十进制运算运行时：`libmpdec-4` 锁定 Buildroot 2025.02.1 审查的 mpdecimal 4.0.0
   归档，只将 `libmpdec.so.4 -> libmpdec.so.4.0.0` 制作成独立 IPK。候选为 RISC-V ELF64
   共享对象、无 RPATH/RUNPATH，且仅依赖平台 ABI，因此它是 CPython `_decimal` 的唯一可复用

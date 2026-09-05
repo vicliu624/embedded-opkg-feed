@@ -24,6 +24,7 @@ grep -Fq 'tdvp_assert_elf_without_runtime_search_path' "$repo_root/scripts/build
 grep -Fqx 'packages/*/root' "$repo_root/.gitignore"
 grep -Fq 'BR2_PACKAGE_BUSYBOX_SHOW_OTHERS' "$repo_root/support/buildroot-command-package.sh"
 grep -Fq 'tdvp_is_selected_command' "$repo_root/support/buildroot-command-package.sh"
+grep -Fq '"/usr/bin/$command" "/bin/$command" "/usr/sbin/$command" "/sbin/$command"' "$repo_root/support/buildroot-command-package.sh"
 grep -Fq 'TDVP_COMMAND_FRONTEND_NAMES' "$repo_root/support/buildroot-command-package.sh"
 grep -Fq 'base-overlay audit remains the authority' "$repo_root/support/buildroot-command-package.sh"
 grep -Fq 'readlink -- "$source"' "$repo_root/support/buildroot-command-package.sh"

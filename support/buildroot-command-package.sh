@@ -148,7 +148,11 @@ tdvp_buildroot_command_package() {
   done
   for command in "${command_list[@]}"; do
     source=
-    for candidate in "/usr/bin/$command" "/bin/$command"; do
+    # Prefer ordinary command paths exactly as before.  Some Buildroot
+    # maintenance utilities intentionally install only below sbin; fall back
+    # to those locations so the recipe can relocate their reviewed ELF into
+    # its private libexec namespace without claiming the original path.
+    for candidate in "/usr/bin/$command" "/bin/$command" "/usr/sbin/$command" "/sbin/$command"; do
       if [[ -x "$install_root$candidate" ]]; then source=$install_root$candidate; break; fi
     done
     [[ -n "$source" ]] || { echo "$buildroot_package target install omitted command: $command" >&2; return 81; }

@@ -33,6 +33,7 @@ Buildroot 交叉构建、IPK 运行时闭包审计和实机启动测试均通过
 | GNU 基础命令组 | `coreutils` | `tdvp-coreutils-ls --version`、`tdvp-coreutils-mktemp`、`tdvp-coreutils-date --iso-8601=seconds` |
 | FAT/MS-DOS 介质工具组 | `mtools` | `tdvp-mtools-mdir`、`tdvp-mtools-mcopy`、`tdvp-mtools-mformat`、`tdvp-mtools-mlabel`；无需挂载即可检查或管理 FAT 介质 |
 | FAT 文件系统维护 | `dosfstools` | `tdvp-dosfstools-mkfs-fat`、`tdvp-dosfstools-fsck-fat`、`tdvp-dosfstools-fatlabel`；格式化/修复前必须由设备使用者确认目标块设备 |
+| exFAT 文件系统维护 | `exfatprogs` | `tdvp-exfat-mkfs`、`tdvp-exfat-fsck`、`tdvp-exfat-dump`、`tdvp-exfat-image`、`tdvp-exfat-tune`、`tdvp-exfat-label`；只能在非生产测试介质上显式选择目标后使用 |
 | 窄 util-linux 系统维护组 | `util-linux-tools` | `tdvp-util-linux-cal`、`tdvp-util-linux-ipcs`、`tdvp-util-linux-last`、`tdvp-util-linux-taskset`；所有公开入口均不替换固件命令 |
 | 编辑 | `vim-runtime`、`vim`、四个纯 Vimscript 插件 | `vim --version`；触控不抢占 Foot 的文本选择 |
 | 最小构建/维护/诊断 | `make`、`pkgconf`、`patch`、`diffutils`、`strace` | `make --version`、`pkg-config --version`、`patch --version`、`diff --version`、`strace true` |
@@ -82,6 +83,16 @@ OpenSSL 或 NLS target provider 的可选功能。
 `tdvp-dosfstools-fatlabel`。它们不会覆盖 `/sbin/mkfs.fat`、`/sbin/fsck.fat`、
 `/sbin/fatlabel` 或 firmware 文件。由于格式化与修复会改变介质，实际执行必须由设备
 使用者明确选择块设备；CI 仅构建、封装和做 ABI/路径闭包审计，不会运行这些破坏性命令。
+
+`exfatprogs` 以同一隔离原则补足 exFAT 维护：Buildroot 2025.02.1 锁定的 1.2.5
+archive 只构建 `mkfs.exfat`、`fsck.exfat`、`dump.exfat`、`exfat2img`、`tune.exfat`
+与 `exfatlabel`。Buildroot 临时安装会使用 `/usr/sbin`，但候选 IPK 只保留
+`/usr/libexec/tdvp-exfatprogs/` 内的 source-built ELF，并只公开
+`tdvp-exfat-mkfs`、`tdvp-exfat-fsck`、`tdvp-exfat-dump`、`tdvp-exfat-image`、
+`tdvp-exfat-tune` 和 `tdvp-exfat-label`；它绝不占用 `/usr/sbin/*`、firmware 或
+BusyBox 路径，也不复制 target root、Debian 二进制或共享库。创建、修复、调优、标签
+和写镜像都可能改变介质；CI 永不执行它们。实机验证必须由设备使用者选择非生产介质、
+记录安装/卸载和回滚后进行。
 
 `util-linux-tools` 是另一种更窄的增补方式：只从 Buildroot 2025.02.1 锁定的
 util-linux 2.40.2 archive 构建命名维护命令，并把 ELF 放在

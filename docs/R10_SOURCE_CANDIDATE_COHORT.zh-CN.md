@@ -107,6 +107,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 14 | `mtools` | 4.0.47 | `fat-media-tools` 锁定 GNU mtools archive 与只供解压的 host-lzip 1.25 输入，构建 FAT/MS-DOS 用户态工具组；全部以 `tdvp-mtools-*` 公开，私有 multi-call ELF/applet symlink 保留 `argv[0]` 语义，绝不覆盖 firmware/BusyBox 或未来标准路径。 |
 | 15 | `dosfstools` | 4.2 | `fat-filesystem-tools` 从锁定 source 构建 FAT 创建、检查和 label 三个 ELF；全部以 `tdvp-dosfstools-*` 公开，私有 payload 不覆盖 `/sbin/*`、firmware 或 BusyBox 路径。 |
 | 16 | `util-linux-tools` | 2.40.2 | `system-tools` 只启用命名的无 liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid 闭包命令；全部以 `tdvp-util-linux-*` 公开，不替换 firmware/BusyBox 路径，也不把基础镜像库作为隐式 provider。 |
+| 17 | `exfatprogs` | 1.2.5 | `exfat-filesystem-tools` 仅提取 6 个锁定源码构建的 exFAT 命令；私有 ELF 位于 `/usr/libexec/tdvp-exfatprogs/`，公开入口均为 `tdvp-exfat-*`，不占用 `/usr/sbin/*`、firmware 或 BusyBox 路径，也不新增共享运行时 provider。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -168,6 +169,18 @@ check 或复制 target 文件来绕过。
 `/sbin/*`。该包不复制 Debian binary、target root 或共享库；GitHub Actions 必须通过 source
 lock、runtime closure 与 base-overlay gate。格式化/检查的实机验证具有潜在破坏性，必须由
 设备使用者选择非生产测试介质后执行，再记录卸载和回滚，才可签名或发布。
+
+`exfat-filesystem-tools` 也是单包、无新增共享运行时 provider 的增量 batch。
+`exfatprogs` 1.2.5 只从 Buildroot 2025.02.1 审核并给出 SHA-256 的 archive 构建
+`mkfs.exfat`、`fsck.exfat`、`dump.exfat`、`exfat2img`、`tune.exfat` 和
+`exfatlabel`。Buildroot 临时 extraction root 中的 `/usr/sbin` 安装路径只用于验证
+这六个 RISC-V ELF；候选 payload 只把它们放进
+`/usr/libexec/tdvp-exfatprogs/`，公开入口分别为 `/usr/bin/tdvp-exfat-mkfs`、
+`tdvp-exfat-fsck`、`tdvp-exfat-dump`、`tdvp-exfat-image`、`tdvp-exfat-tune` 和
+`tdvp-exfat-label`。它不复制 Debian binary、target root 文件或共享库。GitHub Actions
+必须通过 source lock、RISC-V ELF、无 RPATH/RUNPATH、runtime closure 和 base-overlay
+gate；CI 不执行任何会创建、修复、调优、标签或写镜像的前端。实机只能在设备使用者
+显式选择的非生产介质上进行，并记录安装、卸载和回滚后才可成为发布证据。
 
 `system-tools` 是一个单包、无新增共享运行时 provider 的增量 batch。它从 Buildroot
 2025.02.1 审核的 util-linux 2.40.2 archive 离线构建，仅启用 cal、fallocate、IPC、

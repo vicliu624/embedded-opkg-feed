@@ -119,9 +119,10 @@ find packages -mindepth 2 -maxdepth 2 -name package.env -type f | LC_ALL=C sort
   ELF 仅可通过 `/usr/bin/tdvp-bc` 访问，因而绝不替换 firmware `/usr/bin/bc`；
 - 窄系统维护命令：`util-linux-tools` 锁定 Buildroot 2025.02.1 审核的 util-linux
   2.40.2 archive，只以私有 Buildroot transaction 选择明确的 cal、fallocate、IPC、
-  last/utmp、scheduler、namespace 与 terminal-message 前端，并在本次 make 调用中关闭
+  last/utmp、scheduler 与 namespace 前端，并在本次 make 调用中关闭
   NLS。它不启用 util-linux basic set、挂载/分区/文件系统/loop/wipefs/login 等 feature，
-  也不选择 liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid；因此不产生新的共享运行时
+  也不选择 liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid；所有其余
+  util-linux Kconfig feature 也在私有 transaction 中显式关闭，因此不产生新的共享运行时
   provider，也不把 target root 现有库当作隐式 ABI。所有 ELF 都在
   `/usr/libexec/tdvp-util-linux/`，公开入口均是
   `/usr/bin/tdvp-util-linux-<command>`，不会覆盖 firmware 或 BusyBox 路径。候选

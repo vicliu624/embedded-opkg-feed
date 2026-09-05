@@ -52,32 +52,65 @@ for symbol in \
   BR2_PACKAGE_UTIL_LINUX_SCHEDUTILS \
   BR2_PACKAGE_UTIL_LINUX_UNSHARE \
   BR2_PACKAGE_UTIL_LINUX_UTMPDUMP \
-  BR2_PACKAGE_UTIL_LINUX_WAITPID \
-  BR2_PACKAGE_UTIL_LINUX_WALL \
-  BR2_PACKAGE_UTIL_LINUX_WRITE; do
+  BR2_PACKAGE_UTIL_LINUX_WAITPID; do
   grep -Fq "$symbol" "$build_file"
 done
-for command in cal fallocate ipcmk ipcrm ipcs kill last line logger mesg nologin nsenter pivot_root rename chrt ionice taskset uclampset unshare utmpdump waitpid wall write; do
+for command in cal fallocate ipcmk ipcrm ipcs kill last line logger mesg nologin nsenter pivot_root rename chrt ionice taskset uclampset unshare utmpdump waitpid; do
   grep -Fq "$command" "$build_file"
 done
 grep -Fq 'tdvp-util-linux-$command' "$build_file"
 for forbidden in \
   BR2_PACKAGE_UTIL_LINUX_BINARIES \
+  BR2_PACKAGE_UTIL_LINUX_AGETTY \
+  BR2_PACKAGE_UTIL_LINUX_BFS \
+  BR2_PACKAGE_UTIL_LINUX_CHFN_CHSH \
+  BR2_PACKAGE_UTIL_LINUX_CHMEM \
+  BR2_PACKAGE_UTIL_LINUX_CRAMFS \
+  BR2_PACKAGE_UTIL_LINUX_EJECT \
+  BR2_PACKAGE_UTIL_LINUX_FDFORMAT \
+  BR2_PACKAGE_UTIL_LINUX_FSCK \
+  BR2_PACKAGE_UTIL_LINUX_HARDLINK \
+  BR2_PACKAGE_UTIL_LINUX_HWCLOCK \
+  BR2_PACKAGE_UTIL_LINUX_IRQTOP \
   BR2_PACKAGE_UTIL_LINUX_LIBBLKID \
   BR2_PACKAGE_UTIL_LINUX_LIBFDISK \
   BR2_PACKAGE_UTIL_LINUX_LIBMOUNT \
   BR2_PACKAGE_UTIL_LINUX_LIBSMARTCOLS \
   BR2_PACKAGE_UTIL_LINUX_LIBUUID \
-  BR2_PACKAGE_UTIL_LINUX_MOUNT \
-  BR2_PACKAGE_UTIL_LINUX_PARTX \
-  BR2_PACKAGE_UTIL_LINUX_WIPEFS \
-  BR2_PACKAGE_UTIL_LINUX_FSCK \
+  BR2_PACKAGE_UTIL_LINUX_LOGIN \
   BR2_PACKAGE_UTIL_LINUX_LOSETUP \
-  BR2_PACKAGE_UTIL_LINUX_SETPRIV; do
-  if grep -Fq "$forbidden" "$build_file"; then
-    echo "util-linux narrow cohort must not select $forbidden" >&2
+  BR2_PACKAGE_UTIL_LINUX_LSFD \
+  BR2_PACKAGE_UTIL_LINUX_LSLOGINS \
+  BR2_PACKAGE_UTIL_LINUX_LSMEM \
+  BR2_PACKAGE_UTIL_LINUX_MINIX \
+  BR2_PACKAGE_UTIL_LINUX_MORE \
+  BR2_PACKAGE_UTIL_LINUX_MOUNT \
+  BR2_PACKAGE_UTIL_LINUX_MOUNTPOINT \
+  BR2_PACKAGE_UTIL_LINUX_NEWGRP \
+  BR2_PACKAGE_UTIL_LINUX_PARTX \
+  BR2_PACKAGE_UTIL_LINUX_PG \
+  BR2_PACKAGE_UTIL_LINUX_RAW \
+  BR2_PACKAGE_UTIL_LINUX_RFKILL \
+  BR2_PACKAGE_UTIL_LINUX_RUNUSER \
+  BR2_PACKAGE_UTIL_LINUX_SETPRIV \
+  BR2_PACKAGE_UTIL_LINUX_SETTERM \
+  BR2_PACKAGE_UTIL_LINUX_SU \
+  BR2_PACKAGE_UTIL_LINUX_SULOGIN \
+  BR2_PACKAGE_UTIL_LINUX_SWITCH_ROOT \
+  BR2_PACKAGE_UTIL_LINUX_TUNELP \
+  BR2_PACKAGE_UTIL_LINUX_UL \
+  BR2_PACKAGE_UTIL_LINUX_UUIDD \
+  BR2_PACKAGE_UTIL_LINUX_VIPW \
+  BR2_PACKAGE_UTIL_LINUX_WALL \
+  BR2_PACKAGE_UTIL_LINUX_WDCTL \
+  BR2_PACKAGE_UTIL_LINUX_WIPEFS \
+  BR2_PACKAGE_UTIL_LINUX_WRITE \
+  BR2_PACKAGE_UTIL_LINUX_ZRAMCTL; do
+  if grep -Fq -- "--enable $forbidden" "$build_file"; then
+    echo "util-linux narrow cohort must not enable $forbidden" >&2
     exit 1
   fi
+  grep -Fq -- "--disable $forbidden" "$build_file"
 done
 if grep -Eq '(^|[^A-Za-z0-9_])(apt|dpkg|debian)([^A-Za-z0-9_]|$)' "$build_file"; then
   echo 'util-linux build must not import a Debian package or binary' >&2

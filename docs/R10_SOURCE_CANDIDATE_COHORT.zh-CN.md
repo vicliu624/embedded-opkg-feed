@@ -171,15 +171,25 @@ lock、runtime closure 与 base-overlay gate。格式化/检查的实机验证�
 
 `system-tools` 是一个单包、无新增共享运行时 provider 的增量 batch。它从 Buildroot
 2025.02.1 审核的 util-linux 2.40.2 archive 离线构建，仅启用 cal、fallocate、IPC、
-last/utmp、调度、namespace 与 terminal-message 等明确命名的前端。所有 RISC-V ELF
+last/utmp、调度与 namespace 等明确命名的前端。所有 RISC-V ELF
 都位于 `/usr/libexec/tdvp-util-linux/`，所有公开入口都为
 `/usr/bin/tdvp-util-linux-<command>`；它不使用 basic set，也不选择 mount、分区、
 文件系统、loop、wipefs、login/su/runuser/setpriv 或
-liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid。因而不能把固件现存库变为隐式依赖，
+liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid。所有其余 util-linux
+Kconfig feature 都在私有 transaction 中显式关闭，因此不能把固件现存库变为隐式依赖，
 也不能占用 firmware/BusyBox 路径。GitHub Actions 只从锁定源码构建、封装并审核
 RISC-V ELF、RPATH/RUNPATH、base-overlay 和 runtime closure，绝不执行这些前端。
 IPC、进程、namespace、文件或 terminal state 的实机操作须由使用者在非生产设备上显式
 选择目标并记录安装、卸载、回滚后才可作为发布证据。
+
+该候选的首次 Actions run `33968694581` 已完成锁定 archive 的 source-cache 审核，却在
+Buildroot configure 阶段因默认的 liblastlog2 需要 SQLite 而停止；没有上传 artifact。
+recipe 因此在该次 private transaction 的 configure 参数中关闭 liblastlog2。第二次 run
+`33968909916` 已越过该 configure 问题并开始目标编译，但也证明不可变 SDK baseline 可以
+预先启用宽泛的 util-linux feature：未受约束的临时 install 尝试安装 wall 与 mount，触发其
+chgrp/chown hook 后在 staging 失败，同样没有 artifact。当前 recipe 不以放宽权限、复制
+target root 文件或跳过 gate 来规避此情况；它逐一显式关闭所有非 cohort Kconfig feature，
+再由下一次 GitHub Actions source batch 验证隔离边界。
 
 `tdvp-gba` 的锁定 commit `4c82b09e1bf042d0709c26ed6c4e5098a283a908` 已由 GitHub commit
 API 和其固定 HTTPS archive endpoint 复核可达。早期 “仅本地 source cache、不可公开下载” 的

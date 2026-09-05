@@ -10,7 +10,7 @@ binary.
 
 The selected command set is intentionally narrow: cal, fallocate, IPC
 inspection/control, process/session helpers, scheduling helpers, namespace
-helpers, terminal messaging, and account-record inspection. It does not
+helpers, and account-record inspection. It does not
 select util-linux basic binaries, mount/umount, filesystem/partition/loop
 device utilities, wipefs, login/su/runuser, setpriv, or the
 libblkid/libfdisk/libmount/libsmartcols/libuuid feature families. Those
@@ -18,6 +18,10 @@ capabilities require a separately versioned shared-library/provider review.
 The recipe also disables util-linux liblastlog2 for this one transaction, so
 the selected last command does not pull a SQLite-backed runtime into this
 otherwise library-free cohort.
+Every remaining util-linux Kconfig feature is explicitly disabled in the
+temporary transaction. This matters because the immutable firmware baseline
+can legitimately enable a broader util-linux configuration; its choices must
+not leak into this source-built feed payload.
 
 Several selected commands can change process, IPC, namespace, filesystem, or
 terminal state when a device user invokes them. CI only obtains locked source,

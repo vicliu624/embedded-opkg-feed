@@ -123,7 +123,7 @@ tdvp_buildroot_install() (
   # the standard parent directories that a valid target already provides.
   # This affects only the caller's temporary TARGET_DIR, never the firmware
   # target or the SDK sysroot.
-  mkdir -p -- "$target_root/bin" "$target_root/etc" "$target_root/usr/bin" \
+  mkdir -p -- "$target_root/bin" "$target_root/etc" "$target_root/sbin" "$target_root/usr/bin" \
     "$target_root/usr/lib" "$target_root/usr/sbin" "$target_root/usr/share"
 
   tdvp_buildroot_configure() {

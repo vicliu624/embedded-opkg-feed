@@ -32,6 +32,7 @@ Buildroot 交叉构建、IPK 运行时闭包审计和实机启动测试均通过
 | 任意精度计算器 | `bc` | `tdvp-bc --version`；`printf 'scale=30; 4*a(1)\n' | tdvp-bc -l` |
 | GNU 基础命令组 | `coreutils` | `tdvp-coreutils-ls --version`、`tdvp-coreutils-mktemp`、`tdvp-coreutils-date --iso-8601=seconds` |
 | FAT/MS-DOS 介质工具组 | `mtools` | `tdvp-mtools-mdir`、`tdvp-mtools-mcopy`、`tdvp-mtools-mformat`、`tdvp-mtools-mlabel`；无需挂载即可检查或管理 FAT 介质 |
+| FAT 文件系统维护 | `dosfstools` | `tdvp-dosfstools-mkfs-fat`、`tdvp-dosfstools-fsck-fat`、`tdvp-dosfstools-fatlabel`；格式化/修复前必须由设备使用者确认目标块设备 |
 | 编辑 | `vim-runtime`、`vim`、四个纯 Vimscript 插件 | `vim --version`；触控不抢占 Foot 的文本选择 |
 | 最小构建/维护/诊断 | `make`、`pkgconf`、`patch`、`diffutils`、`strace` | `make --version`、`pkg-config --version`、`patch --version`、`diff --version`、`strace true` |
 
@@ -73,6 +74,13 @@ OpenSSL 或 NLS target provider 的可选功能。
 `tdvp-mtools-mlabel`。这样可提供 FAT/MS-DOS 介质管理能力，同时不占用 `/usr/bin/mcopy`、
 `/usr/bin/mdir` 或任何 firmware/BusyBox 路径；包不携带从 target root、Debian 二进制或
 未声明共享库复制而来的内容。
+
+`dosfstools` 补足 FAT 文件系统层面的创建、检查和标签修改，但其三个 source-built ELF
+只保留在 `/usr/libexec/tdvp-dosfstools/`；公开入口限定为
+`tdvp-dosfstools-mkfs-fat`、`tdvp-dosfstools-fsck-fat` 与
+`tdvp-dosfstools-fatlabel`。它们不会覆盖 `/sbin/mkfs.fat`、`/sbin/fsck.fat`、
+`/sbin/fatlabel` 或 firmware 文件。由于格式化与修复会改变介质，实际执行必须由设备
+使用者明确选择块设备；CI 仅构建、封装和做 ABI/路径闭包审计，不会运行这些破坏性命令。
 
 ## r10：Node.js v22.23.2 源码交叉构建候选
 

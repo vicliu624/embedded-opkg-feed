@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, nodejs]
+        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -82,6 +82,7 @@ jobs:
           bash ./tests/bc-package-policy.sh
           bash ./tests/coreutils-package-policy.sh
           bash ./tests/mtools-package-policy.sh
+          bash ./tests/dosfstools-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -353,6 +354,7 @@ jobs:
           bash ./tests/bc-package-policy.sh
           bash ./tests/coreutils-package-policy.sh
           bash ./tests/mtools-package-policy.sh
+          bash ./tests/dosfstools-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -439,6 +441,13 @@ jobs:
               # firmware, BusyBox, or future standard command path is claimed.
               package_args=(--package mtools)
               expected_packages=(mtools)
+              ;;
+            fat-filesystem-tools)
+              # dosfstools creates, checks, and labels FAT filesystems from
+              # locked source. Its public commands are tdvp-dosfstools-* and
+              # therefore cannot replace firmware /sbin or BusyBox paths.
+              package_args=(--package dosfstools)
+              expected_packages=(dosfstools)
               ;;
             nodejs)
               package_args=(--package tdvp-nodejs-tools)

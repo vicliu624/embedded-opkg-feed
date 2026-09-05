@@ -105,6 +105,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 12 | `bc` | 1.07.1 | `calculator-tools` 锁定 GNU bc 与 host-flex/host-m4 输入；只公开 `tdvp-bc`，不替换 firmware `bc`，并验证 RISC-V ELF、无 RPATH/RUNPATH 与 base-overlay。 |
 | 13 | `coreutils` | 9.5 | `coreutils-tools` 只封装一个 GNU multi-call ELF，并以 `tdvp-coreutils-*` 公开 35 个基础命令；保留平台 Kconfig，以 coreutils 专用 configure override 禁用 ACL/attr/libcap/libselinux/OpenSSL/NLS，不覆盖 firmware/BusyBox 路径。 |
 | 14 | `mtools` | 4.0.47 | `fat-media-tools` 锁定 GNU mtools archive 与只供解压的 host-lzip 1.25 输入，构建 FAT/MS-DOS 用户态工具组；全部以 `tdvp-mtools-*` 公开，私有 multi-call ELF/applet symlink 保留 `argv[0]` 语义，绝不覆盖 firmware/BusyBox 或未来标准路径。 |
+| 15 | `dosfstools` | 4.2 | `fat-filesystem-tools` 从锁定 source 构建 FAT 创建、检查和 label 三个 ELF；全部以 `tdvp-dosfstools-*` 公开，私有 payload 不覆盖 `/sbin/*`、firmware 或 BusyBox 路径。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -156,6 +157,16 @@ run `33966781743` 则已从锁定的 mtools 与 host-lzip 输入完成 RISC-V �
 拒绝并跳过 artifact 上传。该 install 证据明确列出 `mdoctorfat`，后续 retry 只以它替换
 `mclasserase`。两个失败 run 均不是 merge source；不得以放宽命令存在性、关闭离线 source
 check 或复制 target 文件来绕过。
+
+`fat-filesystem-tools` 是与 `fat-media-tools` 分离的单包增量 batch。`dosfstools` 4.2
+只从 Buildroot 2025.02.1 审核的 release archive 构建 `mkfs.fat`、`fsck.fat` 与
+`fatlabel`。Buildroot 在 transaction 的临时 extraction root 中以 `/sbin` 安装它们；recipe
+逐一验证其存在、RISC-V ELF 和无 RPATH/RUNPATH，再复制到私有
+`/usr/libexec/tdvp-dosfstools/`。公开命令只有 `tdvp-dosfstools-mkfs-fat`、
+`tdvp-dosfstools-fsck-fat` 和 `tdvp-dosfstools-fatlabel`，因此绝不占用 firmware
+`/sbin/*`。该包不复制 Debian binary、target root 或共享库；GitHub Actions 必须通过 source
+lock、runtime closure 与 base-overlay gate。格式化/检查的实机验证具有潜在破坏性，必须由
+设备使用者选择非生产测试介质后执行，再记录卸载和回滚，才可签名或发布。
 
 `tdvp-gba` 的锁定 commit `4c82b09e1bf042d0709c26ed6c4e5098a283a908` 已由 GitHub commit
 API 和其固定 HTTPS archive endpoint 复核可达。早期 “仅本地 source cache、不可公开下载” 的

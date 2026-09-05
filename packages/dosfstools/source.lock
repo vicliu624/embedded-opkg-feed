@@ -1,0 +1,18 @@
+# Buildroot owns the cross-compile recipe; the selected upstream archive is
+# the only non-platform target input for this isolated FAT tool package.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='dosfstools'
+UPSTREAM_LICENSE='GPL-3.0-or-later'
+UPSTREAM_VERSION='4.2'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/dosfstools/dosfstools.mk'
+SOURCE_SELECTION_REASON='FAT create, check, and label utilities complement mtools, but each is exposed only through tdvp-dosfstools-* so firmware /sbin and BusyBox paths remain untouched.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 dosfstools.mk and dosfstools.hash. The immutable TDVP configuration is restored byte-for-byte after the private transaction. No Debian binary, target-root copy, or TDVP-specific patch is used.'
+SECURITY_STATUS='The release archive SHA-256 is verified before the private offline Buildroot transaction. The emitted RISC-V ELF, RPATH/RUNPATH, runtime closure, and base-overlay checks are mandatory before candidate upload.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 dosfstools package hash'
+VERIFIED_AT='2026-09-05'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/dosfstools/dosfstools.hash'
+SOURCE_ARTIFACT_1_URL='https://github.com/dosfstools/dosfstools/releases/download/v4.2/dosfstools-4.2.tar.gz'
+SOURCE_ARTIFACT_1_FILE='dosfstools-4.2.tar.gz'
+SOURCE_ARTIFACT_1_SHA256='64926eebf90092dca21b14259a5301b7b98e7b1943e8a201c7d726084809b527'

@@ -36,6 +36,10 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
 所有权转移”，其证据要求更窄；它不构成普通上游源码包的例外：
 
 - Buildroot-derived 维护命令：`make`、`pkgconf`、`patch`、`diffutils`、`strace`；
+- TLS 信任库：`ca-certificates` 使用 Buildroot 2025.02.1 审核的 Debian 20230311 source archive；
+  `trust-store-runtime` 只产生 source-built certificate data、PEM 链接和 subject-hash 链接，任何
+  `/etc/ssl` 或 `/usr/share/ca-certificates` base-overlay 冲突都会被拒绝，绝不从 Debian 或 host 复制
+  已生成的信任库；
 - r10 文本/搜索/终端诊断工具：`tree`、`less`、`file`、`which`、`curl`、`wget`、`iperf3`、`lsof`、`netcat`、`rsync`、`dos2unix`、`jq`、`bc`、
   `grep`、`sed`、`findutils`、`diffutils`、`gawk`、`htop`、`nano`、`tmux`；`htop` 明确关闭未准入的可选
   `libcap` feature，`nano` 保持当前 SDK 未选中 `file/libmagic` 的终端编辑配置；二者

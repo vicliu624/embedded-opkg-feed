@@ -6,6 +6,7 @@ IFS=$'\n\t'
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd -- "$script_dir/.." && pwd)
 package_dir="$repo_root/packages/ca-certificates"
+workflow="$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 
 expect_line() {
   local pattern=$1 path=$2 normalized
@@ -30,5 +31,10 @@ expect_line 'certificate_source=.*usr/share/ca-certificates' "$package_dir/build
 expect_line 'ca-certificates[.]crt' "$package_dir/build.sh"
 expect_line 'c_rehash' "$package_dir/build.sh"
 expect_line 'refusing to replace non-generated payload path' "$package_dir/build.sh"
+
+grep -Fq 'trust-store-runtime)' "$workflow"
+grep -Fq 'package_args=(--package ca-certificates)' "$workflow"
+grep -Fq 'expected_packages=(ca-certificates)' "$workflow"
+grep -Fq 'bash ./tests/ca-certificates-package-policy.sh' "$workflow"
 
 echo 'source-built CA certificate bundle and ownership policy: PASS'

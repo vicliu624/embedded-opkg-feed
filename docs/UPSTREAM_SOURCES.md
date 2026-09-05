@@ -425,10 +425,12 @@ This document fixes the governance rule first. Implement automation in order:
    admitted their verified artifact without recompiling source packages. Their
    recipes did not change SDK host state, a firmware command path, or a network
    interface; then
-7. In progress: admit the locked static-only `i2c-tools` hardware-inspection
-   leaf only through its GitHub Actions source batch and later no-recompile
-   merge. It must disable Python/py-smbus and shared `libi2c`, and CI must not
-   inspect or change a hardware bus; then
+7. In progress: source batch
+   [`33989899026`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33989899026)
+   has admitted the locked static-only `i2c-tools` hardware-inspection leaf;
+   hash-merge its verified artifact without recompiling. It disabled
+   Python/py-smbus and shared `libi2c`, and CI did not inspect or change a
+   hardware bus; then
 8. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
 9. Introduce reviewed general libraries incrementally, retaining shared-runtime

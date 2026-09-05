@@ -321,7 +321,7 @@ GitHub Actions source batch，再通过无重编 merge，才可获得 candidate 
 | 批次 | package | 先决条件与原因 |
 | --- | --- | --- |
 | 调试/网络诊断 | `gdbserver`、`ethtool` | GitHub Actions source batch [`33988534267`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33988534267) 已用锁定的 Buildroot 2025.02.1 来源及私有 TDVP 前端通过；25-batch no-recompile merge [`33988940718`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33988940718) 随后准入这两个已验证 IPK。`gdbserver` 保持 server-only，未修改 SDK host `debug-root`；`ethtool` 保持 no-netlink/no-libmnl 边界。CI 未启动 server 或修改网络接口；仍需要实机生命周期验证。 |
-| I2C 硬件检查 | `i2c-tools` | 已准备经审查的 static-only leaf：禁用 Python/py-smbus，强制五个命令链接私有 `libi2c.a`，并且既不封装 `libi2c.a` 也不封装 `libi2c.so`。GitHub Actions 须先证明此边界、RISC-V ELF、closure 和 deny overlay，之后才可 no-recompile merge。CI 不得探测或写入任何总线。 |
+| I2C 硬件检查 | `i2c-tools` | GitHub Actions source batch [`33989899026`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33989899026) 已通过经审查的 static-only leaf：禁用 Python/py-smbus，五个命令链接私有 `libi2c.a`，并且既不封装 `libi2c.a` 也不封装 `libi2c.so`。已验证 source IPK 现只等待 no-recompile merge。CI 未探测或写入任何总线。 |
 | 原生构建前端 | target CMake/Ninja | CMake 会带来较宽的 `libarchive`/`libuv`/JSON/rhash closure，必须先准入每个新 provider；Buildroot 的 Ninja 是 host-only，target-Ninja 需要单独锁定 bootstrap 设计。 |
 
 ## 提升规则

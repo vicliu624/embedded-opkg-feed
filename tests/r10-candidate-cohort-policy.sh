@@ -5,7 +5,7 @@ script="$repo_root/scripts/verify-r10-candidate-cohort.sh"
 cohort="$repo_root/support/r10-candidate-cohort.sh"
 bash -n "$script"
 bash -n "$cohort"
-for entry in libevent tmux dialog ncdu pv netcat iperf3 lsof openssh-client sqlite3 bc coreutils mtools dosfstools util-linux exfatprogs memtester tree less gdbserver ethtool i2c-tools inotify-tools logrotate jo ed; do grep -Fq "$entry" "$cohort"; done
+for entry in libevent tmux dialog ncdu pv netcat iperf3 lsof openssh-client sqlite3 bc coreutils mtools dosfstools util-linux exfatprogs memtester tree less gdbserver ethtool i2c-tools inotify-tools logrotate jo ed cpio; do grep -Fq "$entry" "$cohort"; done
 if grep -Fq 'libyaml-0' "$cohort"; then
   echo 'target-owned LibYAML must not remain in the source candidate cohort' >&2
   exit 1

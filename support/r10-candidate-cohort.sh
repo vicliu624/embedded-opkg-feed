@@ -15,4 +15,5 @@ TDVP_R10_CANDIDATE_COHORT=(
   logrotate
   jo
   ed
+  cpio
 )

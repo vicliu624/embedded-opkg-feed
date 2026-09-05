@@ -231,8 +231,9 @@ Debian、Buildroot 或上游发布的新版和安全公告会产生**候选更�
 10. 已完成：GitHub Actions source batch [`33992855036`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33992855036) 已准入锁定独立 `jo` command，no-recompile merge [`33993109744`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993109744) 随后合入已验证 artifact，未重编 source package。它保持私有、不引入 shared provider，CI 未执行或传入 JSON input；
 11. 已完成：GitHub Actions source batch [`33993563150`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993563150) 已准入锁定 GNU `ed` line-editor command，no-recompile merge [`33993808518`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33993808518) 随后合入已验证 artifact，未重编 source package。host-lzip 仅解包 runner source，CI 未执行编辑器或传入文件；
 12. 已完成：GitHub Actions source batch [`33994423195`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33994423195) 已准入锁定 GNU `cpio` archive command，no-recompile merge [`33994729377`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33994729377) 随后合入已验证 artifact，未重编 source package。其 glibc/wchar K230 profile 不选择仅用于 musl/uClibc 的 argp-standalone branch；它保持私有、不引入 shared provider，CI 未执行或传入 archive 或 filesystem path；
-13. 为每个 release 生成来源证明/SBOM，并把来源、SDK 和测试结果与签名 release 对应；
-14. 同时逐步引入经过审查的通用库，每次均保留共享运行时和实机测试门。
+13. source batch 已完成：GitHub Actions source batch [`33995251958`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33995251958) 已准入锁定 GNU `time` process-accounting command，正待无重编 merge 合入。K230 的 MMU/dynamic-library/BusyBox-show-others profile 满足上游条件；它保持私有、不引入 shared provider，CI 未执行它或为其启动被计时的命令；
+14. 为每个 release 生成来源证明/SBOM，并把来源、SDK 和测试结果与签名 release 对应；
+15. 同时逐步引入经过审查的通用库，每次均保留共享运行时和实机测试门。
 
 在自动化全部完成以前，本约定仍是所有新上游引入的准入标准；PR 模板、贡献说明和发布检查清单会引用它，确保维护者不会把“候选源码”误解为“可以直接安装的发行版包”。
 

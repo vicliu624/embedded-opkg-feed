@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, system-tools, nodejs]
+        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, source-navigation-tools, system-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -87,6 +87,7 @@ jobs:
           bash ./tests/memtester-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
+          bash ./tests/source-navigation-tools-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
           bash ./tests/util-linux-package-policy.sh
@@ -380,6 +381,7 @@ jobs:
           bash ./tests/memtester-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
+          bash ./tests/source-navigation-tools-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
           bash ./tests/util-linux-package-policy.sh
@@ -501,6 +503,14 @@ jobs:
               # wrapper is tdvp-less, never the firmware/BusyBox pager path.
               package_args=(--package less)
               expected_packages=(less)
+              ;;
+            source-navigation-tools)
+              # These are independent, locked GNU source-maintenance tools.
+              # They all keep their RISC-V ELF private and publish only
+              # tdvp-* frontends; grep and gawk consume the already-owned
+              # PCRE2/readline ABI rather than introducing a new provider.
+              package_args=(--package which --package findutils --package diffutils --package grep --package sed --package gawk)
+              expected_packages=(which findutils diffutils grep sed gawk)
               ;;
             system-tools)
               # This deliberately narrow util-linux cohort avoids the

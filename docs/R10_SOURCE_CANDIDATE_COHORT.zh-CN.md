@@ -195,6 +195,15 @@ SHA-256 相同，否则 exit 70。只重跑受此 CPython closure 影响的 deve
 五个已成功 source batch 保持可复用。仅当两个替代 artifact 的 Python IPK 相同，最终 GitHub
 merge 才会继续执行 index、runtime closure 和 coverage gates。
 
+development replacement `33946874048` 还证明 source lock 对上游分发漂移同样保持 fail-closed：
+`oldmanprogrammer.net/tar/tree/tree-2.1.1.tgz` 返回了 11,949-byte、SHA-256 为
+`a04acb9b6bcfdfe27acd1df517edca380ab43abda14e51984b3c08aa34204300` 的不同内容，不能满足
+Buildroot 2025.02.1 审查的 `d3c3d55f403af7c76556546325aa1eca90b918cbaaf6d3ab60a49d8367ab90d5`。
+因此该 run 在 source cache gate 停止，没有编译或上传 artifact。`tree` source lock 只将下载位置
+改为 BLFS 记录的 archive mirror `mama.indstate.edu`；文件名、版本、Buildroot source snapshot 与
+预期 SHA-256 均不变。下一个 GitHub batch 必须用原有 SHA-256 验证 mirror 内容，绝不接受新 hash、
+HTML 错页、Debian repack 或未经审查的新版源码。
+
 下一次 partial merge 还必须区分“SDK ABI”与“GitHub Actions cache 布局”。已成功的 archive batch
 `33878735088` 记录的是同一固件/profile 的 cache `v2`，后续成功 batch 记录 `v3`；`v3` 只增加了
 Buildroot package stamp 的缓存路径，不能成为要求全部旧 IPK 重编的 ABI 变化。新 manifest 记录不带

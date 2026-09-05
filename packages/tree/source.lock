@@ -12,6 +12,6 @@ SECURITY_STATUS='Buildroot recipe source SHA-256 is verified before candidate bu
 VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
 VERIFIED_AT='2026-09-02'
 VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/tree/tree.hash'
-SOURCE_ARTIFACT_1_URL='https://oldmanprogrammer.net/tar/tree/tree-2.1.1.tgz'
+SOURCE_ARTIFACT_1_URL='https://mama.indstate.edu/users/ice/tree/src/tree-2.1.1.tgz'
 SOURCE_ARTIFACT_1_FILE='tree-2.1.1.tgz'
 SOURCE_ARTIFACT_1_SHA256='d3c3d55f403af7c76556546325aa1eca90b918cbaaf6d3ab60a49d8367ab90d5'

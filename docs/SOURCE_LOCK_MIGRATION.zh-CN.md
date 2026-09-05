@@ -180,7 +180,12 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
   已在成功的 merged run `33985545990` 上实际执行此规则：水合 276 个已验证 IPK，保留新恢复的
   target-runtime 重复容器，并且只构建 `tdvp-diagnostics_1.1-1_riscv64.ipk`。它上传 unsigned batch artifact
   [`9975532821`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33987100478/artifacts/9975532821)
-  （196,004,873 bytes）；没有重新构建任何历史 source package；
+  （196,004,873 bytes）；没有重新构建任何历史 source package。随后的 24-batch 无重编 merge，
+  [run `33987408229`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33987408229)，
+  已跳过 SDK/package-build job、比较输入 IPK hash、重建索引，并通过 runtime closure 与 target-runtime
+  coverage。它上传 merged unsigned artifact
+  [`9975645724`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33987408229/artifacts/9975645724)
+  （195,991,913 bytes）。两个 artifact 均未签名、发布、部署或安装到设备，也没有实机生命周期证据；
 - 纯元数据诊断 profile：`tdvp-diagnostics` 仅包含仓库自有说明文档及精确的
   `strace`/`htop`/`lsof`/`iperf3`/`netcat` 依赖元数据，因此具有狭窄 source-lock 豁免；它不拥有
   可执行文件、共享库、SDK 制品或任何固件路径；

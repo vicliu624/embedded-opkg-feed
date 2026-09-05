@@ -264,7 +264,15 @@ below; it is not an upstream-source exception for ordinary packages.
   built only `tdvp-diagnostics_1.1-1_riscv64.ipk`. It uploaded unsigned
   batch artifact
   [`9975532821`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33987100478/artifacts/9975532821)
-  (196,004,873 bytes); no historical source package was rebuilt;
+  (196,004,873 bytes); no historical source package was rebuilt. The subsequent
+  24-batch no-recompile merge,
+  [run `33987408229`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33987408229),
+  skipped both SDK/package-build jobs, compared the input IPK hashes, regenerated
+  the index, and passed runtime closure plus target-runtime coverage. It uploaded
+  merged unsigned artifact
+  [`9975645724`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33987408229/artifacts/9975645724)
+  (195,991,913 bytes). Neither artifact is signed, released/published, deployed,
+  installed, nor supported by on-device lifecycle evidence;
 - metadata-only diagnostic profile: `tdvp-diagnostics` has a narrow source-lock
   exemption because it contains only repository-owned instructions and exact
   `strace`/`htop`/`lsof`/`iperf3`/`netcat` dependency metadata. It owns no executable,

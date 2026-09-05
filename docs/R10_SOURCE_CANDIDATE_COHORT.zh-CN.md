@@ -99,7 +99,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 6 | `iperf3`、`netcat`、`lsof` | 3.18、0.7.1、4.99.4 | 受控 LAN、无公开 listener；lsof 还需记录权限可见性 |
 | 7 | `libcap-2`（target provider）、`htop`（候选）、`nano`、`dialog`、`ncdu`、`pv` | 2025.02.1、3.3.0、8.2、1.3-20220117、1.21、1.9.0 | immutable catalogue 已拥有 `libcap.so.2`；`htop` 只能精确依赖 `libcap-2 (= 2025.02.1-1)` 以启用 capability view，绝不重建或覆盖该 ABI。真实终端、locale/宽字符和小屏交互验收仍是独立门禁。 |
 | 8 | `libevent`、`tmux`（已通过 CI/无重编 merge，待实机） | 2.1.12、3.3a | cohort 从锁定源码构建 `libevent (= 2.1.12-1)`，tmux 精确消费它与 immutable catalogue 的 `libncursesw (= 6.4-20230603-1)`；`libevent` 的 TLS closure 精确使用 target `libcrypto-3`。仍需验证 detached session、capture、kill-session。 |
-| 9 | `tdvp-source-tools`、`tdvp-diagnostics`（已通过 hydrate CI，待无重编 merge） | 1.6、1.1 | 仅元数据 profile；run `33987100478` 已在 GitHub Actions 从成功的 merged candidate hydrate 276 个已验证 IPK，只封装 `tdvp-diagnostics_1.1-1_riscv64.ipk`，绝不重编已准入的诊断工具。安装/卸载不得复制或误删工具/共享库。 |
+| 9 | `tdvp-source-tools`、`tdvp-diagnostics`（已通过 hydrate CI / 无重编 24-batch merge，待实机） | 1.6、1.1 | 仅元数据 profile；run `33987100478` 已在 GitHub Actions 从成功的 merged candidate hydrate 276 个已验证 IPK，只封装 `tdvp-diagnostics_1.1-1_riscv64.ipk`；run `33987408229` 又在无编译模式完成 24-batch hash、索引与 closure merge。绝不重编已准入的诊断工具。安装/卸载不得复制或误删工具/共享库。 |
 | 10 | `sdl2`、`sdl2-ttf`、`libmgba`、`tdvp-gba` | 2.30.11、2.22.0、0.10.5、0.2.3 | `retro-gba` 独立增量批次；四个 IPK 必须全部由来源锁重建，不能复用历史 r2/r3 payload；验证 Wayland/ALSA runtime closure、`tdvp-gba` 动态依赖及 `/opt/tdvp-gba` 的非覆盖安装。 |
 | 11 | `sqlite3` | 3.48.0 | `database-tools` 只从 `libsqlite3-0` 同一次锁定源码构建的私有 staging 取得 CLI；仍验证 RISC-V ELF、`libsqlite3.so.0`、精确 readline/ncurses 依赖及无 base-path 覆盖。 |
 | 12 | `bc` | 1.07.1 | `calculator-tools` 锁定 GNU bc 与 host-flex/host-m4 输入；只公开 `tdvp-bc`，不替换 firmware `bc`，并验证 RISC-V ELF、无 RPATH/RUNPATH 与 base-overlay。 |
@@ -128,9 +128,9 @@ source，batch 入口和配方改动均已撤回；旧的成功 source batch 是
 `built *.ipk` 记录逐一去重后，98 个 r10 recipe 中已有 82 个 recipe package 具备实际 source-build
 证据。其余 12 个通用 package 是 immutable target catalogue provider：`ca-certificates`、`libatomic-1`、
 `libcrypto-3`、`libcurl-4`、`libexpat-1`、`libffi-8`、`libncursesw`、`libpcre2-8`、`libpopt`、
-`libreadline`、`libssl-3` 与 `libz`；它们只能复用，不能为补齐数量重编。上述 23-batch merged candidate
-之外，唯一仍属于 r10 范围的是 metadata-only `tdvp-diagnostics`；它已在 run `33987100478` 成功生成独立
-unsigned batch artifact，等待后续无重编 merge。`tdvp-hello`、LoFiBox 与 Cardputer 应用不属于本 release。
+`libreadline`、`libssl-3` 与 `libz`；它们只能复用，不能为补齐数量重编。metadata-only
+`tdvp-diagnostics` 已在 run `33987100478` 生成独立 unsigned batch artifact，并已由 24-batch 无重编
+merge run `33987408229` 纳入 r10 candidate。`tdvp-hello`、LoFiBox 与 Cardputer 应用不属于本 release。
 为使这个 metadata profile 也真正增量，`diagnostics-profile` 必须提供成功的
 `base_merged_run_id`：CI 只接受一份未过期的 merged unsigned artifact，校验 run 成功态、唯一 artifact、
 feed 路径和无顶层 symlink；若 prior artifact 含有同名 target-runtime IPK，则保留本次新恢复、权威的
@@ -140,6 +140,13 @@ target base，不导入或比较这个 target-derived 容器副本。其余 sour
 `tdvp-diagnostics_1.1-1_riscv64.ipk`，并上传 unsigned artifact
 [`9975532821`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33987100478/artifacts/9975532821)
 （196,004,873 bytes）。这不是签名、release/publish、部署或实机安装授权。
+随后 24-batch no-recompile merge run
+[`33987408229`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33987408229) 的 SDK-build 和
+package-build job 均为 skipped；它比较输入 IPK hash、重新生成 `Packages` 索引，并通过 runtime closure 与
+445 个 non-ABI dynamic objects 的 target-runtime coverage。最终 merged unsigned artifact 为
+[`9975645724`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33987408229/artifacts/9975645724)
+（`tdvp-k230-r10-merged-unsigned-3f100ce…`，195,991,913 bytes）。它仍未签名、未 release/publish、未部署或
+安装到设备，且没有实机生命周期验证记录。
 
 **CA 信任库所有权结论（2026-09-05）。** `runtime-data-packages.tsv` 已把固定 target 的 `/etc/ssl`
 明确归属为 `ca-certificates`。`trust-store-runtime` run `33977596329` 成功恢复 SDK、source cache、

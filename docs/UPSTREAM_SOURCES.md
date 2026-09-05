@@ -276,11 +276,13 @@ locks, recipe/patch revisions, dependency metadata and IPK SHA-256 values are
 recorded and compatible.  It checks the SHA-256 of every declared archive and
 rejects non-identical duplicate archive names, with one deliberately narrow
 catalogue rule: each batch includes an immutable, private target-runtime base;
-when and only when a duplicate filename exactly matches a `package + version`
-entry in that base's restored `.tdvp-target-runtime-packages.tsv`, the merge
-retains its first already manifest-verified copy.  The manifest supplies no
-payload and cannot exempt source-built packages—those must remain byte-for-byte
-identical.  The merge then regenerates the final index and runs both
+when and only when a duplicate filename is an exact IPK-file member of that
+restored base, the merge retains its first already manifest-verified copy.  The
+base must contain its provenance manifest and must not contain a public
+`Packages` index.  This file-membership check covers both top-level SONAME
+providers and the generated data/module catalogue, while the manifest itself
+supplies no payload.  It cannot exempt source-built packages—those must remain
+byte-for-byte identical.  The merge then regenerates the final index and runs both
 dependency-closure directions against the restored SDK target.  It must never
 substitute an IPK or silently trigger a full rebuild.  A cache miss is a hard
 error for a package batch: CI must run the explicit base job, not hide a

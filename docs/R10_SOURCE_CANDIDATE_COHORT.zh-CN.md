@@ -200,13 +200,17 @@ batch；其余五个已成功 source batch 保持可复用。两个替代 artifa
 `tdvp-runtime-libexec_2025.02.1-1_riscv64.ipk` 的重复外层 SHA-256 不同而停止，尚未索引、closure
 或上传。该名称在平台受审查的 `runtime-data-packages.tsv` 中明确是 `@remaining-usr-libexec` 的
 target-runtime catalogue provider；它与 `libpython3.13` 的直接 source-build 身份不同。merge 因而
-只恢复一个受限的 provenance 分支：先以同一 SDK/ABI cache key 恢复不可变的
-`.tdvp-target-runtime-packages.tsv`，仅当重复文件名精确匹配其中的 `package + version + riscv64`
-记录时，保留先前已由其 batch manifest 校验过 SHA-256 的副本。manifest 不提供、更不复制 IPK
-内容；它只定义该私有 runtime catalogue 的 owner。所有不在 manifest 的差异一律 exit 70，故此前
-错误地被假设为 runtime-base 的 `libpython3.13` 仍受严格字节一致性约束。这个修复只重跑 merge
-job，不重建 SDK、target-runtime base 或任何 source batch，随后仍必须通过 index、runtime closure
-和 target-runtime coverage gates。
+只恢复一个受限的 provenance 分支：先以同一 SDK/ABI cache key 恢复不可变的 private runtime base。
+第一次实现只查 `.tdvp-target-runtime-packages.tsv`，而该 manifest 有意只列 top-level SONAME
+provider；run `33959287158` 因而再次拒绝 data-catalogue package `tdvp-runtime-libexec`，并在同一
+hash gate 停止。正确、完整且更窄的归属条件是：重复文件名必须逐字节等于该恢复的 private base 中
+一个实际 IPK 文件名，同时 base 必须具有 provenance manifest 且不得存在公开 `Packages` index。
+这样既包含 data/module catalogue，又不能把任意 public feed 或 source-built package 当作 runtime
+base。cache 只定义文件成员资格，不提供、更不复制 IPK 内容；merge 仍保留先前已由其 source-batch
+manifest 校验过 SHA-256 的副本。所有不在 private base 的差异一律 exit 70，故此前错误地被假设为
+runtime-base 的 `libpython3.13` 仍受严格字节一致性约束。这个修复只重跑 merge job，不重建 SDK、
+target-runtime base 或任何 source batch，随后仍必须通过 index、runtime closure 和 target-runtime
+coverage gates。
 
 development replacement `33946874048` 还证明 source lock 对上游分发漂移同样保持 fail-closed：
 `oldmanprogrammer.net/tar/tree/tree-2.1.1.tgz` 返回了 11,949-byte、SHA-256 为

@@ -526,7 +526,7 @@ jobs:
           key: ${{ env.TDVP_SDK_CACHE_KEY }}
           fail-on-cache-miss: true
 
-      - name: Restore the target-runtime provenance manifest for merge
+      - name: Restore the immutable target-runtime base for merge classification
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/tdvp-r10-runtime-base
@@ -547,10 +547,15 @@ jobs:
 
           incoming_root="$RUNNER_TEMP/tdvp-r10-incoming"
           merged_feed="candidate-merged/$expected_release_path"
-          target_runtime_manifest="$RUNNER_TEMP/tdvp-r10-runtime-base/$expected_release_path/.tdvp-target-runtime-packages.tsv"
+          target_runtime_base="$RUNNER_TEMP/tdvp-r10-runtime-base/$expected_release_path"
+          target_runtime_manifest="$target_runtime_base/.tdvp-target-runtime-packages.tsv"
           mkdir -p "$incoming_root" "$merged_feed"
           [[ -s "$target_runtime_manifest" ]] || {
             echo "missing immutable target-runtime provenance manifest: $target_runtime_manifest" >&2
+            exit 64
+          }
+          [[ ! -e "$target_runtime_base/Packages" && ! -e "$target_runtime_base/Packages.gz" ]] || {
+            echo "target-runtime base must not contain a public package index: $target_runtime_base" >&2
             exit 64
           }
           IFS=',' read -r -a run_ids <<< "$TDVP_SOURCE_RUN_IDS"
@@ -560,13 +565,15 @@ jobs:
             awk -F '\t' -v key="$key" '$1 == key { print $2; exit }' "$manifest"
           }
 
-          is_target_runtime_ipk() {
-            local filename=$1 package soname version
-            while IFS='|' read -r package soname version; do
-              [[ -n "$package" && -n "$version" ]] || continue
-              [[ "$filename" == "${package}_${version}_riscv64.ipk" ]] && return 0
-            done <"$target_runtime_manifest"
-            return 1
+          is_cached_target_runtime_ipk() {
+            local filename=$1
+            # The private base is the complete, immutable catalogue: its
+            # target-provider manifest covers top-level SONAME providers while
+            # runtime-data packages such as tdvp-runtime-libexec are generated
+            # catalogue entries too.  Exact file membership is therefore the
+            # only complete classification; the public Packages index is
+            # forbidden above so it cannot be mistaken for a publishable feed.
+            [[ -f "$target_runtime_base/$filename" ]]
           }
 
           for run_id in "${run_ids[@]}"; do
@@ -632,12 +639,12 @@ jobs:
                 [[ "$(sha256sum "$destination_ipk" | awk '{print $1}')" == "$digest" ]] || {
                   # Each source batch includes a private copy of the immutable
                   # target-runtime catalogue.  A mismatched duplicate is
-                  # accepted only when its package/version is explicitly owned
-                  # by that restored catalogue; its contents are never copied
-                  # from the manifest and the first manifest-verified artifact
+                  # accepted only when that exact filename is present in the
+                  # restored private catalogue; its contents are never copied
+                  # from that cache and the first manifest-verified artifact
                   # remains the merge input.  Every source-built package,
                   # including libpython3.13, must still match byte-for-byte.
-                  if is_target_runtime_ipk "$filename"; then
+                  if is_cached_target_runtime_ipk "$filename"; then
                     echo "retaining first verified target-runtime IPK: $filename" >&2
                   else
                     echo "incompatible duplicate IPK: $filename" >&2

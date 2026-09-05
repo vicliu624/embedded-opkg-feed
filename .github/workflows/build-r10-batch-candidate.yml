@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, system-tools, nodejs]
+        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, system-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -85,6 +85,7 @@ jobs:
           bash ./tests/dosfstools-package-policy.sh
           bash ./tests/exfatprogs-package-policy.sh
           bash ./tests/memtester-package-policy.sh
+          bash ./tests/tree-package-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
           bash ./tests/util-linux-package-policy.sh
           bash ./tests/source-lock-policy.sh
@@ -375,6 +376,7 @@ jobs:
           bash ./tests/dosfstools-package-policy.sh
           bash ./tests/exfatprogs-package-policy.sh
           bash ./tests/memtester-package-policy.sh
+          bash ./tests/tree-package-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
           bash ./tests/util-linux-package-policy.sh
           bash ./tests/source-lock-policy.sh
@@ -483,6 +485,12 @@ jobs:
               # command is tdvp-memtester, and CI never executes memory tests.
               package_args=(--package memtester)
               expected_packages=(memtester)
+              ;;
+            directory-tree-tools)
+              # tree has no non-ABI shared-library dependency. Its only
+              # public entry is tdvp-tree, never the firmware/BusyBox path.
+              package_args=(--package tree)
+              expected_packages=(tree)
               ;;
             system-tools)
               # This deliberately narrow util-linux cohort avoids the

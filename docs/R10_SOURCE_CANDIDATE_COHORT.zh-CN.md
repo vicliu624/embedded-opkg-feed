@@ -109,6 +109,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 16 | `util-linux-tools` | 2.40.2 | `system-tools` 只启用命名的无 liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid 闭包命令；全部以 `tdvp-util-linux-*` 公开，不替换 firmware/BusyBox 路径，也不把基础镜像库作为隐式 provider。 |
 | 17 | `exfatprogs` | 1.2.5 | `exfat-filesystem-tools` 仅提取 6 个锁定源码构建的 exFAT 命令；私有 ELF 位于 `/usr/libexec/tdvp-exfatprogs/`，公开入口均为 `tdvp-exfat-*`，不占用 `/usr/sbin/*`、firmware 或 BusyBox 路径，也不新增共享运行时 provider。 |
 | 18 | `memtester` | 4.5.1 | `memory-diagnostic-tools` 只构建一个锁定源码的内存诊断 ELF；私有 payload 位于 `/usr/libexec/tdvp-memtester/`，公开入口仅为 `tdvp-memtester`，不占用 firmware/BusyBox 路径，也不新增共享运行时 provider。 |
+| 19 | `tree` | 2.1.1 | `directory-tree-tools` 只构建一个锁定源码的目录树 ELF；唯一公开入口为 `tdvp-tree`，不替换 firmware/BusyBox `tree` 路径，也不新增共享运行时 provider。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -227,6 +228,14 @@ matching target** 的 source provider 才可写入 `source-runtime-owners.tsv`�
 严格核对 `PACKAGE`、`VERSION` 和 `PACKAGE_RELEASES`，冲突立即拒绝且不会修改共享 cache。这样
 新增真实 source provider 只构建自身 closure；target ABI 的身份或版本声明变化才会在 GitHub
 Actions 中重建 runtime-base，且仍不会重编既有 source package。
+
+`directory-tree-tools` 是下一个独立的单包候选。`tree` 2.1.1 使用 Buildroot 2025.02.1
+审核的源选择与 SHA-256；早期 upstream endpoint 返回内容漂移时，source lock 已记录并固定为
+Ubuntu 的同内容 `orig` archive，而不是 Ubuntu patch/repack。CI 只从该锁定 archive 构建一个
+RISC-V ELF，保存到 private payload；公开 `/usr/bin/tdvp-tree` wrapper 不占用 firmware/BusyBox
+标准路径。它没有非平台共享库依赖、不会创建 source runtime provider，且 GitHub Actions 不执行
+tree 的文件遍历命令。成功后的 artifact 仍须通过 IPK、RPATH/RUNPATH、runtime closure 与
+base-overlay gate，且只作为 unsigned candidate。
 
 `system-tools` 是一个单包、无新增共享运行时 provider 的增量 batch。它从 Buildroot
 2025.02.1 审核的 util-linux 2.40.2 archive 离线构建，仅启用 cal、fallocate、IPC、

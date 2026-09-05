@@ -164,7 +164,12 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
   [run `33985238251`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33985238251)
   已通过 matching-SDK 交叉构建、RISC-V ELF、closure 和 deny-overlay 门禁，并上传 unsigned batch artifact
   [`9974999937`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33985238251/artifacts/9974999937)
-  （90,887,183 bytes）。它仍未 merge、签名、发布或部署，且需要实机会话生命周期证据；
+  （90,887,183 bytes）。23-batch no-recompile merge，
+  [run `33985545990`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33985545990)，
+  在没有 build job 的条件下比较每个输入 IPK SHA-256、重新索引并验证 closure/base-overlay，并上传
+  merged unsigned artifact
+  [`9975077200`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33985545990/artifacts/9975077200)
+  （195,989,739 bytes）。所有 artifact 仍未签名、发布或部署，且需要实机会话生命周期证据；
 - 纯元数据诊断 profile：`tdvp-diagnostics` 仅包含仓库自有说明文档及精确的
   `strace`/`htop`/`lsof`/`iperf3`/`netcat` 依赖元数据，因此具有狭窄 source-lock 豁免；它不拥有
   可执行文件、共享库、SDK 制品或任何固件路径；

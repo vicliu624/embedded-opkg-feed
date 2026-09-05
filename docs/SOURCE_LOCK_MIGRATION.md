@@ -242,8 +242,13 @@ below; it is not an upstream-source exception for ordinary packages.
   completed the matching-SDK cross-build, RISC-V ELF, closure, and deny-overlay
   gates and uploaded unsigned batch artifact
   [`9974999937`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33985238251/artifacts/9974999937)
-  (90,887,183 bytes). It remains unmerged, unsigned, unreleased, undeployed,
-  and requires on-device session lifecycle evidence;
+  (90,887,183 bytes). The 23-batch no-recompile merge,
+  [run `33985545990`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33985545990),
+  compared every input IPK SHA-256, re-indexed, and validated closure/base-overlay
+  without a build job; it uploaded merged unsigned artifact
+  [`9975077200`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33985545990/artifacts/9975077200)
+  (195,989,739 bytes). All artifacts remain unsigned, unreleased, undeployed,
+  and require on-device session lifecycle evidence;
 - metadata-only diagnostic profile: `tdvp-diagnostics` has a narrow source-lock
   exemption because it contains only repository-owned instructions and exact
   `strace`/`htop`/`lsof`/`iperf3`/`netcat` dependency metadata. It owns no executable,

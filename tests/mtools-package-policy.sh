@@ -40,7 +40,7 @@ expect_line 'TDVP_COMMAND_FRONTEND_NAMES=' "$build_file"
 for frontend in tdvp-mtools tdvp-mtools-mdir tdvp-mtools-mcopy tdvp-mtools-mformat tdvp-mtools-mlabel; do
   grep -Fq "$frontend" "$build_file"
 done
-for command in mtools mkmanifest mdir mcopy mformat mlabel; do
+for command in mtools mkmanifest mdir mdoctorfat mcopy mformat mlabel; do
   grep -Fq "$command" "$build_file"
 done
 if grep -Eq '(^|[^A-Za-z0-9_])(apt|dpkg|debian)([^A-Za-z0-9_]|$)' "$build_file"; then

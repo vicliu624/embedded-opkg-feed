@@ -149,6 +149,14 @@ Debian package、target root 文件或共享库。GitHub Actions 必须从锁定
 RISC-V ELF、无 RPATH/RUNPATH、IPK runtime closure 和 base-overlay；实机仍须验证只读
 列目录、复制、小心使用的格式化/label 流程、卸载及回滚，才可进入 signed feed。
 
+Actions run `33966562313` 在 mtools archive 通过 SHA-256 校验后，按离线规则发现私有
+download root 缺少这个 `.tar.lz` 所需的 host-lzip 1.25；它在下载阶段终止，没有 artifact。
+run `33966781743` 则已从锁定的 mtools 与 host-lzip 输入完成 RISC-V 编译和临时 target install，
+但 recipe 的批准清单错误地包含未被 4.0.47 安装的 `mclasserase`，所以提取 gate 以 exit 81
+拒绝并跳过 artifact 上传。该 install 证据明确列出 `mdoctorfat`，后续 retry 只以它替换
+`mclasserase`。两个失败 run 均不是 merge source；不得以放宽命令存在性、关闭离线 source
+check 或复制 target 文件来绕过。
+
 `tdvp-gba` 的锁定 commit `4c82b09e1bf042d0709c26ed6c4e5098a283a908` 已由 GitHub commit
 API 和其固定 HTTPS archive endpoint 复核可达。早期 “仅本地 source cache、不可公开下载” 的
 说明不再适用；package metadata 现已与 `source.lock` 对齐。`retro-gba` batch 仍只允许将该

@@ -5,7 +5,7 @@ script="$repo_root/scripts/verify-r10-candidate-cohort.sh"
 cohort="$repo_root/support/r10-candidate-cohort.sh"
 bash -n "$script"
 bash -n "$cohort"
-for entry in libevent tmux dialog ncdu pv netcat iperf3 lsof sqlite3 bc coreutils mtools dosfstools util-linux exfatprogs memtester; do grep -Fq "$entry" "$cohort"; done
+for entry in libevent tmux dialog ncdu pv netcat iperf3 lsof sqlite3 bc coreutils mtools dosfstools util-linux exfatprogs memtester libyaml-0; do grep -Fq "$entry" "$cohort"; done
 grep -Fq 'BR2_TOOLCHAIN_HAS_ATOMIC=y' "$script"
 grep -Fq 'BR2_PACKAGE_LIBOPENSSL=y' "$script"
 grep -Fq 'BR2_PACKAGE_READLINE=y' "$script"

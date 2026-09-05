@@ -45,7 +45,7 @@ if grep -Eq '(^|[^A-Za-z0-9_])(apt|dpkg|debian)([^A-Za-z0-9_]|$)' "$build_file";
   exit 1
 fi
 
-grep -Fq 'options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, system-tools, nodejs]' "$workflow"
+grep -Fq 'options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, yaml-runtime, system-tools, nodejs]' "$workflow"
 grep -Fq 'exfat-filesystem-tools)' "$workflow"
 grep -Fq 'package_args=(--package exfatprogs)' "$workflow"
 grep -Fq 'expected_packages=(exfatprogs)' "$workflow"

@@ -50,6 +50,9 @@ libsqlite3.so.0|libsqlite3-0|3.48.0-1
 # CPython _decimal is configured to use the public mpdecimal ABI. It remains
 # a dedicated source-built provider instead of a private interpreter payload.
 libmpdec.so.4|libmpdec-4|4.0.0-1
+# LibYAML is a reusable parser/emitter ABI for future YAML-consuming tools.
+# Keep the public SONAME owned by one source-built provider from the outset.
+libyaml-0.so.2|libyaml-0|0.2.5-1
 # Split OpenSSL's two public SONAMEs into explicit providers before Git, curl,
 # Python, or Node may depend on TLS. They are built from one locked source tree.
 libcrypto.so.3|libcrypto-3|3.4.1-1

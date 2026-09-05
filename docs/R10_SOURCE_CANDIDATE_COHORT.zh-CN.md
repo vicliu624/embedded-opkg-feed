@@ -109,6 +109,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 16 | `util-linux-tools` | 2.40.2 | `system-tools` 只启用命名的无 liblastlog2/libblkid/libfdisk/libmount/libsmartcols/libuuid 闭包命令；全部以 `tdvp-util-linux-*` 公开，不替换 firmware/BusyBox 路径，也不把基础镜像库作为隐式 provider。 |
 | 17 | `exfatprogs` | 1.2.5 | `exfat-filesystem-tools` 仅提取 6 个锁定源码构建的 exFAT 命令；私有 ELF 位于 `/usr/libexec/tdvp-exfatprogs/`，公开入口均为 `tdvp-exfat-*`，不占用 `/usr/sbin/*`、firmware 或 BusyBox 路径，也不新增共享运行时 provider。 |
 | 18 | `memtester` | 4.5.1 | `memory-diagnostic-tools` 只构建一个锁定源码的内存诊断 ELF；私有 payload 位于 `/usr/libexec/tdvp-memtester/`，公开入口仅为 `tdvp-memtester`，不占用 firmware/BusyBox 路径，也不新增共享运行时 provider。 |
+| 19 | `libyaml-0` | 0.2.5 | `yaml-runtime` 构建唯一的 `libyaml-0.so.2` provider；不携带 command、开发文件或私有 consumer copy，未来 YAML 应用必须精确依赖它。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -207,6 +208,16 @@ memory-diagnostic-tools artifact `9971278184`。随后它和此前 14 个成功 
 run `33972330479` 中逐 IPK 比较 hash、重新索引并在无编译模式下再次验证合并候选，生成
 未签名 merged artifact `9971324996`。这些 run 是候选构建/合并证据，不是签名、公开
 发布、部署或实机运行内存诊断的授权。
+
+`yaml-runtime` 是一个单 provider 的增量 batch。`libyaml-0` 从 Buildroot 2025.02.1
+审核并给出 SHA-256 的 libyaml 0.2.5 archive 构建；原始 recipe endpoint 是 HTTP，因而
+source lock 只通过 Buildroot HTTPS archive mirror 检索同一 hash 的 archive。候选 payload
+只拥有 `/usr/lib/libyaml-0.so.2` 及其相对 runtime symlink；不包含 headers、static archive、
+pkg-config metadata、command、Debian binary 或 target root copy。它在 runtime-owner map 中
+成为 `libyaml-0.so.2` 的唯一 package owner；未来 YAML consumer 必须先通过自己的 K230
+source-build closure，再精确依赖 `libyaml-0`，不得携带私有 parser。GitHub Actions 会验证
+RISC-V ELF、无 RPATH/RUNPATH、runtime closure 和 base-overlay，成功后也仍只是 unsigned
+candidate，而非签名/发布授权。
 
 `system-tools` 是一个单包、无新增共享运行时 provider 的增量 batch。它从 Buildroot
 2025.02.1 审核的 util-linux 2.40.2 archive 离线构建，仅启用 cal、fallocate、IPC、

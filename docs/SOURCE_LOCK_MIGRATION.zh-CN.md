@@ -143,6 +143,11 @@ find packages -mindepth 2 -maxdepth 2 -name package.env -type f | LC_ALL=C sort
   只位于 `/usr/libexec/tdvp-memtester/`，公开入口仅为 `/usr/bin/tdvp-memtester`，
   不覆盖 firmware/BusyBox 路径，不复制 Debian binary、target root 文件或共享库。
   GitHub Actions 只构建、封装和审核，绝不执行会分配和写入设备内存的诊断程序；
+- YAML C 运行时 ABI：`libyaml-0` 锁定 Buildroot 2025.02.1 审核的 libyaml 0.2.5
+  archive。原始 recipe endpoint 是 HTTP，因此 source lock 只从 Buildroot HTTPS archive
+  mirror 取得同一 SHA-256 验证 archive。该 shared-library IPK 唯一拥有
+  `libyaml-0.so.2` 及必要相对 symlink，不携带开发文件、静态库、命令、Debian binary 或
+  target root copy；任何未来 consumer 只能用精确 versioned `Depends` 复用它；
 - 十进制运算运行时：`libmpdec-4` 锁定 Buildroot 2025.02.1 审查的 mpdecimal 4.0.0
   归档，只将 `libmpdec.so.4 -> libmpdec.so.4.0.0` 制作成独立 IPK。候选为 RISC-V ELF64
   共享对象、无 RPATH/RUNPATH，且仅依赖平台 ABI，因此它是 CPython `_decimal` 的唯一可复用

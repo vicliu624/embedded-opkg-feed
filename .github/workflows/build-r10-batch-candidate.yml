@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, system-tools, nodejs]
+        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, yaml-runtime, system-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -85,6 +85,7 @@ jobs:
           bash ./tests/dosfstools-package-policy.sh
           bash ./tests/exfatprogs-package-policy.sh
           bash ./tests/memtester-package-policy.sh
+          bash ./tests/libyaml-package-policy.sh
           bash ./tests/util-linux-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
@@ -360,6 +361,7 @@ jobs:
           bash ./tests/dosfstools-package-policy.sh
           bash ./tests/exfatprogs-package-policy.sh
           bash ./tests/memtester-package-policy.sh
+          bash ./tests/libyaml-package-policy.sh
           bash ./tests/util-linux-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
@@ -467,6 +469,12 @@ jobs:
               # command is tdvp-memtester, and CI never executes memory tests.
               package_args=(--package memtester)
               expected_packages=(memtester)
+              ;;
+            yaml-runtime)
+              # LibYAML owns one public libyaml-0.so.2 provider. Consumers
+              # must use an exact package dependency instead of private copies.
+              package_args=(--package libyaml-0)
+              expected_packages=(libyaml-0)
               ;;
             system-tools)
               # This deliberately narrow util-linux cohort avoids the

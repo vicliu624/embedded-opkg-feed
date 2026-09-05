@@ -74,7 +74,7 @@ tdvp_buildroot_command_package() {
   if [[ -n "${TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES:-}" ]]; then
     while IFS= read -r make_variable || [[ -n "$make_variable" ]]; do
       [[ -n "$make_variable" ]] || continue
-      [[ "$make_variable" =~ ^[A-Z][A-Z0-9_]*=[A-Za-z0-9_./:+\ -]*$ ]] || {
+      [[ "$make_variable" =~ ^[A-Z][A-Z0-9_]*=[A-Za-z0-9_./:+=\ -]*$ ]] || {
         echo "invalid Buildroot command-package make variable: $make_variable" >&2
         return 85
       }

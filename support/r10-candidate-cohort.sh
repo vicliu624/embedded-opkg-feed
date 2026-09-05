@@ -10,4 +10,5 @@ TDVP_R10_CANDIDATE_COHORT=(
   htop nano dialog ncdu pv tmux
   sqlite3 bc coreutils mtools dosfstools util-linux exfatprogs memtester tree less ffprobe
   gdbserver ethtool
+  i2c-tools
 )

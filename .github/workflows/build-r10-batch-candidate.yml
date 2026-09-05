@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -91,6 +91,7 @@ jobs:
           bash ./tests/exfatprogs-package-policy.sh
           bash ./tests/memtester-package-policy.sh
           bash ./tests/debug-network-tools-policy.sh
+          bash ./tests/i2c-tools-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/tmux-package-policy.sh
@@ -454,6 +455,7 @@ jobs:
           bash ./tests/exfatprogs-package-policy.sh
           bash ./tests/memtester-package-policy.sh
           bash ./tests/debug-network-tools-policy.sh
+          bash ./tests/i2c-tools-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/diagnostics-package-policy.sh
@@ -655,6 +657,13 @@ jobs:
               # netlink/libmnl branches; neither adds a shared runtime ABI.
               package_args=(--package gdbserver --package ethtool)
               expected_packages=(gdbserver ethtool)
+              ;;
+            i2c-inspection-tools)
+              # Build i2c-tools commands against private libi2c.a only; the
+              # source recipe disables both libi2c.so and py-smbus, while CI
+              # never probes, reads, writes, or enumerates a physical bus.
+              package_args=(--package i2c-tools)
+              expected_packages=(i2c-tools)
               ;;
             *) echo 'unreviewed batch input' >&2; exit 64 ;;
           esac

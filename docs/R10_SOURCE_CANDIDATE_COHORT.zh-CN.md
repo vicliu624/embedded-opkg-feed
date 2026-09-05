@@ -194,7 +194,10 @@ target root 文件或跳过 gate 来规避此情况；它先尝试逐一关闭�
 Kconfig 事实可复现：Buildroot 在 `olddefconfig` 后报告 `BR2_PACKAGE_UTIL_LINUX_AGETTY` 仍为 y，
 因为 desktop baseline 的 systemd 明确 select 该 feature；该 guard 正确停止且没有 artifact。
 修复不再试图以被选择项覆盖 select，而是以本段所述的完整 configure-option 覆写建立 source
-边界。
+边界。第四次 run `33970029697` 在进入 Buildroot 前由 `tdvp_buildroot_install` 的安全参数
+grammar 拒绝了该覆写：`--with-systemdsystemunitdir=no` 含有 make-variable 名值分隔符之外的第二个
+等号；没有开始编译，也没有 artifact。由于同一覆写已使用 `--without-systemd`，该路径参数没有
+作用且被移除，保持 make-variable 只含允许字符的约束不变。
 
 `tdvp-gba` 的锁定 commit `4c82b09e1bf042d0709c26ed6c4e5098a283a908` 已由 GitHub commit
 API 和其固定 HTTPS archive endpoint 复核可达。早期 “仅本地 source cache、不可公开下载” 的

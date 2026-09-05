@@ -37,7 +37,7 @@ grep -Fq 'UTIL_LINUX_CONF_OPTS=$util_linux_conf_opts' "$build_file"
 for configure_option in \
   --disable-rpath --disable-makeinstall-chown --disable-year2038 \
   --disable-nls --disable-liblastlog2 \
-  --without-systemd --with-systemdsystemunitdir=no --without-udev \
+  --without-systemd --without-udev \
   --disable-widechar --without-ncurses --without-ncursesw --without-selinux \
   --without-python --disable-pylibmount --without-readline --without-audit \
   --without-libmagic \

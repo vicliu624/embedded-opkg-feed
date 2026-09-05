@@ -70,7 +70,7 @@ trap cleanup EXIT
 util_linux_conf_opts=(
   --disable-rpath --disable-makeinstall-chown --disable-year2038
   --disable-nls --disable-liblastlog2
-  --without-systemd --with-systemdsystemunitdir=no --without-udev
+  --without-systemd --without-udev
   --disable-widechar --without-ncurses --without-ncursesw --without-selinux
   --without-python --disable-pylibmount --without-readline --without-audit
   --without-libmagic

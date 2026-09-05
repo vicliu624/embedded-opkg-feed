@@ -20,5 +20,4 @@ TDVP_R10_CANDIDATE_COHORT=(
   cpulimit
   bwm-ng
   rhash
-  findutils
 )

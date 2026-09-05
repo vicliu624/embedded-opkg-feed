@@ -237,8 +237,13 @@ below; it is not an upstream-source exception for ordinary packages.
   libevent's target-attested libcrypto closure. tmux does not link OpenSSL or
   systemd directly and must not override the matching SDK's global feature
   choices: recipe-scoped `TMUX_CONF_OPTS` disables systemd/utf8proc and the
-  fixed `TMUX_DEPENDENCIES` prevents their build-time import. Actual IPKs still
-  require matching-SDK and on-device session lifecycle evidence;
+  fixed `TMUX_DEPENDENCIES` prevents their build-time import. GitHub Actions
+  [run `33985238251`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33985238251)
+  completed the matching-SDK cross-build, RISC-V ELF, closure, and deny-overlay
+  gates and uploaded unsigned batch artifact
+  [`9974999937`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33985238251/artifacts/9974999937)
+  (90,887,183 bytes). It remains unmerged, unsigned, unreleased, undeployed,
+  and requires on-device session lifecycle evidence;
 - metadata-only diagnostic profile: `tdvp-diagnostics` has a narrow source-lock
   exemption because it contains only repository-owned instructions and exact
   `strace`/`htop`/`lsof`/`iperf3`/`netcat` dependency metadata. It owns no executable,

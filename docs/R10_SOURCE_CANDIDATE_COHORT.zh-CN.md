@@ -98,7 +98,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 5 | `wget`、`rsync` | 1.25.0、3.4.1 | Wget 只允许 CA/OpenSSL/zlib；匹配 SDK 的 rsync 事务保留 OpenSSL 分支，因此 `rsync` 精确依赖 immutable target catalogue 的 `libpopt (= 1.19-1)`、`libz (= 1.3.1-1)`、`libcrypto-3 (= 3.4.1-1)`，不重建三者。SSH 是用户以默认 platform `ssh` 或 `-e /usr/bin/tdvp-ssh` 明确选择的传输命令，不是 rsync 的 ELF/包 provider 依赖；ACL/LZ4/xxHash/Zstd 仍关闭，`file-sync-tools` 仍须通过 GitHub Actions。 |
 | 6 | `iperf3`、`netcat`、`lsof` | 3.18、0.7.1、4.99.4 | 受控 LAN、无公开 listener；lsof 还需记录权限可见性 |
 | 7 | `libcap-2`（target provider）、`htop`（候选）、`nano`、`dialog`、`ncdu`、`pv` | 2025.02.1、3.3.0、8.2、1.3-20220117、1.21、1.9.0 | immutable catalogue 已拥有 `libcap.so.2`；`htop` 只能精确依赖 `libcap-2 (= 2025.02.1-1)` 以启用 capability view，绝不重建或覆盖该 ABI。真实终端、locale/宽字符和小屏交互验收仍是独立门禁。 |
-| 8 | `libevent`、`tmux`（待 CI 构建） | 2.1.12、3.3a | cohort 从锁定源码构建 `libevent (= 2.1.12-1)`，tmux 精确消费它与 immutable catalogue 的 `libncursesw (= 6.4-20230603-1)`；`libevent` 的 TLS closure 精确使用 target `libcrypto-3`。仍需验证 detached session、capture、kill-session。 |
+| 8 | `libevent`、`tmux`（已通过 CI，待无重编 merge/实机） | 2.1.12、3.3a | cohort 从锁定源码构建 `libevent (= 2.1.12-1)`，tmux 精确消费它与 immutable catalogue 的 `libncursesw (= 6.4-20230603-1)`；`libevent` 的 TLS closure 精确使用 target `libcrypto-3`。仍需验证 detached session、capture、kill-session。 |
 | 9 | `tdvp-source-tools`、`tdvp-diagnostics` | 1.6、1.1 | 仅元数据 profile；安装/卸载不得复制或误删工具/共享库 |
 | 10 | `sdl2`、`sdl2-ttf`、`libmgba`、`tdvp-gba` | 2.30.11、2.22.0、0.10.5、0.2.3 | `retro-gba` 独立增量批次；四个 IPK 必须全部由来源锁重建，不能复用历史 r2/r3 payload；验证 Wayland/ALSA runtime closure、`tdvp-gba` 动态依赖及 `/opt/tdvp-gba` 的非覆盖安装。 |
 | 11 | `sqlite3` | 3.48.0 | `database-tools` 只从 `libsqlite3-0` 同一次锁定源码构建的私有 staging 取得 CLI；仍验证 RISC-V ELF、`libsqlite3.so.0`、精确 readline/ncurses 依赖及无 base-path 覆盖。 |
@@ -577,9 +577,12 @@ SDK 强制保持全局 `BR2_PACKAGE_SYSTEMD=y`，所以不能以 Kconfig 禁用�
 不再修改全局 OpenSSL/systemd/utf8proc，而是在 make-time 固定 tmux 的
 `--disable-systemd --disable-utf8proc` 和 `libevent ncurses host-pkgconf` closure。该 cohort
 从锁定源码构建 `libevent`，由它精确声明 target `libcrypto-3` 的 TLS/runtime closure；tmux
-精确依赖这个 provider 与 target `libncursesw`。`terminal-session-tools` 仍须先通过 GitHub
-Actions 的 matching-SDK 构建、无 base-path 覆盖门禁以及后续实机会话生命周期验证，才可加入
-unsigned candidate。
+精确依赖这个 provider 与 target `libncursesw`。修正后的 GitHub Actions
+[`33985238251`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33985238251) 已通过 matching-SDK
+交叉构建、RISC-V ELF、runtime closure、`deny` base-overlay 和 feed verification，并上传 unsigned
+`terminal-session-tools` artifact [`9974999937`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33985238251/artifacts/9974999937)
+（90,887,183 bytes）。该 artifact 仅包含未经签名的候选集；仍必须完成后续无重编 merge 和
+detached session、capture、kill-session 的实机生命周期验证，才可考虑签名或发布。
 
 run `33905941863` 已构建到 GNU awk 的 payload gate，随后因它试图发布
 `/usr/bin/awk` 而被 exit 77 拒绝。该路径属于固件命令，不能被 source-tools profile

@@ -489,6 +489,25 @@ RPATH/RUNPATH、精确依赖 target catalogue 的 `libcurl-4` 与 `ca-certificat
 namespaced candidate batch，仍须由 GitHub Actions 通过 RISC-V、runtime closure、`deny` overlay、IPK
 索引和后续无重编 merge 后，才能成为 unsigned candidate；不得覆盖、删除或重命名 target 的 curl。
 
+**命名空间 curl 的 GitHub Actions 准入证据（2026-09-05）。** `http-transfer-tools` run
+[`33980193318`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33980193318) 只选择 `curl`；
+固定 K230 toolchain、SDK、锁定 source cache、target-runtime catalogue 与 batch policy 全部恢复/检查成功，
+再由 runner 完成唯一的 selected dependency closure 构建。日志记录
+`tdvp-curl payload ready from libcurl-4 staged source build`，并产出
+`curl_8.12.1-1_riscv64.ipk`；候选 feed verification 两次成功。run 上传 unsigned batch artifact
+[`9973572086`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33980193318/artifacts/9973572086)
+（`tdvp-k230-r10-http-transfer-tools-unsigned-ba9277f…`，90,180,302 bytes）。这只证明
+`/usr/libexec/tdvp-curl/curl` 加 `/usr/bin/tdvp-curl` 的新命名空间载荷通过准入；不改变对
+`/usr/bin/curl` 的拒绝结论。
+
+随后 merge run [`33980466654`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33980466654)
+只接收此前 18 个成功 source batch 与上述新 batch：其 build job 明确 skipped，成功下载并比较所有
+19 个输入 batch 的 IPK hash，随后在 **without compiling** 模式重新索引、验证 merged runtime
+closure/base-overlay。它上传 merged unsigned artifact
+[`9973634779`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33980466654/artifacts/9973634779)
+（`tdvp-k230-r10-merged-unsigned-ba9277f…`，193,657,204 bytes）。该成果仍只是 unsigned candidate；
+未签名、未 release/publish、未部署或安装到设备，也未执行任何实机生命周期验证。
+
 run `33904931122` 验证了 Dialog 的新锁定来源，随后在 `htop` 上被
 `BR2_PACKAGE_LIBCAP` 的禁用断言停止。匹配 SDK 会把该 Kconfig 符号恢复为启用状态，
 而 `tdvp-k230-r1` 的 seed ABI 清单只声明 loader/glibc/编译器运行时，并没有可在

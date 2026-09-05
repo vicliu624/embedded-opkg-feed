@@ -51,6 +51,20 @@ target-runtime catalogue 的 legacy/attestation 输入：它可能改变从固�
   deny overlay 与 feed verification，上传 `ffprobe_4.4.4-1_riscv64.ipk` batch artifact `9973352053`；
   随后的无重编 18-batch merge run `33979683310` 成功并上传 merged artifact `9973413113`。它仍是 unsigned
   candidate，尚未签名、发布或执行实机生命周期门禁；
+- 命名空间 HTTP transfer leaf（候选）：直接发布 `/usr/bin/curl` 的 source build 已在 run
+  `33901074012` 被 target base-overlay 拒绝，故新的 `http-transfer-tools` 不替换该路径。它从相同的
+  锁定 Buildroot `libcurl-4` transaction 取得 source-built staging proof，将 ELF 私有放在
+  `/usr/libexec/tdvp-curl/curl`，唯一公开入口为 `/usr/bin/tdvp-curl`，并精确依赖 target catalogue 的
+  `libcurl-4` 与 `ca-certificates`。GitHub Actions run
+  [`33980193318`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33980193318) 只构建这一
+  closure，记录 `tdvp-curl payload ready from libcurl-4 staged source build`，通过候选 feed verification，
+  并上传 `curl_8.12.1-1_riscv64.ipk` batch artifact
+  [`9973572086`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33980193318/artifacts/9973572086)
+  （90,180,302 bytes）。随后的 run
+  [`33980466654`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33980466654) 对此前 18 个
+  成功 source batch 加此 batch 比较全部 IPK hash、无编译重建索引并验证 closure/base-overlay，上传 merged
+  artifact [`9973634779`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33980466654/artifacts/9973634779)
+  （193,657,204 bytes）。两个 artifact 均为 unsigned candidate；未签名、发布、部署或在设备执行；
 - r10 文本/搜索/终端诊断工具：`tree`、`less`、`file`、`which`、`curl`、`wget`、`iperf3`、`lsof`、`netcat`、`rsync`、`dos2unix`、`jq`、`bc`、
   `grep`、`sed`、`findutils`、`diffutils`、`gawk`、`htop`、`nano`、`tmux`；`htop` 明确关闭未准入的可选
   `libcap` feature，`nano` 保持当前 SDK 未选中 `file/libmagic` 的终端编辑配置；二者

@@ -63,9 +63,15 @@ cleanup() {
 }
 trap cleanup ERR
 
-install -Dm 0755 -- "$stage_command" "$payload_dir/usr/bin/curl"
-tdvp_remove_elf_runtime_search_paths "$readelf_tool" "$payload_dir/usr/bin/curl"
-tdvp_assert_elf_without_runtime_search_path "$readelf_tool" "$payload_dir/usr/bin/curl"
+install -Dm 0755 -- "$stage_command" "$payload_dir/usr/libexec/tdvp-curl/curl"
+tdvp_remove_elf_runtime_search_paths "$readelf_tool" "$payload_dir/usr/libexec/tdvp-curl/curl"
+tdvp_assert_elf_without_runtime_search_path "$readelf_tool" "$payload_dir/usr/libexec/tdvp-curl/curl"
+install -d -m 0755 "$payload_dir/usr/bin"
+cat >"$payload_dir/usr/bin/tdvp-curl" <<'EOF'
+#!/bin/sh
+exec /usr/libexec/tdvp-curl/curl "$@"
+EOF
+chmod 0755 "$payload_dir/usr/bin/tdvp-curl"
 payload_dir=
 trap - ERR
-echo 'curl payload ready from libcurl-4 staged source build'
+echo 'tdvp-curl payload ready from libcurl-4 staged source build'

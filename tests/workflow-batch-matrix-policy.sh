@@ -7,10 +7,10 @@ IFS=$'\n\t'
 
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 workflow="$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-expected_options='options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]'
+expected_options='options: [archive, audacious, network-tools, http-transfer-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]'
 
 grep -Fq "$expected_options" "$workflow"
-for batch in archive audacious network-tools desktop-tools retro-gba development-tools database-tools calculator-tools coreutils-tools fat-media-tools fat-filesystem-tools exfat-filesystem-tools memory-diagnostic-tools directory-tree-tools terminal-pager-tools media-inspection-tools system-tools nodejs; do
+for batch in archive audacious network-tools http-transfer-tools desktop-tools retro-gba development-tools database-tools calculator-tools coreutils-tools fat-media-tools fat-filesystem-tools exfat-filesystem-tools memory-diagnostic-tools directory-tree-tools terminal-pager-tools media-inspection-tools system-tools nodejs; do
   grep -Fq "${batch})" "$workflow"
 done
 

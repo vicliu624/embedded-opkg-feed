@@ -23,7 +23,7 @@ expect_line "^PACKAGE_DEPENDS='libcurl-4 \\(= 8[.]12[.]1-1\\), ca-certificates \
 expect_line "^PACKAGE_BUILD_DEPENDS='libcurl-4'$" "$package_dir/package.env"
 expect_line "^PACKAGE_STAGE_BUILD_DEPENDS='libcurl-4'$" "$package_dir/package.env"
 expect_line '^PACKAGE_AUTO_RUNTIME_DEPENDS=1$' "$package_dir/package.env"
-expect_line "^PACKAGE_BASE_OVERLAY='identical'$" "$package_dir/package.env"
+expect_line "^PACKAGE_BASE_OVERLAY='deny'$" "$package_dir/package.env"
 
 test -f "$package_dir/source.lock"
 expect_line "^UPSTREAM_NAME='curl'$" "$package_dir/source.lock"
@@ -44,7 +44,11 @@ expect_line 'Machine:                           RISC-V' "$build_file"
 expect_line 'Shared library: \[libcurl[.]so[.]4\]' "$build_file"
 expect_line 'tdvp_remove_elf_runtime_search_paths' "$build_file"
 expect_line 'tdvp_assert_elf_without_runtime_search_path' "$build_file"
-expect_line 'install -Dm 0755 -- "\$stage_command" "\$payload_dir/usr/bin/curl"' "$build_file"
+expect_line 'install -Dm 0755 -- "\$stage_command" "\$payload_dir/usr/libexec/tdvp-curl/curl"' "$build_file"
+expect_line 'tdvp_remove_elf_runtime_search_paths.*tdvp-curl/curl' "$build_file"
+expect_line 'tdvp_assert_elf_without_runtime_search_path.*tdvp-curl/curl' "$build_file"
+expect_line 'payload_dir/usr/bin/tdvp-curl' "$build_file"
+expect_line 'exec /usr/libexec/tdvp-curl/curl' "$build_file"
 if grep -Eq 'curl.*(https?://|apt|dpkg|debian)' "$build_file"; then
   echo 'curl leaf must not fetch or import a foreign binary during target packaging' >&2
   exit 1
@@ -60,4 +64,4 @@ expect_line 'PACKAGE_STAGE_BUILD_DEPENDS must reference a deferred target runtim
 expect_line 'target_runtime_recipe_dir\[\$package\]=\$package_dir' "$build_all"
 expect_line 'discard_generated_payload "\$package_dir"' "$build_all"
 
-echo 'locked-source curl/libcurl split policy: PASS'
+echo 'locked-source namespaced curl/libcurl split policy: PASS'

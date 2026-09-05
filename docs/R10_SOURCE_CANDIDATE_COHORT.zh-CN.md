@@ -94,7 +94,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 1 | `libncursesw`、`libreadline` | 6.4-20230603、8.2 | 已拥有的终端 ABI；先确认其候选与平台 ABI 一致 |
 | 2 | `libpopt`、`libz` | 1.19、1.3.1 | rsync 的公共 provider；不得私藏在 leaf 中 |
 | 3 | `libevent` | 2.1.12 | 唯一拥有四个 `libevent*.so.7`；OpenSSL event 支持关闭 |
-| 4 | `libcurl-4`、`curl` | 8.12.1 | `libcurl-4` 是 target provider；`curl` 的锁定源码构建与 base `/usr/bin/curl` 字节不同，CI 拒绝发布 |
+| 4 | `libcurl-4`、`curl` | 8.12.1 | `libcurl-4` 是 target provider；直接占用 `/usr/bin/curl` 的锁定源码构建曾被 CI 拒绝。`http-transfer-tools` 只从同一 source transaction stage ELF，私有保存为 `/usr/libexec/tdvp-curl/curl`，公开入口为 `/usr/bin/tdvp-curl`，不替换 target 命令。 |
 | 5 | `wget`、`rsync` | 1.25.0、3.4.1 | Wget 只允许 CA/OpenSSL/zlib；`rsync` 在 `libpopt` 仍为 target provider 时暂停 |
 | 6 | `iperf3`、`netcat`、`lsof` | 3.18、0.7.1、4.99.4 | 受控 LAN、无公开 listener；lsof 还需记录权限可见性 |
 | 7 | `htop`（暂缓）、`nano`、`dialog`、`ncdu`、`pv` | 3.3.0、8.2、1.3-20220117、1.21、1.9.0 | 真实终端、locale/宽字符和小屏交互验收；`htop` 需先有独立的 libcap provider |
@@ -481,6 +481,13 @@ GitHub Actions 的增量准入证据同样是候选台账的一部分：run `339
 `/usr/bin/curl` 与目标不同，因此 `curl` 不得进入 r10 feed。run `33901555917` 对
 `openssh-client` 的 `/usr/bin/ssh-agent` 得到相同结论。两者保留为
 `tdvp-k230-r1` base 能力，不能以“已有路径”或放宽 overlay 策略的方式伪装成 feed IPK。
+
+`http-transfer-tools` 不改变上述拒绝结论：它不发布 `/usr/bin/curl`，也不要求 target 文件字节相同。
+同一份经过来源锁核验的 Buildroot `libcurl-4` transaction 只提供 source-built command staging proof；
+leaf 将 ELF 移入 `/usr/libexec/tdvp-curl/curl`，只添加 `/usr/bin/tdvp-curl` wrapper，并继续去除
+RPATH/RUNPATH、精确依赖 target catalogue 的 `libcurl-4` 与 `ca-certificates`。因此它是一次全新的
+namespaced candidate batch，仍须由 GitHub Actions 通过 RISC-V、runtime closure、`deny` overlay、IPK
+索引和后续无重编 merge 后，才能成为 unsigned candidate；不得覆盖、删除或重命名 target 的 curl。
 
 run `33904931122` 验证了 Dialog 的新锁定来源，随后在 `htop` 上被
 `BR2_PACKAGE_LIBCAP` 的禁用断言停止。匹配 SDK 会把该 Kconfig 符号恢复为启用状态，

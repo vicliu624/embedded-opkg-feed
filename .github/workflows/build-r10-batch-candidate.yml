@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
+        options: [archive, audacious, network-tools, http-transfer-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -87,6 +87,7 @@ jobs:
           bash ./tests/memtester-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
+          bash ./tests/curl-package-policy.sh
           bash ./tests/ffprobe-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
@@ -381,6 +382,7 @@ jobs:
           bash ./tests/memtester-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
+          bash ./tests/curl-package-policy.sh
           bash ./tests/ffprobe-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
@@ -420,13 +422,19 @@ jobs:
               expected_packages=(audacious-core audacious-plugins audacious)
               ;;
             network-tools)
-              # curl differs from the target-owned command (run 33901074012),
               # rsync is paused while libpopt remains target-provided; htop
               # and tmux are paused because the matched SDK forces libcap and
               # OpenSSL while TDVP has no independently owned providers.
               # None may be published by this ABI-safe batch.
               package_args=(--package wget --package iperf3 --package lsof --package netcat --package nano --package dialog --package ncdu --package pv)
               expected_packages=(wget iperf3 lsof netcat nano dialog ncdu pv)
+              ;;
+            http-transfer-tools)
+              # The locked curl source is staged only from libcurl-4's same
+              # transaction, then published through tdvp-curl. It never
+              # replaces the target-owned /usr/bin/curl path.
+              package_args=(--package curl)
+              expected_packages=(curl)
               ;;
             desktop-tools)
               package_args=(--package vim --package vim-plugin-gitgutter --package tdvp-mpv --package tdvp-netsurf)

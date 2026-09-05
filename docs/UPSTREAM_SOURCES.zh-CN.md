@@ -228,8 +228,9 @@ Debian、Buildroot 或上游发布的新版和安全公告会产生**候选更�
 7. 已完成：GitHub Actions source batch [`33989899026`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33989899026) 已准入锁定的 static-only `i2c-tools` 硬件检查 leaf；no-recompile merge [`33990178543`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33990178543) 随后合入已验证 artifact，未重编 source package。它已禁用 Python/py-smbus 与 shared `libi2c`，CI 未检查或变更任何硬件总线；
 8. 已完成：GitHub Actions source batch [`33991128904`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991128904) 已准入锁定 no-shared-library `inotify-tools` leaf，no-recompile merge [`33991417095`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991417095) 随后合入已验证 artifact，未重编 source package。该 package 已禁用 shared `libinotifytools`，只公开私有 `inotifywait`/`inotifywatch` command ELF，CI 未启动 watcher 或观察 filesystem path；
 9. 已完成：GitHub Actions source batch [`33991963284`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991963284) 已准入锁定 command-only `logrotate` leaf，no-recompile merge [`33992249214`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33992249214) 随后合入已验证 artifact，未重编 source package。该 package 已禁用 SELinux/ACL，只复用 immutable target `libpopt` provider，排除 `/etc` 配置、timer 和 daemon payload，CI 未运行任何日志轮转操作；
-10. 为每个 release 生成来源证明/SBOM，并把来源、SDK 和测试结果与签名 release 对应；
-11. 同时逐步引入经过审查的通用库，每次均保留共享运行时和实机测试门。
+10. 进行中：通过 GitHub Actions source batch 准入锁定独立 `jo` JSON-construction command，再由无重编 merge 合入。它必须保持私有、不引入 shared provider，CI 不得执行或传入 JSON input；
+11. 为每个 release 生成来源证明/SBOM，并把来源、SDK 和测试结果与签名 release 对应；
+12. 同时逐步引入经过审查的通用库，每次均保留共享运行时和实机测试门。
 
 在自动化全部完成以前，本约定仍是所有新上游引入的准入标准；PR 模板、贡献说明和发布检查清单会引用它，确保维护者不会把“候选源码”误解为“可以直接安装的发行版包”。
 

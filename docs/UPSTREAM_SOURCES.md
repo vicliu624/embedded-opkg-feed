@@ -449,9 +449,13 @@ This document fixes the governance rule first. Implement automation in order:
    SELinux/ACL, reused only the immutable target `libpopt` provider, excluded
    `/etc` configuration, timer and daemon payloads, and never ran a log
    rotation operation in CI; then
-10. Emit source provenance/SBOM material for each release and bind source, SDK,
+10. In progress: admit the locked standalone `jo` JSON-construction command
+    through a GitHub Actions source batch, then a no-recompile merge. It must
+    remain private, introduce no shared provider, and never be invoked or given
+    JSON input in CI; then
+11. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
-11. Introduce reviewed general libraries incrementally, retaining shared-runtime
+12. Introduce reviewed general libraries incrementally, retaining shared-runtime
    and on-device test gates each time.
 
 Until all automation is complete, this contract remains the admission standard

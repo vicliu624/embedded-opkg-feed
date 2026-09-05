@@ -13,4 +13,5 @@ TDVP_R10_CANDIDATE_COHORT=(
   i2c-tools
   inotify-tools
   logrotate
+  jo
 )

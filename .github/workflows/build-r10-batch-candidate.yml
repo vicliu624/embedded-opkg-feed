@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools, json-construction-tools]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -94,6 +94,7 @@ jobs:
           bash ./tests/i2c-tools-package-policy.sh
           bash ./tests/inotify-tools-package-policy.sh
           bash ./tests/logrotate-package-policy.sh
+          bash ./tests/jo-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/tmux-package-policy.sh
@@ -460,6 +461,7 @@ jobs:
           bash ./tests/i2c-tools-package-policy.sh
           bash ./tests/inotify-tools-package-policy.sh
           bash ./tests/logrotate-package-policy.sh
+          bash ./tests/jo-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/diagnostics-package-policy.sh
@@ -682,6 +684,12 @@ jobs:
               # the IPK. CI never invokes it or supplies a path to rotate.
               package_args=(--package logrotate)
               expected_packages=(logrotate)
+              ;;
+            json-construction-tools)
+              # jo is a private command-only JSON constructor. CI builds and
+              # audits it but never invokes it or provides input data.
+              package_args=(--package jo)
+              expected_packages=(jo)
               ;;
             *) echo 'unreviewed batch input' >&2; exit 64 ;;
           esac

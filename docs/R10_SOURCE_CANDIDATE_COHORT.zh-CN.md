@@ -110,6 +110,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 17 | `exfatprogs` | 1.2.5 | `exfat-filesystem-tools` 仅提取 6 个锁定源码构建的 exFAT 命令；私有 ELF 位于 `/usr/libexec/tdvp-exfatprogs/`，公开入口均为 `tdvp-exfat-*`，不占用 `/usr/sbin/*`、firmware 或 BusyBox 路径，也不新增共享运行时 provider。 |
 | 18 | `memtester` | 4.5.1 | `memory-diagnostic-tools` 只构建一个锁定源码的内存诊断 ELF；私有 payload 位于 `/usr/libexec/tdvp-memtester/`，公开入口仅为 `tdvp-memtester`，不占用 firmware/BusyBox 路径，也不新增共享运行时 provider。 |
 | 19 | `tree` | 2.1.1 | `directory-tree-tools` 只构建一个锁定源码的目录树 ELF；唯一公开入口为 `tdvp-tree`，不替换 firmware/BusyBox `tree` 路径，也不新增共享运行时 provider。 |
+| 20 | `less` | 661 | `terminal-pager-tools` 只构建一个锁定源码 pager ELF；唯一公开入口为 `tdvp-less`，精确复用 target catalogue 的 `libncursesw`，不替换 firmware/BusyBox `less` 路径。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -245,6 +246,13 @@ base-overlay gate，且只作为 unsigned candidate。
 artifact `9972102351`。随后 merge `33975265337` 对此前 15 个成功 source batch 加这一 batch
 逐 IPK 比较 SHA-256、重新索引并重新验证 runtime/target coverage，全程无编译，生成 unsigned
 merged artifact `9972160481`。这些均为候选证据，不是签名、发布、部署或实机执行授权。
+
+`terminal-pager-tools` 是紧随其后的单包候选。GNU Less 661 使用 Buildroot 2025.02.1
+审核、SHA-256 锁定的上游 archive；其唯一非平台依赖是 target catalogue 已拥有的
+`libncursesw (= 6.4-20230603-1)`。`/usr/bin/less` 仅是私有 extraction 中的验证路径，最终
+IPK 的唯一公开入口为 `/usr/bin/tdvp-less`，不会覆盖 firmware/BusyBox pager，也不携带
+`lesskey`、`lessecho` 或共享库。GitHub Actions 只构建、封装并审计；不得执行 interactive
+pager 或把终端会话作为 CI 验收。成功前它仍只是 source-lock candidate。
 
 `system-tools` 是一个单包、无新增共享运行时 provider 的增量 batch。它从 Buildroot
 2025.02.1 审核的 util-linux 2.40.2 archive 离线构建，仅启用 cal、fallocate、IPC、

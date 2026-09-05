@@ -482,14 +482,18 @@ This document fixes the governance rule first. Implement automation in order:
     admitted its verified artifact without recompiling. It remains private,
     introduces no shared provider, and CI did not invoke it, supply a PID or
     process name, start a process, or throttle a process; then
-15. In progress: GitHub Actions source batch
+15. Completed: GitHub Actions source batch
     [`33997001920`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997001920)
     built the locked private `bwm-ng` command and uploaded unsigned artifact
     [`9978397329`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997001920/artifacts/9978397329).
     It consumes only the immutable target `libncursesw` provider when the
     reviewed SDK enables its optional terminal view, introduces no provider,
     and CI did not invoke it, read procfs, observe an interface, or observe
-    disk I/O. It awaits the required no-recompile hash merge; then
+    disk I/O. No-recompile merge
+    [`33997364665`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997364665)
+    compared 34 input artifacts by hash, rebuilt the index, and passed runtime
+    closure plus 445-object target coverage without compiling. It admitted
+    merged artifact [`9978511004`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997364665/artifacts/9978511004); then
 16. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
 17. Introduce reviewed general libraries incrementally, retaining shared-runtime

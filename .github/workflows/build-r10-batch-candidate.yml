@@ -89,7 +89,6 @@ jobs:
           bash ./tests/less-package-policy.sh
           bash ./tests/curl-package-policy.sh
           bash ./tests/openssh-client-package-policy.sh
-          bash ./tests/libcap-package-policy.sh
           bash ./tests/ffprobe-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
@@ -386,7 +385,6 @@ jobs:
           bash ./tests/less-package-policy.sh
           bash ./tests/curl-package-policy.sh
           bash ./tests/openssh-client-package-policy.sh
-          bash ./tests/libcap-package-policy.sh
           bash ./tests/ffprobe-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
@@ -448,12 +446,11 @@ jobs:
               expected_packages=(openssh-client)
               ;;
             process-monitoring-tools)
-              # libcap-2 is the sole public libcap.so.2 provider in this
-              # source-built closure. htop then consumes that declared ABI
-              # rather than disabling its capability view or borrowing a
-              # library from the immutable firmware base.
+              # libcap-2 is a versioned immutable target-runtime provider.
+              # htop declares that exact ABI and builds only its own locked
+              # source; no libcap source payload is rebuilt or published.
               package_args=(--package htop)
-              expected_packages=(libcap-2 htop)
+              expected_packages=(htop)
               ;;
             desktop-tools)
               package_args=(--package vim --package vim-plugin-gitgutter --package tdvp-mpv --package tdvp-netsurf)

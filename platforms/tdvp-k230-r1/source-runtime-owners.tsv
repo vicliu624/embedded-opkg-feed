@@ -8,6 +8,3 @@
 libbz2.so.1.0|libbz2|1.0.8-1
 liblzma.so.5|liblzma|5.6.4-1
 libzstd.so.1|libzstd|1.5.7-1
-# htop capability display consumes this public POSIX capabilities ABI. The
-# provider owns only libcap.so.2 and never bundles the optional admin tools.
-libcap.so.2|libcap-2|2.73-1

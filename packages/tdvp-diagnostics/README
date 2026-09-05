@@ -5,8 +5,8 @@ executables, system libraries, SDK files, or firmware utilities. Instead it
 brings independently versioned packages through exact dependencies:
 
 * `strace` for focused system-call traces;
-* `htop` for interactive process inspection; its optional capability view is
-  available only when the exact `libcap-2` provider is admitted with it;
+* `htop` for interactive process inspection; its optional capability view uses
+  only the exact target-catalogue `libcap-2` provider declared by the package;
 * `lsof` for Linux `/proc` open-file and socket inspection without `libtirpc`.
   Its full implementation is invoked as `tdvp-lsof`, preserving K230's
   immutable BusyBox `/usr/bin/lsof` applet;

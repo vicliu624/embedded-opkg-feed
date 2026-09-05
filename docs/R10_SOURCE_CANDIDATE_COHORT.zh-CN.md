@@ -97,7 +97,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 4 | `libcurl-4`、`curl` | 8.12.1 | `libcurl-4` 是 target provider；直接占用 `/usr/bin/curl` 的锁定源码构建曾被 CI 拒绝。`http-transfer-tools` 只从同一 source transaction stage ELF，私有保存为 `/usr/libexec/tdvp-curl/curl`，公开入口为 `/usr/bin/tdvp-curl`，不替换 target 命令。 |
 | 5 | `wget`、`rsync` | 1.25.0、3.4.1 | Wget 只允许 CA/OpenSSL/zlib；`rsync` 在 `libpopt` 仍为 target provider 时暂停 |
 | 6 | `iperf3`、`netcat`、`lsof` | 3.18、0.7.1、4.99.4 | 受控 LAN、无公开 listener；lsof 还需记录权限可见性 |
-| 7 | `libcap-2`、`htop`（候选）、`nano`、`dialog`、`ncdu`、`pv` | 2.73、3.3.0、8.2、1.3-20220117、1.21、1.9.0 | `libcap-2` 必须先拥有 `libcap.so.2`；`htop` 再精确依赖它以启用 capability view。真实终端、locale/宽字符和小屏交互验收仍是独立门禁。 |
+| 7 | `libcap-2`（target provider）、`htop`（候选）、`nano`、`dialog`、`ncdu`、`pv` | 2025.02.1、3.3.0、8.2、1.3-20220117、1.21、1.9.0 | immutable catalogue 已拥有 `libcap.so.2`；`htop` 只能精确依赖 `libcap-2 (= 2025.02.1-1)` 以启用 capability view，绝不重建或覆盖该 ABI。真实终端、locale/宽字符和小屏交互验收仍是独立门禁。 |
 | 8 | `tmux`（暂缓） | 3.3a | 需先准入 OpenSSL-capable libevent runtime；再验证 detached session、capture、kill-session |
 | 9 | `tdvp-source-tools`、`tdvp-diagnostics` | 1.6、1.1 | 仅元数据 profile；安装/卸载不得复制或误删工具/共享库 |
 | 10 | `sdl2`、`sdl2-ttf`、`libmgba`、`tdvp-gba` | 2.30.11、2.22.0、0.10.5、0.2.3 | `retro-gba` 独立增量批次；四个 IPK 必须全部由来源锁重建，不能复用历史 r2/r3 payload；验证 Wayland/ALSA runtime closure、`tdvp-gba` 动态依赖及 `/opt/tdvp-gba` 的非覆盖安装。 |
@@ -536,14 +536,18 @@ run `33904931122` 验证了 Dialog 的新锁定来源，随后在 `htop` 上被
 `Depends` 中声明的独立 `libcap` owner；因此旧的 `network-tools` 批次正确排除 `htop`，
 不得把目标镜像中碰巧存在的 `libcap` 当作隐式依赖，也不得伪造 seed owner。
 
-新的 `process-monitoring-tools` 候选将此缺口显式化：Buildroot 2025.02.1 审核的
-`libcap` 2.73 archive（SHA-256 `6405f6089cf4cdd8c271540cd990654d78dd0b1989b2d9bda20f933a75a795a5`）
-必须先封装为唯一的 `libcap-2 (= 2.73-1)`、`libcap.so.2` runtime owner；可选的
-`capsh`/`setcap`/`getcap` 工具不进入 payload。`htop (= 3.3.0-1)` 随后只通过精确
-`Depends` 使用此 provider，开启 capability view 而不借用 firmware ABI。该 batch 必须由 GitHub
-Actions 实际证明 source lock、RISC-V ELF、无 RPATH/RUNPATH、source-owner map、runtime closure
-和 `deny` base-overlay；任何 target 既有库/路径或 ABI 冲突都必须 fail-closed。当前尚无该 batch
-artifact、签名、发布、安装或设备验证记录。
+`process-monitoring-tools` 的首次 ownership audit 已由 GitHub Actions run
+[`33982220719`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33982220719) 给出权威结论。
+它恢复固定 SDK、source cache 与 private target-runtime catalogue 后，在 source-owner refresh 以 exit 69
+停止：`libcap.so.2` 已属于 `libcap-2 2025.02.1-1`，与试验性的 source provider
+`libcap-2 2.73-1` 冲突；尚未编译、封装或上传 artifact。这是正确的 fail-closed 结果，不能通过改写
+target 版本、使用 `identical` overlay 或发布同路径 source library 绕过。
+
+因此新的 `process-monitoring-tools` 只 source-build `htop (= 3.3.0-1)`；它以精确
+`Depends: libcap-2 (= 2025.02.1-1)` 使用 immutable target catalogue 的 owner，同时保留 capability
+view。它不重建、复制、覆盖或隐式借用 `libcap.so.2`，也不打包 `capsh`/`setcap`/`getcap`。修正后的
+batch 仍须由 GitHub Actions 实际证明 htop source lock、RISC-V ELF、无 RPATH/RUNPATH、runtime closure
+和 `deny` base-overlay；当前尚无成功 batch artifact、签名、发布、安装或设备验证记录。
 
 同一 run 在 `tmux` 的 `BR2_PACKAGE_OPENSSL` 禁用断言处停止。`tmux` 的 Buildroot
 路径通过 libevent 的可选 TLS 分支间接继承 OpenSSL；当前 SDK 把该符号恢复为启用状态，

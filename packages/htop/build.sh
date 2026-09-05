@@ -8,8 +8,8 @@ IFS=$'\n\t'
 package_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 # shellcheck source=../../support/buildroot-command-package.sh
 source "$package_dir/../../support/buildroot-command-package.sh"
-# The same selected partial closure first builds libcap-2 as an explicit
-# libcap.so.2 owner. The matching SDK's htop package may then retain its
-# capability view without borrowing a firmware library or hiding an ABI copy.
+# The immutable target-runtime catalogue explicitly owns libcap.so.2 as
+# libcap-2 (= 2025.02.1-1). htop may retain capability view only through that
+# exact dependency; it neither rebuilds nor embeds a separate libcap ABI.
 tdvp_buildroot_command_package "$package_dir" "$4" "${TDVP_SYSTEM_BUILDROOT_OUTPUT:-}" \
   BR2_PACKAGE_HTOP htop 'HTOP_VERSION = 3.3.0' 'htop'

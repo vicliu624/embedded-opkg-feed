@@ -42,6 +42,7 @@ fi
 # A nested assignment stays a single make argument and is never evaluated by
 # a shell. This is required to force i2c-tools' BUILD_DYNAMIC_LIB branch.
 grep -Fq '^[A-Z][A-Z0-9_]*=[A-Za-z0-9_./:+=\ -]*$' "$repo_root/support/buildroot-command-package.sh"
+grep -Fq '^[A-Z][A-Z0-9_]*=[A-Za-z0-9_./:+=\ -]*$' "$repo_root/support/buildroot-feed-session.sh"
 grep -Fq 'i2c-inspection-tools)' "$workflow"
 grep -Fq 'package_args=(--package i2c-tools)' "$workflow"
 grep -Fq 'expected_packages=(i2c-tools)' "$workflow"

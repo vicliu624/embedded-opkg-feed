@@ -83,7 +83,7 @@ tdvp_buildroot_install() (
         # Values are passed as one make argv element, never evaluated by a
         # shell. Literal spaces are allowed for ordinary configure options;
         # quotes, dollars, and make-function syntax remain forbidden.
-        [[ "$2" =~ ^[A-Z][A-Z0-9_]*=[A-Za-z0-9_./:+\ -]*$ ]] || {
+        [[ "$2" =~ ^[A-Z][A-Z0-9_]*=[A-Za-z0-9_./:+=\ -]*$ ]] || {
           echo "invalid Buildroot make variable: $2" >&2
           exit 68
         }

@@ -1,0 +1,18 @@
+# Buildroot owns the FFmpeg cross-compile configuration; this locks the exact
+# reviewed FFmpeg source archive that the existing ffprobe leaf stages.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='FFmpeg'
+UPSTREAM_LICENSE='LGPL-2.1-or-later'
+UPSTREAM_VERSION='4.4.4'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/ffmpeg/ffmpeg.mk'
+SOURCE_SELECTION_REASON='The r10 leaf stages only ffprobe from Buildroot-reviewed FFmpeg source so media metadata inspection does not borrow a host binary or replace the base ffmpeg command.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 ffmpeg.mk and ffmpeg.hash; the matching K230 SDK/sysroot; no TDVP-specific patches.'
+SECURITY_STATUS='FFmpeg source hash and the staged frontend require release-candidate review; the candidate is rejected if it conflicts with a target-owned path or has an unowned runtime closure.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 FFmpeg package hash'
+VERIFIED_AT='2026-09-06'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/ffmpeg/ffmpeg.hash'
+SOURCE_ARTIFACT_1_URL='https://ffmpeg.org/releases/ffmpeg-4.4.4.tar.xz'
+SOURCE_ARTIFACT_1_FILE='ffmpeg-4.4.4.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='e80b380d595c809060f66f96a5d849511ef4a76a26b76eacf5778b94c3570309'

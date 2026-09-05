@@ -111,6 +111,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 18 | `memtester` | 4.5.1 | `memory-diagnostic-tools` 只构建一个锁定源码的内存诊断 ELF；私有 payload 位于 `/usr/libexec/tdvp-memtester/`，公开入口仅为 `tdvp-memtester`，不占用 firmware/BusyBox 路径，也不新增共享运行时 provider。 |
 | 19 | `tree` | 2.1.1 | `directory-tree-tools` 只构建一个锁定源码的目录树 ELF；唯一公开入口为 `tdvp-tree`，不替换 firmware/BusyBox `tree` 路径，也不新增共享运行时 provider。 |
 | 20 | `less` | 661 | `terminal-pager-tools` 只构建一个锁定源码 pager ELF；唯一公开入口为 `tdvp-less`，精确复用 target catalogue 的 `libncursesw`，不替换 firmware/BusyBox `less` 路径。 |
+| 21 | `ffprobe` | 4.4.4 | `media-inspection-tools` 只从锁定的 Buildroot FFmpeg 4.4.4 source build stage `ffprobe` frontend。它不导入 host binary、不接管 base 的 `ffmpeg`，且 `deny` overlay 会拒绝 target 已有的 `/usr/bin/ffprobe` 路径或任何未拥有的动态依赖。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -138,6 +139,13 @@ OpenSSH 9.9p2 的 RISC-V client 编译；不含 server、`/etc/ssh`、setuid hel
 workflow dispatch matrix 移除；其 `source.lock` 与 client-only recipe 仅保留作可复核的上游输入记录，
 不能作为 feed IPK 发布、覆盖 target 命令或被 `rsync` 等后续候选当作已拥有的 provider。任何重新评审
 都必须先提出不替换该 target 路径的独立设计，并经过新的 GitHub Actions 准入和设备生命周期验证。
+
+`media-inspection-tools` 是从 r7 历史配方迁移的单叶 r10 候选。`ffprobe` 的 `source.lock` 固定
+Buildroot 2025.02.1 审查的 FFmpeg 4.4.4 archive 与 SHA-256；GitHub Actions 只允许匹配 K230 SDK 的
+私有 Buildroot transaction stage `/usr/bin/ffprobe`。它不在本机编译，也不复制 base image 的
+`/usr/bin/ffmpeg`。封装时仍须通过 RISC-V ELF、RPATH/RUNPATH、精确 runtime closure 和 `deny`
+base-overlay gate；只有 batch 与后续无重编 merge 都成功、上传 unsigned artifact 后，才可记为
+feed candidate，实机媒体、安装、卸载和回滚仍是独立门禁。
 
 `database-tools` 是与已合并的开发工具 batch 分离的 SQLite CLI 增量批次。它选择
 `sqlite3` leaf，使闭包同时重建唯一的 `libsqlite3-0` provider；library IPK 仍只拥有

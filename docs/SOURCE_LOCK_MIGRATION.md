@@ -42,6 +42,11 @@ below; it is not an upstream-source exception for ordinary packages.
   rejected the non-identical `/usr/bin/ssh-agent` payload against the fixed
   target at the identical-overlay gate (exit 79). It is not a feed provider
   and cannot satisfy a later recipe dependency;
+- media-inspection leaf (candidate): `ffprobe` is migrated from its r7 recipe
+  to r10 with the Buildroot 2025.02.1 FFmpeg 4.4.4 archive/hash locked. It
+  stages only the `ffprobe` frontend and has no r10 artifact yet; GitHub
+  Actions must prove no target-path conflict and a complete runtime closure
+  before it can become an unsigned candidate;
 - r10 text/search/terminal-diagnostic commands: `tree`, `less`, `file`,
   `which`, `curl`, `wget`, `iperf3`, `lsof`, `netcat`, `rsync`, `dos2unix`, `jq`, `grep`, `sed`, `findutils`, `gawk`, `htop`, `nano`, and `tmux`;
   `nano`; `htop` explicitly disables the unadmitted optional `libcap` feature,

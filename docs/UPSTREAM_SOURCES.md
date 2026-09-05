@@ -494,9 +494,17 @@ This document fixes the governance rule first. Implement automation in order:
     compared 34 input artifacts by hash, rebuilt the index, and passed runtime
     closure plus 445-object target coverage without compiling. It admitted
     merged artifact [`9978511004`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997364665/artifacts/9978511004); then
-16. Emit source provenance/SBOM material for each release and bind source, SDK,
+16. In progress: GitHub Actions source batch
+    [`33998249379`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33998249379)
+    built the locked private `rhash` command and uploaded unsigned artifact
+    [`9978739567`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33998249379/artifacts/9978739567).
+    It disables gettext/OpenSSL, statically links its private librhash
+    implementation, and disables the shared library build. It introduces no
+    provider, and CI did not invoke it or supply a file path/payload. It awaits
+    the required no-recompile hash merge; then
+17. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
-17. Introduce reviewed general libraries incrementally, retaining shared-runtime
+18. Introduce reviewed general libraries incrementally, retaining shared-runtime
    and on-device test gates each time.
 
 Until all automation is complete, this contract remains the admission standard

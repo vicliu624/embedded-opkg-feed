@@ -201,6 +201,13 @@ ELF、无 RPATH/RUNPATH、runtime closure 和 base-overlay gate，且不运行�
 并写入用户指定内存，物理地址模式有更高风险；实机只能由设备使用者在非生产设备上明确
 限制内存预算、记录安装、卸载和回滚后执行。
 
+Actions run `33972132034` 已完成锁定 memtester archive 的 K230 RISC-V 构建、私有 ELF
+提取、无 RPATH/RUNPATH、runtime closure 与 base-overlay gate，并上传未签名
+memory-diagnostic-tools artifact `9971278184`。随后它和此前 14 个成功 source batch 在
+run `33972330479` 中逐 IPK 比较 hash、重新索引并在无编译模式下再次验证合并候选，生成
+未签名 merged artifact `9971324996`。这些 run 是候选构建/合并证据，不是签名、公开
+发布、部署或实机运行内存诊断的授权。
+
 `system-tools` 是一个单包、无新增共享运行时 provider 的增量 batch。它从 Buildroot
 2025.02.1 审核的 util-linux 2.40.2 archive 离线构建，仅启用 cal、fallocate、IPC、
 last/utmp、调度与 namespace 等明确命名的前端。所有 RISC-V ELF

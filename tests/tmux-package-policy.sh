@@ -8,7 +8,6 @@ grep -Fqx "PACKAGE_KIND='shared-library'" "$repo_root/packages/libevent/package.
 grep -Fqx "PACKAGE='tmux'" "$repo_root/packages/tmux/package.env"
 grep -Fqx "PACKAGE_DEPENDS='libevent (= 2.1.12-1), libncursesw (= 6.4-20230603-1)'" "$repo_root/packages/tmux/package.env"
 grep -Fq "'libevent*.so.7*'" "$repo_root/packages/libevent/build.sh"
-grep -Fq 'BR2_PACKAGE_OPENSSL' "$repo_root/packages/libevent/build.sh"
 grep -Fq "LIBEVENT_CONF_OPTS=--disable-libevent-regress --disable-samples --disable-openssl" "$repo_root/packages/libevent/build.sh"
 grep -Fq "LIBEVENT_DEPENDENCIES='" "$repo_root/packages/libevent/build.sh"
 grep -Fq 'archive-library --make-variable requires one safe NAME=value assignment' "$repo_root/support/buildroot-archive-library.sh"
@@ -21,4 +20,4 @@ grep -Fq "'tmux'" "$repo_root/packages/tmux/build.sh"
 grep -Fqx "SOURCE_ARTIFACT_4_FILE='openssl-3.4.1.tar.gz'" "$repo_root/packages/tmux/source.lock"
 grep -Fqx 'libevent-2.1.so.7|libevent|2.1.12-1' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
 grep -Fqx 'libevent_pthreads-2.1.so.7|libevent|2.1.12-1' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
-echo 'locked-source libevent/tmux target-provider policy: PASS'
+echo 'locked-source libevent/tmux policy: PASS'

@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools, json-construction-tools, line-editor-tools, cpio-archive-tools]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools, json-construction-tools, line-editor-tools, cpio-archive-tools, process-timing-tools]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -97,6 +97,7 @@ jobs:
           bash ./tests/jo-package-policy.sh
           bash ./tests/ed-package-policy.sh
           bash ./tests/cpio-package-policy.sh
+          bash ./tests/time-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/tmux-package-policy.sh
@@ -466,6 +467,7 @@ jobs:
           bash ./tests/jo-package-policy.sh
           bash ./tests/ed-package-policy.sh
           bash ./tests/cpio-package-policy.sh
+          bash ./tests/time-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/diagnostics-package-policy.sh
@@ -707,6 +709,13 @@ jobs:
               # never invokes extraction, creation, or any filesystem I/O.
               package_args=(--package cpio)
               expected_packages=(cpio)
+              ;;
+            process-timing-tools)
+              # GNU time is a private resource-accounting command. CI only
+              # builds/audits the ELF; it never invokes time or starts a child
+              # command for time to execute and measure.
+              package_args=(--package time)
+              expected_packages=(time)
               ;;
             *) echo 'unreviewed batch input' >&2; exit 64 ;;
           esac

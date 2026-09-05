@@ -16,4 +16,5 @@ TDVP_R10_CANDIDATE_COHORT=(
   jo
   ed
   cpio
+  time
 )

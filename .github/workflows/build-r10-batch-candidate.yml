@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, process-monitoring-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -89,6 +89,7 @@ jobs:
           bash ./tests/less-package-policy.sh
           bash ./tests/curl-package-policy.sh
           bash ./tests/openssh-client-package-policy.sh
+          bash ./tests/libcap-package-policy.sh
           bash ./tests/ffprobe-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
@@ -385,6 +386,7 @@ jobs:
           bash ./tests/less-package-policy.sh
           bash ./tests/curl-package-policy.sh
           bash ./tests/openssh-client-package-policy.sh
+          bash ./tests/libcap-package-policy.sh
           bash ./tests/ffprobe-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
@@ -444,6 +446,14 @@ jobs:
               # never replace target-owned /usr/bin SSH client commands.
               package_args=(--package openssh-client)
               expected_packages=(openssh-client)
+              ;;
+            process-monitoring-tools)
+              # libcap-2 is the sole public libcap.so.2 provider in this
+              # source-built closure. htop then consumes that declared ABI
+              # rather than disabling its capability view or borrowing a
+              # library from the immutable firmware base.
+              package_args=(--package htop)
+              expected_packages=(libcap-2 htop)
               ;;
             desktop-tools)
               package_args=(--package vim --package vim-plugin-gitgutter --package tdvp-mpv --package tdvp-netsurf)

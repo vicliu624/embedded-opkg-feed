@@ -8,9 +8,8 @@ IFS=$'\n\t'
 package_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 # shellcheck source=../../support/buildroot-command-package.sh
 source "$package_dir/../../support/buildroot-command-package.sh"
-# The matching SDK enables libcap globally, but importing its runtime merely
-# for htop's optional capability view would violate the feed's explicit-owner
-# rule. Core process viewing remains available without this optional feature.
-TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS='BR2_PACKAGE_LIBCAP' \
+# The same selected partial closure first builds libcap-2 as an explicit
+# libcap.so.2 owner. The matching SDK's htop package may then retain its
+# capability view without borrowing a firmware library or hiding an ABI copy.
 tdvp_buildroot_command_package "$package_dir" "$4" "${TDVP_SYSTEM_BUILDROOT_OUTPUT:-}" \
   BR2_PACKAGE_HTOP htop 'HTOP_VERSION = 3.3.0' 'htop'

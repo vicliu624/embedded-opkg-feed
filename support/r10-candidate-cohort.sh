@@ -6,7 +6,7 @@ set -Eeuo pipefail
 IFS=$'\n\t'
 
 TDVP_R10_CANDIDATE_COHORT=(
-  libpopt libevent libcurl-4 curl openssh-client wget rsync iperf3 lsof netcat
+  libpopt libevent libcurl-4 curl openssh-client libcap-2 wget rsync iperf3 lsof netcat
   htop nano dialog ncdu pv tmux
   sqlite3 bc coreutils mtools dosfstools util-linux exfatprogs memtester tree less ffprobe
 )

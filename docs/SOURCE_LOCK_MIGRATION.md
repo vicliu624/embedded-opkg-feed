@@ -72,9 +72,12 @@ below; it is not an upstream-source exception for ordinary packages.
   lifecycle evidence;
 - r10 text/search/terminal-diagnostic commands: `tree`, `less`, `file`,
   `which`, `curl`, `wget`, `iperf3`, `lsof`, `netcat`, `rsync`, `dos2unix`, `jq`, `grep`, `sed`, `findutils`, `gawk`, `htop`, `nano`, and `tmux`;
-  `nano`; `htop` explicitly disables the unadmitted optional `libcap` feature,
-  while `nano` preserves the current SDK's disabled file/libmagic integration;
-  both reuse only the owned `libncursesw` runtime;
+  htop's capability view may use only the same-batch independent
+  `libcap-2 (= 2.73-1)` / `libcap.so.2` source provider, never a borrowed
+  firmware library. It remains a candidate until the
+  `process-monitoring-tools` GitHub Actions source/closure/deny-overlay gate
+  and no-recompile merge pass. `nano` preserves the current SDK's disabled
+  file/libmagic integration; both reuse only the owned `libncursesw` runtime;
 - terminal Vim: `vim-runtime` and `vim`; both lock the same reviewed
   Buildroot 2025.02.1 Vim 9.1.0145 source archive and cross-build it through
   a private offline `BR2_DL_DIR`. `vim-runtime` owns only runtime data and the

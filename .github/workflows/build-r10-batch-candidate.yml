@@ -86,6 +86,7 @@ jobs:
           bash ./tests/exfatprogs-package-policy.sh
           bash ./tests/memtester-package-policy.sh
           bash ./tests/libyaml-package-policy.sh
+          bash ./tests/refresh-extra-runtime-owners-policy.sh
           bash ./tests/util-linux-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
@@ -219,7 +220,10 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/tdvp-r10-runtime-base
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+          # Source-built provider registrations are refreshed after copying
+          # this private base into a candidate.  They must not make a newly
+          # admitted library regenerate the completed target-runtime catalogue.
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/runtime-data-packages.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'scripts/refresh-extra-runtime-owners.sh', 'support/elf-runtime-policy.sh') }}
 
       - name: Package the target-runtime IPK base once
         if: steps.restore-runtime-base.outputs.cache-hit != 'true'
@@ -238,7 +242,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ runner.temp }}/tdvp-r10-runtime-base
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/runtime-data-packages.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'scripts/refresh-extra-runtime-owners.sh', 'support/elf-runtime-policy.sh') }}
 
       - name: Upload target-runtime base evidence
         uses: actions/upload-artifact@v4
@@ -336,7 +340,10 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/tdvp-r10-runtime-base
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+          # The cached target catalogue is independent of source-built
+          # providers.  See the refresh step below for the candidate-local
+          # merge of current extra-runtime-owners.tsv entries.
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/runtime-data-packages.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'scripts/refresh-extra-runtime-owners.sh', 'support/elf-runtime-policy.sh') }}
           fail-on-cache-miss: true
 
       - name: Materialize the immutable target-runtime base for this batch
@@ -345,6 +352,15 @@ jobs:
           test -d "${RUNNER_TEMP}/tdvp-r10-runtime-base"
           mkdir -p candidate-dist
           cp -a "${RUNNER_TEMP}/tdvp-r10-runtime-base/." candidate-dist/
+
+      - name: Refresh source-built runtime owners in this private candidate
+        run: |
+          set -Eeuo pipefail
+          feed_dir='candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          # This only updates the copied private TSV ownership map.  It does
+          # not alter the cache, build a K230 source package, or publish data.
+          bash ./scripts/refresh-extra-runtime-owners.sh \
+            --platform tdvp-k230-r1 --release r10 --feed-dir "$feed_dir"
 
       - name: Check the selected batch policy
         run: |
@@ -362,6 +378,7 @@ jobs:
           bash ./tests/exfatprogs-package-policy.sh
           bash ./tests/memtester-package-policy.sh
           bash ./tests/libyaml-package-policy.sh
+          bash ./tests/refresh-extra-runtime-owners-policy.sh
           bash ./tests/util-linux-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
@@ -612,7 +629,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/tdvp-r10-runtime-base
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/runtime-data-packages.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'scripts/refresh-extra-runtime-owners.sh', 'support/elf-runtime-policy.sh') }}
           fail-on-cache-miss: true
 
       - name: Download compatible unsigned batches and compare every IPK hash

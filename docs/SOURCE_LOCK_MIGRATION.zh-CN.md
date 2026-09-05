@@ -18,6 +18,16 @@ find packages -mindepth 2 -maxdepth 2 -name package.env -type f | LC_ALL=C sort
 第三方 recipe 由 CI 的 changed-recipe gate 强制要求锁文件，不能借由“历史迁移尚未完成”
 绕过准入。
 
+对于 r10 的共享库 provider，`extra-runtime-owners.tsv` 是随准入递增的**源码所有权注册表**，
+不是 K230 target-derived runtime catalogue 的输入。GitHub Actions 的 runtime-base cache 只由
+固定平台身份、`runtime-data-packages.tsv` 与 catalogue/IPK 实现失效；每一个 source batch
+在 runner 中复制该 private base 后，才用 `refresh-extra-runtime-owners.sh` 对私有 owner map
+追加当前 release 的已审核 provider。helper 会核对 `package.env` 的 `PACKAGE`、`VERSION` 和
+`PACKAGE_RELEASES`，同一 SONAME 的任何不一致均失败；它不生成 IPK、更不修改共享 cache。
+因此新增 library recipe 只触发自身 source closure，而不是历史库的全量重编。若 runtime-base
+实现或 target runtime 数据确实变化，才允许以 GitHub Actions 的 `build-sdk-base` 迁移这份
+target-derived cache；这一步不构建 feed source package，也不签名、发布或部署。
+
 ## 已迁移并可离线审计的基础工具链
 
 下列 r9/r10 package 已有 `source.lock`，由 HTTPS 内容寻址 source cache 校验后可进入

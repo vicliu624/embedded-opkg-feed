@@ -37,5 +37,11 @@ grep -Fq 'yaml-runtime)' "$workflow"
 grep -Fq 'package_args=(--package libyaml-0)' "$workflow"
 grep -Fq 'expected_packages=(libyaml-0)' "$workflow"
 grep -Fq 'bash ./tests/libyaml-package-policy.sh' "$workflow"
+grep -Fq 'Refresh source-built runtime owners in this private candidate' "$workflow"
+grep -Fq 'scripts/refresh-extra-runtime-owners.sh' "$workflow"
+if grep -Fq "platforms/tdvp-k230-r1/*.tsv" "$workflow"; then
+  echo 'target-runtime cache must not hash the mutable source-owner manifest' >&2
+  exit 1
+fi
 
 echo 'source-built LibYAML shared-runtime provider policy: PASS'

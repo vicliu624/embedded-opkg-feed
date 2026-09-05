@@ -219,6 +219,19 @@ source-build closure，再精确依赖 `libyaml-0`，不得携带私有 parser�
 RISC-V ELF、无 RPATH/RUNPATH、runtime closure 和 base-overlay，成功后也仍只是 unsigned
 candidate，而非签名/发布授权。
 
+run `33972857828` 在任何 source-cache 下载、Buildroot 调用、K230 编译或 artifact 上传之前，
+于 Actions 的 target-runtime cache restore 以 `fail-on-cache-miss` 停止。原因是旧 cache key
+错误地把 `extra-runtime-owners.tsv`（它是随每一个新 source provider 增长的注册表）和
+target-derived runtime catalogue 放在同一失效域。这个失败 run 不是 merge source，也不表示
+`libyaml-0` 构建或 ABI gate 失败。修复后，runtime-base key 只覆盖平台身份、
+`runtime-data-packages.tsv` 与产生 target IPK 的实现；每次 source batch 先复制该私有 base，
+再由 `refresh-extra-runtime-owners.sh` 根据当前、已审核 recipe 的 `PACKAGE`、`VERSION` 与
+`PACKAGE_RELEASES` 把适用于 r10 的额外 SONAME owner 合并进**候选副本**。已有记录必须完全
+一致，冲突会 fail-closed；缓存本身不会被改写。因新 key 需要一次 GitHub-only runtime-base
+迁移，`build-sdk-base` 只从已有 SDK cache 制作 target-derived IPK catalogue 并保存它，绝不
+重新编译任意 source package。之后只重试同一 `yaml-runtime` source closure；旧成功 batch
+不会被重新构建。
+
 `system-tools` 是一个单包、无新增共享运行时 provider 的增量 batch。它从 Buildroot
 2025.02.1 审核的 util-linux 2.40.2 archive 离线构建，仅启用 cal、fallocate、IPC、
 last/utmp、调度与 namespace 等明确命名的前端。所有 RISC-V ELF

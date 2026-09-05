@@ -38,7 +38,7 @@ expect_line "sqlite3 requires libsqlite3-0 to stage its locked source-built /usr
 expect_line "source-package=libsqlite3-0" "$package_dir/build.sh"
 expect_line "buildroot-package=sqlite" "$package_dir/build.sh"
 expect_line "Shared library: \\[libsqlite3[.]so[.]0\\]" "$package_dir/build.sh"
-grep -Fq 'options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, nodejs]' "$workflow"
+grep -Fq 'options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, nodejs]' "$workflow"
 grep -Fq 'database-tools)' "$workflow"
 grep -Fq 'package_args=(--package sqlite3)' "$workflow"
 grep -Fq 'expected_packages=(libsqlite3-0 sqlite3)' "$workflow"

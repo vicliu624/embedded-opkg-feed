@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, nodejs]
+        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -79,6 +79,7 @@ jobs:
           bash ./tests/merge-batches-policy.sh
           bash ./tests/retro-gba-package-policy.sh
           bash ./tests/sqlite3-package-policy.sh
+          bash ./tests/bc-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -347,6 +348,7 @@ jobs:
           bash ./tests/archive-package-policy.sh
           bash ./tests/retro-gba-package-policy.sh
           bash ./tests/sqlite3-package-policy.sh
+          bash ./tests/bc-package-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -412,6 +414,12 @@ jobs:
               # source payload by itself.
               package_args=(--package sqlite3)
               expected_packages=(libsqlite3-0 sqlite3)
+              ;;
+            calculator-tools)
+              # GNU bc is source-built from its locked Buildroot archive and
+              # exposed as tdvp-bc, so it never replaces a BusyBox bc applet.
+              package_args=(--package bc)
+              expected_packages=(bc)
               ;;
             nodejs)
               package_args=(--package tdvp-nodejs-tools)

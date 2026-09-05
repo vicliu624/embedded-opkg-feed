@@ -25,7 +25,7 @@ find packages -mindepth 2 -maxdepth 2 -name package.env -type f | LC_ALL=C sort
 所有权转移”，其证据要求更窄；它不构成普通上游源码包的例外：
 
 - Buildroot-derived 维护命令：`make`、`pkgconf`、`patch`、`diffutils`、`strace`；
-- r10 文本/搜索/终端诊断工具：`tree`、`less`、`file`、`which`、`curl`、`wget`、`iperf3`、`lsof`、`netcat`、`rsync`、`dos2unix`、`jq`、
+- r10 文本/搜索/终端诊断工具：`tree`、`less`、`file`、`which`、`curl`、`wget`、`iperf3`、`lsof`、`netcat`、`rsync`、`dos2unix`、`jq`、`bc`、
   `grep`、`sed`、`findutils`、`gawk`、`htop`、`nano`、`tmux`；`htop` 明确关闭未准入的可选
   `libcap` feature，`nano` 保持当前 SDK 未选中 `file/libmagic` 的终端编辑配置；二者
   都只复用已拥有的 `libncursesw`；
@@ -109,8 +109,14 @@ find packages -mindepth 2 -maxdepth 2 -name package.env -type f | LC_ALL=C sort
 - SQL 数据库运行时：`libsqlite3-0` 锁定 Buildroot 2025.02.1 审查的 SQLite 3.48.0
   归档，只将 `libsqlite3.so.0 -> libsqlite3.so.0.8.6` 制作成独立 IPK。已完成校验过的
   离线源码构建和候选审计，因此它是 CPython `_sqlite3` 及后续数据库 client 的唯一可复用
-  provider。该 RISC-V ELF 无 RPATH/RUNPATH，并精确声明 `libz` provider；`sqlite3` CLI、
-  开发头文件、静态库和 staging metadata 被刻意排除；
+  provider。该 RISC-V ELF 无 RPATH/RUNPATH，并精确声明 `libz` provider；library IPK
+  刻意排除 `sqlite3` CLI、开发头文件、静态库和 staging metadata。独立 `sqlite3` leaf
+  只接受同一私有 Buildroot transaction stage 的 RISC-V CLI，并精确依赖
+  `libsqlite3-0`、`libreadline` 与 `libncursesw`；它不从 firmware、Debian 或 target root
+  复制命令；
+- 任意精度计算命令：`bc` 锁定 GNU bc 1.07.1 与构建它所需的 host-flex 2.6.4/host-m4
+  1.4.19 archive。二者只是私有 Buildroot host 输入，不进入 target IPK；GNU bc 的 RISC-V
+  ELF 仅可通过 `/usr/bin/tdvp-bc` 访问，因而绝不替换 firmware `/usr/bin/bc`；
 - 十进制运算运行时：`libmpdec-4` 锁定 Buildroot 2025.02.1 审查的 mpdecimal 4.0.0
   归档，只将 `libmpdec.so.4 -> libmpdec.so.4.0.0` 制作成独立 IPK。候选为 RISC-V ELF64
   共享对象、无 RPATH/RUNPATH，且仅依赖平台 ABI，因此它是 CPython `_decimal` 的唯一可复用

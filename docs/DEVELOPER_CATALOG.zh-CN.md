@@ -29,6 +29,7 @@ Buildroot 交叉构建、IPK 运行时闭包审计和实机启动测试均通过
 | GitHub CLI | `gh` | `gh --version`、`gh auth status`；认证只由设备所有者显式发起 |
 | Python 3.13 | `libpython3.13`、`python3-runtime`、`python3` | `python3 --version`、`python3 -c 'import ssl, sqlite3, bz2, lzma, curses, readline, xml.parsers.expat'` |
 | SQLite 数据库 CLI | `libsqlite3-0`、`sqlite3` | `sqlite3 --version`；创建、查询、关闭一个临时数据库 |
+| 任意精度计算器 | `bc` | `tdvp-bc --version`；`printf 'scale=30; 4*a(1)\n' | tdvp-bc -l` |
 | 编辑 | `vim-runtime`、`vim`、四个纯 Vimscript 插件 | `vim --version`；触控不抢占 Foot 的文本选择 |
 | 最小构建/维护/诊断 | `make`、`pkgconf`、`patch`、`diffutils`、`strace` | `make --version`、`pkg-config --version`、`patch --version`、`diff --version`、`strace true` |
 

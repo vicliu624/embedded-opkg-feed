@@ -199,10 +199,14 @@ development replacement `33946874048` 还证明 source lock 对上游分发漂�
 `oldmanprogrammer.net/tar/tree/tree-2.1.1.tgz` 返回了 11,949-byte、SHA-256 为
 `a04acb9b6bcfdfe27acd1df517edca380ab43abda14e51984b3c08aa34204300` 的不同内容，不能满足
 Buildroot 2025.02.1 审查的 `d3c3d55f403af7c76556546325aa1eca90b918cbaaf6d3ab60a49d8367ab90d5`。
-因此该 run 在 source cache gate 停止，没有编译或上传 artifact。`tree` source lock 只将下载位置
-改为 BLFS 记录的 archive mirror `mama.indstate.edu`；文件名、版本、Buildroot source snapshot 与
-预期 SHA-256 均不变。下一个 GitHub batch 必须用原有 SHA-256 验证 mirror 内容，绝不接受新 hash、
-HTML 错页、Debian repack 或未经审查的新版源码。
+因此该 run 在 source cache gate 停止，没有编译或上传 artifact。首次换用的 BLFS mirror
+`mama.indstate.edu` 又在 GitHub runner DNS 中不可解析（curl exit 6），同样没有放宽 hash 或产生
+artifact。`tree` source lock 现只将下载位置改为 Ubuntu archive 的
+`tree_2.1.1.orig.tar.gz`：Ubuntu source manifest 为该 *orig* tarball 记录同一 60,515-byte 的
+`d3c3…7ab90d5` SHA-256，故它是原 upstream archive 的按内容验证镜像，而非 Debian/Ubuntu patch
+或 repack。逻辑文件名、版本、Buildroot source snapshot 与预期 SHA-256 均不变。下一个 GitHub
+batch 必须用原有 SHA-256 验证该 mirror 内容，绝不接受新 hash、HTML 错页、Debian delta 或未经
+审查的新版源码。
 
 下一次 partial merge 还必须区分“SDK ABI”与“GitHub Actions cache 布局”。已成功的 archive batch
 `33878735088` 记录的是同一固件/profile 的 cache `v2`，后续成功 batch 记录 `v3`；`v3` 只增加了

@@ -257,7 +257,14 @@ below; it is not an upstream-source exception for ordinary packages.
   authoritative target base rather than importing or comparing that
   target-derived container duplicate; it hydrates only absent source-built
   IPKs before building the profile. This makes the profile dependency closure
-  verifiable without recompiling historical source packages;
+  verifiable without recompiling historical source packages. GitHub Actions
+  [run `33987100478`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33987100478)
+  applied this rule to successful merged run `33985545990`: it hydrated 276
+  verified IPKs, retained the newly restored target-runtime duplicates, and
+  built only `tdvp-diagnostics_1.1-1_riscv64.ipk`. It uploaded unsigned
+  batch artifact
+  [`9975532821`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33987100478/artifacts/9975532821)
+  (196,004,873 bytes); no historical source package was rebuilt;
 - metadata-only diagnostic profile: `tdvp-diagnostics` has a narrow source-lock
   exemption because it contains only repository-owned instructions and exact
   `strace`/`htop`/`lsof`/`iperf3`/`netcat` dependency metadata. It owns no executable,

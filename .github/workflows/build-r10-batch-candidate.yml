@@ -247,7 +247,11 @@ jobs:
     name: Build r10 ${{ inputs.batch }} without rebuilding the SDK
     if: inputs.mode == 'build-package-batch'
     runs-on: ubuntu-24.04
-    timeout-minutes: 180
+    # The Node/V8 RISC-V source closure exceeded the former three-hour job
+    # limit while compiling normally.  Keep one batch job definition, but use
+    # the GitHub-hosted maximum so that the Node batch can reach its artifact
+    # and closure gates; this does not change the selected package closure.
+    timeout-minutes: 360
     steps:
       - name: Check out the feed recipe revision
         uses: actions/checkout@v6

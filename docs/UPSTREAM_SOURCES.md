@@ -471,12 +471,10 @@ This document fixes the governance rule first. Implement automation in order:
     K230 profile did not select the musl/uClibc-only argp-standalone branch; it
     remains private, introduces no shared provider, and was never invoked or
     given an archive or filesystem path in CI; then
-13. Source batch completed: GitHub Actions source batch
+13. Completed: GitHub Actions source batch
     [`33995251958`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33995251958)
-    has admitted the locked GNU `time` process-accounting command pending a
-    no-recompile merge. Its K230 MMU/dynamic-library/BusyBox-show-others profile
-    satisfied the upstream conditions; it remains private, introduces no shared
-    provider, and was never invoked or used to start a command in CI; then
+    has admitted the locked GNU `time` process-accounting command, and no-recompile
+    merge [`33995532939`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33995532939) then admitted its verified artifact without recompiling. Its K230 MMU/dynamic-library/BusyBox-show-others profile satisfied the upstream conditions; it remains private, introduces no shared provider, and was never invoked or used to start a command in CI; then
 14. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
 15. Introduce reviewed general libraries incrementally, retaining shared-runtime

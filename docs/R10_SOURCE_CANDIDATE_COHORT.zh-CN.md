@@ -199,6 +199,12 @@ grammar 拒绝了该覆写：`--with-systemdsystemunitdir=no` 含有 make-variab
 等号；没有开始编译，也没有 artifact。由于同一覆写已使用 `--without-systemd`，该路径参数没有
 作用且被移除，保持 make-variable 只含允许字符的约束不变。
 
+第五次 run `33970173415` 以该修复完成了锁定 util-linux archive 的 K230 RISC-V 编译、白名单
+提取、无 RPATH/RUNPATH、runtime closure 与 base-overlay gate，并上传未签名 system-tools batch
+artifact `9970727624`。它与此前 12 个成功 source batch 在 run `33970393061` 中逐 IPK 比较哈希、
+重新索引并再次执行 merged closure/base-overlay 验证后，生成未签名 merged artifact `9970775466`。
+这两项成功是候选构建和合并的证据，不是签名、公开发布、部署或实机执行任何 util-linux 命令的授权。
+
 `tdvp-gba` 的锁定 commit `4c82b09e1bf042d0709c26ed6c4e5098a283a908` 已由 GitHub commit
 API 和其固定 HTTPS archive endpoint 复核可达。早期 “仅本地 source cache、不可公开下载” 的
 说明不再适用；package metadata 现已与 `source.lock` 对齐。`retro-gba` batch 仍只允许将该

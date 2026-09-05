@@ -106,6 +106,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 13 | `coreutils` | 9.5 | `coreutils-tools` 只封装一个 GNU multi-call ELF，并以 `tdvp-coreutils-*` 公开 35 个基础命令；保留平台 Kconfig，以 coreutils 专用 configure override 禁用 ACL/attr/libcap/libselinux/OpenSSL/NLS，不覆盖 firmware/BusyBox 路径。 |
 | 14 | `mtools` | 4.0.47 | `fat-media-tools` 锁定 GNU mtools archive 与只供解压的 host-lzip 1.25 输入，构建 FAT/MS-DOS 用户态工具组；全部以 `tdvp-mtools-*` 公开，私有 multi-call ELF/applet symlink 保留 `argv[0]` 语义，绝不覆盖 firmware/BusyBox 或未来标准路径。 |
 | 15 | `dosfstools` | 4.2 | `fat-filesystem-tools` 从锁定 source 构建 FAT 创建、检查和 label 三个 ELF；全部以 `tdvp-dosfstools-*` 公开，私有 payload 不覆盖 `/sbin/*`、firmware 或 BusyBox 路径。 |
+| 16 | `util-linux-tools` | 2.40.2 | `system-tools` 只启用命名的无 libblkid/libfdisk/libmount/libsmartcols/libuuid 闭包命令；全部以 `tdvp-util-linux-*` 公开，不替换 firmware/BusyBox 路径，也不把基础镜像库作为隐式 provider。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -167,6 +168,18 @@ check 或复制 target 文件来绕过。
 `/sbin/*`。该包不复制 Debian binary、target root 或共享库；GitHub Actions 必须通过 source
 lock、runtime closure 与 base-overlay gate。格式化/检查的实机验证具有潜在破坏性，必须由
 设备使用者选择非生产测试介质后执行，再记录卸载和回滚，才可签名或发布。
+
+`system-tools` 是一个单包、无新增共享运行时 provider 的增量 batch。它从 Buildroot
+2025.02.1 审核的 util-linux 2.40.2 archive 离线构建，仅启用 cal、fallocate、IPC、
+last/utmp、调度、namespace 与 terminal-message 等明确命名的前端。所有 RISC-V ELF
+都位于 `/usr/libexec/tdvp-util-linux/`，所有公开入口都为
+`/usr/bin/tdvp-util-linux-<command>`；它不使用 basic set，也不选择 mount、分区、
+文件系统、loop、wipefs、login/su/runuser/setpriv 或
+libblkid/libfdisk/libmount/libsmartcols/libuuid。因而不能把固件现存库变为隐式依赖，
+也不能占用 firmware/BusyBox 路径。GitHub Actions 只从锁定源码构建、封装并审核
+RISC-V ELF、RPATH/RUNPATH、base-overlay 和 runtime closure，绝不执行这些前端。
+IPC、进程、namespace、文件或 terminal state 的实机操作须由使用者在非生产设备上显式
+选择目标并记录安装、卸载、回滚后才可作为发布证据。
 
 `tdvp-gba` 的锁定 commit `4c82b09e1bf042d0709c26ed6c4e5098a283a908` 已由 GitHub commit
 API 和其固定 HTTPS archive endpoint 复核可达。早期 “仅本地 source cache、不可公开下载” 的

@@ -117,6 +117,16 @@ find packages -mindepth 2 -maxdepth 2 -name package.env -type f | LC_ALL=C sort
 - 任意精度计算命令：`bc` 锁定 GNU bc 1.07.1 与构建它所需的 host-flex 2.6.4/host-m4
   1.4.19 archive。二者只是私有 Buildroot host 输入，不进入 target IPK；GNU bc 的 RISC-V
   ELF 仅可通过 `/usr/bin/tdvp-bc` 访问，因而绝不替换 firmware `/usr/bin/bc`；
+- 窄系统维护命令：`util-linux-tools` 锁定 Buildroot 2025.02.1 审核的 util-linux
+  2.40.2 archive，只以私有 Buildroot transaction 选择明确的 cal、fallocate、IPC、
+  last/utmp、scheduler、namespace 与 terminal-message 前端，并在本次 make 调用中关闭
+  NLS。它不启用 util-linux basic set、挂载/分区/文件系统/loop/wipefs/login 等 feature，
+  也不选择 libblkid/libfdisk/libmount/libsmartcols/libuuid；因此不产生新的共享运行时
+  provider，也不把 target root 现有库当作隐式 ABI。所有 ELF 都在
+  `/usr/libexec/tdvp-util-linux/`，公开入口均是
+  `/usr/bin/tdvp-util-linux-<command>`，不会覆盖 firmware 或 BusyBox 路径。候选
+  CI 只构建、封装和审计，绝不执行可能改变 IPC、进程、namespace、文件或 terminal
+  state 的命令；
 - 十进制运算运行时：`libmpdec-4` 锁定 Buildroot 2025.02.1 审查的 mpdecimal 4.0.0
   归档，只将 `libmpdec.so.4 -> libmpdec.so.4.0.0` 制作成独立 IPK。候选为 RISC-V ELF64
   共享对象、无 RPATH/RUNPATH，且仅依赖平台 ABI，因此它是 CPython `_decimal` 的唯一可复用

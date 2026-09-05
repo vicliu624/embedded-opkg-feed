@@ -33,6 +33,7 @@ Buildroot 交叉构建、IPK 运行时闭包审计和实机启动测试均通过
 | GNU 基础命令组 | `coreutils` | `tdvp-coreutils-ls --version`、`tdvp-coreutils-mktemp`、`tdvp-coreutils-date --iso-8601=seconds` |
 | FAT/MS-DOS 介质工具组 | `mtools` | `tdvp-mtools-mdir`、`tdvp-mtools-mcopy`、`tdvp-mtools-mformat`、`tdvp-mtools-mlabel`；无需挂载即可检查或管理 FAT 介质 |
 | FAT 文件系统维护 | `dosfstools` | `tdvp-dosfstools-mkfs-fat`、`tdvp-dosfstools-fsck-fat`、`tdvp-dosfstools-fatlabel`；格式化/修复前必须由设备使用者确认目标块设备 |
+| 窄 util-linux 系统维护组 | `util-linux-tools` | `tdvp-util-linux-cal`、`tdvp-util-linux-ipcs`、`tdvp-util-linux-last`、`tdvp-util-linux-taskset`；所有公开入口均不替换固件命令 |
 | 编辑 | `vim-runtime`、`vim`、四个纯 Vimscript 插件 | `vim --version`；触控不抢占 Foot 的文本选择 |
 | 最小构建/维护/诊断 | `make`、`pkgconf`、`patch`、`diffutils`、`strace` | `make --version`、`pkg-config --version`、`patch --version`、`diff --version`、`strace true` |
 
@@ -81,6 +82,17 @@ OpenSSL 或 NLS target provider 的可选功能。
 `tdvp-dosfstools-fatlabel`。它们不会覆盖 `/sbin/mkfs.fat`、`/sbin/fsck.fat`、
 `/sbin/fatlabel` 或 firmware 文件。由于格式化与修复会改变介质，实际执行必须由设备
 使用者明确选择块设备；CI 仅构建、封装和做 ABI/路径闭包审计，不会运行这些破坏性命令。
+
+`util-linux-tools` 是另一种更窄的增补方式：只从 Buildroot 2025.02.1 锁定的
+util-linux 2.40.2 archive 构建命名维护命令，并把 ELF 放在
+`/usr/libexec/tdvp-util-linux/`，公开入口统一为
+`tdvp-util-linux-<command>`。首批包括日历、文件预分配、IPC 观察/控制、last/utmp
+记录、调度、namespace、terminal message 等工具；不启用 basic set、mount、分区、文件
+系统、loop、wipefs、login/su/runuser/setpriv，也不选择
+libblkid/libfdisk/libmount/libsmartcols/libuuid。这样不把基础系统现有库变成隐式
+runtime；后者必须先作为独立、版本化的 provider 准入。部分前端在用户执行时可改变 IPC、
+进程、namespace、文件或终端状态，因此 CI 永不执行它们；实机验证只可由使用者在非生产
+设备上显式选择目标、记录安装/卸载与回滚后进行。
 
 ## r10：Node.js v22.23.2 源码交叉构建候选
 

@@ -252,9 +252,11 @@ below; it is not an upstream-source exception for ordinary packages.
 - incremental metadata profiles: a dependent profile such as
   `tdvp-diagnostics` must provide `base_merged_run_id` to the GitHub Actions
   batch. CI accepts only one live merged-unsigned artifact from a successful
-  run, rejects ambiguous feed paths/top-level symlinks and byte-different
-  immutable target IPKs, then hydrates verified IPKs into the private candidate
-  before building the profile. This makes the profile dependency closure
+  run and rejects ambiguous feed paths/top-level symlinks. When a prior
+  artifact repeats a target-runtime IPK, CI retains the newly restored,
+  authoritative target base rather than importing or comparing that
+  target-derived container duplicate; it hydrates only absent source-built
+  IPKs before building the profile. This makes the profile dependency closure
   verifiable without recompiling historical source packages;
 - metadata-only diagnostic profile: `tdvp-diagnostics` has a narrow source-lock
   exemption because it contains only repository-owned instructions and exact

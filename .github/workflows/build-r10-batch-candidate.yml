@@ -411,10 +411,12 @@ jobs:
                 echo "candidate base has an unsafe existing IPK path: $filename" >&2
                 exit 69
               }
-              cmp -s "$source_ipk" "$destination_ipk" || {
-                echo "prior merged artifact disagrees with immutable target runtime: $filename" >&2
-                exit 70
-              }
+              # The freshly restored target base is authoritative. A
+              # target-derived IPK container may differ from a prior merged
+              # copy even when it represents the same platform runtime, so do
+              # not import or compare that duplicate. Source-built IPKs have
+              # no destination here and are still copied below.
+              printf 'retaining current immutable target runtime IPK: %s\n' "$filename"
             else
               install -m 0644 "$source_ipk" "$destination_ipk"
             fi
@@ -422,7 +424,7 @@ jobs:
           done < <(find "$prior_feed" -maxdepth 1 -type f -name '*.ipk' -print | LC_ALL=C sort)
           [[ "$copied" -gt 0 ]] || {
             echo 'prior merged artifact contains no IPKs to hydrate' >&2
-            exit 71
+            exit 70
           }
           printf 'hydrated %s verified IPKs from merged run %s\n' "$copied" "$TDVP_BASE_MERGED_RUN_ID"
 

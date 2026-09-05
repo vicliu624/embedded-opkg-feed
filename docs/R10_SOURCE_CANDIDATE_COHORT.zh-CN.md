@@ -132,7 +132,8 @@ source，batch 入口和配方改动均已撤回；旧的成功 source batch 是
 candidate 的 package 中，只有 `tdvp-diagnostics` 属于 r10 范围；`tdvp-hello`、LoFiBox 与 Cardputer
 应用不属于本 release。为使这个 metadata profile 也真正增量，`diagnostics-profile` 必须提供成功的
 `base_merged_run_id`：CI 只接受一份未过期的 merged unsigned artifact，校验 run 成功态、唯一 artifact、
-feed 路径、无顶层 symlink 和与 immutable target IPK 的逐字节一致性，再复用已验证 IPK 并仅封装
+feed 路径和无顶层 symlink；若 prior artifact 含有同名 target-runtime IPK，则保留本次新恢复、权威的
+target base，不导入或比较这个 target-derived 容器副本。其余 source-built IPK 才会复用，并仅封装
 `tdvp-diagnostics`。它不触发历史 source package 的再次构建。
 
 **CA 信任库所有权结论（2026-09-05）。** `runtime-data-packages.tsv` 已把固定 target 的 `/etc/ssl`

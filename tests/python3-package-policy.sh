@@ -76,7 +76,7 @@ expect_line '    -e "s|^#define TIME __TIME__$|#define TIME \"$TDVP_PYTHON3_BUIL
 expect_line '    export SOURCE_DATE_EPOCH="$TDVP_PYTHON3_SOURCE_DATE_EPOCH"' "$helper"
 expect_line '    export PYTHONHASHSEED=0' "$helper"
 expect_line '    export CFLAGS="-ffile-prefix-map=$work_root=$reproducible_source_root -fdebug-prefix-map=$work_root=$reproducible_source_root -fmacro-prefix-map=$work_root=$reproducible_source_root"' "$helper"
-expect_line "      find \"\$source_root\" -maxdepth 2 -type f -name '_sysconfigdata_*.py' -print | LC_ALL=C sort" "$helper"
+expect_line "      find \"\$source_root\" -maxdepth 3 -type f -name '_sysconfigdata_*.py' -print | LC_ALL=C sort" "$helper"
 expect_line '      sed -i "s|$work_root|$reproducible_source_root|g" "$sysconfig_source"' "$helper"
 expect_line '        echo "CPython sysconfig still exposes the temporary build root: $sysconfig_source" >&2' "$helper"
 expect_line 'format=2' "$helper"

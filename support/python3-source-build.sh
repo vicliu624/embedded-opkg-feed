@@ -309,7 +309,7 @@ tdvp_build_python3_source_stage() {
     # then compiled to .pyc.  It records abs_srcdir/abs_builddir and would
     # otherwise preserve this mktemp path even when ELF debug paths are mapped.
     mapfile -t sysconfig_sources < <(
-      find "$source_root" -maxdepth 2 -type f -name '_sysconfigdata_*.py' -print | LC_ALL=C sort
+      find "$source_root" -maxdepth 3 -type f -name '_sysconfigdata_*.py' -print | LC_ALL=C sort
     )
     [[ ${#sysconfig_sources[@]} -eq 1 ]] || {
       echo "CPython build produced an ambiguous sysconfig-data set: ${#sysconfig_sources[@]}" >&2

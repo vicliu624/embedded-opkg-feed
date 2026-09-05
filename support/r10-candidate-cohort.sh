@@ -18,4 +18,5 @@ TDVP_R10_CANDIDATE_COHORT=(
   cpio
   time
   cpulimit
+  bwm-ng
 )

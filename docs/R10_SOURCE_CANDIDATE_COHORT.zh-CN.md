@@ -114,6 +114,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 21 | `ffprobe` | 4.4.4 | `media-inspection-tools` 只从锁定的 Buildroot FFmpeg 4.4.4 source build stage `ffprobe` frontend。它不导入 host binary、不接管 base 的 `ffmpeg`，且 `deny` overlay 会拒绝 target 已有的 `/usr/bin/ffprobe` 路径或任何未拥有的动态依赖。 |
 | 22 | `gdbserver`、`ethtool`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 15.1、6.14 | `debug-network-tools` 只允许私有 ELF 与 `tdvp-gdbserver`、`tdvp-ethtool`。gdbserver 清空 Buildroot 的 SDK `debug-root` post-install hook，并关闭 full GDB/TUI/Python；ethtool 关闭 netlink/libmnl 和 pretty-print。run `33988534267` 验证 source cache、RISC-V ELF、runtime closure 和 deny overlay 并产生两个 IPK；run `33988940718` 只 hash-merge 25 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不启动 debug server 或变更网络接口。 |
 | 23 | `i2c-tools`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 4.4 | `i2c-inspection-tools` 只允许私有静态链接 ELF 与 `tdvp-i2c-{detect,dump,set,get,transfer}`。run `33989899026` 禁用 `BR2_PACKAGE_PYTHON3`/`py-smbus`，并实际传入 `BUILD_DYNAMIC_LIB=0`、`BUILD_STATIC_LIB=1`、`USE_STATIC_LIB=1`；临时 `libi2c.a` 和任何 `libi2c.so` 均未进入 IPK。run `33990178543` 只 hash-merge 26 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不得探测、读取、写入或枚举 I2C 总线。 |
+| 24 | `inotify-tools`（配方/锁/静态门禁已完成，待 GitHub Actions） | 3.20.2.2 | `filesystem-event-tools` 只允许与私有 static `libinotifytools` implementation 链接的 ELF，及 `tdvp-inotify-wait`、`tdvp-inotify-watch`。必须强制 `--disable-shared --enable-static --enable-static-binary --disable-doxygen`；任何 `libinotifytools`、头文件或普通 firmware 路径都不可进入 IPK。GitHub Actions 仍须证明 source cache、RISC-V ELF、runtime closure、deny overlay 和无重编 merge，CI 不得启动 watcher、传入路径或观察真实 filesystem event。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -133,7 +134,7 @@ source，batch 入口和配方改动均已撤回；旧的成功 source batch 是
 以后新增候选必须先比对成功 batch 的实际 IPK 清单，不能以“仓库中有配方”误判为尚未构建。
 
 **r10 实际 package inventory（2026-09-06）。** 对 25 个成功 source batch 的 GitHub Actions
-`built *.ipk` 记录逐一去重后，101 个 r10 recipe 中已有 85 个 recipe package 具备实际 source-build
+`built *.ipk` 记录逐一去重后，102 个 r10 recipe 中已有 85 个 recipe package 具备实际 source-build
 证据。其余 12 个通用 package 是 immutable target catalogue provider：`ca-certificates`、`libatomic-1`、
 `libcrypto-3`、`libcurl-4`、`libexpat-1`、`libffi-8`、`libncursesw`、`libpcre2-8`、`libpopt`、
 `libreadline`、`libssl-3` 与 `libz`；它们只能复用，不能为补齐数量重编。metadata-only
@@ -167,6 +168,11 @@ merged unsigned artifact 为
 [`9976438201`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33990178543/artifacts/9976438201)
 （`tdvp-k230-r10-merged-unsigned-131279c…`，196,361,181 bytes；zip SHA-256
 `b3309e77019d68583464eaf28af21526ea203856a121216c040a6eac8fdd8fc9`）。
+`inotify-tools` 已以锁定 GitHub 3.20.2.2 release、私有命令路径和独立
+`filesystem-event-tools` Actions batch 准备 source candidate；在 source cache、RISC-V ELF、runtime
+closure、deny overlay 与无重编 merge 由 GitHub Actions 证明前，它不计入这 85 个实际 source-build
+package，也不属于 merged candidate。CI 的验收只检查 package payload，绝不启动 watcher、传入路径或观察
+真实 filesystem event。
 为使这个 metadata profile 也真正增量，`diagnostics-profile` 必须提供成功的
 `base_merged_run_id`：CI 只接受一份未过期的 merged unsigned artifact，校验 run 成功态、唯一 artifact、
 feed 路径和无顶层 symlink；若 prior artifact 含有同名 target-runtime IPK，则保留本次新恢复、权威的

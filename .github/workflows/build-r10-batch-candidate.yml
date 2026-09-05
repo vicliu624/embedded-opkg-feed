@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -92,6 +92,7 @@ jobs:
           bash ./tests/memtester-package-policy.sh
           bash ./tests/debug-network-tools-policy.sh
           bash ./tests/i2c-tools-package-policy.sh
+          bash ./tests/inotify-tools-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/tmux-package-policy.sh
@@ -456,6 +457,7 @@ jobs:
           bash ./tests/memtester-package-policy.sh
           bash ./tests/debug-network-tools-policy.sh
           bash ./tests/i2c-tools-package-policy.sh
+          bash ./tests/inotify-tools-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/diagnostics-package-policy.sh
@@ -664,6 +666,13 @@ jobs:
               # never probes, reads, writes, or enumerates a physical bus.
               package_args=(--package i2c-tools)
               expected_packages=(i2c-tools)
+              ;;
+            filesystem-event-tools)
+              # The source build disables libinotifytools shared output and
+              # exposes only private command ELF files linked to the static
+              # implementation. CI never starts a watcher or observes a path.
+              package_args=(--package inotify-tools)
+              expected_packages=(inotify-tools)
               ;;
             *) echo 'unreviewed batch input' >&2; exit 64 ;;
           esac

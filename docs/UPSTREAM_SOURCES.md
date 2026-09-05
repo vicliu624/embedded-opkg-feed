@@ -433,9 +433,14 @@ This document fixes the governance rule first. Implement automation in order:
    admitted its verified artifact without recompiling. It disabled
    Python/py-smbus and shared `libi2c`, and CI did not inspect or change a
    hardware bus; then
-8. Emit source provenance/SBOM material for each release and bind source, SDK,
+8. In progress: admit the locked no-shared-library `inotify-tools` leaf through a
+   GitHub Actions source batch, then a no-recompile merge. The package must
+   disable shared `libinotifytools`, expose only private `inotifywait` and
+   `inotifywatch` command ELF files, and never start a watcher or observe a
+   filesystem path in CI; then
+9. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
-9. Introduce reviewed general libraries incrementally, retaining shared-runtime
+10. Introduce reviewed general libraries incrementally, retaining shared-runtime
    and on-device test gates each time.
 
 Until all automation is complete, this contract remains the admission standard

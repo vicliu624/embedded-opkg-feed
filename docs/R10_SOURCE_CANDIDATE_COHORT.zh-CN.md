@@ -112,7 +112,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 19 | `tree` | 2.1.1 | `directory-tree-tools` 只构建一个锁定源码的目录树 ELF；唯一公开入口为 `tdvp-tree`，不替换 firmware/BusyBox `tree` 路径，也不新增共享运行时 provider。 |
 | 20 | `less` | 661 | `terminal-pager-tools` 只构建一个锁定源码 pager ELF；唯一公开入口为 `tdvp-less`，精确复用 target catalogue 的 `libncursesw`，不替换 firmware/BusyBox `less` 路径。 |
 | 21 | `ffprobe` | 4.4.4 | `media-inspection-tools` 只从锁定的 Buildroot FFmpeg 4.4.4 source build stage `ffprobe` frontend。它不导入 host binary、不接管 base 的 `ffmpeg`，且 `deny` overlay 会拒绝 target 已有的 `/usr/bin/ffprobe` 路径或任何未拥有的动态依赖。 |
-| 22 | `gdbserver`、`ethtool`（配方/锁/静态门禁已完成，待 GitHub Actions） | 15.1、6.14 | `debug-network-tools` 只允许私有 ELF 与 `tdvp-gdbserver`、`tdvp-ethtool`。gdbserver 必须清空 Buildroot 的 SDK `debug-root` post-install hook，并关闭 full GDB/TUI/Python；ethtool 必须关闭 netlink/libmnl 和 pretty-print。GitHub Actions 仍须证明 source cache、RISC-V ELF、runtime closure、deny overlay 和无重编 merge，CI 不启动 debug server 或变更网络接口。 |
+| 22 | `gdbserver`、`ethtool`（GitHub Actions source batch 已通过，待无重编 merge） | 15.1、6.14 | `debug-network-tools` 只允许私有 ELF 与 `tdvp-gdbserver`、`tdvp-ethtool`。gdbserver 清空 Buildroot 的 SDK `debug-root` post-install hook，并关闭 full GDB/TUI/Python；ethtool 关闭 netlink/libmnl 和 pretty-print。run `33988534267` 已验证 source cache、RISC-V ELF、runtime closure 和 deny overlay，并产生两个 IPK；下一步只可 hash-merge，CI 不启动 debug server 或变更网络接口。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -125,15 +125,20 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 source，batch 入口和配方改动均已撤回；旧的成功 source batch 是这六个包的唯一 r10 构建证据。
 以后新增候选必须先比对成功 batch 的实际 IPK 清单，不能以“仓库中有配方”误判为尚未构建。
 
-**r10 实际 package inventory（2026-09-06）。** 对此前 23 个成功 source batch 的 GitHub Actions
-`built *.ipk` 记录逐一去重后，100 个 r10 recipe 中已有 82 个 recipe package 具备实际 source-build
+**r10 实际 package inventory（2026-09-06）。** 对 24 个成功 source batch 的 GitHub Actions
+`built *.ipk` 记录逐一去重后，100 个 r10 recipe 中已有 84 个 recipe package 具备实际 source-build
 证据。其余 12 个通用 package 是 immutable target catalogue provider：`ca-certificates`、`libatomic-1`、
 `libcrypto-3`、`libcurl-4`、`libexpat-1`、`libffi-8`、`libncursesw`、`libpcre2-8`、`libpopt`、
 `libreadline`、`libssl-3` 与 `libz`；它们只能复用，不能为补齐数量重编。metadata-only
 `tdvp-diagnostics` 已在 run `33987100478` 生成独立 unsigned batch artifact，并已由 24-batch 无重编
-merge run `33987408229` 纳入 r10 candidate。新增的 `gdbserver` 与 `ethtool` 已具备 source lock、私有
-命名空间、静态策略门禁和独立 `debug-network-tools` Actions batch，但尚无成功 K230 source-build 证据，
-因此不计入 82，也不计入 merged candidate。`tdvp-hello`、LoFiBox 与 Cardputer 应用不属于本 release。
+merge run `33987408229` 纳入 r10 candidate。`gdbserver` 与 `ethtool` 的 source lock、私有命名空间和
+静态策略门禁已由 `debug-network-tools` run
+[`33988534267`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33988534267) 实际验证：从锁定
+cache 交叉构建的 `ethtool_6.14-1_riscv64.ipk` 与 `gdbserver_15.1-1_riscv64.ipk` 均通过 feed verification，
+并上传 artifact [`9975971554`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33988534267/artifacts/9975971554)
+（90,422,923 bytes；zip SHA-256 `999adf320af6631743463861159d7df9ffb46dad9bb46e06822a3e501b66c44a`）。
+二者计入 84，但在后续 no-recompile merge 成功前不计入 merged candidate。`tdvp-hello`、LoFiBox 与
+Cardputer 应用不属于本 release。
 为使这个 metadata profile 也真正增量，`diagnostics-profile` 必须提供成功的
 `base_merged_run_id`：CI 只接受一份未过期的 merged unsigned artifact，校验 run 成功态、唯一 artifact、
 feed 路径和无顶层 symlink；若 prior artifact 含有同名 target-runtime IPK，则保留本次新恢复、权威的

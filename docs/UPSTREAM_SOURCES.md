@@ -417,10 +417,12 @@ This document fixes the governance rule first. Implement automation in order:
    `curl` leaf, OpenSSL/zlib-only `wget`, plaintext-only `iperf3`, `lsof`,
    `netcat`, `libevent`/`tmux`, and `libpopt`/`rsync`, then hash-merge their
    unsigned candidates without recompiling historical source packages;
-6. In progress: admit the separately locked, namespaced `gdbserver` and
-   `ethtool` debug/network leaves only through their GitHub Actions source
-   batch and later no-recompile merge; their recipes must not change SDK host
-   state, a firmware command path, or a network interface; then
+6. In progress: source batch
+   [`33988534267`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33988534267)
+   has admitted the separately locked, namespaced `gdbserver` and `ethtool`
+   debug/network leaves; hash-merge their verified artifact without recompiling
+   source packages. Their recipes did not change SDK host state, a firmware
+   command path, or a network interface; then
 7. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
 8. Introduce reviewed general libraries incrementally, retaining shared-runtime

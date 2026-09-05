@@ -352,7 +352,7 @@ candidate evidence.
 
 | Batch | Packages | Preconditions and reason |
 | --- | --- | --- |
-| Debug/network diagnostics | `gdbserver`, `ethtool` | Locked Buildroot 2025.02.1 sources and private TDVP frontends are prepared. `gdbserver` must remain server-only and must not modify the SDK host debug-root; `ethtool` must retain its no-netlink/no-libmnl boundary. GitHub Actions must prove cache, RISC-V ELF, closure, and deny-overlay gates without starting a server or changing an interface. |
+| Debug/network diagnostics | `gdbserver`, `ethtool` | GitHub Actions source batch [`33988534267`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33988534267) passed with the locked Buildroot 2025.02.1 sources and private TDVP frontends. `gdbserver` remained server-only without changing the SDK host debug-root; `ethtool` retained its no-netlink/no-libmnl boundary. The two verified source IPKs now await only a no-recompile merge; CI did not start a server or change an interface. |
 | I2C hardware inspection | `i2c-tools` | Valuable for K230 bring-up, but Buildroot normally emits `libi2c`; first decide and verify a static-only leaf or a separately owned shared provider. It must never probe/write a bus in CI. |
 | Native build frontend | target CMake/Ninja | CMake brings a broad `libarchive`/`libuv`/JSON/rhash closure. Admit every new provider before the command; Buildroot's Ninja package is host-only, so a target-Ninja recipe needs a separately locked bootstrap design. |
 

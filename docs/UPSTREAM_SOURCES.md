@@ -433,12 +433,14 @@ This document fixes the governance rule first. Implement automation in order:
    admitted its verified artifact without recompiling. It disabled
    Python/py-smbus and shared `libi2c`, and CI did not inspect or change a
    hardware bus; then
-8. Source batch completed: GitHub Actions source batch
+8. Completed: GitHub Actions source batch
    [`33991128904`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991128904)
-   has admitted the locked no-shared-library `inotify-tools` leaf pending a
-   no-recompile merge. It disabled shared `libinotifytools`, exposed only
-   private `inotifywait`/`inotifywatch` command ELF files, and never started a
-   watcher or observed a filesystem path in CI; then
+   has admitted the locked no-shared-library `inotify-tools` leaf, and
+   no-recompile merge [`33991417095`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991417095)
+   then admitted its verified artifact without recompiling. It disabled shared
+   `libinotifytools`, exposed only private `inotifywait`/`inotifywatch`
+   command ELF files, and never started a watcher or observed a filesystem
+   path in CI; then
 9. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
 10. Introduce reviewed general libraries incrementally, retaining shared-runtime

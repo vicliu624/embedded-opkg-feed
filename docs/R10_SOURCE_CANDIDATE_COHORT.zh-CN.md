@@ -114,7 +114,7 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 21 | `ffprobe` | 4.4.4 | `media-inspection-tools` 只从锁定的 Buildroot FFmpeg 4.4.4 source build stage `ffprobe` frontend。它不导入 host binary、不接管 base 的 `ffmpeg`，且 `deny` overlay 会拒绝 target 已有的 `/usr/bin/ffprobe` 路径或任何未拥有的动态依赖。 |
 | 22 | `gdbserver`、`ethtool`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 15.1、6.14 | `debug-network-tools` 只允许私有 ELF 与 `tdvp-gdbserver`、`tdvp-ethtool`。gdbserver 清空 Buildroot 的 SDK `debug-root` post-install hook，并关闭 full GDB/TUI/Python；ethtool 关闭 netlink/libmnl 和 pretty-print。run `33988534267` 验证 source cache、RISC-V ELF、runtime closure 和 deny overlay 并产生两个 IPK；run `33988940718` 只 hash-merge 25 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不启动 debug server 或变更网络接口。 |
 | 23 | `i2c-tools`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 4.4 | `i2c-inspection-tools` 只允许私有静态链接 ELF 与 `tdvp-i2c-{detect,dump,set,get,transfer}`。run `33989899026` 禁用 `BR2_PACKAGE_PYTHON3`/`py-smbus`，并实际传入 `BUILD_DYNAMIC_LIB=0`、`BUILD_STATIC_LIB=1`、`USE_STATIC_LIB=1`；临时 `libi2c.a` 和任何 `libi2c.so` 均未进入 IPK。run `33990178543` 只 hash-merge 26 个 artifact、重建索引并再次通过 closure/target-runtime coverage。CI 不得探测、读取、写入或枚举 I2C 总线。 |
-| 24 | `inotify-tools`（GitHub Actions source batch 已通过，待无重编 merge / 实机） | 3.20.2.2 | `filesystem-event-tools` 只允许与私有 static `libinotifytools` implementation 链接的 ELF，及 `tdvp-inotify-wait`、`tdvp-inotify-watch`。run [`33991128904`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991128904) 实际传入 `--disable-shared --enable-static --enable-static-binary --disable-doxygen`，产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；任何 `libinotifytools`、头文件或普通 firmware 路径均未进入 IPK。仍须通过无重编 merge；CI 不得启动 watcher、传入路径或观察真实 filesystem event。 |
+| 24 | `inotify-tools`（GitHub Actions source batch/无重编 merge 已通过，待实机） | 3.20.2.2 | `filesystem-event-tools` 只允许与私有 static `libinotifytools` implementation 链接的 ELF，及 `tdvp-inotify-wait`、`tdvp-inotify-watch`。run [`33991128904`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991128904) 实际传入 `--disable-shared --enable-static --enable-static-binary --disable-doxygen`，产生一个 IPK 并通过 source cache、RISC-V ELF、runtime closure、deny overlay 与 feed verification；run [`33991417095`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991417095) 只 hash-merge 27 个 artifact、重建索引并再次通过 closure/target-runtime coverage。任何 `libinotifytools`、头文件或普通 firmware 路径均未进入 IPK；CI 不得启动 watcher、传入路径或观察真实 filesystem event。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -174,8 +174,15 @@ merged unsigned artifact 为
 cache 交叉构建的 `inotify-tools_3.20.2.2-1_riscv64.ipk` 通过 feed verification，并上传 artifact
 [`9976701684`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991128904/artifacts/9976701684)
 （90,138,431 bytes；zip SHA-256 `693daa5000ce40db80da8a422abf99d14a8fc20edf20c4407605050c9da67d35`）。
-它计入 86，但在无重编 merge 成功前尚不属于 merged candidate。CI 的验收只检查 package payload，绝不启动
-watcher、传入路径或观察真实 filesystem event。
+它计入 86，并已由 27-artifact no-recompile merge run
+[`33991417095`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991417095) 纳入 merged candidate：
+run 下载并比对全部 27 个 compatible artifact 的 IPK hash，只重建 `Packages` 索引、验证 runtime closure 和
+445 个 non-ABI dynamic objects 的 target-runtime coverage；SDK-build 与 package-build job 都是 skipped。最终
+merged unsigned artifact 为
+[`9976793781`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33991417095/artifacts/9976793781)
+（`tdvp-k230-r10-merged-unsigned-1c2c281…`，196,412,136 bytes；zip SHA-256
+`319c26927150e18dd442110e4e1d9afaf81dc23491d5922c220b08d0c8bd8716`）。CI 的验收只检查
+package payload，绝不启动 watcher、传入路径或观察真实 filesystem event。
 为使这个 metadata profile 也真正增量，`diagnostics-profile` 必须提供成功的
 `base_merged_run_id`：CI 只接受一份未过期的 merged unsigned artifact，校验 run 成功态、唯一 artifact、
 feed 路径和无顶层 symlink；若 prior artifact 含有同名 target-runtime IPK，则保留本次新恢复、权威的

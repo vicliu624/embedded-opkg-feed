@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, trust-store-runtime, system-tools, nodejs]
+        options: [archive, audacious, network-tools, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, system-tools, nodejs]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -87,7 +87,6 @@ jobs:
           bash ./tests/memtester-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
-          bash ./tests/ca-certificates-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
           bash ./tests/util-linux-package-policy.sh
@@ -381,7 +380,6 @@ jobs:
           bash ./tests/memtester-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
-          bash ./tests/ca-certificates-package-policy.sh
           bash ./tests/workflow-batch-matrix-policy.sh
           bash ./tests/refresh-extra-runtime-owners-policy.sh
           bash ./tests/util-linux-package-policy.sh
@@ -503,14 +501,6 @@ jobs:
               # wrapper is tdvp-less, never the firmware/BusyBox pager path.
               package_args=(--package less)
               expected_packages=(less)
-              ;;
-            trust-store-runtime)
-              # The Debian ca-certificates source is rebuilt through the
-              # matching Buildroot recipe.  The IPK contains only the
-              # generated trust data and hash links; its deny overlay gate
-              # prevents it from silently replacing target filesystem data.
-              package_args=(--package ca-certificates)
-              expected_packages=(ca-certificates)
               ;;
             system-tools)
               # This deliberately narrow util-linux cohort avoids the

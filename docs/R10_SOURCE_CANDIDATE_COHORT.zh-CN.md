@@ -111,7 +111,6 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 | 18 | `memtester` | 4.5.1 | `memory-diagnostic-tools` 只构建一个锁定源码的内存诊断 ELF；私有 payload 位于 `/usr/libexec/tdvp-memtester/`，公开入口仅为 `tdvp-memtester`，不占用 firmware/BusyBox 路径，也不新增共享运行时 provider。 |
 | 19 | `tree` | 2.1.1 | `directory-tree-tools` 只构建一个锁定源码的目录树 ELF；唯一公开入口为 `tdvp-tree`，不替换 firmware/BusyBox `tree` 路径，也不新增共享运行时 provider。 |
 | 20 | `less` | 661 | `terminal-pager-tools` 只构建一个锁定源码 pager ELF；唯一公开入口为 `tdvp-less`，精确复用 target catalogue 的 `libncursesw`，不替换 firmware/BusyBox `less` 路径。 |
-| 21 | `ca-certificates` | Debian 20230311 / feed 2025.02.1-1 | `trust-store-runtime` 从 Buildroot 2025.02.1 审核的 Debian source archive 构建信任库、PEM 链接和 OpenSSL subject-hash 链接；不导入 Debian 二进制、不包含共享库。对 `/etc/ssl` 和 `/usr/share/ca-certificates` 保持 deny base-overlay，冲突即停止。 |
 
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
@@ -124,13 +123,12 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 source，batch 入口和配方改动均已撤回；旧的成功 source batch 是这六个包的唯一 r10 构建证据。
 以后新增候选必须先比对成功 batch 的实际 IPK 清单，不能以“仓库中有配方”误判为尚未构建。
 
-`trust-store-runtime` 是 r10 的独立 data-runtime 候选。它以 Buildroot 2025.02.1 审核的 Debian
-`ca-certificates_20230311.tar.xz` 为唯一第三方输入，先从内容寻址 source cache 按 SHA-256 验证，
-再在同一匹配 SDK 的私有 Buildroot transaction 中构建。payload 只包含源证书、`ca-certificates.crt`
-bundle、可复核的 PEM 链接和由匹配 host `c_rehash` 生成的 subject-hash 链接；不会复制 Debian IPK、
-主机证书库、target root 数据或任何 ELF。`PACKAGE_BASE_OVERLAY=deny` 是必经门：若固定目标已经拥有
-任何同一路径，候选必须停止而非覆盖。只有 GitHub Actions 通过来源锁、数据完整性、base-overlay 和
-feed closure 后才可成为 unsigned candidate；信任库时效、实机 TLS、安装、卸载和回滚仍是发布前门禁。
+**CA 信任库所有权结论（2026-09-05）。** `runtime-data-packages.tsv` 已把固定 target 的 `/etc/ssl`
+明确归属为 `ca-certificates`。`trust-store-runtime` run `33977596329` 成功恢复 SDK、source cache、
+target-runtime base 并通过所有静态 gate，随后 `build-all` 复用该 target catalogue package，因没有可
+构建 source recipe 以 exit 68 停止，未上传 artifact。这是正确的“已有 target provider”结论：不应以
+同名 Debian source recipe 重建、覆盖或重新发布 CA bundle。此 package 已随每个 runtime base 入候选
+目录；未来 TLS consumer 必须引用该 target-derived catalogue provider 的精确版本。
 
 `database-tools` 是与已合并的开发工具 batch 分离的 SQLite CLI 增量批次。它选择
 `sqlite3` leaf，使闭包同时重建唯一的 `libsqlite3-0` provider；library IPK 仍只拥有

@@ -45,6 +45,7 @@ tdvp_assert_buildroot_2025_02_1() {
 # Usage:
 #   tdvp_buildroot_install <output> <temporary-target-root> \
 #     [--offline-download-dir <directory>] \
+#     [--hash-override <package> <override-file>] \
 #     --enable CONFIG ... --disable CONFIG ... \
 #     --make-variable NAME=value ... --target package ...
 #
@@ -52,6 +53,11 @@ tdvp_assert_buildroot_2025_02_1() {
 # from that directory.  The caller is expected to seed it with artifacts that
 # have already passed scripts/verify-source-lock.sh and fetch-source-cache.sh;
 # Buildroot is prevented from falling back to an upstream mirror.
+#
+# --hash-override is deliberately narrow: it replaces only
+# package/<package>/<package>.hash for the transaction, after the caller has
+# proved that its one SHA-256 row matches source.lock exactly.  Cleanup restores
+# the original file byte-for-byte even when the package make target fails.
 #
 # The function runs in a subshell so its EXIT trap cannot affect the recipe
 # that called it.  It intentionally dircleans only the requested Buildroot
@@ -65,7 +71,10 @@ tdvp_buildroot_install() (
   shift 2
   local tree config_backup config_hash config_saved=0
   local config_old_backup= config_old_hash= config_old_saved=0 rc download_dir= base_download_dir=
+  local hash_override_package hash_override_file hash_target hash_backup hash_digest
+  local hash_override_target_requested previous_hash_target cleanup_index
   local -a enable=() disable=() make_variables=() targets=()
+  local -a hash_override_packages=() hash_override_files=() hash_targets=() hash_backups=() hash_digests=()
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -99,6 +108,20 @@ tdvp_buildroot_install() (
         [[ -d "$2" && ! -L "$2" ]] || { echo "offline Buildroot download directory is not a regular directory: $2" >&2; exit 68; }
         download_dir=$(cd -- "$2" && pwd)
         shift 2
+        ;;
+      --hash-override)
+        [[ $# -ge 3 ]] || { echo '--hash-override needs a package and override file' >&2; exit 68; }
+        [[ "$2" =~ ^[A-Za-z0-9][A-Za-z0-9+._-]*$ ]] || {
+          echo "invalid Buildroot hash override package: $2" >&2
+          exit 68
+        }
+        [[ -f "$3" && ! -L "$3" ]] || {
+          echo "Buildroot hash override is not a regular file: $3" >&2
+          exit 68
+        }
+        hash_override_packages+=("$2")
+        hash_override_files+=("$(cd -- "$(dirname -- "$3")" && pwd)/$(basename -- "$3")")
+        shift 3
         ;;
       *)
         echo "unknown tdvp_buildroot_install option: $1" >&2; exit 68
@@ -175,11 +198,57 @@ tdvp_buildroot_install() (
         rm -f -- "$output/.config.old" || rc=102
       fi
     fi
+    for ((cleanup_index = 0; cleanup_index < ${#hash_targets[@]}; cleanup_index++)); do
+      hash_target=${hash_targets[$cleanup_index]}
+      hash_backup=${hash_backups[$cleanup_index]}
+      hash_digest=${hash_digests[$cleanup_index]}
+      cp --preserve=mode,timestamps -- "$hash_backup" "$hash_target" || rc=103
+      [[ "$(sha256sum "$hash_target" | awk '{print $1}')" == "$hash_digest" ]] || rc=104
+      rm -f -- "$hash_backup" || rc=105
+    done
     rm -f -- "$config_backup"
     [[ -z "$config_old_backup" ]] || rm -f -- "$config_old_backup"
     exit "$rc"
   }
   trap cleanup EXIT
+
+  for ((cleanup_index = 0; cleanup_index < ${#hash_override_packages[@]}; cleanup_index++)); do
+    hash_override_package=${hash_override_packages[$cleanup_index]}
+    hash_override_file=${hash_override_files[$cleanup_index]}
+    hash_override_target_requested=0
+    for package in "${targets[@]}"; do
+      if [[ "$package" == "$hash_override_package" ]]; then
+        hash_override_target_requested=1
+        break
+      fi
+    done
+    [[ "$hash_override_target_requested" -eq 1 ]] || {
+      echo "Buildroot hash override package is not a requested target: $hash_override_package" >&2
+      exit 77
+    }
+    hash_target="$tree/package/$hash_override_package/$hash_override_package.hash"
+    [[ -f "$hash_target" && ! -L "$hash_target" ]] || {
+      echo "Buildroot hash target is not a regular file: $hash_target" >&2
+      exit 77
+    }
+    for previous_hash_target in "${hash_targets[@]}"; do
+      [[ "$previous_hash_target" != "$hash_target" ]] || {
+        echo "Buildroot hash override repeats package: $hash_override_package" >&2
+        exit 77
+      }
+    done
+    hash_backup=$(mktemp "${hash_target}.tdvp-feed.XXXXXX")
+    hash_digest=$(sha256sum "$hash_target" | awk '{print $1}')
+    cp --preserve=mode,timestamps -- "$hash_target" "$hash_backup"
+    hash_targets+=("$hash_target")
+    hash_backups+=("$hash_backup")
+    hash_digests+=("$hash_digest")
+    cp --preserve=mode,timestamps -- "$hash_override_file" "$hash_target"
+    cmp -s -- "$hash_override_file" "$hash_target" || {
+      echo "Buildroot hash override copy differs: $hash_target" >&2
+      exit 77
+    }
+  done
 
   if [[ -e "$output/.config.old" || -L "$output/.config.old" ]]; then
     [[ -f "$output/.config.old" && ! -L "$output/.config.old" ]] || {

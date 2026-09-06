@@ -96,5 +96,7 @@ grep -Fqx "PACKAGE_BUILD_DEPENDS='libncursesw libcap-2'" "$repo_root/packages/ht
 grep -Fq 'immutable target-runtime catalogue explicitly owns libcap.so.2' "$repo_root/packages/htop/build.sh"
 grep -Fq 'TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS' "$repo_root/support/buildroot-command-package.sh"
 grep -Fq 'TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES' "$repo_root/support/buildroot-command-package.sh"
+grep -Fq 'TDVP_COMMAND_BUILDROOT_HASH_OVERRIDE_FILE' "$repo_root/support/buildroot-command-package.sh"
+grep -Fq 'does not exactly match source.lock' "$repo_root/support/buildroot-command-package.sh"
 grep -Fq "'nano'" "$repo_root/packages/nano/build.sh"
 grep -Fqx "PACKAGE_DEPENDS='libncursesw (= 6.4-20230603-1)'" "$repo_root/packages/nano/package.env"

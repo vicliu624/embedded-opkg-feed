@@ -11,9 +11,11 @@ tdvp_buildroot_command_package() {
   local package_dir=$1 sdk_root=$2 configured_output=$3 config_symbol=$4
   local buildroot_package=$5 source_line=$6 commands=$7
   local output tree install_root payload_dir= root_link= previous_payload= temporary_prefix= download_dir= command source destination link_target enabled_symbol disabled_symbol make_variable frontend_name frontend_mapping mapping_source mapping_frontend
+  local hash_override_name= hash_override_file= hash_override_line= hash_digest= hash_filename= verifier=
+  local artifact_row artifact_url artifact_file artifact_hash artifact_ignored source_lock_match=0
   local payload_ready=0
   local readelf_tool asset source_asset destination_asset
-  local -a command_list=() asset_list=() install_options=() enable_options=() enable_symbols=() disable_options=() disabled_symbols=() make_variable_options=() make_variables=() frontend_mappings=()
+  local -a command_list=() asset_list=() install_options=() enable_options=() enable_symbols=() disable_options=() disabled_symbols=() make_variable_options=() make_variables=() frontend_mappings=() hash_override_lines=() source_lock_artifacts=() hash_override_options=()
   local -A public_frontends=() explicit_frontends=() frontend_owners=()
   # shellcheck source=buildroot-feed-session.sh
   source "$package_dir/../../support/buildroot-feed-session.sh"
@@ -31,6 +33,63 @@ tdvp_buildroot_command_package() {
   if [[ -f "$package_dir/source.lock" ]]; then
     download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
     install_options+=(--offline-download-dir "$download_dir")
+  fi
+  # A source-version delta cannot suppress Buildroot's hash check.  It may
+  # supply one reviewed replacement row only when that row matches one
+  # source.lock artifact exactly.  The session helper applies it solely to the
+  # corresponding package .hash file and restores the original on every exit.
+  if [[ -n "${TDVP_COMMAND_BUILDROOT_HASH_OVERRIDE_FILE:-}" ]]; then
+    hash_override_name=$TDVP_COMMAND_BUILDROOT_HASH_OVERRIDE_FILE
+    [[ "$hash_override_name" =~ ^[A-Za-z0-9][A-Za-z0-9+._-]*$ ]] || {
+      echo "invalid Buildroot command-package hash override filename: $hash_override_name" >&2
+      return 91
+    }
+    hash_override_file="$package_dir/$hash_override_name"
+    [[ -f "$hash_override_file" && ! -L "$hash_override_file" ]] || {
+      echo "Buildroot command-package hash override is not a regular file: $hash_override_file" >&2
+      return 91
+    }
+    mapfile -t hash_override_lines < <(sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' "$hash_override_file")
+    [[ ${#hash_override_lines[@]} -eq 1 ]] || {
+      echo "Buildroot command-package hash override must contain exactly one source row: $hash_override_file" >&2
+      return 91
+    }
+    hash_override_line=${hash_override_lines[0]}
+    [[ "$hash_override_line" =~ ^sha256[[:space:]]+([0-9a-f]{64})[[:space:]]+([A-Za-z0-9][A-Za-z0-9+._-]*)$ ]] || {
+      echo "invalid Buildroot command-package hash override row: $hash_override_file" >&2
+      return 91
+    }
+    hash_digest=${BASH_REMATCH[1]}
+    hash_filename=${BASH_REMATCH[2]}
+    [[ -f "$package_dir/source.lock" && ! -L "$package_dir/source.lock" ]] || {
+      echo "Buildroot command-package hash override requires source.lock: $package_dir" >&2
+      return 91
+    }
+    verifier="$package_dir/../../scripts/verify-source-lock.sh"
+    [[ -f "$verifier" && ! -L "$verifier" ]] || {
+      echo "Buildroot command-package source-lock verifier is missing: $verifier" >&2
+      return 91
+    }
+    mapfile -t source_lock_artifacts < <(bash "$verifier" --package-dir "$package_dir" --emit-artifacts)
+    [[ ${#source_lock_artifacts[@]} -gt 0 ]] || {
+      echo "Buildroot command-package hash override found no locked artifacts: $package_dir" >&2
+      return 91
+    }
+    for artifact_row in "${source_lock_artifacts[@]}"; do
+      IFS=$'\t' read -r artifact_url artifact_file artifact_hash artifact_ignored <<< "$artifact_row"
+      [[ -n "$artifact_url" && -n "$artifact_file" && -n "$artifact_hash" && -z "$artifact_ignored" ]] || {
+        echo "could not parse source-lock artifact for hash override: $package_dir" >&2
+        return 91
+      }
+      if [[ "$artifact_file" == "$hash_filename" && "$artifact_hash" == "$hash_digest" ]]; then
+        source_lock_match=$((source_lock_match + 1))
+      fi
+    done
+    [[ "$source_lock_match" -eq 1 ]] || {
+      echo "Buildroot command-package hash override does not exactly match source.lock: $hash_override_file" >&2
+      return 91
+    }
+    hash_override_options=(--hash-override "$buildroot_package" "$hash_override_file")
   fi
   # Some reviewed leafs require both a parent package symbol and a child
   # feature symbol.  Keep those declarations recipe-local and validate them
@@ -100,7 +159,7 @@ tdvp_buildroot_command_package() {
   tdvp_buildroot_install "$output" "$install_root" "${install_options[@]}" \
     --enable BR2_PACKAGE_BUSYBOX_SHOW_OTHERS \
     --enable "$config_symbol" "${enable_options[@]}" "${disable_options[@]}" \
-    "${make_variable_options[@]}" --target "$buildroot_package"
+    "${make_variable_options[@]}" "${hash_override_options[@]}" --target "$buildroot_package"
   # Keep generated payloads on a POSIX filesystem. The feed repository is
   # often a Windows drvfs mount where every copied file looks executable;
   # using a symlink lets build-ipk preserve the target's 0755/0644 modes.

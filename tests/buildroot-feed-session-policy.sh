@@ -17,7 +17,13 @@ trap cleanup EXIT
 tree="$work/buildroot"
 output="$work/output"
 install_root="$work/install-root"
-mkdir -p "$tree/utils" "$output/host/bin" "$output/target" "$install_root"
+mkdir -p "$tree/utils" "$tree/package/fixture" "$output/host/bin" "$output/target" "$install_root"
+
+hash_target="$tree/package/fixture/fixture.hash"
+hash_override="$work/fixture.hash.override"
+printf 'sha256  1111111111111111111111111111111111111111111111111111111111111111  fixture-1.0.tar.xz\n' >"$hash_target"
+printf 'sha256  2222222222222222222222222222222222222222222222222222222222222222  fixture-2.0.tar.xz\n' >"$hash_override"
+hash_original=$(sha256sum "$hash_target" | awk '{print $1}')
 
 cat >"$tree/Makefile" <<'EOF'
 export BR2_VERSION := 2025.02.1
@@ -55,11 +61,19 @@ for argument in "$@"; do
 done
 [[ -n "$output" ]] || exit 2
 printf '%s\n' "$*" >>"$output/.tdvp-make.log"
+tree=$(awk '$1 == "MAKEARGS" && ($2 == ":=" || $2 == "+=") && $3 == "-C" { print $4; exit }' "$output/Makefile")
 case " $* " in
+  *' fixture-dirclean '*|*' fixture-install-target '*|*' fixture-fail-dirclean '*|*' fixture-fail-install-target '*)
+    grep -Fqx 'sha256  2222222222222222222222222222222222222222222222222222222222222222  fixture-2.0.tar.xz' \
+      "$tree/package/fixture/fixture.hash"
+    ;;
   *' olddefconfig '*)
     printf 'NORMALIZED_CONFIG=y\n' >>"$output/.config"
     printf 'NORMALIZED_OLD=y\n' >"$output/.config.old"
     ;;
+esac
+case " $* " in
+  *' fixture-fail-install-target '*) exit 42 ;;
 esac
 EOF
 chmod 0755 "$output/host/bin/make"
@@ -71,13 +85,22 @@ run_fixture() {
     --make-variable FIXTURE_DEPENDENCIES= --target fixture
 }
 
+run_hash_override_fixture() {
+  tdvp_buildroot_install "$output" "$install_root" \
+    --hash-override fixture "$hash_override" \
+    --enable BR2_TEST_FEATURE \
+    --make-variable FIXTURE_CONF_OPTS=--no-optional-feature \
+    --make-variable FIXTURE_DEPENDENCIES= --target fixture
+}
+
 printf 'ORIGINAL_CONFIG=y\n' >"$output/.config"
 printf 'ORIGINAL_OLD=y\n' >"$output/.config.old"
 config_hash=$(sha256sum "$output/.config" | awk '{print $1}')
 old_hash=$(sha256sum "$output/.config.old" | awk '{print $1}')
-run_fixture
+run_hash_override_fixture
 [[ "$(sha256sum "$output/.config" | awk '{print $1}')" == "$config_hash" ]]
 [[ "$(sha256sum "$output/.config.old" | awk '{print $1}')" == "$old_hash" ]]
+[[ "$(sha256sum "$hash_target" | awk '{print $1}')" == "$hash_original" ]]
 [[ "$(grep -Fc 'olddefconfig' "$output/.tdvp-make.log")" -eq 1 ]]
 grep -Fq 'FIXTURE_CONF_OPTS=--no-optional-feature' "$output/.tdvp-make.log"
 grep -Fq 'FIXTURE_DEPENDENCIES=' "$output/.tdvp-make.log"
@@ -92,6 +115,22 @@ run_fixture
 [[ "$(sha256sum "$output/.config" | awk '{print $1}')" == "$config_hash" ]]
 [[ ! -e "$output/.config.old" && ! -L "$output/.config.old" ]]
 [[ "$(grep -Fc 'olddefconfig' "$output/.tdvp-make.log")" -eq 1 ]]
+
+if tdvp_buildroot_install "$output" "$install_root" \
+  --hash-override fixture "$hash_override" --target fixture-fail \
+  >"$work/hash-override-failure.log" 2>&1; then
+  echo 'Buildroot session accepted a fixture target that should fail' >&2
+  exit 1
+fi
+[[ "$(sha256sum "$hash_target" | awk '{print $1}')" == "$hash_original" ]]
+
+if tdvp_buildroot_install "$output" "$install_root" \
+  --hash-override ../fixture "$hash_override" --target fixture \
+  >"$work/invalid-hash-override.log" 2>&1; then
+  echo 'Buildroot session accepted an unsafe hash override package path' >&2
+  exit 1
+fi
+grep -Fq 'invalid Buildroot hash override package: ../fixture' "$work/invalid-hash-override.log"
 
 if tdvp_buildroot_install "$output" "$install_root" \
   --make-variable 'FIXTURE_BAD=$(touch)' --target fixture \

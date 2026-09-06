@@ -25,4 +25,5 @@ TDVP_R10_CANDIDATE_COHORT=(
   lz4
   lzop
   psmisc
+  net-tools
 )

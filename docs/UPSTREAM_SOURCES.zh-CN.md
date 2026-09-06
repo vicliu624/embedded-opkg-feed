@@ -241,8 +241,9 @@ Debian、Buildroot 或上游发布的新版和安全公告会产生**候选更�
     私有 `xxhsum`/`tdvp-xxhsum`。它在 unsigned artifact
     [`9979257288`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000078942/artifacts/9979257288)
     中产生 `xxhash_0.8.3-1_riscv64.ipk`，通过 source/ELF/closure/deny-overlay/feed/445-object coverage gate，且不产生 `libxxhash` provider、headers 或 pkg-config 数据。无重编 merge [`34000394791`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000394791) 随后逐一比对全部 36 个 artifact manifest/IPK hash、重建 index，并在未编译的情况下通过 closure/445-object coverage；它上传 merged artifact [`9979351229`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000394791/artifacts/9979351229)。xxHash 是非加密算法，禁止用于认证、签名或安全决策；仍需实机生命周期验证；
-18. 为每个 release 生成来源证明/SBOM，并把来源、SDK 和测试结果与签名 release 对应；
-19. 同时逐步引入经过审查的通用库，每次均保留共享运行时和实机测试门。
+18. 已完成 source 准入：GitHub Actions source batch [`34001592645`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34001592645) 恢复 SDK 而未重建，用锁定的 pigz 2.8 来源交叉编译 command，并在 unsigned artifact [`9979676644`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34001592645/artifacts/9979676644) 中上传 `pigz_2.8-1_riscv64.ipk`。原传输端被 source-cache 拒绝后，lock 仍维持上游/Buildroot SHA-256。无重编 merge [`34001947527`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34001947527) 逐一比对全部 37 个 artifact manifest/IPK hash、重建 index，并在未编译的情况下通过 closure/445-object coverage；SDK-base 与 source-build job 都是 skipped，且已上传 merged artifact [`9979808940`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34001947527/artifacts/9979808940)。它只消费 immutable `libz`、提供私有 `tdvp-pigz`，绝不替换 BusyBox `gzip`；CI 未执行它或传入内容。它仍未签名，且仍需实机生命周期验证；
+19. 为每个 release 生成来源证明/SBOM，并把来源、SDK 和测试结果与签名 release 对应；
+20. 同时逐步引入经过审查的通用库，每次均保留共享运行时和实机测试门。
 
 在自动化全部完成以前，本约定仍是所有新上游引入的准入标准；PR 模板、贡献说明和发布检查清单会引用它，确保维护者不会把“候选源码”误解为“可以直接安装的发行版包”。
 

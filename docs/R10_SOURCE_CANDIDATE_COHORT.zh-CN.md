@@ -129,6 +129,14 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 应用只可以在其所有 runtime provider 已被同一候选批次成功打包、并通过 IPK 依赖闭包检查后
 构建。共享库 IPK 必须先于其消费者安装到测试机。
 
+**pigz 传输端决策（2026-09-06）。** 首个 `parallel-gzip-tools` Actions run
+[`34001374220`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34001374220) 在实际编译前从
+原 `zlib.net` 下载端得到 12,031-byte 非归档内容（SHA-256 `8873b211638620c1cbb32ed01a1d6e03ea928a8842566216d2d8040248b97a0c`），
+source-cache 因与锁定值不同而以 exit 69 拒绝；没有 IPK/artifact，绝不能成为 merge source。`source.lock`
+仅将传输端改为 OmniOS 的公开 HTTPS mirror：其 121,304-byte `pigz-2.8.tar.gz` 流式 SHA-256 仍为上游和
+Buildroot 锁定的 `eb872b4f0e1f0ebe59c9f7bd8c506c4204893ba6a8492de31df416f0d5170fd0`。这不是替换源码、
+放宽散列或接受下载失败页面；更改后仍须重新通过 GitHub Actions source batch 和无重编 merge。
+
 **延后 socket relay 候选（2026-09-06）。** 不把当前 Buildroot 2025.02.1 的 `socat` 1.8.0.2
 直接纳入候选：其上游 HTTPS 下载端点在受审信任链中呈现自签名证书，且
 [NVD CVE-2026-56123](https://nvd.nist.gov/vuln/detail/CVE-2026-56123) 将 `< 1.8.1.2` 列为受影响范围。

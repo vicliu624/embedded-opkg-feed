@@ -511,7 +511,7 @@ This document fixes the governance rule first. Implement automation in order:
    restored the SDK without rebuilding it, then used the locked Buildroot
    xxHash 0.8.3 source and RISC-V toolchain to build/link only private
    `xxhsum`/`tdvp-xxhsum`. It produced `xxhash_0.8.3-1_riscv64.ipk` in unsigned
-   artifact [`9979257288`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000078942/artifacts/9979257288), passed source/ELF/closure/deny-overlay/feed/445-object coverage gates, and produced no `libxxhash` provider, headers, or pkg-config data. xxHash remains non-cryptographic and prohibited for authentication, signatures, or security decisions. A no-recompile merge and device lifecycle validation remain required; then
+   artifact [`9979257288`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000078942/artifacts/9979257288), passed source/ELF/closure/deny-overlay/feed/445-object coverage gates, and produced no `libxxhash` provider, headers, or pkg-config data. No-recompile merge [`34000394791`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000394791) then compared all 36 artifact manifests/IPK hashes, rebuilt the index, and passed closure/445-object coverage without compiling; it uploaded merged artifact [`9979351229`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000394791/artifacts/9979351229). xxHash remains non-cryptographic and prohibited for authentication, signatures, or security decisions. Device lifecycle validation remains required; then
 18. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
 19. Introduce reviewed general libraries incrementally, retaining shared-runtime

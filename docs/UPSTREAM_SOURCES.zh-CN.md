@@ -240,7 +240,7 @@ Debian、Buildroot 或上游发布的新版和安全公告会产生**候选更�
     恢复 SDK 而未重建它，随后以锁定的 Buildroot xxHash 0.8.3 来源和 RISC-V toolchain 只构建/链接
     私有 `xxhsum`/`tdvp-xxhsum`。它在 unsigned artifact
     [`9979257288`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000078942/artifacts/9979257288)
-    中产生 `xxhash_0.8.3-1_riscv64.ipk`，通过 source/ELF/closure/deny-overlay/feed/445-object coverage gate，且不产生 `libxxhash` provider、headers 或 pkg-config 数据。xxHash 是非加密算法，禁止用于认证、签名或安全决策；仍需无重编 merge 与实机生命周期验证；
+    中产生 `xxhash_0.8.3-1_riscv64.ipk`，通过 source/ELF/closure/deny-overlay/feed/445-object coverage gate，且不产生 `libxxhash` provider、headers 或 pkg-config 数据。无重编 merge [`34000394791`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000394791) 随后逐一比对全部 36 个 artifact manifest/IPK hash、重建 index，并在未编译的情况下通过 closure/445-object coverage；它上传 merged artifact [`9979351229`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000394791/artifacts/9979351229)。xxHash 是非加密算法，禁止用于认证、签名或安全决策；仍需实机生命周期验证；
 18. 为每个 release 生成来源证明/SBOM，并把来源、SDK 和测试结果与签名 release 对应；
 19. 同时逐步引入经过审查的通用库，每次均保留共享运行时和实机测试门。
 

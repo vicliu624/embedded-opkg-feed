@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools, json-construction-tools, line-editor-tools, cpio-archive-tools, process-timing-tools, cpu-limit-tools, bandwidth-monitor-tools, checksum-tools, fast-integrity-tools]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools, json-construction-tools, line-editor-tools, cpio-archive-tools, process-timing-tools, cpu-limit-tools, bandwidth-monitor-tools, checksum-tools, fast-integrity-tools, parallel-gzip-tools]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -102,6 +102,7 @@ jobs:
           bash ./tests/bwm-ng-package-policy.sh
           bash ./tests/rhash-package-policy.sh
           bash ./tests/xxhash-package-policy.sh
+          bash ./tests/pigz-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/tmux-package-policy.sh
@@ -476,6 +477,7 @@ jobs:
           bash ./tests/bwm-ng-package-policy.sh
           bash ./tests/rhash-package-policy.sh
           bash ./tests/xxhash-package-policy.sh
+          bash ./tests/pigz-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/diagnostics-package-policy.sh
@@ -746,6 +748,13 @@ jobs:
               # the private ELF only; do not invoke xxhsum or supply payload.
               package_args=(--package xxhash)
               expected_packages=(xxhash)
+              ;;
+            parallel-gzip-tools)
+              # Build/audit only: pigz stays private and CI never invokes it,
+              # gives it content, compresses data, or extracts data. Its ELF
+              # closure must use the exact immutable libz target provider.
+              package_args=(--package pigz)
+              expected_packages=(pigz)
               ;;
             *) echo 'unreviewed batch input' >&2; exit 64 ;;
           esac

@@ -506,13 +506,12 @@ This document fixes the governance rule first. Implement automation in order:
     compared 35 input artifacts by hash, rebuilt the index, and passed runtime
     closure plus 445-object target coverage without compiling. It admitted
     merged artifact [`9978839795`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33998522557/artifacts/9978839795); then
-17. Planned: admit the private `xxhash`/`tdvp-xxhsum` leaf only through its own
-   GitHub Actions source batch. Its Buildroot 2025.02.1 source and official
-   tag archive hash are locked; the transaction must build/install only the
-   directly-linked CLI, no `libxxhash` provider, headers, or pkg-config data.
-   xxHash is non-cryptographic and is prohibited for authentication, signatures,
-   or security decisions. A successful source batch and later no-recompile merge
-   are still required before it becomes unsigned candidate evidence; then
+17. Completed source admission: GitHub Actions source batch
+   [`34000078942`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000078942)
+   restored the SDK without rebuilding it, then used the locked Buildroot
+   xxHash 0.8.3 source and RISC-V toolchain to build/link only private
+   `xxhsum`/`tdvp-xxhsum`. It produced `xxhash_0.8.3-1_riscv64.ipk` in unsigned
+   artifact [`9979257288`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000078942/artifacts/9979257288), passed source/ELF/closure/deny-overlay/feed/445-object coverage gates, and produced no `libxxhash` provider, headers, or pkg-config data. xxHash remains non-cryptographic and prohibited for authentication, signatures, or security decisions. A no-recompile merge and device lifecycle validation remain required; then
 18. Emit source provenance/SBOM material for each release and bind source, SDK,
    and test evidence to the signed release; then
 19. Introduce reviewed general libraries incrementally, retaining shared-runtime

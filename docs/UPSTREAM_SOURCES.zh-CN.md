@@ -235,11 +235,12 @@ Debian、Buildroot 或上游发布的新版和安全公告会产生**候选更�
 14. 已完成：GitHub Actions source batch [`33996029211`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33996029211) 已准入锁定的私有 `cpulimit` command，no-recompile merge [`33996322817`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33996322817) 随后合入已验证 artifact，未重编 source package。它保持私有、不引入 shared provider，CI 未执行它、传入 PID 或进程名、启动进程或节流进程；
 15. 已完成：GitHub Actions source batch [`33997001920`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997001920) 已构建锁定的私有 `bwm-ng` command，并上传 unsigned artifact [`9978397329`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997001920/artifacts/9978397329)。当经审查 SDK 启用可选 terminal view 时，它只消费 immutable target `libncursesw` provider，不引入 provider；CI 未执行它、读取 procfs、观察接口或观察磁盘 I/O。no-recompile merge [`33997364665`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997364665) 已逐哈希比对 34 个输入 artifact、重建 index，并在未编译的情况下通过 runtime closure 与 445-object target coverage，准入 merged artifact [`9978511004`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33997364665/artifacts/9978511004)；
 16. 已完成：GitHub Actions source batch [`33998249379`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33998249379) 已构建锁定的私有 `rhash` command，并上传 unsigned artifact [`9978739567`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33998249379/artifacts/9978739567)。它禁用 gettext/OpenSSL、静态链接 private librhash implementation 并关闭 shared-library build，不引入 provider；CI 未执行它或传入文件路径/payload。no-recompile merge [`33998522557`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33998522557) 已逐哈希比对 35 个输入 artifact、重建 index，并在未编译的情况下通过 runtime closure 与 445-object target coverage，准入 merged artifact [`9978839795`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/33998522557/artifacts/9978839795)；
-17. 计划：私有 `xxhash`/`tdvp-xxhsum` leaf 只能经过其独立 GitHub Actions source batch 准入。
-    其 Buildroot 2025.02.1 来源和官方 tag archive 哈希已经锁定；transaction 必须只构建/安装
-    直接链接 implementation 的 CLI，不得产生 `libxxhash` provider、headers 或 pkg-config 数据。
-    xxHash 是非加密算法，禁止用于认证、签名或安全决策。成功的 source batch 和后续无重编 merge
-    仍是成为 unsigned candidate evidence 前的必要条件；
+17. 已完成 source 准入：GitHub Actions source batch
+    [`34000078942`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000078942)
+    恢复 SDK 而未重建它，随后以锁定的 Buildroot xxHash 0.8.3 来源和 RISC-V toolchain 只构建/链接
+    私有 `xxhsum`/`tdvp-xxhsum`。它在 unsigned artifact
+    [`9979257288`](https://github.com/vicliu624/embedded-opkg-feed/actions/runs/34000078942/artifacts/9979257288)
+    中产生 `xxhash_0.8.3-1_riscv64.ipk`，通过 source/ELF/closure/deny-overlay/feed/445-object coverage gate，且不产生 `libxxhash` provider、headers 或 pkg-config 数据。xxHash 是非加密算法，禁止用于认证、签名或安全决策；仍需无重编 merge 与实机生命周期验证；
 18. 为每个 release 生成来源证明/SBOM，并把来源、SDK 和测试结果与签名 release 对应；
 19. 同时逐步引入经过审查的通用库，每次均保留共享运行时和实机测试门。
 

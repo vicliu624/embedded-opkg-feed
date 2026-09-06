@@ -24,4 +24,5 @@ TDVP_R10_CANDIDATE_COHORT=(
   pigz
   lz4
   lzop
+  psmisc
 )

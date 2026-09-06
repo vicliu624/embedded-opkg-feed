@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools, json-construction-tools, line-editor-tools, cpio-archive-tools, process-timing-tools, cpu-limit-tools, bandwidth-monitor-tools, checksum-tools, fast-integrity-tools, parallel-gzip-tools, fast-lz4-tools]
+        options: [archive, audacious, network-tools, http-transfer-tools, secure-transfer-tools, file-sync-tools, terminal-session-tools, process-monitoring-tools, diagnostics-profile, desktop-tools, retro-gba, development-tools, database-tools, calculator-tools, coreutils-tools, fat-media-tools, fat-filesystem-tools, exfat-filesystem-tools, memory-diagnostic-tools, directory-tree-tools, terminal-pager-tools, media-inspection-tools, system-tools, nodejs, debug-network-tools, i2c-inspection-tools, filesystem-event-tools, log-maintenance-tools, json-construction-tools, line-editor-tools, cpio-archive-tools, process-timing-tools, cpu-limit-tools, bandwidth-monitor-tools, checksum-tools, fast-integrity-tools, parallel-gzip-tools, fast-lz4-tools, parallel-lzo-tools]
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -104,6 +104,7 @@ jobs:
           bash ./tests/xxhash-package-policy.sh
           bash ./tests/pigz-package-policy.sh
           bash ./tests/lz4-package-policy.sh
+          bash ./tests/lzop-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/tmux-package-policy.sh
@@ -480,6 +481,7 @@ jobs:
           bash ./tests/xxhash-package-policy.sh
           bash ./tests/pigz-package-policy.sh
           bash ./tests/lz4-package-policy.sh
+          bash ./tests/lzop-package-policy.sh
           bash ./tests/tree-package-policy.sh
           bash ./tests/less-package-policy.sh
           bash ./tests/diagnostics-package-policy.sh
@@ -765,6 +767,14 @@ jobs:
               # acquire a liblz4 provider through this IPK.
               package_args=(--package lz4)
               expected_packages=(lz4)
+              ;;
+            parallel-lzo-tools)
+              # Build/audit only: build LZO static-only inside the private
+              # transaction, then retain only the private lzop ELF. CI never
+              # invokes it, supplies content, compresses data, or extracts
+              # data; closure must not acquire a liblzo2 provider through it.
+              package_args=(--package lzop)
+              expected_packages=(lzop)
               ;;
             *) echo 'unreviewed batch input' >&2; exit 64 ;;
           esac

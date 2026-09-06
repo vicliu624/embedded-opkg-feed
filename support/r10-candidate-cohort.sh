@@ -23,4 +23,5 @@ TDVP_R10_CANDIDATE_COHORT=(
   xxhash
   pigz
   lz4
+  lzop
 )

@@ -132,6 +132,23 @@ for program in "${required_paths[@]}"; do
   }
 done
 
+# r10 already ships the reviewed OpenSSH client from the immutable image.
+# Reuse those exact target bytes when the matching base root is available;
+# rebuilding the same source would create a second owner for every /usr/bin
+# OpenSSH path and would be rejected by the overlay policy.
+base_root=${TDVP_FEED_BASE_ROOT:-}
+if [[ -n "$base_root" ]]; then
+  for program in "${required_paths[@]}"; do
+    base_program="$base_root/usr/bin/$program"
+    [[ -x "$base_program" ]] || {
+      echo "matching image is missing /usr/bin/$program for openssh-client" >&2
+      exit 79
+    }
+    cp -a -- "$base_program" "$source_dir/$program"
+  done
+  echo 'openssh-client reusing byte-identical OpenSSH tools from the matching image'
+fi
+
 if [[ -e "$payload_link" || -L "$payload_link" ]]; then
   [[ -L "$payload_link" ]] || {
     echo "refusing to replace non-generated payload path: $payload_link" >&2

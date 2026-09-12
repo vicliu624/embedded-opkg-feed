@@ -87,6 +87,8 @@ cleanup() {
         echo 'Audacious core refused to remove an unexpected SDK sysroot path' >&2
         rc=103
       fi
+    elif [[ -d "$buildroot_staging_source" && ! -L "$buildroot_staging_source" ]]; then
+      rm -rf -- "$buildroot_staging_source" || rc=103
     fi
     if [[ ! -e "$buildroot_staging_source" && ! -L "$buildroot_staging_source" ]]; then
       mv -- "$buildroot_staging_backup" "$buildroot_staging_source" || rc=104
@@ -122,10 +124,11 @@ printf '\nsource "package/tdvp-audacious/Config.in"\n' >>"$config_file"
 cp -a --reflink=auto "$buildroot_staging_source/." "$buildroot_staging_root/"
 # The external K230 compiler fixes its sysroot path in its specs, so a Make
 # STAGING_DIR override would leave the linker looking at the original SDK.
-# Move that exact SDK directory aside and put only the disposable copy at its
-# fixed path; cleanup verifies the symlink and restores the original inode.
+# Move that exact SDK directory aside and put the disposable copy at its fixed
+# path; keeping a real directory avoids Buildroot rewriting a staging symlink.
 mv -- "$buildroot_staging_source" "$buildroot_staging_backup"; staging_source_moved=1
-ln -s -- "$buildroot_staging_root" "$buildroot_staging_source"; staging_source_redirected=1
+mkdir -- "$buildroot_staging_source"
+cp -a -- "$buildroot_staging_root/." "$buildroot_staging_source/"
 
 "$buildroot_tree/utils/config" --file "$build_output/.config" --enable BR2_PACKAGE_TDVP_AUDACIOUS
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" olddefconfig

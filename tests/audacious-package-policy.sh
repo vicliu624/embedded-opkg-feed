@@ -118,7 +118,8 @@ for build_script in "$core_build_script" "$plugins_build_script"; do
   expect_contains 'cp -a --reflink=auto "$buildroot_staging_source/." "$buildroot_staging_root/"' "$build_script"
   expect_contains 'buildroot_staging_inode=$(stat -c '\''%d:%i'\'' "$buildroot_staging_source")' "$build_script"
   expect_contains 'mv -- "$buildroot_staging_source" "$buildroot_staging_backup"; staging_source_moved=1' "$build_script"
-  expect_contains 'ln -s -- "$buildroot_staging_root" "$buildroot_staging_source"; staging_source_redirected=1' "$build_script"
+  expect_contains 'mkdir -- "$buildroot_staging_source"' "$build_script"
+  expect_contains 'cp -a -- "$buildroot_staging_root/." "$buildroot_staging_source/"' "$build_script"
   expect_contains 'refused to remove an unexpected SDK sysroot path' "$build_script"
   expect_contains '[[ "$(stat -c '\''%d:%i'\'' "$buildroot_staging_source")" == "$buildroot_staging_inode" ]] || rc=105' "$build_script"
   if grep -Fq 'make -C "$build_output" STAGING_DIR="$buildroot_staging_root"' "$build_script"; then

@@ -182,6 +182,19 @@ jobs:
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
           key: ${{ env.TDVP_SDK_CACHE_KEY }}
 
+      # Keep Buildroot completion stamps in a small, independent cache.  The
+      # reusable SDK cache intentionally omits the build trees; restoring only
+      # host/target/staging without their stamps makes every package batch
+      # rebuild the complete dependency closure.
+      - name: Save the reviewed Buildroot package stamps
+        if: steps.restore-sdk.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.br_*
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-package-stamps
+
       - name: Upload SDK base identity evidence
         uses: actions/upload-artifact@v4
         with:
@@ -274,6 +287,16 @@ jobs:
           key: ${{ env.TDVP_SDK_CACHE_KEY }}
           fail-on-cache-miss: true
 
+      - name: Restore the reviewed Buildroot package stamps
+        id: restore-package-stamps
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.br_*
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-package-stamps
+          fail-on-cache-miss: false
+
       - name: Restore the reviewed Buildroot source-download base
         uses: actions/cache/restore@v4
         with:
@@ -304,6 +327,7 @@ jobs:
       - name: Check the selected batch policy
         run: |
           set -Eeuo pipefail
+          printf 'Buildroot package-stamp cache hit: %s\n' '${{ steps.restore-package-stamps.outputs.cache-hit }}'
           for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
           bash ./tests/build-all-source-lock-policy.sh
           bash ./tests/audacious-package-policy.sh
@@ -424,6 +448,19 @@ jobs:
               done
           } >"$manifest"
           test -s "$manifest"
+
+      # A successful batch has now materialized the dependency closure and its
+      # completion stamps.  Persist those stamps for the next batch; cache
+      # entries are immutable, so the first successful batch seeds the shared
+      # key and later batches can reuse it.
+      - name: Save the materialized Buildroot package stamps
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.br_*
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-package-stamps
 
       - name: Upload the unsigned incremental batch
         uses: actions/upload-artifact@v4

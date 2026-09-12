@@ -374,6 +374,21 @@ jobs:
           export TDVP_BUILDROOT_BASE_DOWNLOAD_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl"
           export TDVP_NODE22_SOURCE_CACHE="${RUNNER_TEMP}/tdvp-r10-source-cache/nodejs"
 
+          # The cached Buildroot host tree can contain a staging sysroot
+          # symlink pointing at the temporary directory used by the runner
+          # that created the cache.  That directory does not exist on a new
+          # runner; leave Buildroot a real staging directory so the external
+          # toolchain package can repopulate it safely.
+          staging_sysroot="$build_output/host/riscv64-buildroot-linux-gnu/sysroot"
+          if [[ -L "$staging_sysroot" ]]; then
+            resolved_sysroot=$(readlink -f -- "$staging_sysroot" 2>/dev/null || true)
+            if [[ -z "$resolved_sysroot" || ! -d "$resolved_sysroot" ]]; then
+              rm -f -- "$staging_sysroot"
+              mkdir -p -- "$staging_sysroot"
+            fi
+          fi
+          test -d "$staging_sysroot"
+
           # Only selected SHA-256-locked source inputs are fetched. The result
           # is an unsigned partial candidate; it does not publish a release.
           bash ./scripts/build-all.sh \

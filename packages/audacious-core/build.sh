@@ -48,7 +48,13 @@ if [[ -n "$base_download_dir" ]]; then
   }
   base_download_dir=$(cd -- "$base_download_dir" && pwd)
 fi
-buildroot_download_dir=${base_download_dir:-$download_dir}
+buildroot_download_dir=$download_dir
+if [[ -n "$base_download_dir" ]]; then
+  # Buildroot needs both the immutable SDK download baseline and the
+  # source.lock-approved Audacious archive.  Use one disposable directory so
+  # BR2_DL_DIR can resolve either input without mutating the cached baseline.
+  cp -a -- "$base_download_dir/." "$buildroot_download_dir/"
+fi
 payload_dir="$package_dir/root"
 config_hash=$(sha256sum "$build_output/.config" | awk '{print $1}')
 buildroot_staging_inode=$(stat -c '%d:%i' "$buildroot_staging_source")

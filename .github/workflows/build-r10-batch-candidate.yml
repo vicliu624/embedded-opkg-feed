@@ -182,19 +182,6 @@ jobs:
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
           key: ${{ env.TDVP_SDK_CACHE_KEY }}
 
-      # Keep Buildroot completion stamps in a small, independent cache.  The
-      # reusable SDK cache intentionally omits the build trees; restoring only
-      # host/target/staging without their stamps makes every package batch
-      # rebuild the complete dependency closure.
-      - name: Save the reviewed Buildroot package stamps
-        if: steps.restore-sdk.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.br_*
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-package-stamps
-
       - name: Upload SDK base identity evidence
         uses: actions/upload-artifact@v4
         with:

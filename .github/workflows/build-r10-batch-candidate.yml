@@ -380,13 +380,17 @@ jobs:
           # runner; leave Buildroot a real staging directory so the external
           # toolchain package can repopulate it safely.
           staging_sysroot="$build_output/host/riscv64-buildroot-linux-gnu/sysroot"
+          # Treat every cached staging link as stale.  Even when its old
+          # /tmp target happens to survive on the runner, it belongs to a
+          # different cache producer and Buildroot will rewrite it into a
+          # broken relative link while installing the external toolchain.
           if [[ -L "$staging_sysroot" ]]; then
-            resolved_sysroot=$(readlink -f -- "$staging_sysroot" 2>/dev/null || true)
-            if [[ -z "$resolved_sysroot" || ! -d "$resolved_sysroot" ]]; then
-              rm -f -- "$staging_sysroot"
-              mkdir -p -- "$staging_sysroot"
-            fi
+            rm -f -- "$staging_sysroot"
           fi
+          mkdir -p -- "$staging_sysroot"
+          while IFS= read -r -d '' cached_link; do
+            rm -f -- "$cached_link"
+          done < <(find "$build_output/host" -type l -lname '/tmp/*' -print0)
           test -d "$staging_sysroot"
 
           # Only selected SHA-256-locked source inputs are fetched. The result

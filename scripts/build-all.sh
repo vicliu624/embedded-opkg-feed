@@ -111,6 +111,7 @@ case "$release" in
 esac
 runtime_owner_map=
 target_runtime_provider_manifest=
+image_provider_map=
 readelf_tool=
 if [[ "$runtime_catalog_enabled" -eq 1 ]]; then
   [[ -n "$base_root" ]] || {
@@ -134,6 +135,7 @@ if [[ "$runtime_catalog_enabled" -eq 1 ]]; then
   fi
   runtime_owner_map="$feed_dir/.tdvp-runtime-owners.tsv"
   target_runtime_provider_manifest="$feed_dir/.tdvp-target-runtime-packages.tsv"
+  image_provider_map="$feed_dir/.tdvp-image-runtime-providers.tsv"
   [[ -s "$runtime_owner_map" ]] || {
     echo "runtime catalogue did not create its owner map: $runtime_owner_map" >&2
     exit 71
@@ -141,6 +143,10 @@ if [[ "$runtime_catalog_enabled" -eq 1 ]]; then
   [[ -s "$target_runtime_provider_manifest" ]] || {
     echo "runtime catalogue did not create its target-provider manifest: $target_runtime_provider_manifest" >&2
     exit 72
+  }
+  [[ -s "$image_provider_map" ]] || {
+    echo "runtime catalogue did not create its image-provider map: $image_provider_map" >&2
+    exit 73
   }
 elif [[ "$runtime_catalog_only" -eq 1 || "$reuse_runtime_catalog" -eq 1 ]]; then
   echo "runtime-catalog options require a composable r3-or-newer release; got $release" >&2
@@ -474,6 +480,7 @@ build_package() {
   fi
   TDVP_FEED_BASE_ROOT="$base_root" \
   TDVP_RUNTIME_OWNER_MAP="$runtime_owner_map" \
+  TDVP_IMAGE_PROVIDER_MAP="$image_provider_map" \
   TDVP_READELF="$readelf_tool" \
     "$script_dir/build-ipk.sh" --platform "$platform_slug" "$package_dir" "$feed_dir"
   # Package build hooks materialise their payload under an ignored root/
@@ -502,5 +509,5 @@ fi
 # must not be copied to GitHub Pages beside an immutable public index; the
 # normal Packages catalogue is the public inventory.
 rm -f -- "$feed_dir/.tdvp-runtime-owners.tsv" "$feed_dir/.tdvp-runtime-ownership.tsv" \
-  "$feed_dir/.tdvp-target-runtime-packages.tsv"
+  "$feed_dir/.tdvp-target-runtime-packages.tsv" "$feed_dir/.tdvp-image-runtime-providers.tsv"
 echo "feed ready for offline signing: $feed_dir"

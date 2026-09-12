@@ -80,9 +80,11 @@ trap cleanup EXIT
 owner_map="$output_dir/.tdvp-runtime-owners.tsv"
 ownership_report="$output_dir/.tdvp-runtime-ownership.tsv"
 target_provider_manifest="$output_dir/.tdvp-target-runtime-packages.tsv"
+image_provider_map="$output_dir/.tdvp-image-runtime-providers.tsv"
 : >"$owner_map"
 : >"$ownership_report"
 : >"$target_provider_manifest"
+: >"$image_provider_map"
 
 is_abi_soname() {
   case "$1" in
@@ -140,6 +142,39 @@ while IFS= read -r -d '' library; do
 done < <(find "$target_root/usr/lib" -maxdepth 1 -type f -name '*.so*' -print0 | LC_ALL=C sort -z)
 
 [[ ${#soname_file[@]} -gt 0 ]] || { echo 'no non-ABI target SONAMEs found' >&2; exit 72; }
+
+# The production image records the package that owns every installed path.
+# Use that inventory to make the target-derived SONAME package a virtual
+# provider of the image-owned package name.  A thin image can install the
+# canonical runtime package; a transitional image already has the
+# byte-identical image package, so opkg can satisfy the same alias without a
+# file collision.
+image_manifest="$target_root/usr/share/tdvp/opkg/image-base.json"
+if [[ -f "$image_manifest" ]]; then
+  declare -A image_path_owner=()
+  while IFS=$'\t' read -r path package; do
+    [[ -n "$path" && -n "$package" ]] || continue
+    image_path_owner[$path]=$package
+  done < <(python3 - "$image_manifest" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    owners = json.load(stream).get("owners", {})
+for path, package in owners.items():
+    print(f"{path}\t{package}")
+PY
+  )
+  for soname in "${!soname_file[@]}"; do
+    relative=${soname_file[$soname]#"$target_root"}
+    image_package=${image_path_owner[$relative]:-}
+    [[ "$image_package" =~ ^tdvp-image-[a-z0-9][a-z0-9+.-]*$ ]] || continue
+    printf '%s|%s\n' "${soname_package[$soname]}" "$image_package" >>"$image_provider_map"
+  done
+  LC_ALL=C sort -u -o "$image_provider_map" "$image_provider_map"
+else
+  echo "target image inventory missing; no transitional image provider aliases will be emitted: $image_manifest" >&2
+fi
 
 # A manifest entry for a SONAME that is already present in the selected target
 # is not a second provider.  It is a version attestation for the byte-identical
@@ -330,6 +365,24 @@ while IFS='|' read -r package description selectors; do
 done <"$data_manifest"
 LC_ALL=C sort -u -o "$owner_map" "$owner_map"
 
+# Extra-owner overrides can rename a SONAME's canonical package (for example
+# libz.so.1 is intentionally owned by the reviewed `libz` recipe rather than
+# the mechanically derived `libz-1`).  Add aliases for the final owner as
+# well, so applications follow the same image-provider path after overrides.
+if [[ -f "$image_manifest" ]]; then
+  while IFS='|' read -r soname owner version; do
+    soname=${soname%$'\r'}
+    owner=${owner%$'\r'}
+    [[ -n "$soname" && -n "$owner" && "$soname" != \#* ]] || continue
+    [[ -n "${soname_file[$soname]:-}" ]] || continue
+    relative=${soname_file[$soname]#"$target_root"}
+    image_package=${image_path_owner[$relative]:-}
+    [[ "$image_package" =~ ^tdvp-image-[a-z0-9][a-z0-9+.-]*$ ]] || continue
+    printf '%s|%s\n' "$owner" "$image_package" >>"$image_provider_map"
+  done <"$owner_map"
+  LC_ALL=C sort -u -o "$image_provider_map" "$image_provider_map"
+fi
+
 copy_path() {
   local source=$1
   local destination_root=$2
@@ -380,6 +433,7 @@ EOF
   mv -- "$root" "$package_dir/root"
   TDVP_FEED_BASE_ROOT="$target_root" \
   TDVP_RUNTIME_OWNER_MAP="$owner_map" \
+  TDVP_IMAGE_PROVIDER_MAP="$image_provider_map" \
   TDVP_READELF="$readelf_tool" \
     "$script_dir/build-ipk.sh" --platform "$platform_slug" "$package_dir" "$output_dir"
 }
@@ -504,4 +558,5 @@ LC_ALL=C sort -u -o "$ownership_report" "$ownership_report"
 printf 'runtime owner map: %s\n' "$owner_map"
 printf 'runtime ownership report: %s\n' "$ownership_report"
 printf 'target runtime provider manifest: %s\n' "$target_provider_manifest"
+printf 'image runtime provider map: %s\n' "$image_provider_map"
 echo "built ${#soname_file[@]} non-ABI SONAME packages from $target_root"

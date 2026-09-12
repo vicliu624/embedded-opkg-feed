@@ -253,12 +253,39 @@ mkdir -p -- "$control_dir" "$data_dir"
 
 declare -A declared_dependencies=()
 declare -a dependency_records=()
+declare -A image_provider_alias=()
+
+# Transitional images install the same target libraries under their
+# image-owned package names (for example tdvp-image-libglib2).  The feed keeps
+# the canonical SONAME package names for thin images, and exposes the image
+# name as a virtual provider so one dependency graph works on both images.
+image_provider_map=${TDVP_IMAGE_PROVIDER_MAP:-}
+if [[ -n "$image_provider_map" && -s "$image_provider_map" ]]; then
+  while IFS='|' read -r canonical image_package; do
+    canonical=${canonical%$'\r'}
+    image_package=${image_package%$'\r'}
+    [[ -n "$canonical" && -n "$image_package" && "$canonical" != \#* ]] || continue
+    [[ "$canonical" =~ ^[a-z0-9][a-z0-9+.-]*$ && "$image_package" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || {
+      echo "invalid image provider alias: $canonical|$image_package" >&2
+      exit 91
+    }
+    image_provider_alias[$canonical]=$image_package
+  done <"$image_provider_map"
+fi
 
 append_dependency() {
   local record=$1
-  local name
+  local name alias
   name=$(printf '%s' "$record" | sed -E 's/^[[:space:]]*([^[:space:]<(=]+).*/\1/')
   [[ -n "$name" ]] || { echo "invalid dependency record for $PACKAGE: $record" >&2; exit 86; }
+  alias=${image_provider_alias[$name]:-}
+  if [[ -n "$alias" && "$alias" != "$name" ]]; then
+    # The current transitional image records these package names as installed
+    # owners, so selecting the image owner directly avoids file collisions.
+    # Thin-image compatibility will be added once the image seed emits the
+    # corresponding canonical virtual Provides records.
+    record="$alias"
+  fi
   if [[ -z "${declared_dependencies[$name]:-}" ]]; then
     declared_dependencies[$name]=1
     dependency_records+=("$record")

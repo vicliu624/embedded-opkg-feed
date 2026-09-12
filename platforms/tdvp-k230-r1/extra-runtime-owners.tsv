@@ -57,7 +57,6 @@ libssl.so.3|libssl-3|3.4.1-1
 libpopt.so.0|libpopt|1.19-1
 # libatomic is not an ABI-seed library. Its feed provider transfers the exact
 # GCC 14.1.1 object from the matching target, rather than borrowing it at run time.
-libatomic.so.1|libatomic-1|14.1.1-1
 # The reviewed minimal Buildroot libcurl configuration is the HTTPS transport
 # provider for Git. Optional HTTP/2, libssh2, IDN, and c-ares features stay off.
 libcurl.so.4|libcurl-4|8.12.1-1

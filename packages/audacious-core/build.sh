@@ -162,64 +162,15 @@ grep -qx 'BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS=y' "$build_output/.config"
 # download-only pass covers its ALSA, PulseAudio, FFmpeg, GTK3 and GLib
 # dependencies without compiling the plugins into this core package.
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_BACKUP_SITE=https://sources.buildroot.net make -C "$build_output" source
-# The reviewed SDK download cache predates Buildroot 2025's DL_SUBDIR layout:
-# its verified archives may be flat at BR2_DL_DIR while extraction reads
-# BR2_DL_DIR/<package>/. Normalize the exact packages needed by the Audacious
-# plugin closure only after Buildroot's source target has hash-checked them.
-# A pre-existing package-scoped archive must be byte-identical to the flat
-# archive; otherwise the candidate is unsafe and stops before compilation.
-for archive_mapping in \
-  'tdvp-audacious:audacious-4.6.1.tar.bz2' \
-  'alsa-lib:alsa-lib-1.2.13.tar.bz2' \
-  'pulseaudio:pulseaudio-17.0.tar.xz' \
-  'ffmpeg:ffmpeg-4.4.4.tar.xz' \
-  'libglib2:glib-2.82.5.tar.xz' \
-  'libgtk3:gtk+-3.24.43.tar.xz' \
-  'zlib:zlib-1.3.1.tar.gz'; do
-  package_name=${archive_mapping%%:*}
-  archive_name=${archive_mapping#*:}
-  flat_archive="$buildroot_download_dir/$archive_name"
-  package_archive="$buildroot_download_dir/$package_name/$archive_name"
-  mkdir -p -- "$buildroot_download_dir/$package_name"
-  if [[ -e "$package_archive" ]]; then
-    [[ -f "$package_archive" && ! -L "$package_archive" ]] || {
-      echo "Audacious Buildroot package archive is unsafe: $archive_mapping" >&2
-      exit 71
-    }
-    if [[ -e "$flat_archive" ]]; then
-      [[ -f "$flat_archive" && ! -L "$flat_archive" ]] && cmp -s -- "$flat_archive" "$package_archive" || {
-        echo "Audacious Buildroot download layouts disagree: $archive_mapping" >&2
-        exit 71
-      }
-    fi
-  elif [[ -f "$flat_archive" && ! -L "$flat_archive" ]]; then
-    cp --no-preserve=mode -- "$flat_archive" "$package_archive"
-    chmod 0444 "$package_archive"
-  else
-    echo "Audacious source closure omitted verified Buildroot archive: $archive_name" >&2
-    exit 71
-  fi
-done
 # Capture the complete, hash-checked source closure before this core
 # transaction removes its private download directory. The plugins recipe
-# receives this exact closure from the same release staging transaction.
+# receives this exact Buildroot-produced closure from the same release staging
+# transaction. Buildroot owns the archive names and DL_SUBDIR layout; keeping
+# its complete directory avoids a second, partial dependency model here.
 [[ ! -e "$closure_download_dir" && ! -L "$closure_download_dir" ]] || {
   echo "Audacious Buildroot download closure already exists: $closure_download_dir" >&2
   exit 71
 }
-for required_archive in \
-  'tdvp-audacious/audacious-4.6.1.tar.bz2' \
-  'alsa-lib/alsa-lib-1.2.13.tar.bz2' \
-  'pulseaudio/pulseaudio-17.0.tar.xz' \
-  'ffmpeg/ffmpeg-4.4.4.tar.xz' \
-  'libglib2/glib-2.82.5.tar.xz' \
-  'libgtk3/gtk+-3.24.43.tar.xz' \
-  'zlib/zlib-1.3.1.tar.gz'; do
-  [[ -f "$buildroot_download_dir/$required_archive" && ! -L "$buildroot_download_dir/$required_archive" ]] || {
-    echo "Audacious source closure omitted required Buildroot archive: $required_archive" >&2
-    exit 71
-  }
-done
 mkdir -- "$closure_download_dir"
 cp -a -- "$buildroot_download_dir/." "$closure_download_dir/"
 find "$closure_download_dir" -type l -print -quit | grep -q . && {

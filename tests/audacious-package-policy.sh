@@ -143,15 +143,18 @@ expect_contains 'closure_download_dir=${TDVP_FEED_STAGING_ROOT:-}/.tdvp-audaciou
 expect_contains 'BR2_PACKAGE_TDVP_AUDACIOUS --enable BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS' "$core_build_script"
 expect_contains 'mkdir -- "$closure_download_dir"' "$core_build_script"
 expect_contains 'cp -a -- "$buildroot_download_dir/." "$closure_download_dir/"' "$core_build_script"
-expect_contains "'ffmpeg:ffmpeg-4.4.4.tar.xz'" "$core_build_script"
-expect_contains 'Audacious Buildroot download layouts disagree' "$core_build_script"
-expect_contains 'cmp -s -- "$flat_archive" "$package_archive"' "$core_build_script"
-expect_contains 'Audacious Buildroot package archive is unsafe' "$core_build_script"
-expect_contains "'alsa-lib/alsa-lib-1.2.13.tar.bz2'" "$core_build_script"
+expect_contains 'Buildroot owns the archive names and DL_SUBDIR layout' "$core_build_script"
+if grep -Fq 'source closure omitted verified Buildroot archive' "$core_build_script" || \
+   grep -Fq 'source closure omitted required Buildroot archive' "$core_build_script"; then
+  echo 'Audacious core must retain the full Buildroot-generated source closure without a hand-maintained archive list' >&2
+  exit 1
+fi
 expect_contains 'closure_download_dir="$TDVP_FEED_STAGING_ROOT/.tdvp-audacious-buildroot-download-closure"' "$plugins_build_script"
 expect_contains 'cp -a -- "$closure_download_dir/." "$download_dir/"' "$plugins_build_script"
-expect_contains "'alsa-lib/alsa-lib-1.2.13.tar.bz2'" "$plugins_build_script"
-expect_contains 'Audacious plugin download closure omitted required Buildroot archive' "$plugins_build_script"
+if grep -Fq 'Audacious plugin download closure omitted required Buildroot archive' "$plugins_build_script"; then
+  echo 'Audacious plugins must use the complete core closure without a hand-maintained archive list' >&2
+  exit 1
+fi
 expect_contains 'cp -a -- "$install_root/usr/lib/audacious" "$TDVP_FEED_STAGING_ROOT/usr/lib/"' "$plugins_build_script"
 expect_contains 'Audacious plugin target-install patch differs from the source-lock-reviewed copy' "$plugins_build_script"
 cmp -s -- "$repo_root/packages/audacious-plugins/patches/0001-meson-use-target-plugin-directory.patch" "$plugins_buildroot_dir/0001-meson-use-target-plugin-directory.patch" || {

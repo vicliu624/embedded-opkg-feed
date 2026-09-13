@@ -218,12 +218,14 @@ tdvp_buildroot_install() (
 # unexpected Buildroot cleanup can never modify TDVP's immutable source cache.
 tdvp_prepare_locked_buildroot_download() {
   local package_dir=$1 repo_root verifier cache_root base_download_dir=
+  local package_name package_download_dir
   local -a artifact_rows=()
   local artifact_row artifact_url artifact_file artifact_hash ignored cached_archive download_dir
   local -A seen_artifact_files=()
 
   [[ -d "$package_dir" ]] || { echo "package directory does not exist: $package_dir" >&2; return 71; }
   package_dir=$(cd -- "$package_dir" && pwd)
+  package_name=$(basename -- "$package_dir")
   [[ -f "$package_dir/source.lock" && ! -L "$package_dir/source.lock" ]] || {
     echo "locked Buildroot source requires source.lock: $package_dir" >&2
     return 71
@@ -251,6 +253,11 @@ tdvp_prepare_locked_buildroot_download() {
     return 72
   }
   download_dir=$(mktemp -d "${TMPDIR:-/tmp}/tdvp-buildroot-dl.XXXXXX")
+  # Buildroot 2025 stores each package's downloads below DL_DIR/<package>.
+  # Keep the private mirror in that layout so both the primary-site lookup
+  # and the later extraction phase resolve the same immutable archive.
+  package_download_dir="$download_dir/$package_name"
+  mkdir -p -- "$package_download_dir"
   for artifact_row in "${artifact_rows[@]}"; do
     IFS=$'\t' read -r artifact_url artifact_file artifact_hash ignored <<<"$artifact_row"
     [[ -n "$artifact_url" && -n "$artifact_file" && -n "$artifact_hash" && -z "$ignored" ]] || {
@@ -283,11 +290,16 @@ tdvp_prepare_locked_buildroot_download() {
           return 74
         }
     fi
-    if ! cp --no-preserve=mode -- "$cached_archive" "$download_dir/$artifact_file"; then
+    # Keep a root-level copy for older Buildroot helpers and package recipes
+    # that still use the pre-2025 flat layout. The package-scoped copy is the
+    # canonical location used by Buildroot 2025's DL_SUBDIR handling.
+    if ! cp --no-preserve=mode -- "$cached_archive" "$download_dir/$artifact_file" ||
+      ! cp --no-preserve=mode -- "$cached_archive" "$package_download_dir/$artifact_file"; then
       rm -rf -- "$download_dir"
       return 75
     fi
     chmod 0444 "$download_dir/$artifact_file"
+    chmod 0444 "$package_download_dir/$artifact_file"
   done
   printf '%s\n' "$download_dir"
 }

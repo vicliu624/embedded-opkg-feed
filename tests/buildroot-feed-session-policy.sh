@@ -142,10 +142,18 @@ test -f "$private_download/example.tar.xz"
 test ! -L "$private_download/example.tar.xz"
 cmp -s "$work/example.tar.xz" "$private_download/example.tar.xz"
 test "$(stat -c '%a' "$private_download/example.tar.xz")" = 444
+test -f "$private_download/example/example.tar.xz"
+test ! -L "$private_download/example/example.tar.xz"
+cmp -s "$work/example.tar.xz" "$private_download/example/example.tar.xz"
+test "$(stat -c '%a' "$private_download/example/example.tar.xz")" = 444
 test -f "$private_download/host-helper.tar.gz"
 test ! -L "$private_download/host-helper.tar.gz"
 cmp -s "$work/host-helper.tar.gz" "$private_download/host-helper.tar.gz"
 test "$(stat -c '%a' "$private_download/host-helper.tar.gz")" = 444
+test -f "$private_download/example/host-helper.tar.gz"
+test ! -L "$private_download/example/host-helper.tar.gz"
+cmp -s "$work/host-helper.tar.gz" "$private_download/example/host-helper.tar.gz"
+test "$(stat -c '%a' "$private_download/example/host-helper.tar.gz")" = 444
 rm -rf -- "$private_download"
 
 echo 'Buildroot feed session policy test passed'

@@ -63,7 +63,7 @@ for required_archive in \
   'tdvp-audacious/audacious-4.6.1.tar.bz2' \
   'alsa-lib/alsa-lib-1.2.13.tar.bz2' \
   'pulseaudio/pulseaudio-17.0.tar.xz' \
-  'ffmpeg/ffmpeg-7.1.1.tar.xz' \
+  'ffmpeg/ffmpeg-4.4.4.tar.xz' \
   'libglib2/glib-2.82.5.tar.xz' \
   'libgtk3/gtk+-3.24.43.tar.xz' \
   'zlib/zlib-1.3.1.tar.gz'; do

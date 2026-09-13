@@ -172,7 +172,7 @@ for archive_mapping in \
   'tdvp-audacious:audacious-4.6.1.tar.bz2' \
   'alsa-lib:alsa-lib-1.2.13.tar.bz2' \
   'pulseaudio:pulseaudio-17.0.tar.xz' \
-  'ffmpeg:ffmpeg-7.1.1.tar.xz' \
+  'ffmpeg:ffmpeg-4.4.4.tar.xz' \
   'libglib2:glib-2.82.5.tar.xz' \
   'libgtk3:gtk+-3.24.43.tar.xz' \
   'zlib:zlib-1.3.1.tar.gz'; do
@@ -180,19 +180,24 @@ for archive_mapping in \
   archive_name=${archive_mapping#*:}
   flat_archive="$buildroot_download_dir/$archive_name"
   package_archive="$buildroot_download_dir/$package_name/$archive_name"
-  [[ -f "$flat_archive" && ! -L "$flat_archive" ]] || {
-    echo "Audacious source closure omitted verified Buildroot archive: $archive_name" >&2
-    exit 71
-  }
   mkdir -p -- "$buildroot_download_dir/$package_name"
   if [[ -e "$package_archive" ]]; then
-    [[ -f "$package_archive" && ! -L "$package_archive" ]] && cmp -s -- "$flat_archive" "$package_archive" || {
-      echo "Audacious Buildroot download layouts disagree: $archive_mapping" >&2
+    [[ -f "$package_archive" && ! -L "$package_archive" ]] || {
+      echo "Audacious Buildroot package archive is unsafe: $archive_mapping" >&2
       exit 71
     }
-  else
+    if [[ -e "$flat_archive" ]]; then
+      [[ -f "$flat_archive" && ! -L "$flat_archive" ]] && cmp -s -- "$flat_archive" "$package_archive" || {
+        echo "Audacious Buildroot download layouts disagree: $archive_mapping" >&2
+        exit 71
+      }
+    fi
+  elif [[ -f "$flat_archive" && ! -L "$flat_archive" ]]; then
     cp --no-preserve=mode -- "$flat_archive" "$package_archive"
     chmod 0444 "$package_archive"
+  else
+    echo "Audacious source closure omitted verified Buildroot archive: $archive_name" >&2
+    exit 71
   fi
 done
 # Capture the complete, hash-checked source closure before this core
@@ -206,7 +211,7 @@ for required_archive in \
   'tdvp-audacious/audacious-4.6.1.tar.bz2' \
   'alsa-lib/alsa-lib-1.2.13.tar.bz2' \
   'pulseaudio/pulseaudio-17.0.tar.xz' \
-  'ffmpeg/ffmpeg-7.1.1.tar.xz' \
+  'ffmpeg/ffmpeg-4.4.4.tar.xz' \
   'libglib2/glib-2.82.5.tar.xz' \
   'libgtk3/gtk+-3.24.43.tar.xz' \
   'zlib/zlib-1.3.1.tar.gz'; do

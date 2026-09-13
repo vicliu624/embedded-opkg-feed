@@ -66,6 +66,13 @@ core_package_staged=0
 staging_source_moved=0
 staging_source_redirected=0
 
+# Buildroot package install hooks expect the standard target-root layout even
+# when the feed transaction uses a fresh private directory instead of the
+# completed firmware target.  Keep this root shape aligned with
+# tdvp_buildroot_install() so package hooks do not fail on missing parents.
+mkdir -p -- "$install_root/bin" "$install_root/etc" "$install_root/usr/bin" \
+  "$install_root/usr/lib" "$install_root/usr/share"
+
 cleanup() {
   local rc=$?
   set +e
@@ -140,7 +147,12 @@ cp -a -- "$buildroot_staging_root/." "$buildroot_staging_source/"
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" olddefconfig
 grep -qx 'BR2_PACKAGE_TDVP_AUDACIOUS=y' "$build_output/.config"
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" tdvp-audacious-dirclean
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" TARGET_DIR="$install_root" tdvp-audacious-install-target
+env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" TARGET_DIR="$install_root" tdvp-audacious-install-target || {
+  rc=$?
+  echo "Audacious core Buildroot target install failed (rc=$rc, target=$install_root, output=$build_output)" >&2
+  find "$build_output" -maxdepth 3 -type f \( -name 'log.do_*' -o -name '*.log' \) -print 2>/dev/null | LC_ALL=C sort | tail -n 40 >&2 || true
+  exit "$rc"
+}
 
 for runtime in 'libaudcore.so.6*' 'libaudtag.so.4*' 'libaudgui.so.7*'; do
   shopt -s nullglob; matches=("$install_root"/usr/lib/$runtime); shopt -u nullglob

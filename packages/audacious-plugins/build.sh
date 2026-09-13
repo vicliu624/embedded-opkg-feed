@@ -46,35 +46,32 @@ buildroot_staging_root=$(mktemp -d)
 buildroot_staging_backup=$(mktemp -d "${buildroot_staging_source}.tdvp-audacious-plugins-backup.XXXXXX")
 rmdir -- "$buildroot_staging_backup"
 download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
-core_download_dir=
-# The plugin transaction must rebuild the core into its disposable staging
-# sysroot before Meson can discover audacious.pc.  Seed that prerequisite's
-# already source.lock-verified archive beside the plugin archive, keeping
-# Buildroot's primary-site-only mode genuinely offline.
-core_download_dir=$(tdvp_prepare_locked_buildroot_download "$feed_root/packages/audacious-core")
-core_archive_count=0
-while IFS= read -r core_archive; do
-  [[ -f "$core_archive" && ! -L "$core_archive" ]] || {
-    echo "invalid audited Audacious core archive: $core_archive" >&2
-    exit 70
-  }
-  core_archive_name=$(basename -- "$core_archive")
-  destination_archive="$download_dir/$core_archive_name"
-  if [[ -e "$destination_archive" ]]; then
-    cmp -s -- "$core_archive" "$destination_archive" || {
-      echo "Audacious core/plugin download inputs collide: $core_archive_name" >&2
-      exit 70
-    }
-  else
-    cp --no-preserve=mode -- "$core_archive" "$destination_archive"
-    chmod 0444 "$destination_archive"
-  fi
-  core_archive_count=$((core_archive_count + 1))
-done < <(find "$core_download_dir" -maxdepth 1 -type f -print | LC_ALL=C sort)
-[[ "$core_archive_count" -gt 0 ]] || {
-  echo 'Audacious core source-lock did not provide a Buildroot download input' >&2
+closure_download_dir="$TDVP_FEED_STAGING_ROOT/.tdvp-audacious-buildroot-download-closure"
+# The core recipe resolves the complete Buildroot source closure into the
+# release's ephemeral staging root. Reuse it in a fresh plugin-private DL_DIR
+# so this transaction cannot mutate the core closure or SDK baseline.
+[[ -d "$closure_download_dir" && ! -L "$closure_download_dir" ]] || {
+  echo "Audacious plugins need the core Buildroot download closure: $closure_download_dir" >&2
   exit 70
 }
+find "$closure_download_dir" -type l -print -quit | grep -q . && {
+  echo 'Audacious core Buildroot download closure contains a symbolic link' >&2
+  exit 70
+}
+cp -a -- "$closure_download_dir/." "$download_dir/"
+for required_archive in \
+  'tdvp-audacious/audacious-4.6.1.tar.bz2' \
+  'alsa-lib/alsa-lib-1.2.13.tar.bz2' \
+  'pulseaudio/pulseaudio-17.0.tar.xz' \
+  'ffmpeg/ffmpeg-7.1.1.tar.xz' \
+  'libglib2/glib-2.82.5.tar.xz' \
+  'libgtk3/gtk+-3.24.43.tar.xz' \
+  'zlib/zlib-1.3.1.tar.gz'; do
+  [[ -f "$download_dir/$required_archive" && ! -L "$download_dir/$required_archive" ]] || {
+    echo "Audacious plugin download closure omitted required Buildroot archive: $required_archive" >&2
+    exit 70
+  }
+done
 payload_dir="$package_dir/root"
 config_hash=$(sha256sum "$build_output/.config" | awk '{print $1}')
 buildroot_staging_inode=$(stat -c '%d:%i' "$buildroot_staging_source")
@@ -128,7 +125,7 @@ cleanup() {
   rm -f -- "$config_backup" "$config_old_backup" "$package_config_backup"
   # Preserve an un-restored original sysroot backup for manual recovery; never
   # delete caller-owned SDK data from an error cleanup path.
-  rm -rf -- "$install_root" "$buildroot_staging_root" "$download_dir" "$core_download_dir"
+  rm -rf -- "$install_root" "$buildroot_staging_root" "$download_dir"
   exit "$rc"
 }
 trap cleanup EXIT
@@ -161,12 +158,9 @@ cp -a -- "$buildroot_staging_root/." "$buildroot_staging_source/"
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" olddefconfig
 grep -qx 'BR2_PACKAGE_TDVP_AUDACIOUS=y' "$build_output/.config"
 grep -qx 'BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS=y' "$build_output/.config"
-# Resolve the complete configured Buildroot source closure before the
-# reproducible offline build transaction. The package-specific target only
-# downloads the plugin archive and omits transitive dependencies such as
-# alsa-lib. Buildroot hash-checks every archive fetched upstream.
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_BACKUP_SITE=https://sources.buildroot.net make -C "$build_output" tdvp-audacious-plugins-source tdvp-audacious-source alsa-lib-source pulseaudio-source ffmpeg-source libglib2-source libgtk3-source zlib-source
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_BACKUP_SITE=https://sources.buildroot.net make -C "$build_output" source
+# The plugin archive was seeded from its source.lock. Every transitive
+# Buildroot input comes from the checked core closure above, so the actual
+# build performs no second source-download pass.
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" tdvp-audacious-dirclean
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" tdvp-audacious-plugins-dirclean
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" TARGET_DIR="$install_root" tdvp-audacious-plugins-install-target

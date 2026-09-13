@@ -19,6 +19,10 @@ source "$package_dir/package.env"
 source "$feed_root/support/buildroot-feed-session.sh"
 
 [[ -d "$sdk_root" && -d "$support_core_dir" ]] || { echo 'audacious-core needs the matching Buildroot SDK and core support files' >&2; exit 66; }
+[[ -n "${TDVP_FEED_STAGING_ROOT:-}" && -d "$TDVP_FEED_STAGING_ROOT" && ! -L "$TDVP_FEED_STAGING_ROOT" ]] || {
+  echo 'Audacious core needs TDVP_FEED_STAGING_ROOT from scripts/build-all.sh' >&2
+  exit 66
+}
 sdk_root=$(cd -- "$sdk_root" && pwd)
 build_output=${TDVP_AUDACIOUS_BUILDROOT_OUTPUT:-$(cd -- "$sdk_root/.." && pwd)}
 [[ "$sdk_root" == "$build_output/host" && -f "$build_output/.config" && -f "$build_output/Makefile" && -d "$build_output/target" ]] || { echo 'TDVP_AUDACIOUS_BUILDROOT_OUTPUT must be a completed matching Buildroot output' >&2; exit 67; }
@@ -40,6 +44,7 @@ buildroot_staging_root=$(mktemp -d)
 buildroot_staging_backup=$(mktemp -d "${buildroot_staging_source}.tdvp-audacious-backup.XXXXXX")
 rmdir -- "$buildroot_staging_backup"
 download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
+closure_download_dir=${TDVP_FEED_STAGING_ROOT:-}/.tdvp-audacious-buildroot-download-closure
 base_download_dir=${TDVP_BUILDROOT_BASE_DOWNLOAD_DIR:-}
 if [[ -n "$base_download_dir" ]]; then
   [[ -d "$base_download_dir" && ! -L "$base_download_dir" ]] || {
@@ -151,6 +156,32 @@ grep -qx 'BR2_PACKAGE_TDVP_AUDACIOUS=y' "$build_output/.config"
 # transitive dependencies. Buildroot hash-checks any archive fetched upstream.
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_BACKUP_SITE=https://sources.buildroot.net make -C "$build_output" tdvp-audacious-source libglib2-source libgtk3-source
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_BACKUP_SITE=https://sources.buildroot.net make -C "$build_output" source
+# Capture the complete, hash-checked source closure before this core
+# transaction removes its private download directory. The plugins recipe
+# receives this exact closure from the same release staging transaction.
+[[ ! -e "$closure_download_dir" && ! -L "$closure_download_dir" ]] || {
+  echo "Audacious Buildroot download closure already exists: $closure_download_dir" >&2
+  exit 71
+}
+for required_archive in \
+  'tdvp-audacious/audacious-4.6.1.tar.bz2' \
+  'alsa-lib/alsa-lib-1.2.13.tar.bz2' \
+  'pulseaudio/pulseaudio-17.0.tar.xz' \
+  'ffmpeg/ffmpeg-7.1.1.tar.xz' \
+  'libglib2/glib-2.82.5.tar.xz' \
+  'libgtk3/gtk+-3.24.43.tar.xz' \
+  'zlib/zlib-1.3.1.tar.gz'; do
+  [[ -f "$buildroot_download_dir/$required_archive" && ! -L "$buildroot_download_dir/$required_archive" ]] || {
+    echo "Audacious source closure omitted required Buildroot archive: $required_archive" >&2
+    exit 71
+  }
+done
+mkdir -- "$closure_download_dir"
+cp -a -- "$buildroot_download_dir/." "$closure_download_dir/"
+find "$closure_download_dir" -type l -print -quit | grep -q . && {
+  echo 'Audacious Buildroot download closure must not contain symbolic links' >&2
+  exit 71
+}
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" tdvp-audacious-dirclean
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" TARGET_DIR="$install_root" tdvp-audacious-install-target || {
   rc=$?

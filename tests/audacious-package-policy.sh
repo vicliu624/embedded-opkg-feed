@@ -138,8 +138,14 @@ done
 expect_contains 'tdvp-audacious-dirclean' "$plugins_build_script"
 expect_contains 'test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"' "$core_build_script"
 expect_contains 'test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc"' "$plugins_build_script"
-expect_contains 'tdvp_prepare_locked_buildroot_download "$feed_root/packages/audacious-core"' "$plugins_build_script"
-expect_contains 'Audacious core/plugin download inputs collide' "$plugins_build_script"
+expect_contains 'closure_download_dir=${TDVP_FEED_STAGING_ROOT:-}/.tdvp-audacious-buildroot-download-closure' "$core_build_script"
+expect_contains 'mkdir -- "$closure_download_dir"' "$core_build_script"
+expect_contains 'cp -a -- "$buildroot_download_dir/." "$closure_download_dir/"' "$core_build_script"
+expect_contains "'alsa-lib/alsa-lib-1.2.13.tar.bz2'" "$core_build_script"
+expect_contains 'closure_download_dir="$TDVP_FEED_STAGING_ROOT/.tdvp-audacious-buildroot-download-closure"' "$plugins_build_script"
+expect_contains 'cp -a -- "$closure_download_dir/." "$download_dir/"' "$plugins_build_script"
+expect_contains "'alsa-lib/alsa-lib-1.2.13.tar.bz2'" "$plugins_build_script"
+expect_contains 'Audacious plugin download closure omitted required Buildroot archive' "$plugins_build_script"
 expect_contains 'cp -a -- "$install_root/usr/lib/audacious" "$TDVP_FEED_STAGING_ROOT/usr/lib/"' "$plugins_build_script"
 expect_contains 'Audacious plugin target-install patch differs from the source-lock-reviewed copy' "$plugins_build_script"
 cmp -s -- "$repo_root/packages/audacious-plugins/patches/0001-meson-use-target-plugin-directory.patch" "$plugins_buildroot_dir/0001-meson-use-target-plugin-directory.patch" || {
@@ -148,10 +154,11 @@ cmp -s -- "$repo_root/packages/audacious-plugins/patches/0001-meson-use-target-p
 }
 expect_contains "join_paths(get_option('prefix'), get_option('libdir'), 'audacious')" "$plugins_buildroot_dir/0001-meson-use-target-plugin-directory.patch"
 expect_contains 'BR2_PRIMARY_SITE_ONLY=y' "$plugins_build_script"
-expect_contains 'alsa-lib-source' "$plugins_build_script"
-expect_contains 'libgtk3-source' "$plugins_build_script"
 expect_contains 'libglib2-source' "$core_build_script"
-expect_contains '"$core_download_dir"' "$plugins_build_script"
+if grep -Fq 'BR2_BACKUP_SITE=' "$plugins_build_script"; then
+  echo 'Audacious plugins must consume the core closure without a second source-download pass' >&2
+  exit 1
+fi
 
 # 1232 x 568 is the physical landscape display. The fallback deliberately
 # leaves room for compositor decoration/panel; normal startup is maximized.

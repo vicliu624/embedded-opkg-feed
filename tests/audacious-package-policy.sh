@@ -136,7 +136,7 @@ for build_script in "$core_build_script" "$plugins_build_script"; do
   fi
 done
 expect_contains 'tdvp-audacious-dirclean' "$plugins_build_script"
-expect_contains 'test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc"' "$core_build_script"
+expect_contains 'test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"' "$core_build_script"
 expect_contains 'test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc"' "$plugins_build_script"
 expect_contains 'tdvp_prepare_locked_buildroot_download "$feed_root/packages/audacious-core"' "$plugins_build_script"
 expect_contains 'Audacious core/plugin download inputs collide' "$plugins_build_script"

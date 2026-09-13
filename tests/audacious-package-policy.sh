@@ -144,6 +144,8 @@ expect_contains 'BR2_PACKAGE_TDVP_AUDACIOUS --enable BR2_PACKAGE_TDVP_AUDACIOUS_
 expect_contains 'mkdir -- "$closure_download_dir"' "$core_build_script"
 expect_contains 'cp -a -- "$buildroot_download_dir/." "$closure_download_dir/"' "$core_build_script"
 expect_contains 'Buildroot owns the archive names and DL_SUBDIR layout' "$core_build_script"
+expect_contains 'Audacious Buildroot download closure link escapes its root' "$core_build_script"
+expect_contains 'readlink -f -- "$closure_link"' "$core_build_script"
 if grep -Fq 'source closure omitted verified Buildroot archive' "$core_build_script" || \
    grep -Fq 'source closure omitted required Buildroot archive' "$core_build_script"; then
   echo 'Audacious core must retain the full Buildroot-generated source closure without a hand-maintained archive list' >&2
@@ -151,6 +153,7 @@ if grep -Fq 'source closure omitted verified Buildroot archive' "$core_build_scr
 fi
 expect_contains 'closure_download_dir="$TDVP_FEED_STAGING_ROOT/.tdvp-audacious-buildroot-download-closure"' "$plugins_build_script"
 expect_contains 'cp -a -- "$closure_download_dir/." "$download_dir/"' "$plugins_build_script"
+expect_contains 'Audacious core Buildroot download closure link escapes its root' "$plugins_build_script"
 if grep -Fq 'Audacious plugin download closure omitted required Buildroot archive' "$plugins_build_script"; then
   echo 'Audacious plugins must use the complete core closure without a hand-maintained archive list' >&2
   exit 1

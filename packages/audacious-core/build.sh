@@ -173,10 +173,20 @@ env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH
 }
 mkdir -- "$closure_download_dir"
 cp -a -- "$buildroot_download_dir/." "$closure_download_dir/"
-find "$closure_download_dir" -type l -print -quit | grep -q . && {
-  echo 'Audacious Buildroot download closure must not contain symbolic links' >&2
-  exit 71
-}
+# Buildroot's reviewed download cache includes Git source trees whose internal
+# links are part of the upstream source layout. Preserve those links for the
+# downstream Buildroot invocation, while refusing a link that escapes the
+# private closure or cannot be resolved safely.
+while IFS= read -r -d '' closure_link; do
+  closure_target=$(readlink -f -- "$closure_link") || {
+    echo "Audacious Buildroot download closure has an unresolved symbolic link: $closure_link" >&2
+    exit 71
+  }
+  [[ "$closure_target" == "$closure_download_dir/"* ]] || {
+    echo "Audacious Buildroot download closure link escapes its root: $closure_link" >&2
+    exit 71
+  }
+done < <(find "$closure_download_dir" -type l -print0)
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" tdvp-audacious-dirclean
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" TARGET_DIR="$install_root" tdvp-audacious-install-target || {
   rc=$?

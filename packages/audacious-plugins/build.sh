@@ -54,10 +54,16 @@ closure_download_dir="$TDVP_FEED_STAGING_ROOT/.tdvp-audacious-buildroot-download
   echo "Audacious plugins need the core Buildroot download closure: $closure_download_dir" >&2
   exit 70
 }
-find "$closure_download_dir" -type l -print -quit | grep -q . && {
-  echo 'Audacious core Buildroot download closure contains a symbolic link' >&2
-  exit 70
-}
+while IFS= read -r -d '' closure_link; do
+  closure_target=$(readlink -f -- "$closure_link") || {
+    echo "Audacious core Buildroot download closure has an unresolved symbolic link: $closure_link" >&2
+    exit 70
+  }
+  [[ "$closure_target" == "$closure_download_dir/"* ]] || {
+    echo "Audacious core Buildroot download closure link escapes its root: $closure_link" >&2
+    exit 70
+  }
+done < <(find "$closure_download_dir" -type l -print0)
 cp -a -- "$closure_download_dir/." "$download_dir/"
 payload_dir="$package_dir/root"
 config_hash=$(sha256sum "$build_output/.config" | awk '{print $1}')

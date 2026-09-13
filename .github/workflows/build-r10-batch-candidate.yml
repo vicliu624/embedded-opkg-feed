@@ -387,17 +387,13 @@ jobs:
 
           # The cached Buildroot host tree can contain a staging sysroot
           # symlink pointing at the temporary directory used by the runner
-          # that created the cache.  That directory does not exist on a new
-          # runner; leave Buildroot a real staging directory so the external
-          # toolchain package can repopulate it safely.
+          # that created the cache.  Remove only that stale link.  A real
+          # cached sysroot contains the external-toolchain startup objects
+          # needed by package configure/link tests and must be preserved.
           staging_arch_dir="$build_output/host/riscv64-buildroot-linux-gnu"
           staging_sysroot="$staging_arch_dir/sysroot"
-          # Treat every cached staging link as stale.  Even when its old
-          # /tmp target happens to survive on the runner, it belongs to a
-          # different cache producer and Buildroot will rewrite it into a
-          # broken relative link while installing the external toolchain.
-          if [[ -e "$staging_arch_dir" || -L "$staging_arch_dir" ]]; then
-            rm -rf -- "$staging_arch_dir"
+          if [[ -L "$staging_arch_dir" ]]; then
+            rm -f -- "$staging_arch_dir"
           fi
           mkdir -p -- "$staging_sysroot"
           while IFS= read -r -d '' cached_link; do

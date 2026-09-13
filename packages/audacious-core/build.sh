@@ -167,5 +167,9 @@ source_version=${VERSION%-*}
 install -Dm 0644 "$build_output/build/tdvp-audacious-$source_version/COPYING" "$payload_dir/usr/share/licenses/audacious-core/COPYING"
 mkdir -p -- "$TDVP_FEED_STAGING_ROOT/usr"
 cp -a -- "$install_root/usr/." "$TDVP_FEED_STAGING_ROOT/usr/"
-test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc"
+# The disposable staging directory at the fixed Buildroot path receives the
+# package's development metadata during the package build.  The snapshot in
+# buildroot_staging_root predates this package and therefore cannot contain
+# audacious.pc; validate the live staging tree instead.
+test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"
 echo "audacious-core payload ready: $payload_dir"

@@ -110,6 +110,7 @@ if [[ -e "$buildroot_support_dir/Config.in" || -e "$buildroot_support_dir/tdvp-a
   exit 1
 fi
 expect_contains 'package/tdvp-audacious/Config.in' "$core_build_script"
+expect_contains 'package/tdvp-audacious-plugins/Config.in' "$core_build_script"
 expect_contains 'package/tdvp-audacious/Config.in' "$plugins_build_script"
 expect_contains 'package/tdvp-audacious-plugins/Config.in' "$plugins_build_script"
 for build_script in "$core_build_script" "$plugins_build_script"; do
@@ -139,6 +140,7 @@ expect_contains 'tdvp-audacious-dirclean' "$plugins_build_script"
 expect_contains 'test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"' "$core_build_script"
 expect_contains 'test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc"' "$plugins_build_script"
 expect_contains 'closure_download_dir=${TDVP_FEED_STAGING_ROOT:-}/.tdvp-audacious-buildroot-download-closure' "$core_build_script"
+expect_contains 'BR2_PACKAGE_TDVP_AUDACIOUS --enable BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS' "$core_build_script"
 expect_contains 'mkdir -- "$closure_download_dir"' "$core_build_script"
 expect_contains 'cp -a -- "$buildroot_download_dir/." "$closure_download_dir/"' "$core_build_script"
 expect_contains "'alsa-lib/alsa-lib-1.2.13.tar.bz2'" "$core_build_script"
@@ -154,7 +156,7 @@ cmp -s -- "$repo_root/packages/audacious-plugins/patches/0001-meson-use-target-p
 }
 expect_contains "join_paths(get_option('prefix'), get_option('libdir'), 'audacious')" "$plugins_buildroot_dir/0001-meson-use-target-plugin-directory.patch"
 expect_contains 'BR2_PRIMARY_SITE_ONLY=y' "$plugins_build_script"
-expect_contains 'libglib2-source' "$core_build_script"
+expect_contains 'make -C "$build_output" source' "$core_build_script"
 if grep -Fq 'BR2_BACKUP_SITE=' "$plugins_build_script"; then
   echo 'Audacious plugins must consume the core closure without a second source-download pass' >&2
   exit 1

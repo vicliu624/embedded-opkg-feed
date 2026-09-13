@@ -13,12 +13,13 @@ package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 feed_root=$(cd -- "$package_dir/../.." && pwd)
 support_dir="$feed_root/support/audacious-buildroot"
 support_core_dir="$support_dir/tdvp-audacious"
+support_plugins_dir="$support_dir/tdvp-audacious-plugins"
 sdk_root=$4
 source "$package_dir/package.env"
 # shellcheck source=../../support/buildroot-feed-session.sh
 source "$feed_root/support/buildroot-feed-session.sh"
 
-[[ -d "$sdk_root" && -d "$support_core_dir" ]] || { echo 'audacious-core needs the matching Buildroot SDK and core support files' >&2; exit 66; }
+[[ -d "$sdk_root" && -d "$support_core_dir" && -d "$support_plugins_dir" ]] || { echo 'audacious-core needs the matching Buildroot SDK and Audacious support files' >&2; exit 66; }
 [[ -n "${TDVP_FEED_STAGING_ROOT:-}" && -d "$TDVP_FEED_STAGING_ROOT" && ! -L "$TDVP_FEED_STAGING_ROOT" ]] || {
   echo 'Audacious core needs TDVP_FEED_STAGING_ROOT from scripts/build-all.sh' >&2
   exit 66
@@ -35,6 +36,7 @@ buildroot_staging_source="$build_output/host/riscv64-buildroot-linux-gnu/sysroot
 [[ -d "$buildroot_staging_source" ]] || { echo "Audacious core needs the SDK Buildroot staging sysroot: $buildroot_staging_source" >&2; exit 70; }
 
 staged_core_package="$buildroot_tree/package/tdvp-audacious"
+staged_plugins_package="$buildroot_tree/package/tdvp-audacious-plugins"
 config_file="$buildroot_tree/package/Config.in"
 config_backup=$(mktemp "$build_output/.config.tdvp-audacious.XXXXXX")
 config_old_backup=
@@ -68,6 +70,7 @@ config_saved=0
 config_old_saved=0
 package_config_saved=0
 core_package_staged=0
+plugins_package_staged=0
 staging_source_moved=0
 staging_source_redirected=0
 
@@ -96,6 +99,7 @@ cleanup() {
       rm -f -- "$build_output/.config.old" || rc=102
     fi
   fi
+  if [[ "$plugins_package_staged" -eq 1 ]]; then rm -rf -- "$staged_plugins_package"; fi
   if [[ "$core_package_staged" -eq 1 ]]; then rm -rf -- "$staged_core_package"; fi
   if [[ "$staging_source_moved" -eq 1 ]]; then
     if [[ "$staging_source_redirected" -eq 1 ]]; then
@@ -125,6 +129,7 @@ cleanup() {
 trap cleanup EXIT
 
 [[ ! -e "$staged_core_package" ]] || { echo "refusing to replace existing Buildroot package: $staged_core_package" >&2; exit 71; }
+[[ ! -e "$staged_plugins_package" ]] || { echo "refusing to replace existing Buildroot package: $staged_plugins_package" >&2; exit 71; }
 cp -- "$build_output/.config" "$config_backup"; config_saved=1
 if [[ -e "$build_output/.config.old" || -L "$build_output/.config.old" ]]; then
   [[ -f "$build_output/.config.old" && ! -L "$build_output/.config.old" ]] || { echo 'Buildroot config backup is not a regular file' >&2; exit 73; }
@@ -135,7 +140,8 @@ if [[ -e "$build_output/.config.old" || -L "$build_output/.config.old" ]]; then
 fi
 cp -- "$config_file" "$package_config_backup"; package_config_saved=1
 cp -a -- "$support_core_dir" "$staged_core_package"; core_package_staged=1
-printf '\nsource "package/tdvp-audacious/Config.in"\n' >>"$config_file"
+cp -a -- "$support_plugins_dir" "$staged_plugins_package"; plugins_package_staged=1
+printf '\nsource "package/tdvp-audacious/Config.in"\nsource "package/tdvp-audacious-plugins/Config.in"\n' >>"$config_file"
 # Do not install feed-only headers or .pc files into the caller's SDK sysroot.
 # A full copy is used rather than a hard-link farm: Buildroot is allowed to
 # replace development paths while installing tdvp-audacious.
@@ -148,13 +154,13 @@ mv -- "$buildroot_staging_source" "$buildroot_staging_backup"; staging_source_mo
 mkdir -- "$buildroot_staging_source"
 cp -a -- "$buildroot_staging_root/." "$buildroot_staging_source/"
 
-"$buildroot_tree/utils/config" --file "$build_output/.config" --enable BR2_PACKAGE_TDVP_AUDACIOUS
+"$buildroot_tree/utils/config" --file "$build_output/.config" --enable BR2_PACKAGE_TDVP_AUDACIOUS --enable BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" olddefconfig
 grep -qx 'BR2_PACKAGE_TDVP_AUDACIOUS=y' "$build_output/.config"
-# Resolve the complete configured Buildroot source closure before entering the
-# offline install transaction. The package-specific target does not visit
-# transitive dependencies. Buildroot hash-checks any archive fetched upstream.
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_BACKUP_SITE=https://sources.buildroot.net make -C "$build_output" tdvp-audacious-source libglib2-source libgtk3-source
+grep -qx 'BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS=y' "$build_output/.config"
+# Resolve the source closure with the downstream plugins recipe enabled. This
+# download-only pass covers its ALSA, PulseAudio, FFmpeg, GTK3 and GLib
+# dependencies without compiling the plugins into this core package.
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_BACKUP_SITE=https://sources.buildroot.net make -C "$build_output" source
 # Capture the complete, hash-checked source closure before this core
 # transaction removes its private download directory. The plugins recipe

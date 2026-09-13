@@ -148,6 +148,8 @@ cmp -s -- "$repo_root/packages/audacious-plugins/patches/0001-meson-use-target-p
 }
 expect_contains "join_paths(get_option('prefix'), get_option('libdir'), 'audacious')" "$plugins_buildroot_dir/0001-meson-use-target-plugin-directory.patch"
 expect_contains 'BR2_PRIMARY_SITE_ONLY=y' "$plugins_build_script"
+expect_contains 'tdvp-audacious-plugins-source' "$plugins_build_script"
+expect_contains 'tdvp-audacious-source' "$core_build_script"
 expect_contains '"$core_download_dir"' "$plugins_build_script"
 
 # 1232 x 568 is the physical landscape display. The fallback deliberately

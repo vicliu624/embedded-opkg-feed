@@ -6,4 +6,4 @@ package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=../../support/buildroot-command-package.sh
 source "$package_dir/../../support/buildroot-command-package.sh"
 tdvp_buildroot_command_package "$package_dir" "$4" "${TDVP_DEVEL_BUILDROOT_OUTPUT:-}" \
-  BR2_PACKAGE_GAWK gawk 'GAWK_VERSION = 5.3.1' 'gawk awk'
+  BR2_PACKAGE_GAWK gawk 'GAWK_VERSION = 5.3.1' 'gawk'

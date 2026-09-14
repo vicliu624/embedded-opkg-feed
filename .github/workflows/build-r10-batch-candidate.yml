@@ -593,14 +593,20 @@ jobs:
           overlay_root="${RUNNER_TEMP}/tdvp-wayland-sdk-overlay"
           if [[ '${{ steps.restore-wayland-sdk-overlay.outputs.cache-hit }}' != true ]]; then
             # The compact SDK cache retains target runtime libraries but does
-            # not guarantee every source archive is already downloaded.
-            # Ask Buildroot to fetch and hash-check FreeType only; this target
-            # never configures, compiles, or installs it into target/. The
-            # bridge then extracts only its verified public headers.
-            env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
-              PATH="$build_output/host/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-              BR2_DL_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl" \
-              make -C "$build_output" freetype-source
+            # not guarantee every source archive is retained. The SDK cache
+            # can retain a Buildroot download stamp after its archive was
+            # excluded, so fetch the exact Buildroot-locked FreeType archive
+            # explicitly. This writes only the temporary download cache; it
+            # never configures, compiles, or installs into target/.
+            freetype_archive="${RUNNER_TEMP}/tdvp-k230-sdk/dl/freetype-2.13.3.tar.xz"
+            if [[ ! -f "$freetype_archive" ]]; then
+              curl --fail --location --proto '=https' --tlsv1.2 --retry 3 \
+                --output "$freetype_archive" \
+                'https://download.savannah.gnu.org/releases/freetype/freetype-2.13.3.tar.xz'
+            fi
+            printf '%s  %s\n' \
+              '0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289' \
+              "$freetype_archive" | sha256sum --check --status
             bash ./scripts/prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$overlay_root"
           fi
           export TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay_root"

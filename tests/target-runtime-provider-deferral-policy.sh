@@ -46,7 +46,7 @@ grep -Fq 'copy_header_file zlib.h' "$repo_root/scripts/prepare-tdvp-wayland-sdk-
 grep -Fq 'copy_wayland_protocols' "$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh"
 grep -Fq 'share/wayland-protocols/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' "$repo_root/scripts/tdvp-k230-sdk.sh"
 grep -Fq 'locked FreeType source archive digest differs' "$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh"
-grep -Fq 'It never rebuilds FreeType or' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
+grep -Fq 'make -C "$build_output" freetype-source' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA: r3' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'Restore the firmware-matched Wayland development bridge' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 ! grep -Fq 'freetype-dirclean freetype' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"

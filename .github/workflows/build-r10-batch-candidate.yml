@@ -592,11 +592,15 @@ jobs:
 
           overlay_root="${RUNNER_TEMP}/tdvp-wayland-sdk-overlay"
           if [[ '${{ steps.restore-wayland-sdk-overlay.outputs.cache-hit }}' != true ]]; then
-            # The compact SDK cache retains target runtime libraries and the
-            # locked Buildroot source downloads, but omits package build
-            # trees. The bridge extracts only FreeType's verified public
-            # headers from that source archive. It never rebuilds FreeType or
-            # mutates target/, whose bytes are the runtime-catalogue contract.
+            # The compact SDK cache retains target runtime libraries but does
+            # not guarantee every source archive is already downloaded.
+            # Ask Buildroot to fetch and hash-check FreeType only; this target
+            # never configures, compiles, or installs it into target/. The
+            # bridge then extracts only its verified public headers.
+            env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
+              PATH="$build_output/host/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+              BR2_DL_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl" \
+              make -C "$build_output" freetype-source
             bash ./scripts/prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$overlay_root"
           fi
           export TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay_root"

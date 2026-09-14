@@ -47,27 +47,12 @@ fi
 [[ -f "$include_source/wayland-client.h" ]] || die 'Wayland client headers are missing'
 
 # Buildroot's SDK sysroot includes the development view of most firmware
-# libraries, but strips FreeType's public headers from this profile.  The
-# matching completed firmware build remains the authoritative fallback: use
-# its one FreeType build tree only when the sysroot/target roots do not expose
-# the required development files.  This keeps the overlay ABI-bound and does
-# not synthesise headers or metadata from the build host.
+# libraries, but strips FreeType's public headers from this profile.  Extract
+# the locked Buildroot source archive only when the sysroot/target roots do
+# not expose them.  Building FreeType here would rewrite target/usr/lib and
+# invalidate the byte-identical runtime catalogue used by an incremental feed.
 header_sources=("$include_source" "$sysroot/usr/include" "$build_root/target/usr/include")
-freetype_build_dir=
-find_freetype_build_dir() {
-  [[ -n "$freetype_build_dir" ]] && return 0
-  local -a matches=()
-  shopt -s nullglob
-  matches=("$build_root"/build/freetype-*)
-  shopt -u nullglob
-  [[ ${#matches[@]} -eq 1 && -d "${matches[0]}" ]] || {
-    die 'the SDK and target roots omit FreeType development files, and the completed firmware build has no unique build/freetype-* fallback'
-  }
-  freetype_build_dir=${matches[0]}
-  [[ -d "$freetype_build_dir/include/freetype" && -f "$freetype_build_dir/include/ft2build.h" ]] || {
-    die "FreeType fallback has incomplete public headers: $freetype_build_dir"
-  }
-}
+freetype_headers_dir=
 
 has_freetype_headers=0
 for directory in "${header_sources[@]}"; do
@@ -76,9 +61,31 @@ for directory in "${header_sources[@]}"; do
     break
   fi
 done
+temporary=$(mktemp -d "$overlay_parent/.${overlay_name}.tmp.XXXXXX")
+cleanup() { rm -rf -- "$temporary"; }
+trap cleanup EXIT
+
+find_freetype_headers_dir() {
+  [[ -n "$freetype_headers_dir" ]] && return 0
+  local dl_root archive expected_sha actual_sha source_root
+  dl_root=${TDVP_BUILDROOT_BASE_DOWNLOAD_DIR:-"$build_root/../../dl"}
+  archive=${TDVP_FREETYPE_SOURCE_ARCHIVE:-"$dl_root/freetype-2.13.3.tar.xz"}
+  expected_sha=${TDVP_FREETYPE_SOURCE_SHA256:-0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289}
+  [[ -f "$archive" ]] || die "locked FreeType source archive is missing: $archive"
+  actual_sha=$(sha256sum -- "$archive" | awk '{print $1}')
+  [[ "$actual_sha" == "$expected_sha" ]] || die "locked FreeType source archive digest differs: $archive"
+  mkdir -p "$temporary/freetype-source"
+  tar -xf "$archive" -C "$temporary/freetype-source"
+  source_root=$(find "$temporary/freetype-source" -mindepth 1 -maxdepth 1 -type d -name 'freetype-*' -print -quit)
+  [[ -n "$source_root" && -d "$source_root/include/freetype" && -f "$source_root/include/ft2build.h" ]] || {
+    die "locked FreeType source archive has incomplete public headers: $archive"
+  }
+  freetype_headers_dir="$source_root/include"
+}
+
 if [[ "$has_freetype_headers" -eq 0 ]]; then
-  find_freetype_build_dir
-  header_sources+=("$freetype_build_dir/include")
+  find_freetype_headers_dir
+  header_sources+=("$freetype_headers_dir")
 fi
 
 pc_sources=(
@@ -99,9 +106,6 @@ protocols_sources=(
   "$sysroot/usr/share/wayland-protocols"
 )
 
-temporary=$(mktemp -d "$overlay_parent/.${overlay_name}.tmp.XXXXXX")
-cleanup() { rm -rf -- "$temporary"; }
-trap cleanup EXIT
 mkdir -p "$temporary/include" "$temporary/lib/pkgconfig"
 
 copy_header_file() {
@@ -137,10 +141,6 @@ copy_pc_file() {
       break
     fi
   done
-  if [[ -z "$source" && "$pc" == freetype2 ]]; then
-    find_freetype_build_dir
-    source=$(find "$freetype_build_dir" -type f -name 'freetype2.pc' -print | LC_ALL=C sort | sed -n '1p')
-  fi
   [[ -n "$source" ]] || die "required pkg-config metadata is missing: $pc.pc"
   cp -a -- "$source" "$temporary/lib/pkgconfig/$pc.pc"
 }

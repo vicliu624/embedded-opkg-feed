@@ -58,7 +58,7 @@ env:
   # The SDK cache deliberately excludes package build trees. Keep the small,
   # ABI-bound development bridge separately so application batches do not
   # repeatedly materialize development headers from Buildroot sources.
-  TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA: r2
+  TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA: r3
 
 jobs:
   build-sdk-base:
@@ -592,15 +592,11 @@ jobs:
 
           overlay_root="${RUNNER_TEMP}/tdvp-wayland-sdk-overlay"
           if [[ '${{ steps.restore-wayland-sdk-overlay.outputs.cache-hit }}' != true ]]; then
-            # The compact SDK cache retains package stamps, host tools and
-            # target runtime libraries and protocol XML, but not package build
-            # trees. Rebuild only FreeType to restore its matching public
-            # headers, then cache the resulting bridge for all later
-            # incremental batches.
-            env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
-              PATH="$build_output/host/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-              BR2_DL_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl" \
-              make -C "$build_output" freetype-dirclean freetype
+            # The compact SDK cache retains target runtime libraries and the
+            # locked Buildroot source downloads, but omits package build
+            # trees. The bridge extracts only FreeType's verified public
+            # headers from that source archive. It never rebuilds FreeType or
+            # mutates target/, whose bytes are the runtime-catalogue contract.
             bash ./scripts/prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$overlay_root"
           fi
           export TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay_root"

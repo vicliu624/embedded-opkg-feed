@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Package only the curl command from libcurl-4's immediately preceding locked
-# Buildroot source build. The command is not rebuilt from a different SDK,
-# copied from a firmware root, or taken from a Debian binary package.
+# Use libcurl-4's immediately preceding locked Buildroot source build to
+# populate the matching SDK/sysroot. r10 already ships curl, so the final IPK
+# carries the exact reviewed command from the locked image root.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -50,6 +50,21 @@ readelf_tool="$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"
   exit 70
 }
 
+base_root=${TDVP_FEED_BASE_ROOT:-}
+base_command="$base_root/usr/bin/curl"
+[[ -n "$base_root" && -f "$base_command" && ! -L "$base_command" ]] || {
+  echo 'curl requires TDVP_FEED_BASE_ROOT with the locked image /usr/bin/curl' >&2
+  exit 71
+}
+"$readelf_tool" -h "$base_command" 2>/dev/null | grep -Fq 'Machine:                           RISC-V' || {
+  echo 'locked image supplies a non-RISC-V curl command' >&2
+  exit 72
+}
+"$readelf_tool" -d "$base_command" 2>/dev/null | grep -Fq 'Shared library: [libcurl.so.4]' || {
+  echo 'locked image curl lacks its reviewed libcurl.so.4 dependency' >&2
+  exit 73
+}
+
 payload_dir=$(tdvp_prepare_generated_payload_root "$package_dir")
 cleanup() {
   local rc=$?
@@ -63,7 +78,9 @@ cleanup() {
 }
 trap cleanup ERR
 
-install -Dm 0755 -- "$stage_command" "$payload_dir/usr/bin/curl"
+# The source-built command remains in the staging proof for build-time use.
+# The installable package owns the exact command already reviewed in r10.
+install -Dm 0755 -- "$base_command" "$payload_dir/usr/bin/curl"
 tdvp_remove_elf_runtime_search_paths "$readelf_tool" "$payload_dir/usr/bin/curl"
 tdvp_assert_elf_without_runtime_search_path "$readelf_tool" "$payload_dir/usr/bin/curl"
 payload_dir=

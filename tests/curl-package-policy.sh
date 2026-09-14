@@ -22,6 +22,7 @@ expect_line "^PACKAGE_RELEASES='r10'$" "$package_dir/package.env"
 expect_line "^PACKAGE_DEPENDS='libcurl-4 \\(= 8[.]12[.]1-1\\), ca-certificates \\(= 2025[.]02[.]1-1\\)'$" "$package_dir/package.env"
 expect_line "^PACKAGE_BUILD_DEPENDS='libcurl-4'$" "$package_dir/package.env"
 expect_line '^PACKAGE_AUTO_RUNTIME_DEPENDS=1$' "$package_dir/package.env"
+expect_line "^PACKAGE_BASE_OVERLAY='identical'$" "$package_dir/package.env"
 
 test -f "$package_dir/source.lock"
 expect_line "^UPSTREAM_NAME='curl'$" "$package_dir/source.lock"
@@ -40,9 +41,12 @@ expect_line 'curl requires libcurl-4 to stage its locked source-built /usr/bin/c
 expect_line 'libcurl-4 Buildroot staging proof' "$build_file"
 expect_line 'Machine:                           RISC-V' "$build_file"
 expect_line 'Shared library: \[libcurl[.]so[.]4\]' "$build_file"
+expect_line 'curl requires TDVP_FEED_BASE_ROOT with the locked image /usr/bin/curl' "$build_file"
+expect_line 'locked image supplies a non-RISC-V curl command' "$build_file"
+expect_line 'locked image curl lacks its reviewed libcurl.so.4 dependency' "$build_file"
 expect_line 'tdvp_remove_elf_runtime_search_paths' "$build_file"
 expect_line 'tdvp_assert_elf_without_runtime_search_path' "$build_file"
-expect_line 'install -Dm 0755 -- "\$stage_command" "\$payload_dir/usr/bin/curl"' "$build_file"
+expect_line 'install -Dm 0755 -- "\$base_command" "\$payload_dir/usr/bin/curl"' "$build_file"
 if grep -Eq 'curl.*(https?://|apt|dpkg|debian)' "$build_file"; then
   echo 'curl leaf must not fetch or import a foreign binary during target packaging' >&2
   exit 1

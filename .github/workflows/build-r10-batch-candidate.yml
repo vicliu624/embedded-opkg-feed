@@ -52,6 +52,9 @@ env:
   # cache deliberately excludes flash images.
   TDVP_SDK_CACHE_KEY: tdvp-k230-r1-sdk-23f210938e4882dbe3663840259c2520868f3b8b-rm69a10-v3
   TDVP_BUILDROOT_DL_CACHE_KEY: tdvp-k230-r1-buildroot-dl-23f210938e4882dbe3663840259c2520868f3b8b-rm69a10-v1
+  # r2 rejects the earlier incomplete runtime-base cache.  The base is saved
+  # only after Packages and its image-provider alternatives have been checked.
+  TDVP_RUNTIME_BASE_CACHE_SCHEMA: r2
 
 jobs:
   build-sdk-base:
@@ -217,7 +220,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/tdvp-r10-runtime-base
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ env.TDVP_RUNTIME_BASE_CACHE_SCHEMA }}-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
 
       - name: Download the locked r10 image ownership manifest
         if: steps.restore-runtime-base.outputs.cache-hit != 'true'
@@ -256,7 +259,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ runner.temp }}/tdvp-r10-runtime-base
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ env.TDVP_RUNTIME_BASE_CACHE_SCHEMA }}-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
 
       - name: Upload target-runtime base evidence
         uses: actions/upload-artifact@v4
@@ -349,7 +352,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/tdvp-r10-runtime-base
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ env.TDVP_RUNTIME_BASE_CACHE_SCHEMA }}-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
           fail-on-cache-miss: true
 
       - name: Materialize the immutable target-runtime base for this batch

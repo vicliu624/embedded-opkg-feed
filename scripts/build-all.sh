@@ -186,11 +186,10 @@ if [[ "$runtime_catalog_enabled" -eq 1 ]]; then
     echo "runtime catalogue did not create its target-provider manifest: $target_runtime_provider_manifest" >&2
     exit 72
   }
-  # A valid image can have no transitional aliases when its non-ABI shared
-  # objects carry no SONAME (for example libvg_lite.so).  The catalogue still
-  # creates the map so downstream batches can consume it consistently; an
-  # empty file means there are simply no aliases to apply.
-  [[ -f "$image_provider_map" ]] || {
+  # The runtime catalogue must prove image ownership aliases before an
+  # incremental batch can package applications.  Without that evidence an
+  # application can overwrite immutable desktop-image runtime files.
+  [[ -s "$image_provider_map" ]] || {
     echo "runtime catalogue did not create its image-provider map: $image_provider_map" >&2
     exit 73
   }

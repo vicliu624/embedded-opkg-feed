@@ -152,8 +152,8 @@ done < <(find "$target_root/usr/lib" -maxdepth 1 -type f -name '*.so*' -print0 |
 # byte-identical image package, so opkg can satisfy the same alias without a
 # file collision.
 image_manifest="$target_root/usr/share/tdvp/opkg/image-base.json"
+declare -A image_path_owner=()
 if [[ -f "$image_manifest" ]]; then
-  declare -A image_path_owner=()
   while IFS=$'\t' read -r path package; do
     [[ -n "$path" && -n "$package" ]] || continue
     image_path_owner[$path]=$package
@@ -167,16 +167,84 @@ for path, package in owners.items():
     print(f"{path}\t{package}")
 PY
   )
-  for soname in "${!soname_file[@]}"; do
-    relative=${soname_file[$soname]#"$target_root"}
-    image_package=${image_path_owner[$relative]:-}
-    [[ "$image_package" =~ ^tdvp-image-[a-z0-9][a-z0-9+.-]*$ ]] || continue
-    printf '%s|%s\n' "${soname_package[$soname]}" "$image_package" >>"$image_provider_map"
-  done
-  LC_ALL=C sort -u -o "$image_provider_map" "$image_provider_map"
 else
-  echo "target image inventory missing; no transitional image provider aliases will be emitted: $image_manifest" >&2
+  # The reusable runtime-catalogue cache is captured before post-fakeroot,
+  # where image-base.json is installed.  Its Buildroot build tree still has
+  # the authoritative per-package installed-file records.  Recover unique
+  # target-path ownership from those records so incremental batches retain
+  # the exact same image-provider alternatives as a finished SD-card image.
+  build_dir=$(cd -- "$target_root/../build" 2>/dev/null && pwd || true)
+  [[ -n "$build_dir" && -d "$build_dir" ]] || {
+    echo "target image inventory and Buildroot ownership records are both unavailable: $image_manifest" >&2
+    exit 79
+  }
+  while IFS=$'\t' read -r path package; do
+    [[ -n "$path" && -n "$package" ]] || continue
+    image_path_owner[$path]=$package
+  done < <(python3 - "$target_root" "$build_dir" <<'PY'
+import csv
+import os
+import re
+import sys
+from collections import defaultdict
+from pathlib import PurePosixPath
+
+target_root, build_dir = map(os.path.realpath, sys.argv[1:3])
+claims = defaultdict(set)
+package_re = re.compile(r"[a-z0-9][a-z0-9+_.-]*\\Z")
+
+def normalized_target_path(raw):
+    raw = raw.strip().replace("\\\\", "/")
+    if not raw or raw.startswith("/"):
+        return None
+    path = PurePosixPath(raw)
+    if any(part in ("", ".", "..") for part in path.parts):
+        return None
+    parts = list(path.parts)
+    # Buildroot package records can predate usrmerge.  The cached target has
+    # the merged paths that the runtime scan uses, so translate only when the
+    # corresponding legacy directory is a symlink into /usr.
+    if parts[0] in ("bin", "sbin", "lib", "lib64"):
+        legacy = os.path.join(target_root, parts[0])
+        if os.path.islink(legacy):
+            parts.insert(0, "usr")
+    relative = "/" + "/".join(parts)
+    candidate = os.path.join(target_root, relative.lstrip("/"))
+    return relative if os.path.lexists(candidate) else None
+
+for current_root, _, files in os.walk(build_dir):
+    if ".files-list.txt" not in files:
+        continue
+    with open(os.path.join(current_root, ".files-list.txt"), newline="", encoding="utf-8") as stream:
+        for row in csv.reader(stream):
+            if len(row) != 2:
+                continue
+            package, raw_path = (field.strip() for field in row)
+            if not package_re.fullmatch(package):
+                continue
+            relative = normalized_target_path(raw_path)
+            if relative:
+                claims[relative].add("tdvp-image-" + package.replace("_", "-"))
+
+for relative, owners in sorted(claims.items()):
+    if len(owners) == 1:
+        print(f"{relative}\\t{owners.pop()}")
+PY
+  )
+  [[ ${#image_path_owner[@]} -gt 0 ]] || {
+    echo "Buildroot ownership records contain no installed target paths: $build_dir" >&2
+    exit 79
+  }
+  echo "recovered transitional image ownership from Buildroot records: $build_dir" >&2
 fi
+
+for soname in "${!soname_file[@]}"; do
+  relative=${soname_file[$soname]#"$target_root"}
+  image_package=${image_path_owner[$relative]:-}
+  [[ "$image_package" =~ ^tdvp-image-[a-z0-9][a-z0-9+.-]*$ ]] || continue
+  printf '%s|%s\n' "${soname_package[$soname]}" "$image_package" >>"$image_provider_map"
+done
+LC_ALL=C sort -u -o "$image_provider_map" "$image_provider_map"
 
 # A manifest entry for a SONAME that is already present in the selected target
 # is not a second provider.  It is a version attestation for the byte-identical
@@ -371,19 +439,21 @@ LC_ALL=C sort -u -o "$owner_map" "$owner_map"
 # libz.so.1 is intentionally owned by the reviewed `libz` recipe rather than
 # the mechanically derived `libz-1`).  Add aliases for the final owner as
 # well, so applications follow the same image-provider path after overrides.
-if [[ -f "$image_manifest" ]]; then
-  while IFS='|' read -r soname owner version; do
-    soname=${soname%$'\r'}
-    owner=${owner%$'\r'}
-    [[ -n "$soname" && -n "$owner" && "$soname" != \#* ]] || continue
-    [[ -n "${soname_file[$soname]:-}" ]] || continue
-    relative=${soname_file[$soname]#"$target_root"}
-    image_package=${image_path_owner[$relative]:-}
-    [[ "$image_package" =~ ^tdvp-image-[a-z0-9][a-z0-9+.-]*$ ]] || continue
-    printf '%s|%s\n' "$owner" "$image_package" >>"$image_provider_map"
-  done <"$owner_map"
-  LC_ALL=C sort -u -o "$image_provider_map" "$image_provider_map"
-fi
+while IFS='|' read -r soname owner version; do
+  soname=${soname%$'\r'}
+  owner=${owner%$'\r'}
+  [[ -n "$soname" && -n "$owner" && "$soname" != \#* ]] || continue
+  [[ -n "${soname_file[$soname]:-}" ]] || continue
+  relative=${soname_file[$soname]#"$target_root"}
+  image_package=${image_path_owner[$relative]:-}
+  [[ "$image_package" =~ ^tdvp-image-[a-z0-9][a-z0-9+.-]*$ ]] || continue
+  printf '%s|%s\n' "$owner" "$image_package" >>"$image_provider_map"
+done <"$owner_map"
+LC_ALL=C sort -u -o "$image_provider_map" "$image_provider_map"
+[[ -s "$image_provider_map" ]] || {
+  echo "no verified image-provider aliases were derived from target ownership" >&2
+  exit 79
+}
 
 copy_path() {
   local source=$1

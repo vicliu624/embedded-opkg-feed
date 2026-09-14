@@ -431,6 +431,12 @@ jobs:
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
+      - name: Preflight the reviewed GBA source archive
+        if: inputs.batch == 'games'
+        env:
+          TDVP_GBA_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r10-source-cache
+        run: bash ./tests/tdvp-gba-source-archive-policy.sh
+
       - name: Install the reviewed Go host for development-tools
         if: inputs.batch == 'development-tools'
         uses: actions/setup-go@v5

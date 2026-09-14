@@ -1,8 +1,7 @@
-# The pinned TDVP-owned commit is currently present in the local source cache
-# but not downloadable from its public GitHub archive endpoint. The cache is a
-# required release input and is seeded from git archive only after verifying
-# this exact local commit; an uncached build fails rather than substituting a
-# different revision.
+# The TDVP GBA frontend is built from GitHub's immutable archive for this exact
+# public commit. SHA-256 is checked before the archive enters the
+# content-addressed source cache. A cache miss may fetch only this pinned URL;
+# any changed upstream archive is rejected before cross compilation.
 FORMAT_VERSION='1'
 SOURCE_TYPE='git'
 UPSTREAM_NAME='cardputer-zero-gameboy-emulator'
@@ -11,11 +10,11 @@ UPSTREAM_VERSION='0.2.3'
 UPSTREAM_REVISION='a7c8830c1e0978e49995aebb52b80a0d3904d447'
 SOURCE_SNAPSHOT='https://github.com/vicliu624/cardputer-zero-gameboy-emulator/commit/a7c8830c1e0978e49995aebb52b80a0d3904d447'
 SOURCE_SELECTION_REASON='The TDVP-owned GBA frontend is rebuilt from the reviewed fixed commit and dynamically consumes the separately owned SDL2 and mGBA providers.'
-NON_PLATFORM_BUILD_INPUTS='A locally seeded git archive for the fixed commit, the release-local SDL2 and mGBA staging tree, and the matching K230 SDK; the source cache is mandatory because this commit is not presently downloadable.'
-SECURITY_STATUS='The local fixed-commit git archive is SHA-256 verified in the source cache before offline cross compilation.'
-VERIFIED_BY='TDVP source-lock verifier plus local git cat-file and git archive verification'
-VERIFIED_AT='2026-09-04'
+NON_PLATFORM_BUILD_INPUTS='The exact GitHub commit archive, the release-local SDL2 and mGBA staging tree, and the matching K230 SDK. The GBA recipe disables bundled and fetched SDL2/mGBA so those separately owned providers remain the only runtime sources.'
+SECURITY_STATUS='The fixed-commit GitHub archive is SHA-256 verified in the source cache before cross compilation; a cached source is rehashed before every use.'
+VERIFIED_BY='TDVP source-lock verifier plus two independent GitHub archive downloads and an exact commit/tree content comparison'
+VERIFIED_AT='2026-09-15'
 VERIFICATION_REFERENCE='https://github.com/vicliu624/cardputer-zero-gameboy-emulator/commit/a7c8830c1e0978e49995aebb52b80a0d3904d447'
 SOURCE_ARTIFACT_1_URL='https://github.com/vicliu624/cardputer-zero-gameboy-emulator/archive/a7c8830c1e0978e49995aebb52b80a0d3904d447.tar.gz'
 SOURCE_ARTIFACT_1_FILE='cardputer-zero-gameboy-emulator-a7c8830c1e0978e49995aebb52b80a0d3904d447.tar.gz'
-SOURCE_ARTIFACT_1_SHA256='7b048655419e958b172b82c9ee0f413b10a357f4c53e1b343ad0482b896585a6'
+SOURCE_ARTIFACT_1_SHA256='1f41cccf66a47231298ce727e835813db07829b3e75cc4d654d223f1098b3dc8'

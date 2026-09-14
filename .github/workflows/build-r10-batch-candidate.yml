@@ -55,6 +55,10 @@ env:
   # r2 rejects the earlier incomplete runtime-base cache.  The base is saved
   # only after Packages and its image-provider alternatives have been checked.
   TDVP_RUNTIME_BASE_CACHE_SCHEMA: r2
+  # The SDK cache deliberately excludes package build trees. Keep the small,
+  # ABI-bound development bridge separately so application batches do not
+  # repeatedly materialize development headers from Buildroot sources.
+  TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA: r1
 
 jobs:
   build-sdk-base:
@@ -356,6 +360,13 @@ jobs:
           path: ${{ runner.temp }}/tdvp-r10-source-cache
           key: tdvp-k230-r10-source-${{ hashFiles('packages/**/source.lock') }}
 
+      - name: Restore the firmware-matched Wayland development bridge
+        id: restore-wayland-sdk-overlay
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/tdvp-wayland-sdk-overlay
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-wayland-sdk-overlay-${{ env.TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA }}-${{ hashFiles('scripts/prepare-tdvp-wayland-sdk-overlay.sh', 'scripts/tdvp-k230-sdk.sh') }}
+
       - name: Restore the required target-runtime IPK base
         uses: actions/cache/restore@v4
         with:
@@ -573,13 +584,18 @@ jobs:
           done < <(find "$build_output/host" -type l -lname '/tmp/*' -print0)
           test -d "$staging_sysroot"
 
-          # ABI-bound packages such as SDL2 and TDVP GBA need the development
-          # view of the restored firmware libraries.  Generate it only after
-          # repairing a cached sysroot link that may point at a prior runner.
-          # The overlay remains a private build input; packages resolve the
-          # corresponding SONAMEs from the installed firmware image at runtime.
           overlay_root="${RUNNER_TEMP}/tdvp-wayland-sdk-overlay"
-          bash ./scripts/prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$overlay_root"
+          if [[ '${{ steps.restore-wayland-sdk-overlay.outputs.cache-hit }}' != true ]]; then
+            # The compact SDK cache retains package stamps, host tools and
+            # target runtime libraries, but not package build trees. Rebuild
+            # only FreeType to restore its matching public headers, then cache
+            # the resulting bridge for all later incremental batches.
+            env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
+              PATH="$build_output/host/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+              BR2_DL_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl" \
+              make -C "$build_output" freetype-dirclean freetype
+            bash ./scripts/prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$overlay_root"
+          fi
           export TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay_root"
           # Validate the generated bridge before starting a package build so a
           # missing development view fails in seconds rather than after a
@@ -649,6 +665,13 @@ jobs:
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.br_*
           key: ${{ env.TDVP_SDK_CACHE_KEY }}-package-stamps
+
+      - name: Save the firmware-matched Wayland development bridge
+        if: success() && steps.restore-wayland-sdk-overlay.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/tdvp-wayland-sdk-overlay
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-wayland-sdk-overlay-${{ env.TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA }}-${{ hashFiles('scripts/prepare-tdvp-wayland-sdk-overlay.sh', 'scripts/tdvp-k230-sdk.sh') }}
 
       - name: Upload the unsigned incremental batch
         if: inputs.batch != 'audacious-foundation'

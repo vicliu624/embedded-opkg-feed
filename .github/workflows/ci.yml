@@ -36,6 +36,7 @@ jobs:
             bash ./scripts/verify-stable-channel.sh --platform tdvp-k230-r1
           bash ./tests/build-shared-package-policy.sh
           bash ./tests/audacious-package-policy.sh
+          bash ./tests/reuse-published-ipk-payload-policy.sh
           bash ./tests/feed-overlay-composition-policy.sh
           bash ./tests/vim-package-policy.sh
 

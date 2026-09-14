@@ -28,4 +28,9 @@ for package in audacious-core audacious-plugins tdvp-netsurf; do
   grep -Fq 'BR2_PRIMARY_SITE_ONLY=y' "$build"
 done
 
+# A newer feed control revision may reuse an immutable older payload only when
+# the source control version is declared alongside its pinned URL and digest.
+grep -Fxq "REUSE_IPK_VERSION='0.10.5-1'" "$repo_root/packages/libmgba/package.env"
+grep -Fxq "REUSE_IPK_VERSION='3.10-1'" "$repo_root/packages/tdvp-netsurf/package.env"
+
 echo 'r10 offline legacy source policy: PASS'

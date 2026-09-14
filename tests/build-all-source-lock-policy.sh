@@ -89,7 +89,7 @@ printf '%s\n' \
   "SUPPORTED_PLATFORMS='fixture'" \
   "PACKAGE_KIND='application'" \
   "PACKAGE_RELEASES='r1'" \
-  "PACKAGE_BUILD_DEPENDS='fixture-profile'" \
+  "PACKAGE_BUILD_DEPENDS='fixture-profile,'" \
   "PACKAGE_AUTO_RUNTIME_DEPENDS=0" \
   "PACKAGE_BASE_OVERLAY='deny'" \
   "SOURCE_LOCK_EXEMPT_REASON='Fixture consumer uses only a previous build staging artifact.'" \

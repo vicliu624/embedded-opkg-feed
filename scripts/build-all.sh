@@ -298,8 +298,9 @@ read_recipe_value() {
 # "sdl2 (= 2.30.11-2), libmgba (= 0.10.5-1)"). A selective build still
 # needs every declared runtime package in its partial catalogue, so extract
 # only the package name while leaving version validation to build-ipk and
-# verify-feed. Build-only dependencies use the simpler documented
-# space-delimited PACKAGE_BUILD_DEPENDS format below.
+# verify-feed. Build-only dependencies accept comma-separated or
+# space-delimited PACKAGE_BUILD_DEPENDS entries; normalisation occurs when
+# recipe metadata is loaded so every dependency-graph pass sees the same set.
 emit_runtime_dependency_names() {
   local package=$1 raw dependency
   local -a dependencies=()
@@ -385,6 +386,7 @@ while IFS= read -r package_env; do
   package_source_staging=$(read_recipe_value "$package_env" PACKAGE_SOURCE_STAGING)
   package_source_staging=${package_source_staging:-0}
   package_build_depends=$(read_recipe_value "$package_env" PACKAGE_BUILD_DEPENDS)
+  package_build_depends=${package_build_depends//,/ }
   package_runtime_depends=$(read_recipe_value "$package_env" PACKAGE_DEPENDS)
 
   [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || {

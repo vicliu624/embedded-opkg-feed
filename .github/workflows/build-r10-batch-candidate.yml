@@ -217,6 +217,17 @@ jobs:
           path: ${{ runner.temp }}/tdvp-r10-runtime-base
           key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
 
+      - name: Download the locked r10 image ownership manifest
+        if: steps.restore-runtime-base.outputs.cache-hit != 'true'
+        run: |
+          set -Eeuo pipefail
+          source ./platforms/tdvp-k230-r1/platform.env
+          manifest="${RUNNER_TEMP}/tdvp-r10-image-base.json"
+          curl --fail --location --proto '=https' --tlsv1.2 --retry 3 \
+            --output "$manifest" "$IMAGE_OWNERSHIP_MANIFEST_URL"
+          printf '%s  %s\n' "$IMAGE_OWNERSHIP_MANIFEST_SHA256" "$manifest" | sha256sum --check --status
+          printf 'TDVP_IMAGE_PROVIDER_MANIFEST=%s\n' "$manifest" >>"$GITHUB_ENV"
+
       - name: Package the target-runtime IPK base once
         if: steps.restore-runtime-base.outputs.cache-hit != 'true'
         run: |

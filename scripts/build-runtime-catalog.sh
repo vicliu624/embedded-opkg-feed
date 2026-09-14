@@ -151,7 +151,18 @@ done < <(find "$target_root/usr/lib" -maxdepth 1 -type f -name '*.so*' -print0 |
 # canonical runtime package; a transitional image already has the
 # byte-identical image package, so opkg can satisfy the same alias without a
 # file collision.
-image_manifest="$target_root/usr/share/tdvp/opkg/image-base.json"
+image_manifest=${TDVP_IMAGE_PROVIDER_MANIFEST:-"$target_root/usr/share/tdvp/opkg/image-base.json"}
+if [[ -n "${TDVP_IMAGE_PROVIDER_MANIFEST:-}" ]]; then
+  [[ -f "$image_manifest" ]] || {
+    echo "configured image ownership manifest is missing: $image_manifest" >&2
+    exit 79
+  }
+  image_manifest_digest=$(sha256sum -- "$image_manifest" | awk '{print $1}')
+  [[ "$image_manifest_digest" == "$IMAGE_OWNERSHIP_MANIFEST_SHA256" ]] || {
+    echo "configured image ownership manifest digest differs from the platform lock: $image_manifest" >&2
+    exit 79
+  }
+fi
 declare -A image_path_owner=()
 if [[ -f "$image_manifest" ]]; then
   while IFS=$'\t' read -r path package; do

@@ -213,10 +213,48 @@ fi
 staging_root=$(mktemp -d)
 cleanup() { rm -rf -- "$staging_root"; }
 trap cleanup EXIT
+
+# A split build exports the development projection of one package to a later
+# transaction.  Linker names such as libaudcore.so are symbolic links by
+# design, so rejecting every link makes a valid shared-library provider
+# impossible to consume in the next batch.  Keep the projection hermetic:
+# accept only relative links whose resolved target remains inside its staging
+# root.  Absolute links, broken links, and links that escape the root are
+# rejected before an imported artifact is copied or an artifact is exported.
+assert_staging_links_are_internal() {
+  local root=$1 link target resolved
+  [[ -d "$root" && ! -L "$root" ]] || {
+    echo "staging root must be a regular directory: $root" >&2
+    exit 79
+  }
+  while IFS= read -r -d '' link; do
+    target=$(readlink -- "$link") || {
+      echo "could not read staging symbolic link: $link" >&2
+      exit 79
+    }
+    case "$target" in
+      /*)
+        echo "staging symbolic link must be relative: $link -> $target" >&2
+        exit 79
+        ;;
+    esac
+    resolved=$(readlink -f -- "$link") || {
+      echo "staging symbolic link is broken: $link -> $target" >&2
+      exit 79
+    }
+    [[ "$resolved" == "$root/"* ]] || {
+      echo "staging symbolic link escapes its root: $link -> $target" >&2
+      exit 79
+    }
+  done < <(find "$root" -type l -print0)
+}
+
 if [[ -n "$staging_import_dir" ]]; then
   # A staged build dependency is an explicit private CI input. Copy it into
   # this transaction's disposable root so no imported artifact can be mutated
   # by a package hook or leak into the next batch.
+  staging_import_dir=$(cd -- "$staging_import_dir" && pwd)
+  assert_staging_links_are_internal "$staging_import_dir"
   cp -a -- "$staging_import_dir/." "$staging_root/"
 fi
 
@@ -622,10 +660,7 @@ if [[ -n "$staging_export_dir" ]]; then
     printf 'provided-package\t%s\t%s\n' "$package" "$version" \
       >>"$staging_export_dir/tdvp-build-staging-manifest.tsv"
   done
-  find "$staging_export_dir" -type l -print -quit | grep -q . && {
-    echo 'exported staging root must not contain symbolic links' >&2
-    exit 79
-  }
+  assert_staging_links_are_internal "$staging_export_dir"
 fi
 
 "$script_dir/make-index.sh" "$feed_dir"

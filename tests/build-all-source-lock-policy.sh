@@ -71,6 +71,9 @@ printf '%s\n' \
   "printf '%s\\n' 'Fixture profile documentation.' >\"\$payload_dir/usr/share/doc/fixture-profile/README\"" \
   'mkdir -p -- "$TDVP_FEED_STAGING_ROOT/usr/include"' \
   "printf '%s\\n' 'fixture profile build interface' >\"\$TDVP_FEED_STAGING_ROOT/usr/include/fixture-profile.h\"" \
+  'mkdir -p -- "$TDVP_FEED_STAGING_ROOT/usr/lib"' \
+  "printf '%s\\n' 'fixture shared library' >\"\$TDVP_FEED_STAGING_ROOT/usr/lib/libfixture.so.1\"" \
+  'ln -s -- libfixture.so.1 "$TDVP_FEED_STAGING_ROOT/usr/lib/libfixture.so"' \
   >"$package_dir/build.sh"
 chmod +x -- "$package_dir/build.sh"
 
@@ -153,6 +156,8 @@ bash "$fixture_root/scripts/build-all.sh" \
   --export-staging "$staging_export" \
   --package fixture-profile
 test -s "$staging_export/usr/include/fixture-profile.h"
+test -L "$staging_export/usr/lib/libfixture.so"
+test "$(readlink -- "$staging_export/usr/lib/libfixture.so")" = 'libfixture.so.1'
 test -s "$staging_export/tdvp-build-staging-manifest.tsv"
 grep -Fqx $'built-package\tfixture-profile\t1.0-1' "$staging_export/tdvp-build-staging-manifest.tsv"
 
@@ -176,6 +181,31 @@ grep -Fq -- '--provided-package' "$fixture_root/scripts/build-all.sh"
 grep -Fq -- '--import-staging' "$fixture_root/scripts/build-all.sh"
 grep -Fq -- '--export-staging' "$fixture_root/scripts/build-all.sh"
 grep -Fq 'assert_provided_package()' "$fixture_root/scripts/build-all.sh"
+
+# A split artifact may carry linker-name links, but no link may resolve
+# outside the artifact.  Verify that an untrusted absolute link fails before
+# a consuming package hook is invoked.
+unsafe_staging="$work_root/staging-unsafe"
+cp -a -- "$staging_export" "$unsafe_staging"
+ln -s -- /etc/passwd "$unsafe_staging/usr/include/escaped-header"
+unsafe_output="$work_root/output-unsafe"
+unsafe_feed="$unsafe_output/fixture/riscv64"
+mkdir -p -- "$unsafe_feed"
+cp -- "$state_output/fixture/riscv64/fixture-profile_1.0-1_riscv64.ipk" "$unsafe_feed/"
+if bash "$fixture_root/scripts/build-all.sh" \
+  --platform fixture \
+  --release r1 \
+  --output "$unsafe_output" \
+  --require-source-locks \
+  --import-staging "$unsafe_staging" \
+  --provided-package fixture-profile \
+  --package fixture-consumer \
+  >"$work_root/unsafe-staging.log" 2>&1; then
+  echo 'build-all accepted an imported staging link that escapes its root' >&2
+  exit 1
+fi
+grep -Fq 'staging symbolic link must be relative:' "$work_root/unsafe-staging.log"
+grep -Fq 'assert_staging_links_are_internal()' "$fixture_root/scripts/build-all.sh"
 
 # The normal r1 fixture has no composable target-runtime catalogue.  Both
 # incremental-runtime switches must therefore reject it rather than quietly

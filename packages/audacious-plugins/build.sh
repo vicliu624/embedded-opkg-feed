@@ -62,7 +62,9 @@ base_download_dir=$(cd -- "$base_download_dir" && pwd)
 # source-lock helper. Add the reviewed SDK download baseline without mutating
 # either source. In a split batch, this also gives source validation an
 # offline, complete source set after core's per-transaction closure has gone.
-cp -a -- "$base_download_dir/." "$download_dir/"
+# Git object stores contain hard-linked read-only files; an object already
+# present in this disposable directory is identical baseline input.
+cp -an -- "$base_download_dir/." "$download_dir/"
 payload_dir="$package_dir/root"
 config_hash=$(sha256sum "$build_output/.config" | awk '{print $1}')
 buildroot_staging_inode=$(stat -c '%d:%i' "$buildroot_staging_source")

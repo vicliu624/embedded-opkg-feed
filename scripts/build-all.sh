@@ -276,6 +276,7 @@ declare -A build_state=()
 declare -A force_source_build=()
 declare -A provided_package=()
 declare -A runtime_catalogue_package=()
+declare -A source_staging_provider=()
 declare -A target_runtime_provider=()
 declare -A target_runtime_provider_sonames=()
 declare -a available_packages=()
@@ -344,6 +345,10 @@ assert_runtime_catalogue_package() {
     exit 75
   }
   runtime_catalogue_package[$package]=1
+  if [[ "${source_staging_provider[$package]:-0}" == 1 ]]; then
+    echo "source staging recipe retained; runtime catalogue owns final package: $package ($version)" >&2
+    return 0
+  fi
   echo "source recipe deferred; runtime catalogue already provides: $package ($version)" >&2
 }
 
@@ -377,11 +382,17 @@ while IFS= read -r package_env; do
   package_releases=${package_releases:-r1}
   package_kind=$(read_recipe_value "$package_env" PACKAGE_KIND)
   package_kind=${package_kind:-application}
+  package_source_staging=$(read_recipe_value "$package_env" PACKAGE_SOURCE_STAGING)
+  package_source_staging=${package_source_staging:-0}
   package_build_depends=$(read_recipe_value "$package_env" PACKAGE_BUILD_DEPENDS)
   package_runtime_depends=$(read_recipe_value "$package_env" PACKAGE_DEPENDS)
 
   [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || {
     echo "invalid or missing PACKAGE in $package_env" >&2
+    exit 66
+  }
+  [[ "$package_source_staging" == 0 || "$package_source_staging" == 1 ]] || {
+    echo "invalid PACKAGE_SOURCE_STAGING for $package: $package_source_staging" >&2
     exit 66
   }
   if [[ " $supported_platforms " != *" $PLATFORM_SLUG "* ]] || \
@@ -400,8 +411,12 @@ while IFS= read -r package_env; do
       echo "target runtime provider version is not attested for $package: target $target_sonames is $target_version, recipe is $recipe_version" >&2
       exit 74
     }
-    echo "source runtime recipe deferred; target owns $target_sonames: $package ($target_version)" >&2
-    continue
+    if [[ "$package_source_staging" == 1 ]]; then
+      echo "source staging recipe retained; target owns final runtime $target_sonames: $package ($target_version)" >&2
+    else
+      echo "source runtime recipe deferred; target owns $target_sonames: $package ($target_version)" >&2
+      continue
+    fi
   fi
   [[ -z "${recipe_dir[$package]:-}" ]] || {
     echo "duplicate package name: $package" >&2
@@ -411,6 +426,7 @@ while IFS= read -r package_env; do
   recipe_build_depends[$package]=$package_build_depends
   recipe_runtime_depends[$package]=$package_runtime_depends
   recipe_kind[$package]=$package_kind
+  source_staging_provider[$package]=$package_source_staging
   available_packages+=("$package")
 done < <(find "$repo_root/packages" -mindepth 2 -maxdepth 2 -name package.env -type f -print | LC_ALL=C sort)
 
@@ -479,8 +495,8 @@ select_package_closure() {
   local package=$1 dependency
   local -a build_dependencies=()
   [[ "${provided_package[$package]:-0}" == 1 ]] && return 0
-  [[ "${runtime_catalogue_package[$package]:-0}" == 1 ]] && return 0
-  [[ -n "${target_runtime_provider[$package]:-}" ]] && return 0
+  [[ "${runtime_catalogue_package[$package]:-0}" == 1 && "${source_staging_provider[$package]:-0}" != 1 ]] && return 0
+  [[ -n "${target_runtime_provider[$package]:-}" && "${source_staging_provider[$package]:-0}" != 1 ]] && return 0
   target_catalogue_has_package "$package" && return 0
   [[ -n "${recipe_dir[$package]:-}" ]] || {
     echo "selected package is neither a recipe nor a target-catalogue provider: $package" >&2
@@ -502,7 +518,7 @@ select_package_closure() {
 
 if [[ ${#requested_packages[@]} -eq 0 ]]; then
   for package in "${available_packages[@]}"; do
-    [[ "${runtime_catalogue_package[$package]:-0}" == 1 ]] || selected_packages+=("$package")
+    [[ "${runtime_catalogue_package[$package]:-0}" == 1 && "${source_staging_provider[$package]:-0}" != 1 ]] || selected_packages+=("$package")
   done
 else
   for package in "${requested_packages[@]}"; do
@@ -562,8 +578,8 @@ mark_source_build_closure() {
   local dependency
   local -a dependencies=()
   [[ "${provided_package[$package]:-0}" == 1 ]] && return
-  [[ "${runtime_catalogue_package[$package]:-0}" == 1 ]] && return
-  [[ -n "${target_runtime_provider[$package]:-}" ]] && return
+  [[ "${runtime_catalogue_package[$package]:-0}" == 1 && "${source_staging_provider[$package]:-0}" != 1 ]] && return
+  [[ -n "${target_runtime_provider[$package]:-}" && "${source_staging_provider[$package]:-0}" != 1 ]] && return
   [[ -n "${recipe_dir[$package]:-}" ]] || {
     echo "source-built package depends on unavailable build package: $package" >&2
     exit 77
@@ -609,7 +625,7 @@ build_package() {
   local dependency package_dir
   local -a build_dependencies=()
   [[ "${provided_package[$package]:-0}" == 1 ]] && return 0
-  [[ "${runtime_catalogue_package[$package]:-0}" == 1 ]] && return 0
+  [[ "${runtime_catalogue_package[$package]:-0}" == 1 && "${source_staging_provider[$package]:-0}" != 1 ]] && return 0
   case "${build_state[$package]:-unseen}" in
     done) return 0 ;;
     visiting)
@@ -632,7 +648,7 @@ build_package() {
   # so split it explicitly instead of relying on the ambient IFS.
   IFS=' ' read -r -a build_dependencies <<< "${recipe_build_depends[$package]}"
   for dependency in "${build_dependencies[@]}"; do
-    [[ -n "${target_runtime_provider[$dependency]:-}" ]] && continue
+    [[ -n "${target_runtime_provider[$dependency]:-}" && "${source_staging_provider[$dependency]:-0}" != 1 ]] && continue
     [[ -n "${recipe_dir[$dependency]:-}" ]] || {
       echo "$package declares PACKAGE_BUILD_DEPENDS on $dependency, which is not selected for $release" >&2
       exit 76
@@ -662,6 +678,17 @@ build_package() {
     TDVP_SOURCE_CACHE_OFFLINE="$offline_source_cache" \
     TDVP_REUSE_PUBLISHED_PAYLOADS="$reuse_published_payloads" \
     bash "$package_dir/build.sh" --platform "$platform_slug" --sdk-root "${TDVP_SDK_ROOT:-}"
+  fi
+  # A source-staging provider supplies development files or a reviewed command
+  # to dependent recipes. The immutable target-runtime catalogue remains the
+  # sole final runtime IPK provider for that package name.
+  if [[ "${source_staging_provider[$package]:-0}" == 1 && \
+        ( -n "${target_runtime_provider[$package]:-}" || "${runtime_catalogue_package[$package]:-0}" == 1 ) ]]; then
+    if [[ -f "$package_dir/build.sh" ]]; then
+      discard_generated_payload "$package_dir"
+    fi
+    build_state[$package]=done
+    return 0
   fi
   TDVP_FEED_BASE_ROOT="$base_root" \
   TDVP_RUNTIME_OWNER_MAP="$runtime_owner_map" \

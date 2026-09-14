@@ -83,6 +83,10 @@ expect_line "^PACKAGE_DEPENDS='audacious-core \\(= 4\\.6\\.1-1\\), audacious-plu
 expect_fixed_line 'TDVP_AUDACIOUS_VERSION = 4.6.1' "$core_buildroot_recipe"
 expect_fixed_line 'TDVP_AUDACIOUS_INSTALL_STAGING = YES' "$core_buildroot_recipe"
 expect_fixed_line 'TDVP_AUDACIOUS_PLUGINS_VERSION = 4.6.1' "$plugins_buildroot_recipe"
+if grep -Eq '^TDVP_AUDACIOUS_PLUGINS_DEPENDENCIES =.*tdvp-audacious' "$plugins_buildroot_recipe"; then
+  echo 'Audacious plugins must consume imported core development files instead of rebuilding tdvp-audacious' >&2
+  exit 1
+fi
 expect_fixed_line 'sha256  22e58a8a2c3f3caa9687434353618c822963cc8846cd239de36d4e8e5bd166a6  audacious-plugins-4.6.1.tar.bz2' "$plugins_buildroot_hash"
 expect_line '^config BR2_PACKAGE_TDVP_AUDACIOUS$' "$core_buildroot_config"
 expect_line '^config BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS$' "$plugins_buildroot_config"
@@ -154,6 +158,9 @@ fi
 expect_contains 'closure_download_dir="$TDVP_FEED_STAGING_ROOT/.tdvp-audacious-buildroot-download-closure"' "$plugins_build_script"
 expect_contains 'cp -a -- "$closure_download_dir/." "$download_dir/"' "$plugins_build_script"
 expect_contains 'Audacious core Buildroot download closure link escapes its root' "$plugins_build_script"
+expect_contains 'TDVP_FEED_IMPORTED_STAGING' "$plugins_build_script"
+expect_contains 'Audacious plugins received an imported core staging root without audacious.pc' "$plugins_build_script"
+expect_contains 'BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" source' "$plugins_build_script"
 if grep -Fq 'Audacious plugin download closure omitted required Buildroot archive' "$plugins_build_script"; then
   echo 'Audacious plugins must use the complete core closure without a hand-maintained archive list' >&2
   exit 1
@@ -168,7 +175,7 @@ expect_contains "join_paths(get_option('prefix'), get_option('libdir'), 'audacio
 expect_contains 'BR2_PRIMARY_SITE_ONLY=y' "$plugins_build_script"
 expect_contains 'make -C "$build_output" source' "$core_build_script"
 if grep -Fq 'BR2_BACKUP_SITE=' "$plugins_build_script"; then
-  echo 'Audacious plugins must consume the core closure without a second source-download pass' >&2
+  echo 'Audacious plugins must resolve split-build sources only from the reviewed local baseline' >&2
   exit 1
 fi
 

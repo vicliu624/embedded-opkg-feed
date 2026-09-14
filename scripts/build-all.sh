@@ -14,6 +14,9 @@ offline_source_cache=${TDVP_SOURCE_CACHE_OFFLINE:-0}
 require_source_locks=${TDVP_REQUIRE_SOURCE_LOCKS:-0}
 runtime_catalog_only=0
 reuse_runtime_catalog=0
+staging_import_dir=
+staging_export_dir=
+provided_packages=()
 requested_packages=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -53,6 +56,21 @@ while [[ $# -gt 0 ]]; do
       reuse_runtime_catalog=1
       shift
       ;;
+    --import-staging)
+      [[ $# -ge 2 ]] || { echo '--import-staging needs a directory' >&2; exit 64; }
+      staging_import_dir=$2
+      shift 2
+      ;;
+    --export-staging)
+      [[ $# -ge 2 ]] || { echo '--export-staging needs a new directory path' >&2; exit 64; }
+      staging_export_dir=$2
+      shift 2
+      ;;
+    --provided-package)
+      [[ $# -ge 2 ]] || { echo '--provided-package needs a recipe name' >&2; exit 64; }
+      provided_packages+=("$2")
+      shift 2
+      ;;
     --package)
       [[ $# -ge 2 ]] || { echo '--package needs a recipe name' >&2; exit 64; }
       requested_packages+=("$2")
@@ -66,7 +84,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ -n "$platform_slug" && -n "$output_root" ]] || {
-  echo "usage: $0 --platform <platform-slug> [--release <rN>] --output <output-root> [--source-cache <directory>] [--offline-source-cache] [--require-source-locks] [--runtime-catalog-only|--reuse-runtime-catalog] [--package <recipe> ...]" >&2
+  echo "usage: $0 --platform <platform-slug> [--release <rN>] --output <output-root> [--source-cache <directory>] [--offline-source-cache] [--require-source-locks] [--runtime-catalog-only|--reuse-runtime-catalog] [--import-staging <directory> --provided-package <recipe> ...] [--export-staging <new-directory>] [--package <recipe> ...]" >&2
   exit 64
 }
 [[ "$runtime_catalog_only" -eq 0 || "$reuse_runtime_catalog" -eq 0 ]] || {
@@ -78,6 +96,24 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd -- "$script_dir/.." && pwd)
 source_cache_root=${source_cache_root:-"$repo_root/.tdvp-source-cache"}
 source_cache_root=$(mkdir -p -- "$source_cache_root" && cd -- "$source_cache_root" && pwd)
+if [[ -n "$staging_import_dir" ]]; then
+  [[ -d "$staging_import_dir" && ! -L "$staging_import_dir" ]] || {
+    echo "imported staging root is not a regular directory: $staging_import_dir" >&2
+    exit 64
+  }
+  staging_import_dir=$(cd -- "$staging_import_dir" && pwd)
+  imported_staging_manifest="$staging_import_dir/tdvp-build-staging-manifest.tsv"
+  [[ -f "$imported_staging_manifest" && ! -L "$imported_staging_manifest" ]] || {
+    echo "imported staging root has no regular manifest: $imported_staging_manifest" >&2
+    exit 64
+  }
+fi
+if [[ -n "$staging_export_dir" ]]; then
+  [[ ! -e "$staging_export_dir" && ! -L "$staging_export_dir" ]] || {
+    echo "refusing to overwrite exported staging root: $staging_export_dir" >&2
+    exit 64
+  }
+fi
 # shellcheck source=feed-platform.sh
 source "$script_dir/feed-platform.sh"
 tdvp_load_platform "$repo_root" "$platform_slug"
@@ -177,6 +213,12 @@ fi
 staging_root=$(mktemp -d)
 cleanup() { rm -rf -- "$staging_root"; }
 trap cleanup EXIT
+if [[ -n "$staging_import_dir" ]]; then
+  # A staged build dependency is an explicit private CI input. Copy it into
+  # this transaction's disposable root so no imported artifact can be mutated
+  # by a package hook or leak into the next batch.
+  cp -a -- "$staging_import_dir/." "$staging_root/"
+fi
 
 declare -A recipe_dir=()
 declare -A recipe_build_depends=()
@@ -184,6 +226,7 @@ declare -A recipe_runtime_depends=()
 declare -A recipe_kind=()
 declare -A build_state=()
 declare -A force_source_build=()
+declare -A provided_package=()
 declare -A target_runtime_provider=()
 declare -A target_runtime_provider_sonames=()
 declare -a available_packages=()
@@ -300,6 +343,58 @@ while IFS= read -r package_env; do
   available_packages+=("$package")
 done < <(find "$repo_root/packages" -mindepth 2 -maxdepth 2 -name package.env -type f -print | LC_ALL=C sort)
 
+assert_provided_package() {
+  local package=$1 version ipk control archive matches=0
+  [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || {
+    echo "invalid --provided-package value: $package" >&2
+    exit 78
+  }
+  [[ -n "${recipe_dir[$package]:-}" ]] || {
+    echo "provided package has no recipe for $release: $package" >&2
+    exit 78
+  }
+  [[ -n "$staging_import_dir" ]] || {
+    echo "provided package needs --import-staging: $package" >&2
+    exit 78
+  }
+  version=$(read_recipe_value "${recipe_dir[$package]}/package.env" VERSION)
+  awk -F '\t' -v platform="$platform_slug" -v release="$release" '
+    $1 == "format" && $2 == "1" { format = 1 }
+    $1 == "platform" && $2 == platform { matching_platform = 1 }
+    $1 == "release" && $2 == release { matching_release = 1 }
+    END { exit !(format && matching_platform && matching_release) }
+  ' "$imported_staging_manifest" || {
+    echo "imported staging manifest does not match this platform/release: $imported_staging_manifest" >&2
+    exit 78
+  }
+  awk -F '\t' -v package="$package" -v version="$version" '
+    ($1 == "built-package" || $1 == "provided-package") && $2 == package && $3 == version { found = 1 }
+    END { exit !found }
+  ' "$imported_staging_manifest" || {
+    echo "imported staging manifest does not attest $package ($version)" >&2
+    exit 78
+  }
+  while IFS= read -r ipk; do
+    control=$(mktemp)
+    archive=$(mktemp)
+    ar p "$ipk" control.tar.gz >"$archive"
+    tar -xOzf "$archive" ./control >"$control"
+    if grep -Fqx "Package: $package" "$control" && grep -Fqx "Version: $version" "$control"; then
+      matches=$((matches + 1))
+    fi
+    rm -f -- "$control" "$archive"
+  done < <(find "$feed_dir" -maxdepth 1 -type f -name "${package}_*.ipk" -print | LC_ALL=C sort)
+  [[ "$matches" -eq 1 ]] || {
+    echo "provided package must have exactly one matching staged IPK: $package ($version)" >&2
+    exit 78
+  }
+  provided_package[$package]=1
+}
+
+for package in "${provided_packages[@]}"; do
+  assert_provided_package "$package"
+done
+
 # With no --package arguments, retain the historical all-recipes behaviour.
 # A repeated --package selects a source cohort root, then closes both its
 # build-time and declared runtime dependencies. This makes a batch useful on
@@ -308,6 +403,7 @@ declare -A selected_package=()
 select_package_closure() {
   local package=$1 dependency
   local -a build_dependencies=()
+  [[ "${provided_package[$package]:-0}" == 1 ]] && return 0
   [[ -n "${target_runtime_provider[$package]:-}" ]] && return 0
   target_catalogue_has_package "$package" && return 0
   [[ -n "${recipe_dir[$package]:-}" ]] || {
@@ -387,6 +483,7 @@ mark_source_build_closure() {
   local package=$1
   local dependency
   local -a dependencies=()
+  [[ "${provided_package[$package]:-0}" == 1 ]] && return
   [[ -n "${target_runtime_provider[$package]:-}" ]] && return
   [[ -n "${recipe_dir[$package]:-}" ]] || {
     echo "source-built package depends on unavailable build package: $package" >&2
@@ -432,6 +529,7 @@ build_package() {
   local package=$1
   local dependency package_dir
   local -a build_dependencies=()
+  [[ "${provided_package[$package]:-0}" == 1 ]] && return 0
   case "${build_state[$package]:-unseen}" in
     done) return 0 ;;
     visiting)
@@ -475,7 +573,10 @@ build_package() {
     reuse_published_payloads=0
   fi
   if [[ -f "$package_dir/build.sh" ]]; then
+    imported_staging=0
+    [[ -n "$staging_import_dir" ]] && imported_staging=1
     TDVP_FEED_STAGING_ROOT="$staging_root" \
+    TDVP_FEED_IMPORTED_STAGING="$imported_staging" \
     TDVP_FEED_BASE_ROOT="$base_root" \
     TDVP_SOURCE_CACHE_ROOT="$source_cache_root" \
     TDVP_SOURCE_CACHE_OFFLINE="$offline_source_cache" \
@@ -500,6 +601,32 @@ build_package() {
 for package in "${selected_packages[@]}"; do
   build_package "$package"
 done
+
+if [[ -n "$staging_export_dir" ]]; then
+  mkdir -p -- "$staging_export_dir"
+  # Feed build state contains only the package-facing sysroot projection.
+  # Buildroot's private source closures remain transaction-local and are
+  # reconstructed from the immutable download base by the next layer.
+  if [[ -d "$staging_root/usr" ]]; then
+    cp -a -- "$staging_root/usr" "$staging_export_dir/usr"
+  fi
+  printf 'format\t1\nplatform\t%s\nrelease\t%s\n' "$platform_slug" "$release" \
+    >"$staging_export_dir/tdvp-build-staging-manifest.tsv"
+  for package in "${selected_packages[@]}"; do
+    version=$(read_recipe_value "${recipe_dir[$package]}/package.env" VERSION)
+    printf 'built-package\t%s\t%s\n' "$package" "$version" \
+      >>"$staging_export_dir/tdvp-build-staging-manifest.tsv"
+  done
+  for package in "${provided_packages[@]}"; do
+    version=$(read_recipe_value "${recipe_dir[$package]}/package.env" VERSION)
+    printf 'provided-package\t%s\t%s\n' "$package" "$version" \
+      >>"$staging_export_dir/tdvp-build-staging-manifest.tsv"
+  done
+  find "$staging_export_dir" -type l -print -quit | grep -q . && {
+    echo 'exported staging root must not contain symbolic links' >&2
+    exit 79
+  }
+fi
 
 "$script_dir/make-index.sh" "$feed_dir"
 "$script_dir/verify-feed.sh" --platform "$platform_slug" "$feed_dir"

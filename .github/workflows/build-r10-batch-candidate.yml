@@ -17,7 +17,12 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, development-tools, nodejs]
+        options: [archive, audacious-foundation, audacious-core, audacious-plugins, audacious-app, audacious, network-tools, desktop-tools, development-tools, nodejs]
+      dependency_run_id:
+        description: Successful prior Audacious layer run ID; required by audacious-plugins and audacious-app
+        required: false
+        default: ''
+        type: string
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -67,6 +72,7 @@ jobs:
           set -Eeuo pipefail
           for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
           bash ./tests/build-all-source-lock-policy.sh
+          bash ./tests/audacious-foundation-policy.sh
           bash ./tests/audacious-package-policy.sh
           bash ./tests/archive-package-policy.sh
           bash ./tests/source-lock-policy.sh
@@ -284,6 +290,22 @@ jobs:
           key: ${{ env.TDVP_SDK_CACHE_KEY }}-package-stamps
           fail-on-cache-miss: false
 
+      - name: Restore the private Audacious foundation build state
+        id: restore-audacious-foundation
+        if: startsWith(inputs.batch, 'audacious-')
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/libglib2-*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/libgtk3-*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/alsa-lib-*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/pulseaudio-*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/ffmpeg-*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/zlib-*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host/riscv64-buildroot-linux-gnu/sysroot
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-audacious-foundation-${{ hashFiles('scripts/prepare-audacious-foundation.sh', 'support/audacious-buildroot/**', 'packages/audacious-core/source.lock', 'packages/audacious-plugins/source.lock') }}
+          fail-on-cache-miss: ${{ inputs.batch != 'audacious-foundation' }}
+
       - name: Restore the reviewed Buildroot source-download base
         uses: actions/cache/restore@v4
         with:
@@ -311,12 +333,70 @@ jobs:
           mkdir -p candidate-dist
           cp -a "${RUNNER_TEMP}/tdvp-r10-runtime-base/." candidate-dist/
 
+      - name: Retrieve the attested prior Audacious layer
+        if: inputs.batch == 'audacious-plugins' || inputs.batch == 'audacious-app'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TDVP_DEPENDENCY_RUN_ID: ${{ inputs.dependency_run_id }}
+          TDVP_REQUESTED_BATCH: ${{ inputs.batch }}
+          TDVP_SDK_CACHE_IDENTITY: ${{ env.TDVP_SDK_CACHE_KEY }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$TDVP_DEPENDENCY_RUN_ID" =~ ^[0-9]+$ ]] || {
+            echo "$TDVP_REQUESTED_BATCH requires one successful dependency_run_id" >&2
+            exit 64
+          }
+          case "$TDVP_REQUESTED_BATCH" in
+            audacious-plugins) expected_batch=audacious-core ;;
+            audacious-app) expected_batch=audacious-plugins ;;
+            *) exit 64 ;;
+          esac
+          mapfile -t artifacts < <(
+            gh run view "$TDVP_DEPENDENCY_RUN_ID" --repo "$GITHUB_REPOSITORY" --json artifacts \
+              --jq ".artifacts[].name | select(test(\"^tdvp-k230-r10-${expected_batch}-unsigned-\"))"
+          )
+          [[ ${#artifacts[@]} -eq 1 ]] || {
+            echo "run $TDVP_DEPENDENCY_RUN_ID must expose exactly one $expected_batch artifact" >&2
+            exit 65
+          }
+          incoming_root="$RUNNER_TEMP/tdvp-audacious-layer/$TDVP_DEPENDENCY_RUN_ID"
+          mkdir -p "$incoming_root"
+          gh run download "$TDVP_DEPENDENCY_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --name "${artifacts[0]}" --dir "$incoming_root"
+          manifest=$(find "$incoming_root" -type f -name tdvp-batch-manifest.tsv -print -quit)
+          [[ -n "$manifest" ]] || { echo 'prior Audacious layer has no batch manifest' >&2; exit 66; }
+          value() { awk -F '\t' -v key="$2" '$1 == key { print $2; exit }' "$1"; }
+          [[ "$(value "$manifest" platform)" == tdvp-k230-r1 ]] || { echo 'prior layer targets another platform' >&2; exit 67; }
+          [[ "$(value "$manifest" sdk_cache_key)" == "$TDVP_SDK_CACHE_IDENTITY" ]] || { echo 'prior layer has another SDK identity' >&2; exit 67; }
+          [[ "$(value "$manifest" batch)" == "$expected_batch" ]] || { echo 'prior layer batch identity is invalid' >&2; exit 67; }
+          staging=$(find "$incoming_root" -type f -name tdvp-build-staging-manifest.tsv -printf '%h\n' -quit)
+          [[ -n "$staging" && -d "$staging/usr" ]] || { echo 'prior Audacious layer has no usable private staging state' >&2; exit 68; }
+          mkdir -p "$RUNNER_TEMP/tdvp-audacious-import"
+          cp -a -- "$staging/." "$RUNNER_TEMP/tdvp-audacious-import/"
+          feed_dir=$(find "$incoming_root" -type d -path '*/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64' -print -quit)
+          [[ -n "$feed_dir" ]] || { echo 'prior Audacious layer has no r10 feed directory' >&2; exit 68; }
+          while IFS=$'\t' read -r record digest filename; do
+            [[ "$record" == ipk ]] || continue
+            [[ "$digest" =~ ^[0-9a-f]{64}$ && "$filename" =~ ^[A-Za-z0-9+._-]+\.ipk$ ]] || {
+              echo 'prior layer has an invalid IPK attestation' >&2
+              exit 69
+            }
+            [[ -f "$feed_dir/$filename" ]] || { echo "prior layer is missing $filename" >&2; exit 69; }
+            [[ "$(sha256sum "$feed_dir/$filename" | awk '{print $1}')" == "$digest" ]] || {
+              echo "prior layer hash mismatch for $filename" >&2
+              exit 69
+            }
+          done <"$manifest"
+          target_feed='candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          find "$feed_dir" -maxdepth 1 -type f -name '*.ipk' -exec cp -- {} "$target_feed/" \;
+
       - name: Check the selected batch policy
         run: |
           set -Eeuo pipefail
           printf 'Buildroot package-stamp cache hit: %s\n' '${{ steps.restore-package-stamps.outputs.cache-hit }}'
           for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
           bash ./tests/build-all-source-lock-policy.sh
+          bash ./tests/audacious-foundation-policy.sh
           bash ./tests/audacious-package-policy.sh
           bash ./tests/archive-package-policy.sh
           bash ./tests/source-lock-policy.sh
@@ -341,13 +421,38 @@ jobs:
           test "$(riscv64-linux-gnu-g++ -dumpversion | cut -d. -f1)" -ge 10
           command -v qemu-riscv64
 
+      - name: Materialize the private Audacious foundation layer
+        if: inputs.batch == 'audacious-foundation'
+        run: |
+          set -Eeuo pipefail
+          build_output="${RUNNER_TEMP}/tdvp-k230-sdk/output/$TDVP_PROFILE"
+          export TDVP_AUDACIOUS_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_BUILDROOT_BASE_DOWNLOAD_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl"
+          export TDVP_AUDACIOUS_FOUNDATION_EVIDENCE_DIR=candidate-foundation-evidence
+          bash ./scripts/prepare-audacious-foundation.sh \
+            --platform tdvp-k230-r1 --sdk-root "$build_output/host"
+          test -s candidate-foundation-evidence/tdvp-audacious-foundation.tsv
+
       - name: Build only the selected package dependency closure
+        if: inputs.batch != 'audacious-foundation'
         run: |
           set -Eeuo pipefail
           case "${{ inputs.batch }}" in
             archive)
               package_args=(--package archive-tools)
               expected_packages=(libbz2 liblzma libzstd archive-tools)
+              ;;
+            audacious-core)
+              package_args=(--package audacious-core --export-staging candidate-staging)
+              expected_packages=(audacious-core)
+              ;;
+            audacious-plugins)
+              package_args=(--import-staging "${RUNNER_TEMP}/tdvp-audacious-import" --provided-package audacious-core --package audacious-plugins --export-staging candidate-staging)
+              expected_packages=(audacious-core audacious-plugins)
+              ;;
+            audacious-app)
+              package_args=(--import-staging "${RUNNER_TEMP}/tdvp-audacious-import" --provided-package audacious-core --provided-package audacious-plugins --package audacious --export-staging candidate-staging)
+              expected_packages=(audacious-core audacious-plugins audacious)
               ;;
             audacious)
               package_args=(--package audacious)
@@ -408,6 +513,12 @@ jobs:
             --output candidate-dist --source-cache "${RUNNER_TEMP}/tdvp-r10-source-cache" \
             --require-source-locks --reuse-runtime-catalog "${package_args[@]}"
 
+          case "${{ inputs.batch }}" in
+            audacious-core|audacious-plugins|audacious-app)
+              test -s candidate-staging/tdvp-build-staging-manifest.tsv
+              ;;
+          esac
+
           feed_dir='candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
           test -s "$feed_dir/Packages"
           for package in "${expected_packages[@]}"; do
@@ -445,11 +556,37 @@ jobs:
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.br_*
           key: ${{ env.TDVP_SDK_CACHE_KEY }}-package-stamps
 
+      - name: Save the private Audacious foundation build state
+        if: success() && inputs.batch == 'audacious-foundation'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/libglib2-*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/libgtk3-*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/alsa-lib-*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/pulseaudio-*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/ffmpeg-*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/zlib-*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host/riscv64-buildroot-linux-gnu/sysroot
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-audacious-foundation-${{ hashFiles('scripts/prepare-audacious-foundation.sh', 'support/audacious-buildroot/**', 'packages/audacious-core/source.lock', 'packages/audacious-plugins/source.lock') }}
+
       - name: Upload the unsigned incremental batch
+        if: inputs.batch != 'audacious-foundation'
         uses: actions/upload-artifact@v4
         with:
           name: tdvp-k230-r10-${{ inputs.batch }}-unsigned-${{ github.sha }}
-          path: candidate-dist
+          path: |
+            candidate-dist
+            candidate-staging
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload the Audacious foundation evidence
+        if: inputs.batch == 'audacious-foundation'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdvp-k230-r10-audacious-foundation-state-${{ github.sha }}
+          path: candidate-foundation-evidence
           if-no-files-found: error
           retention-days: 14
 

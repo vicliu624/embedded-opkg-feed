@@ -15,7 +15,8 @@ mkdir -p -- \
   "$fixture_root/scripts" \
   "$fixture_root/support" \
   "$fixture_root/platforms/fixture" \
-  "$fixture_root/packages/fixture-profile"
+  "$fixture_root/packages/fixture-profile" \
+  "$fixture_root/packages/fixture-consumer"
 
 for script in \
   build-all.sh \
@@ -68,8 +69,41 @@ printf '%s\n' \
   'ln -s -- "$payload_dir" "$package_dir/root"' \
   'mkdir -p -- "$payload_dir/usr/share/doc/fixture-profile"' \
   "printf '%s\\n' 'Fixture profile documentation.' >\"\$payload_dir/usr/share/doc/fixture-profile/README\"" \
+  'mkdir -p -- "$TDVP_FEED_STAGING_ROOT/usr/include"' \
+  "printf '%s\\n' 'fixture profile build interface' >\"\$TDVP_FEED_STAGING_ROOT/usr/include/fixture-profile.h\"" \
   >"$package_dir/build.sh"
 chmod +x -- "$package_dir/build.sh"
+
+# A second recipe consumes a header emitted into build-all's disposable
+# staging root. It exercises the incremental hand-off path: a later batch may
+# import that staging root and provide the first recipe through an attested
+# IPK, without executing its build hook again.
+printf '%s\n' \
+  "PACKAGE='fixture-consumer'" \
+  "VERSION='1.0-1'" \
+  "DESCRIPTION='Fixture staged dependency consumer'" \
+  "MAINTAINER='TDVP test <tests@example.invalid>'" \
+  "SUPPORTED_PLATFORMS='fixture'" \
+  "PACKAGE_KIND='application'" \
+  "PACKAGE_RELEASES='r1'" \
+  "PACKAGE_BUILD_DEPENDS='fixture-profile'" \
+  "PACKAGE_AUTO_RUNTIME_DEPENDS=0" \
+  "PACKAGE_BASE_OVERLAY='deny'" \
+  "SOURCE_LOCK_EXEMPT_REASON='Fixture consumer uses only a previous build staging artifact.'" \
+  >"$fixture_root/packages/fixture-consumer/package.env"
+printf '%s\n' \
+  '#!/usr/bin/env bash' \
+  'set -Eeuo pipefail' \
+  "[[ \$# -eq 4 && \$1 == '--platform' && \$2 == 'fixture' && \$3 == '--sdk-root' ]] || exit 64" \
+  'test -s "$TDVP_FEED_STAGING_ROOT/usr/include/fixture-profile.h"' \
+  'package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)' \
+  'payload_dir=$(mktemp -d "${TMPDIR:-/tmp}/tdvp-command-payload.XXXXXX")' \
+  'rm -rf -- "$package_dir/root"' \
+  'ln -s -- "$payload_dir" "$package_dir/root"' \
+  'mkdir -p -- "$payload_dir/usr/share/doc/fixture-consumer"' \
+  "printf '%s\\n' 'Fixture consumer documentation.' >\"\$payload_dir/usr/share/doc/fixture-consumer/README\"" \
+  >"$fixture_root/packages/fixture-consumer/build.sh"
+chmod +x -- "$fixture_root/packages/fixture-consumer/build.sh"
 
 successful_output="$work_root/output-success"
 bash "$fixture_root/scripts/build-all.sh" \
@@ -105,6 +139,43 @@ grep -Fqx 'Package: fixture-profile' "$selected_feed_dir/Packages"
 grep -Fq 'select_package_closure()' "$fixture_root/scripts/build-all.sh"
 grep -Fq 'emit_runtime_dependency_names()' "$fixture_root/scripts/build-all.sh"
 grep -Fq 'target_catalogue_has_package()' "$fixture_root/scripts/build-all.sh"
+
+# An independent follow-up batch imports only the prior recipe's exported
+# staging projection and its already-built IPK. Its declared build dependency
+# must be satisfied from those verified inputs rather than rebuilt.
+staging_export="$work_root/staging-export"
+state_output="$work_root/output-state"
+bash "$fixture_root/scripts/build-all.sh" \
+  --platform fixture \
+  --release r1 \
+  --output "$state_output" \
+  --require-source-locks \
+  --export-staging "$staging_export" \
+  --package fixture-profile
+test -s "$staging_export/usr/include/fixture-profile.h"
+test -s "$staging_export/tdvp-build-staging-manifest.tsv"
+grep -Fqx $'built-package\tfixture-profile\t1.0-1' "$staging_export/tdvp-build-staging-manifest.tsv"
+
+provided_output="$work_root/output-provided"
+provided_feed="$provided_output/fixture/riscv64"
+mkdir -p -- "$provided_feed"
+cp -- "$state_output/fixture/riscv64/fixture-profile_1.0-1_riscv64.ipk" "$provided_feed/"
+bash "$fixture_root/scripts/build-all.sh" \
+  --platform fixture \
+  --release r1 \
+  --output "$provided_output" \
+  --require-source-locks \
+  --import-staging "$staging_export" \
+  --provided-package fixture-profile \
+  --package fixture-consumer
+test -s "$provided_feed/fixture-profile_1.0-1_riscv64.ipk"
+test -s "$provided_feed/fixture-consumer_1.0-1_riscv64.ipk"
+grep -Fqx 'Package: fixture-profile' "$provided_feed/Packages"
+grep -Fqx 'Package: fixture-consumer' "$provided_feed/Packages"
+grep -Fq -- '--provided-package' "$fixture_root/scripts/build-all.sh"
+grep -Fq -- '--import-staging' "$fixture_root/scripts/build-all.sh"
+grep -Fq -- '--export-staging' "$fixture_root/scripts/build-all.sh"
+grep -Fq 'assert_provided_package()' "$fixture_root/scripts/build-all.sh"
 
 # The normal r1 fixture has no composable target-runtime catalogue.  Both
 # incremental-runtime switches must therefore reject it rather than quietly

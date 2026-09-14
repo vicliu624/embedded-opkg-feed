@@ -191,6 +191,8 @@ tdvp_prepare_locked_go_host_toolchain() {
 
 tdvp_prepare_go_module_vendor_cache() {
   local source_root=$1 go_binary=$2 work_root=$3 cache_file cache_dir temporary
+  local source_sum_file local_module_cache local_go_cache
+  local attempt retry_attempts retry_delay resolution_ready=0
   [[ -d "$source_root" && ! -L "$source_root" ]] || {
     echo "Go module vendor source root is unsafe: $source_root" >&2
     return 85
@@ -223,45 +225,76 @@ tdvp_prepare_go_module_vendor_cache() {
     echo "Go module vendor cache directory is unsafe: $cache_dir" >&2
     return 90
   }
-  rm -rf -- "$source_root/vendor"
-  (
-    local_module_cache=$(mktemp -d "${TMPDIR:-/tmp}/tdvp-go-module-cache.XXXXXX")
-    local_go_cache=$(mktemp -d "${TMPDIR:-/tmp}/tdvp-go-build-cache.XXXXXX")
-    cleanup_go_module_vendor_work_cache() {
-      local rc=$?
-      # Go deliberately makes downloaded module trees read-only. They are
-      # ephemeral cache-seed inputs here, so restore owner write permission
-      # before deleting rather than leaving multi-gigabyte residue on failure.
-      chmod -R u+w -- "$local_module_cache" "$local_go_cache" 2>/dev/null || true
-      rm -rf -- "$local_module_cache" "$local_go_cache"
-      exit "$rc"
-    }
-    trap cleanup_go_module_vendor_work_cache EXIT
-    cd -- "$source_root"
-    env \
-      GOTOOLCHAIN=local \
-      GOMODCACHE="$local_module_cache" \
-      GOCACHE="$local_go_cache" \
-      GOPROXY='https://proxy.golang.org' \
-      GOSUMDB='sum.golang.org' \
-      "$go_binary" mod download all
-    env \
-      GOTOOLCHAIN=local \
-      GOMODCACHE="$local_module_cache" \
-      GOCACHE="$local_go_cache" \
-      GOPROXY='https://proxy.golang.org' \
-      GOSUMDB='sum.golang.org' \
-      "$go_binary" mod verify
-    env \
-      GOTOOLCHAIN=local \
-      GOMODCACHE="$local_module_cache" \
-      GOCACHE="$local_go_cache" \
-      GOPROXY='https://proxy.golang.org' \
-      GOSUMDB='sum.golang.org' \
-      "$go_binary" mod vendor
-  )
-  tdvp_assert_go_vendor_resolved_sum "$source_root"
-  tdvp_assert_go_vendor_tree "$source_root"
+  retry_attempts=${TDVP_GO_MODULE_VENDOR_RETRY_ATTEMPTS:-4}
+  [[ "$retry_attempts" =~ ^[1-9][0-9]*$ ]] || {
+    echo "Go module vendor retry count must be a positive integer: $retry_attempts" >&2
+    return 91
+  }
+  retry_delay=${TDVP_GO_MODULE_VENDOR_RETRY_DELAY_SECONDS:-5}
+  [[ "$retry_delay" =~ ^[0-9]+$ ]] || {
+    echo "Go module vendor retry delay must be a non-negative integer: $retry_delay" >&2
+    return 91
+  }
+  source_sum_file=$(mktemp "$work_root/.tdvp-go-sum.XXXXXX")
+  cp -- "$source_root/go.sum" "$source_sum_file"
+  for ((attempt = 1; attempt <= retry_attempts; attempt++)); do
+    # A proxy or checksum-database transport failure can leave a partial
+    # module cache and an augmented go.sum even when the Go command returns
+    # successfully.  Every retry therefore starts from the immutable source
+    # input and separate disposable caches; the locked resolved-sum and vendor
+    # hashes below remain the admission gate.
+    rm -rf -- "$source_root/vendor"
+    cp -- "$source_sum_file" "$source_root/go.sum"
+    if (
+      local_module_cache=$(mktemp -d "${TMPDIR:-/tmp}/tdvp-go-module-cache.XXXXXX")
+      local_go_cache=$(mktemp -d "${TMPDIR:-/tmp}/tdvp-go-build-cache.XXXXXX")
+      cleanup_go_module_vendor_work_cache() {
+        local rc=$?
+        # Go deliberately makes downloaded module trees read-only. They are
+        # ephemeral cache-seed inputs here, so restore owner write permission
+        # before deleting rather than leaving multi-gigabyte residue on failure.
+        chmod -R u+w -- "$local_module_cache" "$local_go_cache" 2>/dev/null || true
+        rm -rf -- "$local_module_cache" "$local_go_cache"
+        exit "$rc"
+      }
+      trap cleanup_go_module_vendor_work_cache EXIT
+      cd -- "$source_root"
+      env \
+        GOTOOLCHAIN=local \
+        GOMODCACHE="$local_module_cache" \
+        GOCACHE="$local_go_cache" \
+        GOPROXY='https://proxy.golang.org' \
+        GOSUMDB='sum.golang.org' \
+        "$go_binary" mod download all &&
+      env \
+        GOTOOLCHAIN=local \
+        GOMODCACHE="$local_module_cache" \
+        GOCACHE="$local_go_cache" \
+        GOPROXY='https://proxy.golang.org' \
+        GOSUMDB='sum.golang.org' \
+        "$go_binary" mod verify &&
+      env \
+        GOTOOLCHAIN=local \
+        GOMODCACHE="$local_module_cache" \
+        GOCACHE="$local_go_cache" \
+        GOPROXY='https://proxy.golang.org' \
+        GOSUMDB='sum.golang.org' \
+        "$go_binary" mod vendor
+    ) && tdvp_assert_go_vendor_resolved_sum "$source_root" && \
+         tdvp_assert_go_vendor_tree "$source_root"; then
+      resolution_ready=1
+      break
+    fi
+    if (( attempt < retry_attempts )); then
+      echo "Go module vendor resolution attempt $attempt/$retry_attempts failed; retrying with fresh caches" >&2
+      sleep "$retry_delay"
+    fi
+  done
+  rm -f -- "$source_sum_file"
+  [[ "$resolution_ready" == 1 ]] || {
+    echo "Go module vendor resolution failed after $retry_attempts isolated attempts: $source_root" >&2
+    return 91
+  }
   temporary=$(mktemp "$cache_dir/.${TDVP_GO_VENDOR_LOCK_VALUES[GO_MODULE_VENDOR_ARCHIVE]}.XXXXXX")
   (
     cd -- "$source_root"

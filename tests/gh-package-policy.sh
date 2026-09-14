@@ -16,7 +16,7 @@ bash "$repo_root/scripts/verify-source-lock.sh" --package-dir "$repo_root/packag
 grep -Fqx "UPSTREAM_VERSION='2.98.0'" "$source_lock"
 grep -Fqx "GO_TOOLCHAIN_VERSION='1.26.7'" "$module_lock"
 grep -Fqx "GO_RESOLVED_SUM_SHA256='86ab1fe26ef974a5ebd5745f3f0b48cf32b42cfbaad173569113254e8aab67d8'" "$module_lock"
-grep -Fqx "GO_MODULE_VENDOR_ARCHIVE_SHA256='7d0291b6670a81ad46c701bac86e87bd4e9b4198301d831882e6f7533dd9c6ea'" "$module_lock"
+grep -Fqx "GO_MODULE_VENDOR_ARCHIVE_SHA256='076149f6cbb00846ff63ebc2365fd6bcb7c68d55e171437e4143cf316485d147'" "$module_lock"
 grep -Fq 'tdvp_prepare_locked_go_host_toolchain' "$build_file"
 grep -Fq 'tdvp_prepare_go_module_vendor_cache' "$build_file"
 grep -Fq 'tdvp_extract_go_module_vendor_cache' "$build_file"
@@ -38,6 +38,10 @@ grep -Fq 'Shared library:' "$build_file"
 grep -Fq 'mod download all' "$helper"
 grep -Fq 'mod verify' "$helper"
 grep -Fq 'mod vendor' "$helper"
+grep -Fq 'TDVP_GO_MODULE_VENDOR_RETRY_ATTEMPTS' "$helper"
+grep -Fq 'Go module vendor resolution attempt' "$helper"
+grep -Fq 'retrying with fresh caches' "$helper"
+grep -Fq 'cp -- "$source_sum_file" "$source_root/go.sum"' "$helper"
 grep -Fq "tar --sort=name" "$helper"
 grep -Fq "gzip -n" "$helper"
 grep -Fq 'chmod -R u+w' "$helper"
@@ -47,3 +51,4 @@ if grep -Eq '(curl |releases/download|\.deb|\.rpm|go mod download)' "$build_file
   echo 'gh recipe must not download a prebuilt package' >&2
   exit 1
 fi
+bash "$repo_root/tests/go-module-vendor-cache-retry.sh"

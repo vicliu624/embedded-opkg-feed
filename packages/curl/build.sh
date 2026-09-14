@@ -17,8 +17,6 @@ fi
 package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=../../support/source-archive-library.sh
 source "$package_dir/../../support/source-archive-library.sh"
-# shellcheck source=../../support/elf-runtime-policy.sh
-source "$package_dir/../../support/elf-runtime-policy.sh"
 
 stage_root=${TDVP_FEED_STAGING_ROOT:-}
 stage_command="$stage_root/usr/bin/curl"
@@ -81,8 +79,14 @@ trap cleanup ERR
 # The source-built command remains in the staging proof for build-time use.
 # The installable package owns the exact command already reviewed in r10.
 install -Dm 0755 -- "$base_command" "$payload_dir/usr/bin/curl"
-tdvp_remove_elf_runtime_search_paths "$readelf_tool" "$payload_dir/usr/bin/curl"
-tdvp_assert_elf_without_runtime_search_path "$readelf_tool" "$payload_dir/usr/bin/curl"
+# The locked image command intentionally carries an empty RUNPATH dynamic
+# entry.  Rewriting it with the generic ELF normalizer changes otherwise
+# identical bytes, so retain the reviewed file verbatim and prove that this
+# transfer did not alter it.
+cmp -s -- "$base_command" "$payload_dir/usr/bin/curl" || {
+  echo 'curl payload transfer changed the locked image command' >&2
+  exit 74
+}
 payload_dir=
 trap - ERR
 echo 'curl payload ready from libcurl-4 staged source build'

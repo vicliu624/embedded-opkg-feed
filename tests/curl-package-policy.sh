@@ -44,9 +44,12 @@ expect_line 'Shared library: \[libcurl[.]so[.]4\]' "$build_file"
 expect_line 'curl requires TDVP_FEED_BASE_ROOT with the locked image /usr/bin/curl' "$build_file"
 expect_line 'locked image supplies a non-RISC-V curl command' "$build_file"
 expect_line 'locked image curl lacks its reviewed libcurl.so.4 dependency' "$build_file"
-expect_line 'tdvp_remove_elf_runtime_search_paths' "$build_file"
-expect_line 'tdvp_assert_elf_without_runtime_search_path' "$build_file"
 expect_line 'install -Dm 0755 -- "\$base_command" "\$payload_dir/usr/bin/curl"' "$build_file"
+expect_line 'curl payload transfer changed the locked image command' "$build_file"
+if grep -Eq 'tdvp_(remove_elf_runtime_search_paths|assert_elf_without_runtime_search_path)' "$build_file"; then
+  echo 'curl image transfer must not rewrite the locked command ELF' >&2
+  exit 1
+fi
 if grep -Eq 'curl.*(https?://|apt|dpkg|debian)' "$build_file"; then
   echo 'curl leaf must not fetch or import a foreign binary during target packaging' >&2
   exit 1

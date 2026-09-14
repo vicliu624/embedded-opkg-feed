@@ -66,8 +66,10 @@ if [[ -n "$base_download_dir" ]]; then
   # source.lock-approved Audacious archive.  Use one disposable directory so
   # BR2_DL_DIR can resolve either input without mutating the cached baseline.
   # Git object stores contain hard-linked read-only files; an object already
-  # present in the disposable directory is identical baseline input.
-  cp -an -- "$base_download_dir/." "$buildroot_download_dir/"
+  # present in the disposable directory is identical baseline input.  rsync
+  # skips it before attempting a write, unlike cp's hard-link preservation.
+  command -v rsync >/dev/null || { echo 'Audacious core needs rsync for the baseline download copy' >&2; exit 70; }
+  rsync -a --ignore-existing -- "$base_download_dir/" "$buildroot_download_dir/"
 fi
 payload_dir="$package_dir/root"
 config_hash=$(sha256sum "$build_output/.config" | awk '{print $1}')

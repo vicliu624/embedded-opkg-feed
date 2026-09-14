@@ -576,10 +576,18 @@ jobs:
             grep -Eq "^Package: ${package}$" "$feed_dir/Packages"
           done
           bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
+          runtime_feed="${RUNNER_TEMP}/tdvp-r10-runtime-base/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64"
+          provider_map="$runtime_feed/.tdvp-image-runtime-providers.tsv"
+          test -s "$provider_map"
           bash ./scripts/verify-image-provider-alternatives.sh \
             --platform tdvp-k230-r1 \
-            --provider-map "$feed_dir/.tdvp-image-runtime-providers.tsv" \
+            --provider-map "$provider_map" \
             "$feed_dir"
+          # build-all consumes the map while it writes control archives but
+          # does not retain hidden catalogue evidence in its final directory.
+          # Preserve the exact reviewed map alongside this artifact so a later
+          # multi-batch merge can re-run the same release gate.
+          cp "$provider_map" "$feed_dir/.tdvp-image-runtime-providers.tsv"
 
           manifest='candidate-dist/tdvp-batch-manifest.tsv'
           {

@@ -6,6 +6,12 @@ set -Eeuo pipefail
 IFS=$'\n\t'
 
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+
+# The r10 batch workflow runs this policy entry point. Keep the generated
+# control-file contract for full-image runtime alternatives in that path as
+# well as in the lightweight CI job.
+bash "$repo_root/tests/build-shared-package-policy.sh"
+
 work_root=$(mktemp -d)
 cleanup() { rm -rf -- "$work_root"; }
 trap cleanup EXIT

@@ -16,10 +16,10 @@ tdvp_build_archive_library() {
   local library_glob=$6
   local expected_source_line=$7
   shift 7
-  local output install_root payload_dir= payload_link= previous_payload= temporary_prefix= download_dir= readelf_tool=
+  local output install_root payload_dir= payload_link= previous_payload= temporary_prefix= download_dir= readelf_tool= repo_root=
   local staged_command= stage_root= stage_destination= stage_marker= command_source=
   local payload_ready=0
-  local -a install_options=() enable_options=() disable_options=() make_variable_options=()
+  local -a install_options=() enable_options=() disable_options=() make_variable_options=() fetch_arguments=()
 
   # The shared-library package is the only source builder. A split command
   # leaf can opt into exactly one /usr/bin command from that install root, and
@@ -100,6 +100,15 @@ tdvp_build_archive_library() {
     return 71
   }
   if [[ -f "$package_dir/source.lock" ]]; then
+    # A cache restore can be cold whenever any source.lock changes. Populate
+    # exactly this recipe's reviewed artifacts first, then hand Buildroot a
+    # private offline mirror. This keeps network retrieval out of the build
+    # itself while letting every archive-library provider recover safely from
+    # an empty content-addressed cache.
+    repo_root=$(cd -- "$package_dir/../.." && pwd)
+    fetch_arguments=(--cache "${TDVP_SOURCE_CACHE_ROOT:?locked Buildroot source requires TDVP_SOURCE_CACHE_ROOT from scripts/build-all.sh}" --package-dir "$package_dir")
+    [[ "${TDVP_SOURCE_CACHE_OFFLINE:-0}" != 1 ]] || fetch_arguments+=(--offline)
+    bash "$repo_root/scripts/fetch-source-cache.sh" "${fetch_arguments[@]}"
     download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
     install_options+=(--offline-download-dir "$download_dir")
   fi

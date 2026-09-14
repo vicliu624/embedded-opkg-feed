@@ -254,6 +254,35 @@ mkdir -p -- "$control_dir" "$data_dir"
 declare -A declared_dependencies=()
 declare -a dependency_records=()
 
+# A full TDVP desktop image already owns a reviewed, byte-identical copy of
+# part of the runtime catalogue.  Its immutable tdvp-image-* status packages
+# are valid alternate satisfiers for those runtime requirements.  Keep the
+# canonical feed package first so a thin image still installs the independently
+# owned IPK; the alternate makes the same leaf package installable on the
+# complete production image without trying to overwrite files it already owns.
+declare -A image_provider_aliases=()
+image_provider_map=${TDVP_IMAGE_PROVIDER_MAP:-}
+if [[ -n "$image_provider_map" ]]; then
+  [[ -s "$image_provider_map" ]] || {
+    echo "TDVP_IMAGE_PROVIDER_MAP is not a non-empty provider map: $image_provider_map" >&2
+    exit 86
+  }
+  while IFS='|' read -r runtime_provider image_provider extra; do
+    runtime_provider=${runtime_provider%$'\r'}
+    image_provider=${image_provider%$'\r'}
+    [[ -z "$runtime_provider" || "$runtime_provider" == \#* ]] && continue
+    [[ -z "$extra" && "$runtime_provider" =~ ^[a-z0-9][a-z0-9+.-]*$ && \
+       "$image_provider" =~ ^tdvp-image-[a-z0-9][a-z0-9+.-]*$ ]] || {
+      echo "invalid TDVP image provider record: $runtime_provider|$image_provider${extra:+|$extra}" >&2
+      exit 86
+    }
+    case " ${image_provider_aliases[$runtime_provider]:-} " in
+      *" | $image_provider "*) ;;
+      *) image_provider_aliases[$runtime_provider]+=" | $image_provider" ;;
+    esac
+  done <"$image_provider_map"
+fi
+
 append_dependency() {
   local record=$1
   local name
@@ -265,12 +294,26 @@ append_dependency() {
   fi
 }
 
+append_dependency_with_image_alternatives() {
+  local record=$1
+  local name
+  name=$(printf '%s' "$record" | sed -E 's/^[[:space:]]*([^[:space:]<(=|]+).*/\1/')
+  [[ -n "$name" ]] || { echo "invalid dependency record for $PACKAGE: $record" >&2; exit 86; }
+  # Do not make the firmware ABI itself virtual.  All other aliases are
+  # metadata-only alternatives for paths that the immutable image inventory
+  # already owns; they never permit an arbitrary external provider.
+  if [[ "$name" != "$ABI_PACKAGE" && -n "${image_provider_aliases[$name]:-}" ]]; then
+    record+=${image_provider_aliases[$name]}
+  fi
+  append_dependency "$record"
+}
+
 append_dependency "$ABI_PACKAGE (= $ABI_VERSION)"
 if [[ -n "$PACKAGE_DEPENDS" ]]; then
   IFS=',' read -r -a configured_dependencies <<< "$PACKAGE_DEPENDS"
   for configured_dependency in "${configured_dependencies[@]}"; do
     configured_dependency=$(printf '%s' "$configured_dependency" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')
-    [[ -n "$configured_dependency" ]] && append_dependency "$configured_dependency"
+    [[ -n "$configured_dependency" ]] && append_dependency_with_image_alternatives "$configured_dependency"
   done
 fi
 
@@ -325,7 +368,7 @@ if [[ "$PACKAGE_AUTO_RUNTIME_DEPENDS" == 1 ]]; then
       fi
       owner=${owner_record%%|*}
       owner_version=${owner_record#*|}
-      [[ "$owner" == "$PACKAGE" ]] || append_dependency "$owner (= $owner_version)"
+      [[ "$owner" == "$PACKAGE" ]] || append_dependency_with_image_alternatives "$owner (= $owner_version)"
     done < <("$readelf_tool" -d "$elf" 2>/dev/null | sed -n 's/.*Shared library: \[\(.*\)\]/\1/p')
   done < <(find "$payload_dir" -type f \( -perm -u+x -o -name '*.so*' \) -print | LC_ALL=C sort)
 elif [[ "$PACKAGE_AUTO_RUNTIME_DEPENDS" != 0 ]]; then

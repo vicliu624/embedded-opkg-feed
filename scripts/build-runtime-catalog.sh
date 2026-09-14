@@ -164,6 +164,7 @@ if [[ -n "${TDVP_IMAGE_PROVIDER_MANIFEST:-}" ]]; then
   }
 fi
 declare -A image_path_owner=()
+declare -A image_path_present=()
 if [[ -f "$image_manifest" ]]; then
   while IFS=$'\t' read -r path package; do
     [[ -n "$path" && -n "$package" ]] || continue
@@ -176,6 +177,18 @@ with open(sys.argv[1], encoding="utf-8") as stream:
     owners = json.load(stream).get("owners", {})
 for path, package in owners.items():
     print(f"{path}\t{package}")
+PY
+  )
+  while IFS= read -r path; do
+    [[ -n "$path" ]] && image_path_present[$path]=1
+  done < <(python3 - "$image_manifest" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    files = json.load(stream).get("files", {})
+for path in files:
+    print(path)
 PY
   )
 else
@@ -444,6 +457,43 @@ while IFS='|' read -r package description selectors; do
     esac
   done
 done <"$data_manifest"
+
+# A runtime data package is also present in the immutable desktop image.  Add
+# its image alternative from the same locked ownership inventory used for
+# SONAME packages.  Where all payload paths have one unique image owner, keep
+# that precise owner.  A selector can deliberately group files from multiple
+# image packages (or an ambiguous Buildroot path); tdvp-image-base is the
+# installed, content-addressed aggregate for the whole verified image and is
+# the only safe common alternative in that case.  Every selected path must be
+# present in the verified image inventory: do not hide a missing path behind
+# the aggregate package.
+declare -A data_image_alias=()
+declare -A data_image_alias_invalid=()
+for relative in "${!planned_data_paths[@]}"; do
+  package=${planned_data_paths[$relative]}
+  if [[ -z "${image_path_present[$relative]:-}" && -z "${image_path_owner[$relative]:-}" ]]; then
+    data_image_alias_invalid[$package]=$relative
+    continue
+  fi
+  image_package=${image_path_owner[$relative]:-tdvp-image-base}
+  [[ "$image_package" =~ ^tdvp-image-[a-z0-9][a-z0-9+.-]*$ ]] || {
+    data_image_alias_invalid[$package]=$relative
+    continue
+  }
+  existing=${data_image_alias[$package]:-}
+  if [[ -z "$existing" ]]; then
+    data_image_alias[$package]=$image_package
+  elif [[ "$existing" != "$image_package" ]]; then
+    data_image_alias[$package]=tdvp-image-base
+  fi
+done
+for package in "${!data_image_alias_invalid[@]}"; do
+  echo "runtime data path is absent from the locked image inventory: $package ${data_image_alias_invalid[$package]}" >&2
+  exit 79
+done
+for package in "${!data_image_alias[@]}"; do
+  printf '%s|%s\n' "$package" "${data_image_alias[$package]}" >>"$image_provider_map"
+done
 LC_ALL=C sort -u -o "$owner_map" "$owner_map"
 
 # Extra-owner overrides can rename a SONAME's canonical package (for example

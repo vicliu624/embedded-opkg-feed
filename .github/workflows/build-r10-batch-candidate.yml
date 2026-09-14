@@ -38,7 +38,10 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  TDVP_FIRMWARE_REVISION: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+  # This published CPU1/VGLite baseline installs libvg_lite.so.  The runtime
+  # catalogue packages that exact target payload, so pinning an older image
+  # without BR2_PACKAGE_VG_LITE would produce an invalid feed base.
+  TDVP_FIRMWARE_REVISION: 23f210938e4882dbe3663840259c2520868f3b8b
   TDVP_PROFILE: k230_canmv_t_display_rm69a10_labwc_desktop_defconfig
   # Change when the reviewed platform SDK identity or the cached build
   # interface changes. Package source locks deliberately do not affect this key.
@@ -47,8 +50,8 @@ env:
   # Buildroot would re-run prerequisite packages (including the external
   # toolchain) despite the restored host toolchain and target sysroot.  The
   # cache deliberately excludes flash images.
-  TDVP_SDK_CACHE_KEY: tdvp-k230-r1-sdk-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10-v3
-  TDVP_BUILDROOT_DL_CACHE_KEY: tdvp-k230-r1-buildroot-dl-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10-v1
+  TDVP_SDK_CACHE_KEY: tdvp-k230-r1-sdk-23f210938e4882dbe3663840259c2520868f3b8b-rm69a10-v3
+  TDVP_BUILDROOT_DL_CACHE_KEY: tdvp-k230-r1-buildroot-dl-23f210938e4882dbe3663840259c2520868f3b8b-rm69a10-v1
 
 jobs:
   build-sdk-base:
@@ -64,7 +67,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: vicliu624/t-display-k230-vision-platform
-          ref: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+          ref: 23f210938e4882dbe3663840259c2520868f3b8b
           path: firmware
           submodules: recursive
           fetch-depth: 1
@@ -72,6 +75,9 @@ jobs:
       - name: Check policy before using build capacity
         run: |
           set -Eeuo pipefail
+          config="firmware/buildroot/k230-sdk-overlay/configs/$TDVP_PROFILE"
+          grep -Fxq 'BR2_PACKAGE_VG_LITE=y' "$config"
+          grep -Fxq 'BR2_PACKAGE_TDVP_VGLITE_ACCEPTANCE=y' "$config"
           for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
           bash ./tests/build-all-source-lock-policy.sh
           bash ./tests/audacious-foundation-policy.sh
@@ -255,7 +261,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: vicliu624/t-display-k230-vision-platform
-          ref: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+          ref: 23f210938e4882dbe3663840259c2520868f3b8b
           path: firmware
           submodules: recursive
           fetch-depth: 1
@@ -587,7 +593,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: vicliu624/t-display-k230-vision-platform
-          ref: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+          ref: 23f210938e4882dbe3663840259c2520868f3b8b
           path: firmware
           submodules: recursive
           fetch-depth: 1

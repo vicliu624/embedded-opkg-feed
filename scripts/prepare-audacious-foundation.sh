@@ -72,7 +72,6 @@ mkdir -p -- "$evidence_dir"
   printf 'buildroot\t%s\n' "$actual_buildroot_version"
   printf 'config_sha256\t%s\n' "$config_hash"
   for provider in "${providers[@]}"; do
-    stamp=$(find "$build_output/build" -maxdepth 2 -type f -path "*/${provider}-*/.stamp_staging_installed" -print -quit)
     printf 'provider\t%s\t%s\n' "$provider" 'SDK sysroot verified'
   done
   for development_file in "${required_development_files[@]}"; do

@@ -180,7 +180,10 @@ if [[ -d "$closure_download_dir" && ! -L "$closure_download_dir" ]]; then
       exit 70
     }
   done < <(find "$closure_download_dir" -type l -print0)
-  cp -a -- "$closure_download_dir/." "$download_dir/"
+# The core closure is a complete, hash-checked superset of the same baseline.
+# Do not overwrite its read-only Git objects when the baseline has already
+# populated this disposable download directory.
+rsync -a --ignore-existing -- "$closure_download_dir/" "$download_dir/"
 else
   env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" source
 fi

@@ -161,7 +161,7 @@ if grep -Fq 'source closure omitted verified Buildroot archive' "$core_build_scr
   exit 1
 fi
 expect_contains 'closure_download_dir="$TDVP_FEED_STAGING_ROOT/.tdvp-audacious-buildroot-download-closure"' "$plugins_build_script"
-expect_contains 'cp -a -- "$closure_download_dir/." "$download_dir/"' "$plugins_build_script"
+expect_contains 'rsync -a --ignore-existing -- "$closure_download_dir/" "$download_dir/"' "$plugins_build_script"
 expect_contains 'rsync -a --ignore-existing -- "$base_download_dir/" "$buildroot_download_dir/"' "$core_build_script"
 expect_contains 'rsync -a --ignore-existing -- "$base_download_dir/" "$download_dir/"' "$plugins_build_script"
 expect_contains 'Audacious core Buildroot download closure link escapes its root' "$plugins_build_script"

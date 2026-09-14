@@ -290,22 +290,6 @@ jobs:
           key: ${{ env.TDVP_SDK_CACHE_KEY }}-package-stamps
           fail-on-cache-miss: false
 
-      - name: Restore the private Audacious foundation build state
-        id: restore-audacious-foundation
-        if: startsWith(inputs.batch, 'audacious-')
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/libglib2-*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/libgtk3-*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/alsa-lib-*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/pulseaudio-*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/ffmpeg-*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/zlib-*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host/riscv64-buildroot-linux-gnu/sysroot
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-audacious-foundation-${{ hashFiles('scripts/prepare-audacious-foundation.sh', 'support/audacious-buildroot/**', 'packages/audacious-core/source.lock', 'packages/audacious-plugins/source.lock') }}
-          fail-on-cache-miss: ${{ inputs.batch != 'audacious-foundation' }}
-
       - name: Restore the reviewed Buildroot source-download base
         uses: actions/cache/restore@v4
         with:
@@ -555,20 +539,6 @@ jobs:
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.br_*
           key: ${{ env.TDVP_SDK_CACHE_KEY }}-package-stamps
-
-      - name: Save the private Audacious foundation build state
-        if: success() && inputs.batch == 'audacious-foundation'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/libglib2-*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/libgtk3-*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/alsa-lib-*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/pulseaudio-*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/ffmpeg-*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/zlib-*
-            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host/riscv64-buildroot-linux-gnu/sysroot
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-audacious-foundation-${{ hashFiles('scripts/prepare-audacious-foundation.sh', 'support/audacious-buildroot/**', 'packages/audacious-core/source.lock', 'packages/audacious-plugins/source.lock') }}
 
       - name: Upload the unsigned incremental batch
         if: inputs.batch != 'audacious-foundation'

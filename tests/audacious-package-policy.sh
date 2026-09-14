@@ -82,7 +82,9 @@ expect_line "^PACKAGE='audacious'$" "$app_env"
 expect_line "^PACKAGE_DEPENDS='audacious-core \\(= 4\\.6\\.1-1\\), audacious-plugins \\(= 4\\.6\\.1-1\\), hicolor-icon-theme \\(= 2025\\.02\\.1-1\\)'$" "$app_env"
 expect_fixed_line 'TDVP_AUDACIOUS_VERSION = 4.6.1' "$core_buildroot_recipe"
 expect_fixed_line 'TDVP_AUDACIOUS_INSTALL_STAGING = YES' "$core_buildroot_recipe"
+expect_fixed_line 'TDVP_AUDACIOUS_DEPENDENCIES =' "$core_buildroot_recipe"
 expect_fixed_line 'TDVP_AUDACIOUS_PLUGINS_VERSION = 4.6.1' "$plugins_buildroot_recipe"
+expect_fixed_line 'TDVP_AUDACIOUS_PLUGINS_DEPENDENCIES =' "$plugins_buildroot_recipe"
 if grep -Eq '^TDVP_AUDACIOUS_PLUGINS_DEPENDENCIES =.*tdvp-audacious' "$plugins_buildroot_recipe"; then
   echo 'Audacious plugins must consume imported core development files instead of rebuilding tdvp-audacious' >&2
   exit 1
@@ -118,6 +120,7 @@ expect_contains 'package/tdvp-audacious-plugins/Config.in' "$core_build_script"
 expect_contains 'package/tdvp-audacious/Config.in' "$plugins_build_script"
 expect_contains 'package/tdvp-audacious-plugins/Config.in' "$plugins_build_script"
 for build_script in "$core_build_script" "$plugins_build_script"; do
+  expect_contains 'prepare-audacious-foundation.sh' "$build_script"
   expect_contains 'buildroot_staging_source="$build_output/host/riscv64-buildroot-linux-gnu/sysroot"' "$build_script"
   expect_contains 'buildroot_staging_root=$(mktemp -d)' "$build_script"
   expect_contains 'cp -a --reflink=auto "$buildroot_staging_source/." "$buildroot_staging_root/"' "$build_script"

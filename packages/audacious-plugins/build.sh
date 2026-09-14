@@ -34,6 +34,10 @@ staged_plugin_install_patch="$support_plugins_dir/0001-meson-use-target-plugin-d
 cmp -s -- "$plugin_install_patch" "$staged_plugin_install_patch" || { echo 'Audacious plugin target-install patch differs from the source-lock-reviewed copy' >&2; exit 70; }
 buildroot_staging_source="$build_output/host/riscv64-buildroot-linux-gnu/sysroot"
 [[ -d "$buildroot_staging_source" ]] || { echo "Audacious plugins need the SDK Buildroot staging sysroot: $buildroot_staging_source" >&2; exit 70; }
+foundation_evidence=$(mktemp -d)
+TDVP_AUDACIOUS_BUILDROOT_OUTPUT="$build_output" \
+TDVP_AUDACIOUS_FOUNDATION_EVIDENCE_DIR="$foundation_evidence" \
+  bash "$feed_root/scripts/prepare-audacious-foundation.sh" --platform tdvp-k230-r1 --sdk-root "$sdk_root"
 
 staged_core_package="$buildroot_tree/package/tdvp-audacious"
 staged_plugins_package="$buildroot_tree/package/tdvp-audacious-plugins"
@@ -111,7 +115,7 @@ cleanup() {
   rm -f -- "$config_backup" "$config_old_backup" "$package_config_backup"
   # Preserve an un-restored original sysroot backup for manual recovery; never
   # delete caller-owned SDK data from an error cleanup path.
-  rm -rf -- "$install_root" "$buildroot_staging_root" "$download_dir"
+  rm -rf -- "$install_root" "$buildroot_staging_root" "$download_dir" "$foundation_evidence"
   exit "$rc"
 }
 trap cleanup EXIT

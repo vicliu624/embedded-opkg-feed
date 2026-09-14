@@ -12,10 +12,10 @@ TDVP_AUDACIOUS_PLUGINS_LICENSE_FILES = COPYING
 # The feed transaction supplies audacious-core's development artefacts in its
 # private staging root. Keeping it out of Buildroot's dependency list prevents
 # a plugins-only incremental batch from rebuilding core after a verified core
-# state import. The remaining upstream providers stay explicit here and are
-# prepared by the Audacious foundation layer.
-TDVP_AUDACIOUS_PLUGINS_DEPENDENCIES = \
-	alsa-lib pulseaudio ffmpeg libglib2 libgtk3 zlib
+# state import. ALSA, PulseAudio, FFmpeg, GLib, GTK3 and zlib belong to the
+# completed SDK; the feed preflight validates their development files before
+# this recipe runs, so no image provider may be rebuilt here.
+TDVP_AUDACIOUS_PLUGINS_DEPENDENCIES =
 
 # This is a local music player rather than a second desktop environment or a
 # streaming-service bundle. Keep the GTK3 interface, local playlist/file

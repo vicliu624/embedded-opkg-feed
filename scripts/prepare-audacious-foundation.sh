@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Materialise Audacious' upstream Buildroot providers before any Audacious
-# recipe is compiled. The resulting package stamps and staging sysroot are a
-# private CI build-state input; runtime ownership remains in the target-derived
-# feed catalogue.
+# Verify that the completed TDVP SDK already provides every development file
+# Audacious needs. Feed batches consume this immutable sysroot directly and
+# never rebuild an image-owned provider merely because it becomes a consumer
+# dependency.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -42,19 +42,28 @@ evidence_dir=${TDVP_AUDACIOUS_FOUNDATION_EVIDENCE_DIR:-}
 
 config_hash=$(sha256sum "$build_output/.config" | awk '{print $1}')
 providers=(libglib2 libgtk3 alsa-lib pulseaudio ffmpeg zlib)
-# The SDK-base cache intentionally keeps the host, target and Buildroot state
-# while excluding generated image files. Some K230 package install hooks still
-# emit a transient Debian archive under images/deb; recreate only that empty
-# output directory before the provider target-install phase.
-mkdir -p -- "$build_output/images/deb"
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
-  PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-  BR2_DL_DIR="$base_download_dir" BR2_PRIMARY_SITE="file://$base_download_dir" BR2_PRIMARY_SITE_ONLY=y \
-  make -C "$build_output" "${providers[@]}"
-[[ "$(sha256sum "$build_output/.config" | awk '{print $1}')" == "$config_hash" ]] || {
-  echo 'Audacious foundation changed the caller-owned Buildroot configuration' >&2
-  exit 71
-}
+sysroot="$sdk_root/riscv64-buildroot-linux-gnu/sysroot"
+[[ -d "$sysroot" && ! -L "$sysroot" ]] || { echo "Audacious foundation needs the SDK sysroot: $sysroot" >&2; exit 71; }
+required_development_files=(
+  usr/lib/pkgconfig/glib-2.0.pc
+  usr/lib/pkgconfig/gio-2.0.pc
+  usr/lib/pkgconfig/gtk+-3.0.pc
+  usr/lib/pkgconfig/alsa.pc
+  usr/lib/pkgconfig/libpulse.pc
+  usr/lib/pkgconfig/libavcodec.pc
+  usr/lib/pkgconfig/libavformat.pc
+  usr/lib/pkgconfig/libavutil.pc
+  usr/lib/pkgconfig/zlib.pc
+  usr/include/libavcodec/avcodec.h
+  usr/include/libavformat/avformat.h
+  usr/include/libavutil/avutil.h
+)
+for development_file in "${required_development_files[@]}"; do
+  [[ -s "$sysroot/$development_file" ]] || {
+    echo "Audacious foundation is missing SDK development input: $development_file" >&2
+    exit 72
+  }
+done
 
 mkdir -p -- "$evidence_dir"
 {
@@ -64,8 +73,10 @@ mkdir -p -- "$evidence_dir"
   printf 'config_sha256\t%s\n' "$config_hash"
   for provider in "${providers[@]}"; do
     stamp=$(find "$build_output/build" -maxdepth 2 -type f -path "*/${provider}-*/.stamp_staging_installed" -print -quit)
-    [[ -n "$stamp" ]] || { echo "Audacious foundation omitted provider staging stamp: $provider" >&2; exit 72; }
-    printf 'provider\t%s\t%s\n' "$provider" "${stamp#"$build_output/"}"
+    printf 'provider\t%s\t%s\n' "$provider" 'SDK sysroot verified'
+  done
+  for development_file in "${required_development_files[@]}"; do
+    printf 'development-file\t%s\n' "$development_file"
   done
 } >"$evidence_dir/tdvp-audacious-foundation.tsv"
 

@@ -34,6 +34,10 @@ actual_buildroot_version=$(awk '$1 == "export" && $2 == "BR2_VERSION" && $3 == "
 grep -Fqx "sha256  $SOURCE_ARCHIVE_SHA256  $SOURCE_ARCHIVE" "$support_core_dir/tdvp-audacious.hash" || { echo 'Audacious source checksum does not match the reviewed Buildroot package input' >&2; exit 70; }
 buildroot_staging_source="$build_output/host/riscv64-buildroot-linux-gnu/sysroot"
 [[ -d "$buildroot_staging_source" ]] || { echo "Audacious core needs the SDK Buildroot staging sysroot: $buildroot_staging_source" >&2; exit 70; }
+foundation_evidence=$(mktemp -d)
+TDVP_AUDACIOUS_BUILDROOT_OUTPUT="$build_output" \
+TDVP_AUDACIOUS_FOUNDATION_EVIDENCE_DIR="$foundation_evidence" \
+  bash "$feed_root/scripts/prepare-audacious-foundation.sh" --platform tdvp-k230-r1 --sdk-root "$sdk_root"
 
 staged_core_package="$buildroot_tree/package/tdvp-audacious"
 staged_plugins_package="$buildroot_tree/package/tdvp-audacious-plugins"
@@ -123,7 +127,7 @@ cleanup() {
   rm -f -- "$config_backup" "$config_old_backup" "$package_config_backup"
   # If restoration failed, leave the moved original sysroot backup in place
   # rather than deleting any caller-owned SDK data during error cleanup.
-  rm -rf -- "$install_root" "$buildroot_staging_root" "$download_dir"
+  rm -rf -- "$install_root" "$buildroot_staging_root" "$download_dir" "$foundation_evidence"
   exit "$rc"
 }
 trap cleanup EXIT

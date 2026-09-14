@@ -148,6 +148,7 @@ esac
 runtime_owner_map=
 target_runtime_provider_manifest=
 image_provider_map=
+runtime_catalogue_package_manifest=
 readelf_tool=
 if [[ "$runtime_catalog_enabled" -eq 1 ]]; then
   [[ -n "$base_root" ]] || {
@@ -172,6 +173,7 @@ if [[ "$runtime_catalog_enabled" -eq 1 ]]; then
   runtime_owner_map="$feed_dir/.tdvp-runtime-owners.tsv"
   target_runtime_provider_manifest="$feed_dir/.tdvp-target-runtime-packages.tsv"
   image_provider_map="$feed_dir/.tdvp-image-runtime-providers.tsv"
+  runtime_catalogue_package_manifest="$feed_dir/.tdvp-runtime-catalog-packages.tsv"
   [[ -s "$runtime_owner_map" ]] || {
     echo "runtime catalogue did not create its owner map: $runtime_owner_map" >&2
     exit 71
@@ -187,6 +189,10 @@ if [[ "$runtime_catalog_enabled" -eq 1 ]]; then
   [[ -f "$image_provider_map" ]] || {
     echo "runtime catalogue did not create its image-provider map: $image_provider_map" >&2
     exit 73
+  }
+  [[ -s "$runtime_catalogue_package_manifest" ]] || {
+    echo "runtime catalogue did not create its package manifest: $runtime_catalogue_package_manifest" >&2
+    exit 74
   }
 elif [[ "$runtime_catalog_only" -eq 1 || "$reuse_runtime_catalog" -eq 1 ]]; then
   echo "runtime-catalog options require a composable r3-or-newer release; got $release" >&2
@@ -269,6 +275,7 @@ declare -A recipe_kind=()
 declare -A build_state=()
 declare -A force_source_build=()
 declare -A provided_package=()
+declare -A runtime_catalogue_package=()
 declare -A target_runtime_provider=()
 declare -A target_runtime_provider_sonames=()
 declare -a available_packages=()
@@ -316,6 +323,28 @@ emit_runtime_dependency_names() {
 target_catalogue_has_package() {
   local package=$1
   find "$feed_dir" -maxdepth 1 -type f -name "${package}_*.ipk" -print -quit | grep -q .
+}
+
+# A reused runtime catalogue is an immutable, explicitly attested input.  It
+# may already carry a data/runtime package that has a source recipe (for
+# example ca-certificates).  Defer only a package listed in the catalogue's
+# own manifest and only when the staged IPK control metadata has the exact
+# recipe name and version.  A failed source-build candidate cannot therefore
+# be mistaken for a reusable runtime provider.
+assert_runtime_catalogue_package() {
+  local package=$1 version staged_version
+  [[ "$reuse_runtime_catalog" -eq 1 ]] || return 0
+  version=$(read_recipe_value "${recipe_dir[$package]}/package.env" VERSION)
+  staged_version=$(awk -F '|' -v package="$package" '
+    $1 == package { print $2; exit }
+  ' "$runtime_catalogue_package_manifest")
+  [[ -n "$staged_version" ]] || return 0
+  [[ "$staged_version" == "$version" ]] || {
+    echo "runtime catalogue package version is not attested for $package: catalogue is $staged_version, recipe is $version" >&2
+    exit 75
+  }
+  runtime_catalogue_package[$package]=1
+  echo "source recipe deferred; runtime catalogue already provides: $package ($version)" >&2
 }
 
 # Target-derived runtime packages are the sole source of truth for their
@@ -385,6 +414,10 @@ while IFS= read -r package_env; do
   available_packages+=("$package")
 done < <(find "$repo_root/packages" -mindepth 2 -maxdepth 2 -name package.env -type f -print | LC_ALL=C sort)
 
+for package in "${available_packages[@]}"; do
+  assert_runtime_catalogue_package "$package"
+done
+
 assert_provided_package() {
   local package=$1 version ipk control archive matches=0
   [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || {
@@ -446,6 +479,7 @@ select_package_closure() {
   local package=$1 dependency
   local -a build_dependencies=()
   [[ "${provided_package[$package]:-0}" == 1 ]] && return 0
+  [[ "${runtime_catalogue_package[$package]:-0}" == 1 ]] && return 0
   [[ -n "${target_runtime_provider[$package]:-}" ]] && return 0
   target_catalogue_has_package "$package" && return 0
   [[ -n "${recipe_dir[$package]:-}" ]] || {
@@ -467,7 +501,9 @@ select_package_closure() {
 }
 
 if [[ ${#requested_packages[@]} -eq 0 ]]; then
-  selected_packages=("${available_packages[@]}")
+  for package in "${available_packages[@]}"; do
+    [[ "${runtime_catalogue_package[$package]:-0}" == 1 ]] || selected_packages+=("$package")
+  done
 else
   for package in "${requested_packages[@]}"; do
     [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || {
@@ -526,6 +562,7 @@ mark_source_build_closure() {
   local dependency
   local -a dependencies=()
   [[ "${provided_package[$package]:-0}" == 1 ]] && return
+  [[ "${runtime_catalogue_package[$package]:-0}" == 1 ]] && return
   [[ -n "${target_runtime_provider[$package]:-}" ]] && return
   [[ -n "${recipe_dir[$package]:-}" ]] || {
     echo "source-built package depends on unavailable build package: $package" >&2
@@ -572,6 +609,7 @@ build_package() {
   local dependency package_dir
   local -a build_dependencies=()
   [[ "${provided_package[$package]:-0}" == 1 ]] && return 0
+  [[ "${runtime_catalogue_package[$package]:-0}" == 1 ]] && return 0
   case "${build_state[$package]:-unseen}" in
     done) return 0 ;;
     visiting)

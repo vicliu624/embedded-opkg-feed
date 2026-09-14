@@ -81,10 +81,12 @@ owner_map="$output_dir/.tdvp-runtime-owners.tsv"
 ownership_report="$output_dir/.tdvp-runtime-ownership.tsv"
 target_provider_manifest="$output_dir/.tdvp-target-runtime-packages.tsv"
 image_provider_map="$output_dir/.tdvp-image-runtime-providers.tsv"
+package_manifest="$output_dir/.tdvp-runtime-catalog-packages.tsv"
 : >"$owner_map"
 : >"$ownership_report"
 : >"$target_provider_manifest"
 : >"$image_provider_map"
+: >"$package_manifest"
 
 is_abi_soname() {
   case "$1" in
@@ -436,6 +438,7 @@ EOF
   TDVP_IMAGE_PROVIDER_MAP="$image_provider_map" \
   TDVP_READELF="$readelf_tool" \
     "$script_dir/build-ipk.sh" --platform "$platform_slug" "$package_dir" "$output_dir"
+  printf '%s|%s\n' "$package" "$version" >>"$package_manifest"
 }
 
 # Group SONAMEs by their final owner after manifest overrides.  Most fallback
@@ -555,8 +558,10 @@ while IFS='|' read -r package description selectors; do
 done <"$data_manifest"
 
 LC_ALL=C sort -u -o "$ownership_report" "$ownership_report"
+LC_ALL=C sort -u -o "$package_manifest" "$package_manifest"
 printf 'runtime owner map: %s\n' "$owner_map"
 printf 'runtime ownership report: %s\n' "$ownership_report"
 printf 'target runtime provider manifest: %s\n' "$target_provider_manifest"
 printf 'image runtime provider map: %s\n' "$image_provider_map"
+printf 'runtime package manifest: %s\n' "$package_manifest"
 echo "built ${#soname_file[@]} non-ABI SONAME packages from $target_root"

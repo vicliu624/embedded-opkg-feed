@@ -80,6 +80,7 @@ case "$1 $2 ${3:-}" in
     printf '%s\n' "$count" >"$TDVP_TEST_GO_ATTEMPTS"
     ;;
   'mod verify ')
+    printf 'all modules verified\n'
     ;;
   'mod vendor ')
     count=$(cat "$TDVP_TEST_GO_ATTEMPTS")

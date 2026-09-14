@@ -249,10 +249,18 @@ jobs:
         run: |
           set -Eeuo pipefail
           runtime_feed="${RUNNER_TEMP}/tdvp-r10-runtime-base/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64"
+          # The runtime catalogue is an intentionally private cache input:
+          # build-all rejects a Packages index when a later batch reuses it.
+          # Verify its control archives in an isolated copy that has a
+          # transient deterministic index, leaving the cache protocol intact.
+          runtime_verification=$(mktemp -d)
+          trap 'rm -rf -- "$runtime_verification"' EXIT
+          cp -a -- "$runtime_feed/." "$runtime_verification/"
+          bash ./scripts/make-index.sh "$runtime_verification"
           bash ./scripts/verify-image-provider-alternatives.sh \
             --platform tdvp-k230-r1 \
-            --provider-map "$runtime_feed/.tdvp-image-runtime-providers.tsv" \
-            "$runtime_feed"
+            --provider-map "$runtime_verification/.tdvp-image-runtime-providers.tsv" \
+            "$runtime_verification"
 
       - name: Save the target-runtime IPK base
         if: steps.restore-runtime-base.outputs.cache-hit != 'true'

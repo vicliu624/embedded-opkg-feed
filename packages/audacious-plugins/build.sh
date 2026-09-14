@@ -146,9 +146,15 @@ mkdir -- "$buildroot_staging_source"
 cp -a -- "$buildroot_staging_root/." "$buildroot_staging_source/"
 # A split Plugins build receives Core's development metadata in the private
 # feed staging root.  The external K230 compiler uses the fixed Buildroot
-# sysroot path above, so place the imported headers, libraries and .pc files
-# in this disposable replacement before Meson starts dependency discovery.
-cp -a -- "$TDVP_FEED_STAGING_ROOT/usr/." "$buildroot_staging_source/usr/"
+# sysroot path above, so place only the imported headers, libraries and .pc
+# files in this disposable replacement before Meson starts dependency
+# discovery.  In particular, preserve the SDK's lib64 layout: Core's target
+# install can contain a lib64 directory where this SDK has a linker symlink.
+for imported_tree in include lib; do
+  [[ -d "$TDVP_FEED_STAGING_ROOT/usr/$imported_tree" ]] || continue
+  mkdir -p -- "$buildroot_staging_source/usr/$imported_tree"
+  cp -a -- "$TDVP_FEED_STAGING_ROOT/usr/$imported_tree/." "$buildroot_staging_source/usr/$imported_tree/"
+done
 test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"
 
 "$buildroot_tree/utils/config" --file "$build_output/.config" --enable BR2_PACKAGE_TDVP_AUDACIOUS --enable BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS

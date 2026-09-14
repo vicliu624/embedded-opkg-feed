@@ -47,7 +47,16 @@ source_root=$(tdvp_unpack_locked_source_archive "$package_dir" "$source_tree")
 cp -a -- "$source_root/." "$patched_source/"
 pulseaudio_patch="$build_root/0001-pulseaudio-add-opt-in-stream-buffer.patch"
 sed 's/\r$//' "$package_dir/patches/0001-pulseaudio-add-opt-in-stream-buffer.patch" >"$pulseaudio_patch"
-patch --batch --forward -p1 -d "$patched_source" <"$pulseaudio_patch"
+# The locked GitHub archive is intentionally unpacked without a .git
+# directory.  git apply's --no-index mode still validates unified-diff
+# context precisely there, while GNU patch rejects this valid empty-line hunk
+# on the Ubuntu runner. Check first so a stale local policy patch fails before
+# any CMake or cross-compiler work begins.
+(
+  cd -- "$patched_source"
+  git apply --no-index --check "$pulseaudio_patch"
+  git apply --no-index "$pulseaudio_patch"
+)
 
 # SDL's CMake helper derives the dlopen name from the file passed to it rather
 # than reading ELF DT_SONAME. Some SDK bridges retain the real target object

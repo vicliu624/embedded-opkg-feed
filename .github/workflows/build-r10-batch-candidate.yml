@@ -459,6 +459,12 @@ jobs:
           TDVP_GBA_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r10-source-cache
         run: bash ./tests/tdvp-gba-source-archive-policy.sh
 
+      - name: Preflight the reviewed SDL2 PulseAudio patch
+        if: inputs.batch == 'games'
+        env:
+          TDVP_SDL2_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r10-source-cache
+        run: bash ./tests/sdl2-pulseaudio-patch-policy.sh
+
       - name: Install the reviewed Go host for development-tools
         if: inputs.batch == 'development-tools'
         uses: actions/setup-go@v5

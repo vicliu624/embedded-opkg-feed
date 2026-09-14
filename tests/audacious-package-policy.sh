@@ -147,7 +147,7 @@ for build_script in "$core_build_script" "$plugins_build_script"; do
 done
 expect_contains 'tdvp-audacious-dirclean' "$plugins_build_script"
 expect_contains 'test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"' "$core_build_script"
-expect_contains 'test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc"' "$plugins_build_script"
+expect_contains 'test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"' "$plugins_build_script"
 expect_contains 'closure_download_dir=${TDVP_FEED_STAGING_ROOT:-}/.tdvp-audacious-buildroot-download-closure' "$core_build_script"
 expect_contains 'BR2_PACKAGE_TDVP_AUDACIOUS --enable BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS' "$core_build_script"
 expect_contains 'mkdir -- "$closure_download_dir"' "$core_build_script"
@@ -165,6 +165,8 @@ expect_contains 'cp -a -- "$closure_download_dir/." "$download_dir/"' "$plugins_
 expect_contains 'Audacious core Buildroot download closure link escapes its root' "$plugins_build_script"
 expect_contains 'TDVP_FEED_IMPORTED_STAGING' "$plugins_build_script"
 expect_contains 'Audacious plugins received an imported core staging root without audacious.pc' "$plugins_build_script"
+expect_contains 'cp -a -- "$TDVP_FEED_STAGING_ROOT/usr/." "$buildroot_staging_source/usr/"' "$plugins_build_script"
+expect_contains 'test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"' "$plugins_build_script"
 expect_contains 'BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" source' "$plugins_build_script"
 if grep -Fq 'Audacious plugin download closure omitted required Buildroot archive' "$plugins_build_script"; then
   echo 'Audacious plugins must use the complete core closure without a hand-maintained archive list' >&2

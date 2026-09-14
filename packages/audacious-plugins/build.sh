@@ -144,6 +144,12 @@ cp -a --reflink=auto "$buildroot_staging_source/." "$buildroot_staging_root/"
 mv -- "$buildroot_staging_source" "$buildroot_staging_backup"; staging_source_moved=1
 mkdir -- "$buildroot_staging_source"
 cp -a -- "$buildroot_staging_root/." "$buildroot_staging_source/"
+# A split Plugins build receives Core's development metadata in the private
+# feed staging root.  The external K230 compiler uses the fixed Buildroot
+# sysroot path above, so place the imported headers, libraries and .pc files
+# in this disposable replacement before Meson starts dependency discovery.
+cp -a -- "$TDVP_FEED_STAGING_ROOT/usr/." "$buildroot_staging_source/usr/"
+test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"
 
 "$buildroot_tree/utils/config" --file "$build_output/.config" --enable BR2_PACKAGE_TDVP_AUDACIOUS --enable BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" olddefconfig
@@ -184,7 +190,7 @@ env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH
 
 [[ -d "$install_root/usr/lib/audacious" ]] || { echo 'Audacious plugin install did not create /usr/lib/audacious' >&2; exit 72; }
 find "$install_root/usr/lib/audacious" -type f -name '*.so' -print -quit | grep -q . || { echo 'Audacious plugin install did not produce dynamic modules' >&2; exit 73; }
-test -s "$buildroot_staging_root/usr/lib/pkgconfig/audacious.pc"
+test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"
 rm -rf -- "$payload_dir"
 mkdir -p -- "$payload_dir/usr/lib"
 cp -a -- "$install_root/usr/lib/audacious" "$payload_dir/usr/lib/"

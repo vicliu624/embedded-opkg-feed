@@ -158,7 +158,7 @@ tdvp_build_node22_to_stage() {
   for required in libcares.so.2 libuv.so.1 libnghttp2.so.14 libicui18n.so.73 libicuuc.so.73 libicudata.so.73; do
     [[ -e "$stage_root/usr/lib/$required" ]] || { echo "Node 22 staging omitted $required" >&2; return 85; }
   done
-  for tool in "$cross_cc" "$cross_cxx" "$cross_ar" "$cross_ranlib" "$qemu" "$host_python" "$host_cc" "$host_cxx" tar make patch cmake; do
+  for tool in "$cross_cc" "$cross_cxx" "$cross_ar" "$cross_ranlib" "$qemu" "$host_python" "$host_cc" "$host_cxx" tar make patch cmake ninja; do
     command -v "$tool" >/dev/null || { echo "Node 22 build host is missing: $tool" >&2; return 86; }
   done
   jobs=${TDVP_JOBS:-$(nproc)}

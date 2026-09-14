@@ -35,6 +35,7 @@ cmp -s -- "$plugin_install_patch" "$staged_plugin_install_patch" || { echo 'Auda
 buildroot_staging_source="$build_output/host/riscv64-buildroot-linux-gnu/sysroot"
 [[ -d "$buildroot_staging_source" ]] || { echo "Audacious plugins need the SDK Buildroot staging sysroot: $buildroot_staging_source" >&2; exit 70; }
 foundation_evidence=$(mktemp -d)
+rmdir -- "$foundation_evidence"
 TDVP_AUDACIOUS_BUILDROOT_OUTPUT="$build_output" \
 TDVP_AUDACIOUS_FOUNDATION_EVIDENCE_DIR="$foundation_evidence" \
   bash "$feed_root/scripts/prepare-audacious-foundation.sh" --platform tdvp-k230-r1 --sdk-root "$sdk_root"

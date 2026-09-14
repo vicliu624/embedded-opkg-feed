@@ -121,6 +121,7 @@ expect_contains 'package/tdvp-audacious/Config.in' "$plugins_build_script"
 expect_contains 'package/tdvp-audacious-plugins/Config.in' "$plugins_build_script"
 for build_script in "$core_build_script" "$plugins_build_script"; do
   expect_contains 'prepare-audacious-foundation.sh' "$build_script"
+  expect_contains 'rmdir -- "$foundation_evidence"' "$build_script"
   expect_contains 'buildroot_staging_source="$build_output/host/riscv64-buildroot-linux-gnu/sysroot"' "$build_script"
   expect_contains 'buildroot_staging_root=$(mktemp -d)' "$build_script"
   expect_contains 'cp -a --reflink=auto "$buildroot_staging_source/." "$buildroot_staging_root/"' "$build_script"

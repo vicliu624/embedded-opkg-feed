@@ -70,6 +70,39 @@ cp -- "$work_root/example-1.0.tar.gz" "$cache_file"
 bash "$fetcher" --offline --cache "$cache_root" --package-dir "$package_dir"
 [[ "$(sha256sum "$cache_file" | awk '{print $1}')" == "$artifact_hash" ]]
 
+# A flaky TLS peer can make curl return an error that its built-in retry list
+# does not classify as transient.  The source fetcher must retry the bounded
+# operation itself and only accept the artifact after the normal digest check.
+network_cache="$work_root/network-cache"
+fake_bin="$work_root/fake-bin"
+fake_curl="$fake_bin/curl"
+fake_attempts="$work_root/fake-curl-attempts"
+mkdir -p -- "$fake_bin"
+printf '%s\n' \
+  '#!/usr/bin/env bash' \
+  'set -Eeuo pipefail' \
+  'output=' \
+  'while [[ $# -gt 0 ]]; do' \
+  '  if [[ "$1" == "--output" ]]; then output=$2; shift 2; else shift; fi' \
+  'done' \
+  'attempts=0' \
+  '[[ ! -f "$TDVP_FAKE_CURL_ATTEMPTS" ]] || attempts=$(cat "$TDVP_FAKE_CURL_ATTEMPTS")' \
+  'if [[ "$attempts" == 0 ]]; then printf "%s\\n" 1 >"$TDVP_FAKE_CURL_ATTEMPTS"; exit 35; fi' \
+  'printf "%s\\n" 2 >"$TDVP_FAKE_CURL_ATTEMPTS"' \
+  'cp -- "$TDVP_FAKE_CURL_ARTIFACT" "$output"' \
+  >"$fake_curl"
+chmod +x -- "$fake_curl"
+PATH="$fake_bin:$PATH" \
+  TDVP_FAKE_CURL_ATTEMPTS="$fake_attempts" \
+  TDVP_FAKE_CURL_ARTIFACT="$work_root/example-1.0.tar.gz" \
+  TDVP_SOURCE_FETCH_ATTEMPTS=2 \
+  bash "$fetcher" --cache "$network_cache" --package-dir "$package_dir"
+[[ "$(cat "$fake_attempts")" == 2 ]] || {
+  echo 'source cache did not retry a transient curl failure' >&2
+  exit 1
+}
+[[ "$(sha256sum "$network_cache/sha256/$artifact_hash/example-1.0.tar.gz" | awk '{print $1}')" == "$artifact_hash" ]]
+
 # An old host may need an explicitly supplied, locally managed CA bundle to
 # reach a legitimate HTTPS source. The option must keep its narrow boundary:
 # a regular PEM file is accepted, while symlinks and non-PEM input are rejected

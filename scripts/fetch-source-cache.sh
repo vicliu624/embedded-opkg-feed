@@ -13,6 +13,7 @@ cache_root=
 package_dir=
 ca_bundle=
 offline=0
+fetch_attempts=${TDVP_SOURCE_FETCH_ATTEMPTS:-4}
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --cache)
@@ -45,6 +46,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 [[ -n "$cache_root" && -n "$package_dir" ]] || { usage; exit 64; }
+[[ "$fetch_attempts" =~ ^[1-9][0-9]*$ ]] || {
+  echo "TDVP_SOURCE_FETCH_ATTEMPTS must be a positive integer: $fetch_attempts" >&2
+  exit 64
+}
 
 # An explicitly supplied CA bundle is a host-side trust repair for old build
 # hosts. It never relaxes HTTPS verification (notably, --insecure is never
@@ -92,7 +97,17 @@ for artifact in "${artifacts[@]}"; do
     temporary=$(mktemp "$destination_dir/.${filename}.download.XXXXXX")
     curl_args=(--fail --location --proto '=https' --tlsv1.2 --retry 3)
     [[ -z "$ca_bundle" ]] || curl_args+=(--cacert "$ca_bundle")
-    curl "${curl_args[@]}" --output "$temporary" "$url"
+    fetch_attempt=1
+    while ! curl "${curl_args[@]}" --output "$temporary" "$url"; do
+      if (( fetch_attempt >= fetch_attempts )); then
+        echo "source download failed after $fetch_attempt attempt(s): $filename" >&2
+        exit 68
+      fi
+      echo "source download attempt $fetch_attempt failed; retrying $filename" >&2
+      rm -f -- "$temporary"
+      sleep "$fetch_attempt"
+      ((fetch_attempt += 1))
+    done
     actual_sha256=$(sha256sum "$temporary" | awk '{print $1}')
     [[ "$actual_sha256" == "$expected_sha256" ]] || {
       echo "source-cache hash mismatch for $filename: expected $expected_sha256, got $actual_sha256" >&2

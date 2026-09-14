@@ -42,6 +42,11 @@ evidence_dir=${TDVP_AUDACIOUS_FOUNDATION_EVIDENCE_DIR:-}
 
 config_hash=$(sha256sum "$build_output/.config" | awk '{print $1}')
 providers=(libglib2 libgtk3 alsa-lib pulseaudio ffmpeg zlib)
+# The SDK-base cache intentionally keeps the host, target and Buildroot state
+# while excluding generated image files. Some K230 package install hooks still
+# emit a transient Debian archive under images/deb; recreate only that empty
+# output directory before the provider target-install phase.
+mkdir -p -- "$build_output/images/deb"
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
   PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
   BR2_DL_DIR="$base_download_dir" BR2_PRIMARY_SITE="file://$base_download_dir" BR2_PRIMARY_SITE_ONLY=y \

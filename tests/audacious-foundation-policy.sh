@@ -8,6 +8,7 @@ script="$repo_root/scripts/prepare-audacious-foundation.sh"
 
 for token in \
   'providers=(libglib2 libgtk3 alsa-lib pulseaudio ffmpeg zlib)' \
+  'mkdir -p -- "$build_output/images/deb"' \
   'BR2_PRIMARY_SITE_ONLY=y' \
   'Audacious foundation changed the caller-owned Buildroot configuration' \
   'Audacious foundation omitted provider staging stamp' \

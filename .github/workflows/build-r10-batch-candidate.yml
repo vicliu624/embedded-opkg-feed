@@ -17,7 +17,7 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious-foundation, audacious-core, audacious-plugins, audacious-app, audacious, network-tools, netsurf, desktop-tools, development-tools, nodejs]
+        options: [archive, audacious-foundation, audacious-core, audacious-plugins, audacious-app, audacious, network-tools, netsurf, media, games, desktop-tools, development-tools, nodejs]
       dependency_run_id:
         description: Successful prior Audacious layer run ID; required by audacious-plugins and audacious-app
         required: false
@@ -84,6 +84,7 @@ jobs:
           bash ./tests/audacious-package-policy.sh
           bash ./tests/archive-package-policy.sh
           bash ./tests/target-runtime-provider-deferral-policy.sh
+          bash ./tests/feed-overlay-composition-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -240,6 +241,15 @@ jobs:
             --platform tdvp-k230-r1 --release r10 \
             --output "${RUNNER_TEMP}/tdvp-r10-runtime-base" \
             --runtime-catalog-only
+
+      - name: Verify provider alternatives in the target-runtime base
+        run: |
+          set -Eeuo pipefail
+          runtime_feed="${RUNNER_TEMP}/tdvp-r10-runtime-base/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64"
+          bash ./scripts/verify-image-provider-alternatives.sh \
+            --platform tdvp-k230-r1 \
+            --provider-map "$runtime_feed/.tdvp-image-runtime-providers.tsv" \
+            "$runtime_feed"
 
       - name: Save the target-runtime IPK base
         if: steps.restore-runtime-base.outputs.cache-hit != 'true'
@@ -417,6 +427,7 @@ jobs:
           bash ./tests/audacious-package-policy.sh
           bash ./tests/archive-package-policy.sh
           bash ./tests/target-runtime-provider-deferral-policy.sh
+          bash ./tests/feed-overlay-composition-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -487,6 +498,20 @@ jobs:
               package_args=(--package tdvp-netsurf)
               expected_packages=(tdvp-netsurf)
               ;;
+            media)
+              # Repackage the image-owned MPV payload with provider-aware
+              # dependencies.  Keep it separate from Vim so one media fix
+              # never turns into an unrelated desktop-tools rebuild.
+              package_args=(--package tdvp-mpv)
+              expected_packages=(tdvp-mpv)
+              ;;
+            games)
+              # This is the complete user-visible GBA closure.  Rebuilding
+              # the leaf and its own feed libraries together gives every
+              # dependency a coherent, upgradeable package revision.
+              package_args=(--package sdl2 --package sdl2-ttf --package libmgba --package tdvp-gba)
+              expected_packages=(sdl2 sdl2-ttf libmgba tdvp-gba)
+              ;;
             desktop-tools)
               package_args=(--package vim --package vim-plugin-gitgutter --package tdvp-mpv --package tdvp-netsurf)
               expected_packages=(vim-runtime vim vim-plugin-gitgutter tdvp-mpv tdvp-netsurf)
@@ -551,6 +576,10 @@ jobs:
             grep -Eq "^Package: ${package}$" "$feed_dir/Packages"
           done
           bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
+          bash ./scripts/verify-image-provider-alternatives.sh \
+            --platform tdvp-k230-r1 \
+            --provider-map "$feed_dir/.tdvp-image-runtime-providers.tsv" \
+            "$feed_dir"
 
           manifest='candidate-dist/tdvp-batch-manifest.tsv'
           {
@@ -591,6 +620,7 @@ jobs:
             candidate-staging
           if-no-files-found: error
           retention-days: 14
+          include-hidden-files: true
 
       - name: Upload the Audacious foundation evidence
         if: inputs.batch == 'audacious-foundation'
@@ -730,6 +760,10 @@ jobs:
           export TDVP_FEED_BASE_ROOT="$build_output/target"
           bash ./scripts/make-index.sh "$feed_dir"
           bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
+          provider_map=$(find "$incoming_root" -type f -name .tdvp-image-runtime-providers.tsv -print -quit)
+          [[ -n "$provider_map" ]] || { echo 'merged batches have no image-provider map' >&2; exit 72; }
+          bash ./scripts/verify-image-provider-alternatives.sh \
+            --platform tdvp-k230-r1 --provider-map "$provider_map" "$feed_dir"
           bash ./scripts/verify-runtime-closure.sh \
             --platform tdvp-k230-r1 --base-root "$TDVP_FEED_BASE_ROOT" "$feed_dir"
           bash ./scripts/verify-target-runtime-coverage.sh \

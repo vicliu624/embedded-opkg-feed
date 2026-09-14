@@ -72,6 +72,7 @@ plugins_buildroot_config="$plugins_buildroot_dir/Config.in"
 plugins_buildroot_hash="$plugins_buildroot_dir/tdvp-audacious-plugins.hash"
 layout_config="$repo_root/packages/audacious/tdvp-k230-default.conf"
 owner_map="$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
+batch_workflow="$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 
 expect_line "^PACKAGE='audacious-core'$" "$core_env"
 expect_line "^PACKAGE_KIND='shared-library'$" "$core_env"
@@ -180,6 +181,17 @@ expect_contains 'BR2_PRIMARY_SITE_ONLY=y' "$plugins_build_script"
 expect_contains 'make -C "$build_output" source' "$core_build_script"
 if grep -Fq 'BR2_BACKUP_SITE=' "$plugins_build_script"; then
   echo 'Audacious plugins must resolve split-build sources only from the reviewed local baseline' >&2
+  exit 1
+fi
+
+# GitHub CLI's `run view` schema exposes run metadata, while uploaded
+# artifacts are listed through the Actions REST endpoint. Keep the split
+# layer hand-off on that endpoint so hosted runners can consume Core/Plugins.
+expect_contains 'repos/$GITHUB_REPOSITORY/actions/runs/$TDVP_DEPENDENCY_RUN_ID/artifacts' "$batch_workflow"
+expect_contains 'gh api --paginate' "$batch_workflow"
+if grep -Fq 'gh run view "$TDVP_DEPENDENCY_RUN_ID" --repo "$GITHUB_REPOSITORY" --json artifacts' "$batch_workflow" || \
+   grep -Fq 'gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json artifacts' "$batch_workflow"; then
+  echo 'Audacious layer retrieval and batch merge must not use the unsupported gh run view artifacts field' >&2
   exit 1
 fi
 

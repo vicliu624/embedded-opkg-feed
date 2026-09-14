@@ -129,6 +129,7 @@ tdvp_build_node22_to_stage() {
   host_cxx=${TDVP_NODE22_HOST_CXX:-$(command -v g++-10 2>/dev/null || command -v g++)}
   if [[ -z "$qemu" ]]; then
     qemu=$(command -v qemu-riscv64 2>/dev/null || true)
+    [[ -n "$qemu" ]] || qemu=$(command -v qemu-riscv64-static 2>/dev/null || true)
     [[ -n "$qemu" ]] || qemu=/opt/tdvp-qemu/qemu-riscv64-static
   fi
   stage_root=$TDVP_FEED_STAGING_ROOT

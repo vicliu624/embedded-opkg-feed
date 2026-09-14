@@ -52,12 +52,13 @@ tdvp_node22_patch_qemu_actions() {
   # through PRODUCT_DIR/v8-qemu-wrapper.  Each replacement must match exactly
   # once; an upstream source drift therefore fails closed rather than silently
   # building with host executables or an unreviewed patch.
-  "$host_python" - "$source_root/node.gyp" "$source_root/tools/v8_gypfiles/v8.gyp" <<'PY'
+  "$host_python" - "$source_root/node.gyp" "$source_root/tools/v8_gypfiles/v8.gyp" "$source_root/tools/gyp/pylib/gyp/generator/ninja.py" <<'PY'
 from pathlib import Path
 import sys
 
 node = Path(sys.argv[1])
 v8 = Path(sys.argv[2])
+ninja_generator = Path(sys.argv[3])
 
 def replace_once(path: Path, old: str, new: str) -> None:
     data = path.read_text(encoding='utf-8')
@@ -67,6 +68,18 @@ def replace_once(path: Path, old: str, new: str) -> None:
     path.write_text(data.replace(old, new, 1), encoding='utf-8')
 
 wrapper = "                    '<(PRODUCT_DIR)/v8-qemu-wrapper',\n"
+replace_once(ninja_generator,
+    '    "SHARED_INTERMEDIATE_DIR": "$!PRODUCT_DIR/gen",\n',
+    '    "SHARED_INTERMEDIATE_DIR": "$!TOOLSET_SHARED_INTERMEDIATE_DIR",\n')
+replace_once(ninja_generator,
+    '        CONFIGURATION_NAME = "$|CONFIGURATION_NAME"\n',
+    '        TOOLSET_SHARED_INTERMEDIATE_DIR = "$!TOOLSET_SHARED_INTERMEDIATE_DIR"\n'
+    '        if TOOLSET_SHARED_INTERMEDIATE_DIR in path:\n'
+    '            shared_dir = "gen" if self.toolset == "target" else f"gen.{self.toolset}"\n'
+    '            path = path.replace(\n'
+    '                TOOLSET_SHARED_INTERMEDIATE_DIR, os.path.join(product_dir or "", shared_dir)\n'
+    '            )\n\n'
+    '        CONFIGURATION_NAME = "$|CONFIGURATION_NAME"\n')
 replace_once(node,
     "                    '<(node_mksnapshot_exec)',\n                    '<(node_snapshot_main)',\n",
     wrapper + "                    '<(node_mksnapshot_exec)',\n                    '<(node_snapshot_main)',\n")

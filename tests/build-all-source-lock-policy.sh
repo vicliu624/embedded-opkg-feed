@@ -124,6 +124,8 @@ test ! -e "$package_dir/root"
 test ! -e "$(cat "$package_dir/generated-payload-path")"
 grep -Fq 'discard_generated_payload' "$fixture_root/scripts/build-all.sh"
 grep -Fq 'TDVP_SOURCE_CACHE_OFFLINE="$offline_source_cache"' "$fixture_root/scripts/build-all.sh"
+grep -Fq 'TDVP_BUILDROOT_BASE_DOWNLOAD_DIR="$buildroot_base_download_dir"' \
+  "$fixture_root/scripts/build-all.sh"
 
 # A repeated --package is the batch boundary used by the K230 candidate CI.
 # The selected root must remain independently buildable instead of silently

@@ -96,6 +96,10 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd -- "$script_dir/.." && pwd)
 source_cache_root=${source_cache_root:-"$repo_root/.tdvp-source-cache"}
 source_cache_root=$(mkdir -p -- "$source_cache_root" && cd -- "$source_cache_root" && pwd)
+# Buildroot-derived recipes need the reviewed SDK download baseline alongside
+# their source.lock cache. Callers may override it, while ordinary feed builds
+# safely use the selected source cache directory.
+buildroot_base_download_dir=${TDVP_BUILDROOT_BASE_DOWNLOAD_DIR:-"$source_cache_root"}
 if [[ -n "$staging_import_dir" ]]; then
   [[ -d "$staging_import_dir" && ! -L "$staging_import_dir" ]] || {
     echo "imported staging root is not a regular directory: $staging_import_dir" >&2
@@ -678,6 +682,7 @@ build_package() {
     TDVP_FEED_BASE_ROOT="$base_root" \
     TDVP_SOURCE_CACHE_ROOT="$source_cache_root" \
     TDVP_SOURCE_CACHE_OFFLINE="$offline_source_cache" \
+    TDVP_BUILDROOT_BASE_DOWNLOAD_DIR="$buildroot_base_download_dir" \
     TDVP_REUSE_PUBLISHED_PAYLOADS="$reuse_published_payloads" \
     bash "$package_dir/build.sh" --platform "$platform_slug" --sdk-root "${TDVP_SDK_ROOT:-}"
   fi

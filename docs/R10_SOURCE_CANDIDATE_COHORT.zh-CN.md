@@ -82,9 +82,11 @@ bash ./scripts/verify-r10-candidate-cohort.sh --sdk-root <output>/host
 构建。共享库 IPK 必须先于其消费者安装到测试机。
 
 特别地，当前 staging K230 output 已选择 `BR2_PACKAGE_POPT=y` 并拥有
-`/usr/lib/libpopt.so.0`。这使 `libpopt` 的普通 feed provider 被 base-overlay gate 拒绝，
-从而也暂停 `rsync`；详情及可接受的后续路径见上述本地证据台账。不得把这份基础库当作
-rsync 的隐式 runtime，也不得以同内容覆盖绕过 gate。
+`/usr/lib/libpopt.so.0`。r10 的 runtime catalogue 会从这个已验证 target 提取并封装唯一的
+`libpopt` provider；它的 package 名和版本必须与配方记录完全一致。此时源码 `libpopt` 配方
+会被明确延迟，不能重编译出第二个 provider，也不会覆盖 target 的路径。`rsync` 仍须显式声明
+对该 `libpopt` IPK 的精确版本依赖，并在候选 feed 的依赖闭包、SONAME 所有权和设备安装测试中
+共同验证。不得把这份基础库当作隐式 runtime，也不得以同内容覆盖绕过 gate。
 
 ## 设备生命周期记录
 

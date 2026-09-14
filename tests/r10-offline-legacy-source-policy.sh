@@ -32,5 +32,8 @@ done
 # the source control version is declared alongside its pinned URL and digest.
 grep -Fxq "REUSE_IPK_VERSION='0.10.5-1'" "$repo_root/packages/libmgba/package.env"
 grep -Fxq "REUSE_IPK_VERSION='3.10-1'" "$repo_root/packages/tdvp-netsurf/package.env"
+grep -Fxq "VERSION='0.2.3-7'" "$repo_root/packages/tdvp-gba/package.env"
+grep -Fxq "PACKAGE_DEPENDS='sdl2 (= 2.30.11-2), sdl2-ttf (= 2.22.0-2), libmgba (= 0.10.5-2)'" \
+  "$repo_root/packages/tdvp-gba/package.env"
 
 echo 'r10 offline legacy source policy: PASS'

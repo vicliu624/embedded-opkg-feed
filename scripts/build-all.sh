@@ -227,6 +227,10 @@ assert_staging_links_are_internal() {
     echo "staging root must be a regular directory: $root" >&2
     exit 79
   }
+  # readlink -f below returns an absolute path.  Canonicalise both sides of
+  # the containment comparison so a caller may safely use a relative export
+  # directory such as the CI's candidate-staging.
+  root=$(cd -- "$root" && pwd)
   while IFS= read -r -d '' link; do
     target=$(readlink -- "$link") || {
       echo "could not read staging symbolic link: $link" >&2

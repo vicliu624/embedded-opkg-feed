@@ -161,6 +161,22 @@ test "$(readlink -- "$staging_export/usr/lib/libfixture.so")" = 'libfixture.so.1
 test -s "$staging_export/tdvp-build-staging-manifest.tsv"
 grep -Fqx $'built-package\tfixture-profile\t1.0-1' "$staging_export/tdvp-build-staging-manifest.tsv"
 
+# CI exports staging as the relative candidate-staging path.  Its internal
+# linker-name symlink must remain accepted after the containment comparison
+# canonicalises the staging root.
+relative_output="$work_root/output-relative"
+(
+  cd -- "$work_root"
+  bash "$fixture_root/scripts/build-all.sh" \
+    --platform fixture \
+    --release r1 \
+    --output "$relative_output" \
+    --require-source-locks \
+    --export-staging relative-staging \
+    --package fixture-profile
+)
+test -L "$work_root/relative-staging/usr/lib/libfixture.so"
+
 provided_output="$work_root/output-provided"
 provided_feed="$provided_output/fixture/riscv64"
 mkdir -p -- "$provided_feed"
@@ -206,6 +222,7 @@ if bash "$fixture_root/scripts/build-all.sh" \
 fi
 grep -Fq 'staging symbolic link must be relative:' "$work_root/unsafe-staging.log"
 grep -Fq 'assert_staging_links_are_internal()' "$fixture_root/scripts/build-all.sh"
+grep -Fq 'root=$(cd -- "$root" && pwd)' "$fixture_root/scripts/build-all.sh"
 
 # The normal r1 fixture has no composable target-runtime catalogue.  Both
 # incremental-runtime switches must therefore reject it rather than quietly

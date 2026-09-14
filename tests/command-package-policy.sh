@@ -80,6 +80,7 @@ grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='dos2unix=tdvp-dos2unix'" "$repo_root/pack
 grep -Fq "'grep'" "$repo_root/packages/grep/build.sh"
 ! grep -Fq 'egrep fgrep' "$repo_root/packages/grep/build.sh"
 grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='grep=tdvp-grep'" "$repo_root/packages/grep/build.sh"
+grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='less=tdvp-less'" "$repo_root/packages/less/build.sh"
 grep -Fq "'sed'" "$repo_root/packages/sed/build.sh"
 grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='sed=tdvp-sed'" "$repo_root/packages/sed/build.sh"
 grep -Fq "'find xargs'" "$repo_root/packages/findutils/build.sh"

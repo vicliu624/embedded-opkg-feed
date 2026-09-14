@@ -62,6 +62,17 @@ fake_go="$work_root/fake-go"
 cat >"$fake_go" <<'EOF'
 #!/usr/bin/env bash
 set -Eeuo pipefail
+if [[ "$1" == run ]]; then
+  source_root=$3
+  output=$4
+  (
+    cd -- "$(dirname -- "$source_root")"
+    tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --format=gnu \
+      --mode='u+rw,go+r,go-w' \
+      -cf - "$(basename -- "$source_root")" | gzip -n >"$output"
+  )
+  exit 0
+fi
 case "$1 $2 ${3:-}" in
   'mod download all')
     count=$(cat "$TDVP_TEST_GO_ATTEMPTS")

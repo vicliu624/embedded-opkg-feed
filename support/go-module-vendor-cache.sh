@@ -190,7 +190,7 @@ tdvp_prepare_locked_go_host_toolchain() {
 }
 
 tdvp_prepare_go_module_vendor_cache() {
-  local source_root=$1 go_binary=$2 work_root=$3 cache_file cache_dir temporary actual_archive_sha
+  local source_root=$1 go_binary=$2 work_root=$3 cache_file cache_dir temporary actual_archive_sha archive_builder
   local source_sum_file local_module_cache local_go_cache
   local attempt retry_attempts retry_delay resolution_ready=0
   [[ -d "$source_root" && ! -L "$source_root" ]] || {
@@ -295,18 +295,20 @@ tdvp_prepare_go_module_vendor_cache() {
     echo "Go module vendor resolution failed after $retry_attempts isolated attempts: $source_root" >&2
     return 91
   }
+  archive_builder="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)/go-module-vendor-archive.go"
+  [[ -f "$archive_builder" && ! -L "$archive_builder" ]] || {
+    echo "deterministic Go vendor archive builder is missing or unsafe: $archive_builder" >&2
+    return 91
+  }
   temporary=$(mktemp "$cache_dir/.${TDVP_GO_VENDOR_LOCK_VALUES[GO_MODULE_VENDOR_ARCHIVE]}.XXXXXX")
-  (
-    cd -- "$source_root"
-    # Go preserves permissions from its module-cache inputs. Those inputs can
-    # arrive under different umasks on otherwise equivalent build hosts, so
-    # normalize archive permissions as well as ownership and timestamps.
-    # User execute bits remain execute bits; regular data becomes 0644 and
-    # directories become 0755 in the resulting archive.
-    tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --format=gnu \
-      --mode='u+rw,go+r,go-w' \
-      -cf - vendor | gzip -n >"$temporary"
-  )
+  # The host Go distribution is locked by go-modules.lock.  Its archive/tar
+  # and compress/gzip implementations therefore remove GNU tar/gzip version
+  # drift from the content-addressed vendor cache.
+  if ! env GOTOOLCHAIN=local "$go_binary" run "$archive_builder" "$source_root/vendor" "$temporary"; then
+    rm -f -- "$temporary"
+    echo "deterministic Go vendor archive generation failed: $source_root" >&2
+    return 91
+  fi
   actual_archive_sha=$(sha256sum "$temporary" | awk '{print $1}')
   [[ "$actual_archive_sha" == "${TDVP_GO_VENDOR_LOCK_VALUES[GO_MODULE_VENDOR_ARCHIVE_SHA256]}" ]] || {
     rm -f -- "$temporary"

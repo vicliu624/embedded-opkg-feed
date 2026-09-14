@@ -58,7 +58,7 @@ env:
   # The SDK cache deliberately excludes package build trees. Keep the small,
   # ABI-bound development bridge separately so application batches do not
   # repeatedly materialize development headers from Buildroot sources.
-  TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA: r1
+  TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA: r2
 
 jobs:
   build-sdk-base:
@@ -593,9 +593,10 @@ jobs:
           overlay_root="${RUNNER_TEMP}/tdvp-wayland-sdk-overlay"
           if [[ '${{ steps.restore-wayland-sdk-overlay.outputs.cache-hit }}' != true ]]; then
             # The compact SDK cache retains package stamps, host tools and
-            # target runtime libraries, but not package build trees. Rebuild
-            # only FreeType to restore its matching public headers, then cache
-            # the resulting bridge for all later incremental batches.
+            # target runtime libraries and protocol XML, but not package build
+            # trees. Rebuild only FreeType to restore its matching public
+            # headers, then cache the resulting bridge for all later
+            # incremental batches.
             env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" \
               PATH="$build_output/host/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
               BR2_DL_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl" \

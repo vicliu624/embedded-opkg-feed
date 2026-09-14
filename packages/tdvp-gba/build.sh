@@ -42,13 +42,11 @@ scanner="$buildroot_output/host/bin/wayland-scanner"
   echo "matching Buildroot wayland-scanner is missing: $scanner" >&2
   exit 66
 }
-linux_dmabuf_xml=$(find "$buildroot_output/build" -type f \
-  -path '*/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' -print -quit)
-[[ -n "$linux_dmabuf_xml" ]] || {
-  echo 'matching Buildroot wayland-protocols XML is missing: unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' >&2
+protocols_dir="$TDVP_K230_WAYLAND_SDK_OVERLAY/share/wayland-protocols"
+[[ -f "$protocols_dir/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml" ]] || {
+  echo 'matching Wayland SDK bridge is missing: unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' >&2
   exit 67
 }
-protocols_dir=$(cd -- "$(dirname -- "$linux_dmabuf_xml")/../.." && pwd)
 
 build_root=$(mktemp -d)
 source_tree=$(mktemp -d)

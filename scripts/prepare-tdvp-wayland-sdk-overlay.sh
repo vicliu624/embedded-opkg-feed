@@ -94,6 +94,10 @@ lib_sources=(
   "$build_root/target/lib"
   "$build_root/target/lib64/lp64d"
 )
+protocols_sources=(
+  "$build_root/target/usr/share/wayland-protocols"
+  "$sysroot/usr/share/wayland-protocols"
+)
 
 temporary=$(mktemp -d "$overlay_parent/.${overlay_name}.tmp.XXXXXX")
 cleanup() { rm -rf -- "$temporary"; }
@@ -174,6 +178,24 @@ copy_link_input() {
   fi
 }
 
+copy_wayland_protocols() {
+  local source='' directory build_protocol
+  for directory in "${protocols_sources[@]}"; do
+    if [[ -f "$directory/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml" ]]; then
+      source="$directory"
+      break
+    fi
+  done
+  if [[ -z "$source" ]]; then
+    build_protocol=$(find "$build_root/build" -type f \
+      -path '*/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' -print -quit)
+    [[ -n "$build_protocol" ]] && source=$(cd -- "$(dirname -- "$build_protocol")/../.." && pwd)
+  fi
+  [[ -n "$source" ]] || die 'matching Wayland protocol XML is missing: unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml'
+  mkdir -p "$temporary/share"
+  cp -a -- "$source" "$temporary/share/wayland-protocols"
+}
+
 copy_header_file wayland-client.h
 copy_header_file wayland-client-core.h
 copy_header_file wayland-client-protocol.h
@@ -192,6 +214,7 @@ done
 for library in wayland-client wayland-cursor wayland-egl xkbcommon EGL asound pulse ffi freetype; do
   copy_link_input "$library"
 done
+copy_wayland_protocols
 
 {
   printf 'tdvp_sdk_bridge=1\n'
@@ -202,7 +225,7 @@ done
 } > "$temporary/tdvp-sdk-overlay.manifest"
 (
   cd "$temporary"
-  find include lib -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum > SHA256SUMS
+  find include lib share -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum > SHA256SUMS
 )
 
 mv -- "$temporary" "$overlay"

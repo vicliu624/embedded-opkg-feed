@@ -255,6 +255,7 @@ jobs:
             ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-runtime-owners.tsv
             ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-runtime-ownership.tsv
             ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-target-runtime-packages.tsv
+            ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-image-runtime-providers.tsv
           if-no-files-found: error
           retention-days: 14
           include-hidden-files: true

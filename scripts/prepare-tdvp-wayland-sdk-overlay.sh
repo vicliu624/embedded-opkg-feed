@@ -184,6 +184,7 @@ copy_header_dir freetype
 copy_header_dir pulse
 copy_header_dir xkbcommon
 copy_header_file ft2build.h
+copy_header_file zlib.h
 
 for pc in wayland-client wayland-cursor wayland-egl xkbcommon alsa libpulse freetype2; do
   copy_pc_file "$pc"

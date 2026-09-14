@@ -573,6 +573,21 @@ jobs:
           done < <(find "$build_output/host" -type l -lname '/tmp/*' -print0)
           test -d "$staging_sysroot"
 
+          # ABI-bound packages such as SDL2 and TDVP GBA need the development
+          # view of the restored firmware libraries.  Generate it only after
+          # repairing a cached sysroot link that may point at a prior runner.
+          # The overlay remains a private build input; packages resolve the
+          # corresponding SONAMEs from the installed firmware image at runtime.
+          overlay_root="${RUNNER_TEMP}/tdvp-wayland-sdk-overlay"
+          bash ./scripts/prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$overlay_root"
+          export TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay_root"
+          # Validate the generated bridge before starting a package build so a
+          # missing development view fails in seconds rather than after a
+          # cross-compiled dependency closure has consumed build capacity.
+          # shellcheck source=/dev/null
+          source ./scripts/tdvp-k230-sdk.sh
+          tdvp_require_wayland_sdk_overlay
+
           # Only selected SHA-256-locked source inputs are fetched. The result
           # is an unsigned partial candidate; it does not publish a release.
           bash ./scripts/build-all.sh \

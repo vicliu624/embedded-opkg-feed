@@ -32,6 +32,7 @@ vendor_modules_sha=$(sha256sum "$source_root/vendor/modules.txt" | awk '{print $
 (
   cd -- "$source_root"
   tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --format=gnu \
+    --mode='u+rw,go+r,go-w' \
     -cf - vendor | gzip -n >"$work_root/expected-vendor.tar.gz"
 )
 vendor_archive_sha=$(sha256sum "$work_root/expected-vendor.tar.gz" | awk '{print $1}')
@@ -78,6 +79,10 @@ case "$1 $2 ${3:-}" in
     fi
     mkdir -p vendor
     printf '# example.invalid/module v1.0.0\n## explicit; go 1.20\n' >vendor/modules.txt
+    # The source content is locked, but a module cache copied under another
+    # umask can retain a different mode. The helper must canonicalize it
+    # before hashing its vendor archive.
+    chmod 0660 vendor/modules.txt
     ;;
   *)
     echo "unexpected fake go invocation: $*" >&2

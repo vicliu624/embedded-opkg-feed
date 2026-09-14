@@ -157,11 +157,11 @@ printf '\nsource "package/tdvp-audacious/Config.in"\nsource "package/tdvp-audaci
 cp -a --reflink=auto "$buildroot_staging_source/." "$buildroot_staging_root/"
 # The external K230 compiler fixes its sysroot path in its specs, so a Make
 # STAGING_DIR override would leave the linker looking at the original SDK.
-# Move that exact SDK directory aside and put the disposable copy at its fixed
-# path; keeping a real directory avoids Buildroot rewriting a staging symlink.
+# Move that exact SDK directory aside and point its fixed path at the
+# disposable /tmp copy. The cleanup routine validates this exact link before
+# restoring the caller-owned SDK directory.
 mv -- "$buildroot_staging_source" "$buildroot_staging_backup"; staging_source_moved=1
-mkdir -- "$buildroot_staging_source"
-cp -a -- "$buildroot_staging_root/." "$buildroot_staging_source/"
+ln -s -- "$buildroot_staging_root" "$buildroot_staging_source"; staging_source_redirected=1
 
 "$buildroot_tree/utils/config" --file "$build_output/.config" --enable BR2_PACKAGE_TDVP_AUDACIOUS --enable BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" olddefconfig

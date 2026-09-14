@@ -143,11 +143,11 @@ printf '\nsource "package/tdvp-audacious/Config.in"\nsource "package/tdvp-audaci
 # persist in the platform SDK. Use an isolated copy that is discarded in the
 # transaction cleanup rather than modifying the caller's staging sysroot.
 cp -a --reflink=auto "$buildroot_staging_source/." "$buildroot_staging_root/"
-# Keep a real disposable directory at the compiler's fixed sysroot path. This
-# prevents Buildroot from rewriting a symlink to the runner's temporary path.
+# The compiler resolves the fixed Buildroot sysroot path. Redirect that path
+# to the transaction's private /tmp copy; cleanup verifies the link target
+# before restoring the original SDK directory.
 mv -- "$buildroot_staging_source" "$buildroot_staging_backup"; staging_source_moved=1
-mkdir -- "$buildroot_staging_source"
-cp -a -- "$buildroot_staging_root/." "$buildroot_staging_source/"
+ln -s -- "$buildroot_staging_root" "$buildroot_staging_source"; staging_source_redirected=1
 # A split Plugins build receives Core's development metadata in the private
 # feed staging root.  The external K230 compiler uses the fixed Buildroot
 # sysroot path above, so place only the imported headers, libraries and .pc

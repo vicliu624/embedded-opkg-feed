@@ -12,6 +12,9 @@ fi
 gpg_bin=${TDVP_GPG_BIN:-gpg}
 gpg_homedir=${TDVP_GPG_HOMEDIR:-}
 gpg_windows_paths=${TDVP_GPG_WINDOWS_PATHS:-0}
+if [[ $gpg_windows_paths == 1 && $gpg_homedir =~ ^/mnt/([[:alpha:]])/(.*)$ ]]; then
+  gpg_homedir="${BASH_REMATCH[1]^^}:/${BASH_REMATCH[2]}"
+fi
 gpg_args=()
 if [[ -n $gpg_homedir ]]; then
   gpg_args+=(--homedir "$gpg_homedir")

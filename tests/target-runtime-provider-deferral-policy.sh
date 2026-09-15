@@ -63,6 +63,8 @@ grep -Fq 'Preflight the reviewed SDL2 PulseAudio patch' "$repo_root/.github/work
 grep -Fq 'TDVP_SDL2_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r10-source-cache' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'TDVP_RUNTIME_BASE_CACHE_SCHEMA: r2' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'runtime-${{ env.TDVP_RUNTIME_BASE_CACHE_SCHEMA }}-' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
+sdk_stamp_path='${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*'
+[[ "$(grep -Fc "$sdk_stamp_path" "$repo_root/.github/workflows/build-r10-batch-candidate.yml")" -ge 2 ]]
 grep -Fq 'runtime_verification=$(mktemp -d)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'cp -a -- "$runtime_feed/." "$runtime_verification/"' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'bash ./scripts/make-index.sh "$runtime_verification"' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"

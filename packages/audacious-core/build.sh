@@ -197,6 +197,14 @@ while IFS= read -r -d '' closure_link; do
   }
 done < <(find "$closure_download_dir" -type l -print0)
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" tdvp-audacious-dirclean
+# Install the development projection first.  The plugins recipe discovers the
+# core through audacious.pc and the matching headers in Buildroot's staging
+# sysroot; install-target alone only populates the runtime target tree.
+env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" tdvp-audacious-install-staging || {
+  rc=$?
+  echo "Audacious core Buildroot staging install failed (rc=$rc, output=$build_output)" >&2
+  exit "$rc"
+}
 env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" BR2_DL_DIR="$buildroot_download_dir" BR2_PRIMARY_SITE="file://$download_dir" BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" TARGET_DIR="$install_root" tdvp-audacious-install-target || {
   rc=$?
   echo "Audacious core Buildroot target install failed (rc=$rc, target=$install_root, output=$build_output)" >&2

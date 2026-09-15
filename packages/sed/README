@@ -1,0 +1,6 @@
+sed — GNU stream editor
+
+This r10 candidate rebuilds the reviewed Buildroot 2025.02.1 source recipe
+from one SHA-256-locked GNU archive. It is installed privately with an
+/usr/bin/tdvp-sed frontend. K230 BusyBox owns /usr/bin/sed, so feed
+installation never writes a firmware-owned path.

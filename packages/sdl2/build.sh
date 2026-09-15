@@ -23,26 +23,68 @@ feed_root=$(cd -- "$package_dir/../.." && pwd)
 source "$package_dir/package.env"
 # shellcheck source=../../scripts/tdvp-k230-sdk.sh
 source "$feed_root/scripts/tdvp-k230-sdk.sh"
+# shellcheck source=../../support/source-archive-library.sh
+source "$feed_root/support/source-archive-library.sh"
 
-source_root=${TDVP_SDL2_SOURCE_DIR:-"$feed_root/../cardputer-zero-gameboy-emulator/extern/SDL"}
-source_root=$(tdvp_verify_git_source "$source_root" "$SOURCE_REPOSITORY" "$SOURCE_REVISION")
 tdvp_require_k230_sdk "$4"
 tdvp_require_wayland_sdk_overlay
 tdvp_prepare_pkg_config
 
 build_root=$(mktemp -d)
+source_tree=$(mktemp -d)
+patched_source=$(mktemp -d)
 payload_dir="$package_dir/root"
-cleanup() { rm -rf -- "$build_root"; }
+cleanup() { rm -rf -- "$build_root" "$source_tree" "$patched_source"; }
 trap cleanup EXIT
 rm -rf -- "$payload_dir"
 mkdir -p -- "$payload_dir"
+source_root=$(tdvp_unpack_locked_source_archive "$package_dir" "$source_tree")
+
+# The feed owns the K230 buffering policy without forking SDL2. Copy the exact
+# locked archive tree to a disposable directory and apply the reviewed patch;
+# neither source selection nor patch context depends on a neighboring Git
+# checkout.
+cp -a -- "$source_root/." "$patched_source/"
+pulseaudio_patch="$build_root/0001-pulseaudio-add-opt-in-stream-buffer.patch"
+sed 's/\r$//' "$package_dir/patches/0001-pulseaudio-add-opt-in-stream-buffer.patch" >"$pulseaudio_patch"
+# The locked GitHub archive is intentionally unpacked without a .git
+# directory.  git apply's --no-index mode still validates unified-diff
+# context precisely there, while GNU patch rejects this valid empty-line hunk
+# on the Ubuntu runner. Check first so a stale local policy patch fails before
+# any CMake or cross-compiler work begins.
+(
+  cd -- "$patched_source"
+  git apply --no-index --check "$pulseaudio_patch"
+  git apply --no-index "$pulseaudio_patch"
+)
+
+# SDL's CMake helper derives the dlopen name from the file passed to it rather
+# than reading ELF DT_SONAME. Some SDK bridges retain the real target object
+# only under libpulse.so (the development-link name). Materialise a disposable
+# file using its verified SONAME so SDL records the target runtime name, never
+# the overlay's development filename, in SDL_config.h.
+pulse_soname=$("$TDVP_K230_READELF" -d "$TDVP_K230_WAYLAND_SDK_OVERLAY/lib/libpulse.so" | \
+  sed -n 's/.*SONAME.*\[\(libpulse\.so\.[0-9][0-9.]*\)\].*/\1/p' | head -n 1)
+[[ -n "$pulse_soname" ]] || {
+  echo 'could not read a versioned libpulse DT_SONAME from the TDVP SDK overlay' >&2
+  exit 66
+}
+pulse_loader_probe="$build_root/$pulse_soname"
+cp -L -- "$TDVP_K230_WAYLAND_SDK_OVERLAY/lib/libpulse.so" "$pulse_loader_probe"
 
 (
   cd -- "$build_root"
+  # Overlay .pc files use a normal /usr prefix. PKG_CONFIG_SYSROOT_DIR
+  # intentionally rewrites that prefix to the immutable SDK sysroot, so
+  # make this separate development overlay explicit to both the compiler
+  # and SDL's FindLibraryAndSONAME dynamic-loader probe.
   "$TDVP_K230_CMAKE" -G Ninja -DCMAKE_MAKE_PROGRAM="$TDVP_K230_NINJA" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE="$TDVP_K230_TOOLCHAIN_FILE" \
     -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_C_FLAGS="-I$TDVP_K230_WAYLAND_SDK_OVERLAY/include" \
+    -DCMAKE_LIBRARY_PATH="$TDVP_K230_WAYLAND_SDK_OVERLAY/lib" \
+    -DPULSE_LIB="$pulse_loader_probe" \
     -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TEST=OFF \
     -DSDL_VIDEO=ON -DSDL_WAYLAND=ON -DSDL_WAYLAND_SHARED=ON \
     -DSDL_WAYLAND_LIBDECOR=OFF -DSDL_WAYLAND_QT_TOUCH=OFF \
@@ -53,7 +95,7 @@ mkdir -p -- "$payload_dir"
     -DSDL_PULSEAUDIO=ON -DSDL_PULSEAUDIO_SHARED=ON \
     -DSDL_ALSA=ON -DSDL_ALSA_SHARED=ON -DSDL_SNDIO=OFF \
     -DCMAKE_SKIP_RPATH=ON \
-    "$source_root"
+    "$patched_source"
 )
 "$TDVP_K230_CMAKE" --build "$build_root" --parallel
 DESTDIR="$TDVP_FEED_STAGING_ROOT" "$TDVP_K230_CMAKE" --install "$build_root"

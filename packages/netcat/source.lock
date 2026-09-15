@@ -1,0 +1,18 @@
+# Buildroot owns the cross-compile configuration. This record locks the
+# reviewed upstream archive consumed by its 2025.02.1 netcat recipe.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='GNU Netcat'
+UPSTREAM_LICENSE='GPL-2.0-or-later'
+UPSTREAM_VERSION='0.7.1'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/netcat/netcat.mk'
+SOURCE_SELECTION_REASON='Netcat supplies a small TCP/UDP connection, listener, and byte-stream diagnostic for controlled K230 network tests. Buildroot 2025.02.1 provides the reviewed cross-build recipe; it has no optional target runtime closure beyond the platform ABI.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 netcat.mk and netcat.hash only; the autotools source has a pre-generated configure script and the reviewed target build fetches no host helper archive or TDVP-specific patch.'
+SECURITY_STATUS='Netcat requires release-candidate advisory review. Its locked archive is SHA-256 verified before the private offline Buildroot build; device tests must use controlled endpoints and avoid exposing unauthenticated listeners publicly.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 netcat package hash'
+VERIFIED_AT='2026-09-03'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/netcat/netcat.hash'
+SOURCE_ARTIFACT_1_URL='https://downloads.sourceforge.net/project/netcat/netcat/0.7.1/netcat-0.7.1.tar.gz'
+SOURCE_ARTIFACT_1_FILE='netcat-0.7.1.tar.gz'
+SOURCE_ARTIFACT_1_SHA256='30719c9a4ffbcf15676b8f528233ccc54ee6cba96cb4590975f5fd60c68a066f'

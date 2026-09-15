@@ -46,6 +46,48 @@ if [[ ! -f "$include_source/wayland-client.h" ]]; then
 fi
 [[ -f "$include_source/wayland-client.h" ]] || die 'Wayland client headers are missing'
 
+# Buildroot's SDK sysroot includes the development view of most firmware
+# libraries, but strips FreeType's public headers from this profile.  Extract
+# the locked Buildroot source archive only when the sysroot/target roots do
+# not expose them.  Building FreeType here would rewrite target/usr/lib and
+# invalidate the byte-identical runtime catalogue used by an incremental feed.
+header_sources=("$include_source" "$sysroot/usr/include" "$build_root/target/usr/include")
+freetype_headers_dir=
+
+has_freetype_headers=0
+for directory in "${header_sources[@]}"; do
+  if [[ -d "$directory/freetype" && -f "$directory/ft2build.h" ]]; then
+    has_freetype_headers=1
+    break
+  fi
+done
+temporary=$(mktemp -d "$overlay_parent/.${overlay_name}.tmp.XXXXXX")
+cleanup() { rm -rf -- "$temporary"; }
+trap cleanup EXIT
+
+find_freetype_headers_dir() {
+  [[ -n "$freetype_headers_dir" ]] && return 0
+  local dl_root archive expected_sha actual_sha source_root
+  dl_root=${TDVP_BUILDROOT_BASE_DOWNLOAD_DIR:-"$build_root/../../dl"}
+  archive=${TDVP_FREETYPE_SOURCE_ARCHIVE:-"$dl_root/freetype-2.13.3.tar.xz"}
+  expected_sha=${TDVP_FREETYPE_SOURCE_SHA256:-0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289}
+  [[ -f "$archive" ]] || die "locked FreeType source archive is missing: $archive"
+  actual_sha=$(sha256sum -- "$archive" | awk '{print $1}')
+  [[ "$actual_sha" == "$expected_sha" ]] || die "locked FreeType source archive digest differs: $archive"
+  mkdir -p "$temporary/freetype-source"
+  tar -xf "$archive" -C "$temporary/freetype-source"
+  source_root=$(find "$temporary/freetype-source" -mindepth 1 -maxdepth 1 -type d -name 'freetype-*' -print -quit)
+  [[ -n "$source_root" && -d "$source_root/include/freetype" && -f "$source_root/include/ft2build.h" ]] || {
+    die "locked FreeType source archive has incomplete public headers: $archive"
+  }
+  freetype_headers_dir="$source_root/include"
+}
+
+if [[ "$has_freetype_headers" -eq 0 ]]; then
+  find_freetype_headers_dir
+  header_sources+=("$freetype_headers_dir")
+fi
+
 pc_sources=(
   "$sysroot/usr/lib/pkgconfig"
   "$sysroot/usr/share/pkgconfig"
@@ -59,22 +101,35 @@ lib_sources=(
   "$build_root/target/lib"
   "$build_root/target/lib64/lp64d"
 )
+protocols_sources=(
+  "$build_root/target/usr/share/wayland-protocols"
+  "$sysroot/usr/share/wayland-protocols"
+)
 
-temporary=$(mktemp -d "$overlay_parent/.${overlay_name}.tmp.XXXXXX")
-cleanup() { rm -rf -- "$temporary"; }
-trap cleanup EXIT
 mkdir -p "$temporary/include" "$temporary/lib/pkgconfig"
 
 copy_header_file() {
-  local header=$1
-  [[ -f "$include_source/$header" ]] || die "required header is missing: $header"
-  cp -a -- "$include_source/$header" "$temporary/include/$header"
+  local header=$1 source='' directory
+  for directory in "${header_sources[@]}"; do
+    if [[ -f "$directory/$header" ]]; then
+      source="$directory/$header"
+      break
+    fi
+  done
+  [[ -n "$source" ]] || die "required header is missing: $header"
+  cp -a -- "$source" "$temporary/include/$header"
 }
 
 copy_header_dir() {
-  local directory=$1
-  [[ -d "$include_source/$directory" ]] || die "required header directory is missing: $directory"
-  cp -a -- "$include_source/$directory" "$temporary/include/$directory"
+  local header_dir=$1 source='' directory
+  for directory in "${header_sources[@]}"; do
+    if [[ -d "$directory/$header_dir" ]]; then
+      source="$directory/$header_dir"
+      break
+    fi
+  done
+  [[ -n "$source" ]] || die "required header directory is missing: $header_dir"
+  cp -a -- "$source" "$temporary/include/$header_dir"
 }
 
 copy_pc_file() {
@@ -123,6 +178,24 @@ copy_link_input() {
   fi
 }
 
+copy_wayland_protocols() {
+  local source='' directory build_protocol
+  for directory in "${protocols_sources[@]}"; do
+    if [[ -f "$directory/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml" ]]; then
+      source="$directory"
+      break
+    fi
+  done
+  if [[ -z "$source" ]]; then
+    build_protocol=$(find "$build_root/build" -type f \
+      -path '*/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' -print -quit)
+    [[ -n "$build_protocol" ]] && source=$(cd -- "$(dirname -- "$build_protocol")/../.." && pwd)
+  fi
+  [[ -n "$source" ]] || die 'matching Wayland protocol XML is missing: unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml'
+  mkdir -p "$temporary/share"
+  cp -a -- "$source" "$temporary/share/wayland-protocols"
+}
+
 copy_header_file wayland-client.h
 copy_header_file wayland-client-core.h
 copy_header_file wayland-client-protocol.h
@@ -133,6 +206,7 @@ copy_header_dir freetype
 copy_header_dir pulse
 copy_header_dir xkbcommon
 copy_header_file ft2build.h
+copy_header_file zlib.h
 
 for pc in wayland-client wayland-cursor wayland-egl xkbcommon alsa libpulse freetype2; do
   copy_pc_file "$pc"
@@ -140,6 +214,7 @@ done
 for library in wayland-client wayland-cursor wayland-egl xkbcommon EGL asound pulse ffi freetype; do
   copy_link_input "$library"
 done
+copy_wayland_protocols
 
 {
   printf 'tdvp_sdk_bridge=1\n'
@@ -150,7 +225,7 @@ done
 } > "$temporary/tdvp-sdk-overlay.manifest"
 (
   cd "$temporary"
-  find include lib -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum > SHA256SUMS
+  find include lib share -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum > SHA256SUMS
 )
 
 mv -- "$temporary" "$overlay"

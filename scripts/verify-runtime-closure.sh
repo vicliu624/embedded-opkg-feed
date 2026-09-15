@@ -39,6 +39,10 @@ trap cleanup EXIT
 
 declare -A package_root=()
 declare -A package_depends=()
+# Keys are normally ELF DT_SONAME values.  A narrowly defined second case is
+# a top-level /usr/lib/lib*.so* provider with no DT_SONAME: a K230 vendor
+# library may still be named directly by DT_NEEDED and must have one explicit
+# feed package owner rather than being mistaken for an ABI-seed dependency.
 declare -A soname_owner=()
 declare -A base_soname_owner=()
 
@@ -113,6 +117,18 @@ for package in "${!package_root[@]}"; do
       soname_owner[$soname]=$package
     done < <("$readelf_tool" -d "$elf" 2>/dev/null | sed -n 's/.*SONAME.*\[\(.*\)\]/\1/p')
   done < <(find "${package_root[$package]}" -type f -perm -u+x -o -type f -name '*.so*')
+  library_root="${package_root[$package]}/usr/lib"
+  [[ -d "$library_root" ]] || continue
+  while IFS= read -r library; do
+    provider_name=${library##*/}
+    "$readelf_tool" -d "$library" 2>/dev/null | grep -q 'SONAME' && continue
+    [[ "$provider_name" =~ ^lib[A-Za-z0-9_+.-]+\.so(\.[A-Za-z0-9_+.-]+)*$ ]] || continue
+    [[ -z "${soname_owner[$provider_name]:-}" || "${soname_owner[$provider_name]}" == "$package" ]] || {
+      echo "runtime provider name $provider_name is supplied by both ${soname_owner[$provider_name]} and $package" >&2
+      exit 73
+    }
+    soname_owner[$provider_name]=$package
+  done < <(find "$library_root" -maxdepth 1 -type f -name 'lib*.so*' -print | LC_ALL=C sort)
 done
 
 base_has_soname() {

@@ -1,0 +1,30 @@
+# This leaf contains only /usr/bin/curl. libcurl-4 performs the one locked
+# Buildroot source build first and stages that exact frontend in the private
+# release staging root; this recipe then performs target-ELF and dependency
+# closure auditing before packaging it. No Debian binary or firmware file is
+# introduced.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='curl'
+UPSTREAM_LICENSE='curl'
+UPSTREAM_VERSION='8.12.1'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/libcurl/libcurl.mk'
+SOURCE_SELECTION_REASON='The curl command is separated from libcurl.so.4, whose unique shared-library owner is libcurl-4. It copies only /usr/bin/curl staged by libcurl-4’s immediately preceding locked Buildroot source build in the same private release staging root.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 libcurl.mk/libcurl.hash; the separately owned OpenSSL, zlib, and host-pkgconf inputs listed below; no TDVP-specific patches.'
+SECURITY_STATUS='Every source archive is SHA-256 verified before the offline candidate build; curl, TLS, and certificate freshness remain release-candidate gates.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hashes'
+VERIFIED_AT='2026-09-03'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/libcurl/libcurl.hash'
+SOURCE_ARTIFACT_1_URL='https://curl.se/download/curl-8.12.1.tar.xz'
+SOURCE_ARTIFACT_1_FILE='curl-8.12.1.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='0341f1ed97a26c811abaebd37d62b833956792b7607ea3f15d001613c76de202'
+SOURCE_ARTIFACT_2_URL='https://github.com/openssl/openssl/releases/download/openssl-3.4.1/openssl-3.4.1.tar.gz'
+SOURCE_ARTIFACT_2_FILE='openssl-3.4.1.tar.gz'
+SOURCE_ARTIFACT_2_SHA256='002a2d6b30b58bf4bea46c43bdd96365aaf8daa6c428782aa4feee06da197df3'
+SOURCE_ARTIFACT_3_URL='https://sources.buildroot.net/libzlib/zlib-1.3.1.tar.xz'
+SOURCE_ARTIFACT_3_FILE='zlib-1.3.1.tar.xz'
+SOURCE_ARTIFACT_3_SHA256='38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32'
+SOURCE_ARTIFACT_4_URL='https://distfiles.ariadne.space/pkgconf/pkgconf-2.3.0.tar.xz'
+SOURCE_ARTIFACT_4_FILE='pkgconf-2.3.0.tar.xz'
+SOURCE_ARTIFACT_4_SHA256='3a9080ac51d03615e7c1910a0a2a8df08424892b5f13b0628a204d3fcce0ea8b'

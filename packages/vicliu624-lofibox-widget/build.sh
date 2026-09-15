@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Cross-build the TDVP-only layer-shell target.  The K230 Buildroot host tools
-# generate protocol bindings, while every target header and link input comes
-# from the matching firmware SDK bridge rather than the release-builder host.
+# Cross-build the TDVP LoFiBox xdg_toplevel target. The K230 Buildroot host
+# tools generate protocol bindings, while every target header and link input
+# comes from the matching firmware SDK bridge rather than the release-builder
+# host.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -71,21 +72,21 @@ mkdir -p -- "$payload_dir"
   -DLOFIBOX_BUILD_DEVICE=OFF \
   -DLOFIBOX_BUILD_TUI=OFF \
   -DLOFIBOX_BUILD_WEBUI=OFF \
-  -DLOFIBOX_BUILD_WAYLAND=OFF \
-  -DLOFIBOX_BUILD_WIDGET=ON \
+  -DLOFIBOX_BUILD_WAYLAND=ON \
+  -DLOFIBOX_BUILD_WIDGET=OFF \
   -DLOFIBOX_BUILD_X11=OFF \
   -DLOFIBOX_INSTALL_DOCUMENTATION=OFF \
-  -DLOFIBOX_INSTALL_LAUNCHER=OFF \
+  -DLOFIBOX_INSTALL_LAUNCHER=ON \
   -DLOFIBOX_WAYLAND_SCANNER_EXECUTABLE="$scanner" \
   -DLOFIBOX_WAYLAND_PROTOCOLS_DIR="$protocols_dir" \
   -DFREETYPE_INCLUDE_DIR_ft2build="$TDVP_K230_WAYLAND_SDK_OVERLAY/include" \
   -DFREETYPE_INCLUDE_DIR_freetype2="$TDVP_K230_WAYLAND_SDK_OVERLAY/include" \
   -DFREETYPE_LIBRARY="$TDVP_K230_WAYLAND_SDK_OVERLAY/lib/libfreetype.so"
 
-"$TDVP_K230_CMAKE" --build "$build_root" --target lofibox_zero_widget --parallel
-"$TDVP_K230_STRIP" --strip-unneeded "$build_root/lofibox-widget"
+"$TDVP_K230_CMAKE" --build "$build_root" --target lofibox_zero_wayland --parallel
+"$TDVP_K230_STRIP" --strip-unneeded "$build_root/lofibox-wayland"
 DESTDIR="$payload_dir" "$TDVP_K230_CMAKE" --install "$build_root"
 install -Dm 0644 "$source_root/LICENSE" \
   "$payload_dir/usr/share/licenses/$PACKAGE/LICENSE"
 
-echo "LoFiBox widget payload ready: $payload_dir"
+echo "LoFiBox Wayland application payload ready: $payload_dir"

@@ -1,0 +1,17 @@
+# TDVP Wget command package
+
+This package builds GNU Wget 1.25.0 from the locked Buildroot source closure.
+The immutable TDVP firmware already owns `/usr/bin/wget`, so the package keeps
+its RISC-V implementation at `/usr/libexec/tdvp-wget/wget` and exposes the
+safe public command `tdvp-wget`.
+
+After installation, use:
+
+```sh
+tdvp-wget --version
+tdvp-wget --https-only -O /tmp/example.html https://example.com/
+```
+
+The package depends on the separately owned CA certificate, OpenSSL, and zlib
+providers. Its locked source closure also contains host-side lzip and pkgconf,
+which Buildroot needs to unpack and configure the Wget source offline.

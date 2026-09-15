@@ -1,0 +1,44 @@
+# Copy to packages/<package-name>/source.lock for every package that imports
+# third-party/upstream source.  This is a human-reviewable provenance record;
+# do not use a moving branch or an unpinned binary package as a source.
+
+FORMAT_VERSION='1'
+SOURCE_TYPE='release-tarball' # debian-source | buildroot-derived | git | release-tarball
+UPSTREAM_NAME='Example project'
+UPSTREAM_LICENSE='SPDX-License-Identifier: MIT'
+
+# Use an immutable upstream version, tag or commit.  A branch name alone is
+# insufficient.  For Debian record the source-package version and snapshot.
+UPSTREAM_VERSION='1.2.3'
+UPSTREAM_REVISION='v1.2.3'
+SOURCE_SNAPSHOT='https://example.invalid/source-snapshot-or-release-page'
+SOURCE_SELECTION_REASON='Why this version/source is suitable for TDVP'
+
+# Record every fetched source artifact with its exact URL, filename and SHA-256.
+# A Debian source package records .dsc, orig tarball, Debian tarball and patch
+# series separately.  Add numbered SOURCE_ARTIFACT_n_* groups as needed.
+SOURCE_ARTIFACT_1_URL='https://example.invalid/example-project-1.2.3.tar.xz'
+SOURCE_ARTIFACT_1_FILE='example-project-1.2.3.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='replace-with-64-lowercase-hex-digest'
+
+# Record every TDVP-owned patch in application order.  Keep the actual patch
+# under packages/<package-name>/patches/ and explain why it is necessary.
+# SOURCE_PATCH_1_FILE='patches/0001-tdvp-cross-build.patch'
+# SOURCE_PATCH_1_SHA256='replace-with-64-lowercase-hex-digest'
+# SOURCE_PATCH_1_REASON='Avoid a host probe during cross compilation.'
+
+# A non-executable local build-input record (for example go-modules.lock) may
+# be covered by the source lock. It must live directly in the package root;
+# the verifier accepts no symlink, subdirectory, or executable syntax here.
+# SOURCE_BUILD_INPUT_1_FILE='go-modules.lock'
+# SOURCE_BUILD_INPUT_1_SHA256='replace-with-64-lowercase-hex-digest'
+# SOURCE_BUILD_INPUT_1_REASON='Lock the reviewed Go module and vendor inputs.'
+
+# State any non-platform build input not represented by PACKAGE_BUILD_DEPENDS,
+# known security advisories/CVEs, and the reviewer evidence.  The exact TDVP
+# SDK/sysroot belongs to the selected platform manifest, not this source lock.
+NON_PLATFORM_BUILD_INPUTS=''
+SECURITY_STATUS='No known unresolved advisories at review time.'
+VERIFIED_BY='Maintainer name or GitHub handle'
+VERIFIED_AT='YYYY-MM-DD'
+VERIFICATION_REFERENCE='PR or issue URL/number'

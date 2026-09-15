@@ -5,12 +5,14 @@
 set -Eeuo pipefail
 IFS=$'\n\t'
 
-# r3 retains the audited r2 application data byte-for-byte and replaces only
-# the historical tdvp-base-* control metadata with the concrete runtime
-# closure.  Set TDVP_REUSE_PUBLISHED_PAYLOADS=0 for a deliberate source build.
-if [[ "${TDVP_REUSE_PUBLISHED_PAYLOADS:-1}" == 1 ]]; then
-  package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-  feed_root=$(cd -- "$package_dir/../.." && pwd)
+# A recipe can opt into reusing a byte-identical, SHA-256-pinned payload for a
+# metadata-only feed republish. New source revisions intentionally omit those
+# variables and always execute the audited cross-build below.
+package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+feed_root=$(cd -- "$package_dir/../.." && pwd)
+# shellcheck source=/dev/null
+source "$package_dir/package.env"
+if [[ "${TDVP_REUSE_PUBLISHED_PAYLOADS:-1}" == 1 && -n "${REUSE_IPK_URL:-}" && -n "${REUSE_IPK_SHA256:-}" ]]; then
   exec "$feed_root/scripts/reuse-published-ipk-payload.sh" "$package_dir"
 fi
 
@@ -20,25 +22,40 @@ if [[ $# -ne 4 || "$1" != '--platform' || "$3" != '--sdk-root' ]]; then
 fi
 [[ "$2" == tdvp-k230-r1 ]] || { echo "tdvp-gba does not support platform: $2" >&2; exit 65; }
 
-package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-feed_root=$(cd -- "$package_dir/../.." && pwd)
-# shellcheck source=/dev/null
-source "$package_dir/package.env"
 # shellcheck source=../../scripts/tdvp-k230-sdk.sh
 source "$feed_root/scripts/tdvp-k230-sdk.sh"
+# shellcheck source=../../support/buildroot-feed-session.sh
+source "$feed_root/support/buildroot-feed-session.sh"
+# shellcheck source=../../support/source-archive-library.sh
+source "$feed_root/support/source-archive-library.sh"
 
-source_root=${TDVP_GBA_SOURCE_DIR:-"$feed_root/../cardputer-zero-gameboy-emulator"}
-source_root=$(tdvp_verify_git_source "$source_root" "$SOURCE_REPOSITORY" "$SOURCE_REVISION")
 tdvp_require_k230_sdk "$4"
 tdvp_require_wayland_sdk_overlay
 tdvp_prepare_pkg_config
 
+# The generated bindings are target-ABI neutral, but the scanner and XML must
+# come from the completed firmware Buildroot tree so a feed build never uses a
+# random release-builder protocol version.
+buildroot_output=$(tdvp_buildroot_output_from_sdk "$4" "${TDVP_GBA_BUILDROOT_OUTPUT:-}")
+scanner="$buildroot_output/host/bin/wayland-scanner"
+[[ -x "$scanner" ]] || {
+  echo "matching Buildroot wayland-scanner is missing: $scanner" >&2
+  exit 66
+}
+protocols_dir="$TDVP_K230_WAYLAND_SDK_OVERLAY/share/wayland-protocols"
+[[ -f "$protocols_dir/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml" ]] || {
+  echo 'matching Wayland SDK bridge is missing: unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' >&2
+  exit 67
+}
+
 build_root=$(mktemp -d)
+source_tree=$(mktemp -d)
 payload_dir="$package_dir/root"
-cleanup() { rm -rf -- "$build_root"; }
+cleanup() { rm -rf -- "$build_root" "$source_tree"; }
 trap cleanup EXIT
 rm -rf -- "$payload_dir"
 mkdir -p -- "$payload_dir"
+source_root=$(tdvp_unpack_locked_source_archive "$package_dir" "$source_tree")
 
 (
   cd -- "$build_root"
@@ -58,6 +75,8 @@ mkdir -p -- "$payload_dir"
     -DCZ_GBA_REQUIRE_K230_DRM=ON \
     -DCZ_GBA_REQUIRE_K230_WAYLAND_SHM=ON \
     -DCZ_GBA_TDVP_WAYLAND_SDK_OVERLAY="$TDVP_K230_WAYLAND_SDK_OVERLAY" \
+    -DCZ_GBA_TDVP_WAYLAND_SCANNER="$scanner" \
+    -DCZ_GBA_TDVP_WAYLAND_PROTOCOLS_DIR="$protocols_dir" \
     -DALSA_INCLUDE_DIR="$TDVP_K230_WAYLAND_SDK_OVERLAY/include" \
     -DALSA_LIBRARY="$TDVP_K230_WAYLAND_SDK_OVERLAY/lib/libasound.so" \
     "$source_root"

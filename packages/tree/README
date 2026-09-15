@@ -1,0 +1,10 @@
+tree — directory listing utility
+
+This r10 candidate package rebuilds the reviewed Buildroot 2025.02.1 source
+recipe from one SHA-256-locked upstream archive.  The payload installs the
+real command below /usr/libexec/tdvp-tree and a small /usr/bin/tdvp-tree
+frontend. K230 BusyBox already owns /usr/bin/tree, so this explicit alias
+never replaces a firmware path.
+
+It requires the exact tdvp-k230-r1 ABI package.  It is not a Debian binary,
+and it does not alter firmware, boot, kernel, libc, drivers, or opkg.

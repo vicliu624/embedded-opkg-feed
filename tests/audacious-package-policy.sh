@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Verify the Audacious split and the TDVP K230 touch-layout policy without
-# needing a native RISC-V Buildroot output.  The candidate-build workflow does
-# the actual target compile; this keeps simple metadata/config regressions out
-# of every pull request as well.
+# Verify the Audacious split and TDVP K230 touch-layout policy without a
+# native RISC-V Buildroot output. The candidate workflow does the target build.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -12,8 +10,49 @@ repo_root=$(cd -- "$script_dir/.." && pwd)
 expect_line() {
   local pattern=$1
   local path=$2
-  grep -Eq -- "$pattern" "$path" || {
+  tr -d '\r' <"$path" | grep -Eq -- "$pattern" || {
     echo "missing required policy entry in $path: $pattern" >&2
+    exit 1
+  }
+}
+
+expect_fixed_line() {
+  local expected=$1
+  local path=$2
+  tr -d '\r' <"$path" | grep -Fqx -- "$expected" || {
+    echo "missing required policy entry in $path: $expected" >&2
+    exit 1
+  }
+}
+
+expect_contains() {
+  local expected=$1
+  local path=$2
+  grep -Fq -- "$expected" "$path" || {
+    echo "missing required policy fragment in $path: $expected" >&2
+    exit 1
+  }
+}
+
+expect_exactly_once() {
+  local text=$1
+  local path=$2
+  local count
+  count=$(grep -Fc -- "$text" "$path")
+  [[ "$count" -eq 1 ]] || {
+    echo "expected exactly one occurrence in $path: $text (found $count)" >&2
+    exit 1
+  }
+}
+
+expect_recipe_directory_identity() {
+  local recipe=$1
+  local package_dir
+  local recipe_name
+  package_dir=$(basename -- "$(dirname -- "$recipe")")
+  recipe_name=$(basename -- "${recipe%.mk}")
+  [[ "$package_dir" == "$recipe_name" ]] || {
+    echo "Buildroot recipe must live in its own matching package directory: $recipe" >&2
     exit 1
   }
 }
@@ -21,9 +60,19 @@ expect_line() {
 core_env="$repo_root/packages/audacious-core/package.env"
 plugins_env="$repo_root/packages/audacious-plugins/package.env"
 app_env="$repo_root/packages/audacious/package.env"
-buildroot_recipe="$repo_root/support/audacious-buildroot/tdvp-audacious.mk"
+core_build_script="$repo_root/packages/audacious-core/build.sh"
+plugins_build_script="$repo_root/packages/audacious-plugins/build.sh"
+buildroot_support_dir="$repo_root/support/audacious-buildroot"
+core_buildroot_dir="$buildroot_support_dir/tdvp-audacious"
+plugins_buildroot_dir="$buildroot_support_dir/tdvp-audacious-plugins"
+core_buildroot_recipe="$core_buildroot_dir/tdvp-audacious.mk"
+plugins_buildroot_recipe="$plugins_buildroot_dir/tdvp-audacious-plugins.mk"
+core_buildroot_config="$core_buildroot_dir/Config.in"
+plugins_buildroot_config="$plugins_buildroot_dir/Config.in"
+plugins_buildroot_hash="$plugins_buildroot_dir/tdvp-audacious-plugins.hash"
 layout_config="$repo_root/packages/audacious/tdvp-k230-default.conf"
 owner_map="$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
+batch_workflow="$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 
 expect_line "^PACKAGE='audacious-core'$" "$core_env"
 expect_line "^PACKAGE_KIND='shared-library'$" "$core_env"
@@ -32,26 +81,136 @@ expect_line "^PACKAGE='audacious-plugins'$" "$plugins_env"
 expect_line "^PACKAGE_DEPENDS='audacious-core \\(= 4\\.6\\.1-1\\)'$" "$plugins_env"
 expect_line "^PACKAGE='audacious'$" "$app_env"
 expect_line "^PACKAGE_DEPENDS='audacious-core \\(= 4\\.6\\.1-1\\), audacious-plugins \\(= 4\\.6\\.1-1\\), hicolor-icon-theme \\(= 2025\\.02\\.1-1\\)'$" "$app_env"
-expect_line '^TDVP_AUDACIOUS_VERSION = 4\.6\.1$' "$buildroot_recipe"
-expect_line '^TDVP_AUDACIOUS_PLUGINS_VERSION = 4\.6\.1$' "$buildroot_recipe"
-expect_line '^[[:space:]]*-Dgtkui=true \\' "$buildroot_recipe"
-expect_line '^[[:space:]]*-Dffaudio=true \\' "$buildroot_recipe"
-expect_line '^[[:space:]]*-Dalsa=true \\' "$buildroot_recipe"
-expect_line '^[[:space:]]*-Dpulse=true \\' "$buildroot_recipe"
-expect_line '^[[:space:]]*-Dqt=false \\' "$buildroot_recipe"
-expect_line '^[[:space:]]*-Dqtui=false \\' "$buildroot_recipe"
-expect_line '^[[:space:]]*-Dpipewire=false \\' "$buildroot_recipe"
+expect_fixed_line 'TDVP_AUDACIOUS_VERSION = 4.6.1' "$core_buildroot_recipe"
+expect_fixed_line 'TDVP_AUDACIOUS_INSTALL_STAGING = YES' "$core_buildroot_recipe"
+expect_fixed_line 'TDVP_AUDACIOUS_DEPENDENCIES =' "$core_buildroot_recipe"
+expect_fixed_line 'TDVP_AUDACIOUS_PLUGINS_VERSION = 4.6.1' "$plugins_buildroot_recipe"
+expect_fixed_line 'TDVP_AUDACIOUS_PLUGINS_DEPENDENCIES =' "$plugins_buildroot_recipe"
+if grep -Eq '^TDVP_AUDACIOUS_PLUGINS_DEPENDENCIES =.*tdvp-audacious' "$plugins_buildroot_recipe"; then
+  echo 'Audacious plugins must consume imported core development files instead of rebuilding tdvp-audacious' >&2
+  exit 1
+fi
+expect_fixed_line 'sha256  22e58a8a2c3f3caa9687434353618c822963cc8846cd239de36d4e8e5bd166a6  audacious-plugins-4.6.1.tar.bz2' "$plugins_buildroot_hash"
+expect_line '^config BR2_PACKAGE_TDVP_AUDACIOUS$' "$core_buildroot_config"
+expect_line '^config BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS$' "$plugins_buildroot_config"
+expect_line '^[[:space:]]*-Dgtkui=true \\' "$plugins_buildroot_recipe"
+expect_line '^[[:space:]]*-Dffaudio=true \\' "$plugins_buildroot_recipe"
+expect_line '^[[:space:]]*-Dalsa=true \\' "$plugins_buildroot_recipe"
+expect_line '^[[:space:]]*-Dpulse=true \\' "$plugins_buildroot_recipe"
+expect_line '^[[:space:]]*-Dqt=false \\' "$plugins_buildroot_recipe"
+expect_line '^[[:space:]]*-Dqtui=false \\' "$plugins_buildroot_recipe"
+expect_line '^[[:space:]]*-Dpipewire=false \\' "$plugins_buildroot_recipe"
 
-# 1232 x 568 is the physical landscape display.  The fallback deliberately
+# Buildroot derives package identity from its package directory. Each staged
+# directory must register exactly one package, otherwise the plugin evaluation
+# is identified as tdvp-audacious and candidate builds fail.
+expect_exactly_once '$(eval $(meson-package))' "$core_buildroot_recipe"
+expect_exactly_once '$(eval $(meson-package))' "$plugins_buildroot_recipe"
+expect_recipe_directory_identity "$core_buildroot_recipe"
+expect_recipe_directory_identity "$plugins_buildroot_recipe"
+if grep -Fq 'TDVP_AUDACIOUS_PLUGINS_' "$core_buildroot_recipe"; then
+  echo 'Audacious plugins must use their own Buildroot recipe file' >&2
+  exit 1
+fi
+if [[ -e "$buildroot_support_dir/Config.in" || -e "$buildroot_support_dir/tdvp-audacious.mk" || -e "$buildroot_support_dir/tdvp-audacious-plugins.mk" ]]; then
+  echo 'Audacious Buildroot recipes must be staged from separate package directories' >&2
+  exit 1
+fi
+expect_contains 'package/tdvp-audacious/Config.in' "$core_build_script"
+expect_contains 'package/tdvp-audacious-plugins/Config.in' "$core_build_script"
+expect_contains 'package/tdvp-audacious/Config.in' "$plugins_build_script"
+expect_contains 'package/tdvp-audacious-plugins/Config.in' "$plugins_build_script"
+for build_script in "$core_build_script" "$plugins_build_script"; do
+  expect_contains 'prepare-audacious-foundation.sh' "$build_script"
+  expect_contains 'rmdir -- "$foundation_evidence"' "$build_script"
+  expect_contains 'buildroot_staging_source="$build_output/host/riscv64-buildroot-linux-gnu/sysroot"' "$build_script"
+  expect_contains 'buildroot_staging_root=$(mktemp -d)' "$build_script"
+  expect_contains 'cp -a --reflink=auto "$buildroot_staging_source/." "$buildroot_staging_root/"' "$build_script"
+  expect_contains 'buildroot_staging_inode=$(stat -c '\''%d:%i'\'' "$buildroot_staging_source")' "$build_script"
+  expect_contains 'mv -- "$buildroot_staging_source" "$buildroot_staging_backup"; staging_source_moved=1' "$build_script"
+  expect_contains 'ln -s -- "$buildroot_staging_root" "$buildroot_staging_source"; staging_source_redirected=1' "$build_script"
+  expect_contains '[[ -L "$buildroot_staging_source" && "$(readlink -f -- "$buildroot_staging_source")" == "$buildroot_staging_root" ]]' "$build_script"
+  expect_contains 'refused to remove an unexpected SDK sysroot path' "$build_script"
+  expect_contains '[[ "$(stat -c '\''%d:%i'\'' "$buildroot_staging_source")" == "$buildroot_staging_inode" ]] || rc=105' "$build_script"
+  if grep -Fq 'make -C "$build_output" STAGING_DIR="$buildroot_staging_root"' "$build_script"; then
+    echo 'Audacious build must not override the compiler-fixed K230 sysroot through STAGING_DIR' >&2
+    exit 1
+  fi
+  expect_contains 'rm -rf -- "$install_root" "$buildroot_staging_root"' "$build_script"
+  expect_contains 'config_old_backup=' "$build_script"
+  expect_contains 'cp --preserve=mode,timestamps -- "$config_backup" "$build_output/.config" || rc=98' "$build_script"
+  expect_contains 'cp --preserve=mode,timestamps -- "$config_old_backup" "$build_output/.config.old" || rc=100' "$build_script"
+  if grep -Fq 'make -C "$build_output" olddefconfig || rc=98' "$build_script"; then
+    echo 'Audacious cleanup must not normalize the restored SDK config' >&2
+    exit 1
+  fi
+done
+expect_contains 'tdvp-audacious-dirclean' "$plugins_build_script"
+expect_contains 'test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"' "$core_build_script"
+expect_contains 'test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"' "$plugins_build_script"
+expect_contains 'closure_download_dir=${TDVP_FEED_STAGING_ROOT:-}/.tdvp-audacious-buildroot-download-closure' "$core_build_script"
+expect_contains 'BR2_PACKAGE_TDVP_AUDACIOUS --enable BR2_PACKAGE_TDVP_AUDACIOUS_PLUGINS' "$core_build_script"
+expect_contains 'mkdir -- "$closure_download_dir"' "$core_build_script"
+expect_contains 'cp -a -- "$buildroot_download_dir/." "$closure_download_dir/"' "$core_build_script"
+expect_contains 'Buildroot owns the archive names and DL_SUBDIR layout' "$core_build_script"
+expect_contains 'Audacious Buildroot download closure link escapes its root' "$core_build_script"
+expect_contains 'readlink -f -- "$closure_link"' "$core_build_script"
+if grep -Fq 'source closure omitted verified Buildroot archive' "$core_build_script" || \
+   grep -Fq 'source closure omitted required Buildroot archive' "$core_build_script"; then
+  echo 'Audacious core must retain the full Buildroot-generated source closure without a hand-maintained archive list' >&2
+  exit 1
+fi
+expect_contains 'closure_download_dir="$TDVP_FEED_STAGING_ROOT/.tdvp-audacious-buildroot-download-closure"' "$plugins_build_script"
+expect_contains 'rsync -a --ignore-existing -- "$closure_download_dir/" "$download_dir/"' "$plugins_build_script"
+expect_contains 'rsync -a --ignore-existing -- "$base_download_dir/" "$buildroot_download_dir/"' "$core_build_script"
+expect_contains 'rsync -a --ignore-existing -- "$base_download_dir/" "$download_dir/"' "$plugins_build_script"
+expect_contains 'Audacious core Buildroot download closure link escapes its root' "$plugins_build_script"
+expect_contains 'TDVP_FEED_IMPORTED_STAGING' "$plugins_build_script"
+expect_contains 'Audacious plugins received an imported core staging root without audacious.pc' "$plugins_build_script"
+expect_contains 'for imported_tree in include lib; do' "$plugins_build_script"
+expect_contains 'cp -a -- "$TDVP_FEED_STAGING_ROOT/usr/$imported_tree/." "$buildroot_staging_source/usr/$imported_tree/"' "$plugins_build_script"
+expect_contains "preserve the SDK's lib64 layout" "$plugins_build_script"
+expect_contains 'test -s "$buildroot_staging_source/usr/lib/pkgconfig/audacious.pc"' "$plugins_build_script"
+expect_contains 'BR2_PRIMARY_SITE_ONLY=y make -C "$build_output" source' "$plugins_build_script"
+if grep -Fq 'Audacious plugin download closure omitted required Buildroot archive' "$plugins_build_script"; then
+  echo 'Audacious plugins must use the complete core closure without a hand-maintained archive list' >&2
+  exit 1
+fi
+expect_contains 'cp -a -- "$install_root/usr/lib/audacious" "$TDVP_FEED_STAGING_ROOT/usr/lib/"' "$plugins_build_script"
+expect_contains 'Audacious plugin target-install patch differs from the source-lock-reviewed copy' "$plugins_build_script"
+cmp -s -- "$repo_root/packages/audacious-plugins/patches/0001-meson-use-target-plugin-directory.patch" "$plugins_buildroot_dir/0001-meson-use-target-plugin-directory.patch" || {
+  echo 'Audacious plugin Buildroot patch must match the source-lock-reviewed copy' >&2
+  exit 1
+}
+expect_contains "join_paths(get_option('prefix'), get_option('libdir'), 'audacious')" "$plugins_buildroot_dir/0001-meson-use-target-plugin-directory.patch"
+expect_contains 'BR2_PRIMARY_SITE_ONLY=y' "$plugins_build_script"
+expect_contains 'make -C "$build_output" source' "$core_build_script"
+if grep -Fq 'BR2_BACKUP_SITE=' "$plugins_build_script"; then
+  echo 'Audacious plugins must resolve split-build sources only from the reviewed local baseline' >&2
+  exit 1
+fi
+
+# GitHub CLI's `run view` schema exposes run metadata, while uploaded
+# artifacts are listed through the Actions REST endpoint. Keep the split
+# layer hand-off on that endpoint so hosted runners can consume Core/Plugins.
+expect_contains 'repos/$GITHUB_REPOSITORY/actions/runs/$TDVP_DEPENDENCY_RUN_ID/artifacts' "$batch_workflow"
+expect_contains 'gh api --paginate' "$batch_workflow"
+if grep -Fq 'gh run view "$TDVP_DEPENDENCY_RUN_ID" --repo "$GITHUB_REPOSITORY" --json artifacts' "$batch_workflow" || \
+   grep -Fq 'gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json artifacts' "$batch_workflow"; then
+  echo 'Audacious layer retrieval and batch merge must not use the unsupported gh run view artifacts field' >&2
+  exit 1
+fi
+
+# 1232 x 568 is the physical landscape display. The fallback deliberately
 # leaves room for compositor decoration/panel; normal startup is maximized.
-expect_line '^player_width=1184$' "$layout_config"
-expect_line '^player_height=480$' "$layout_config"
-expect_line '^player_maximized=TRUE$' "$layout_config"
-expect_line '^infoarea_show_vis=FALSE$' "$layout_config"
-expect_line '^statusbar_visible=FALSE$' "$layout_config"
+expect_fixed_line 'player_width=1184' "$layout_config"
+expect_fixed_line 'player_height=480' "$layout_config"
+expect_fixed_line 'player_maximized=TRUE' "$layout_config"
+expect_fixed_line 'infoarea_show_vis=FALSE' "$layout_config"
+expect_fixed_line 'statusbar_visible=FALSE' "$layout_config"
 
 for soname in libaudcore.so.6 libaudtag.so.4 libaudgui.so.7; do
-  count=$(grep -Ec "^${soname//./\\.}\\|audacious-core\\|4\\.6\\.1-1$" "$owner_map")
+  count=$(tr -d '\r' <"$owner_map" | grep -Ec "^${soname//./\\.}\\|audacious-core\\|4\\.6\\.1-1$")
   [[ "$count" -eq 1 ]] || {
     echo "expected exactly one Audacious runtime owner for $soname, found $count" >&2
     exit 1

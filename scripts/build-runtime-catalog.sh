@@ -10,6 +10,7 @@ IFS=$'\n\t'
 platform_slug=
 target_root=
 output_dir=
+release=
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --platform)
@@ -27,6 +28,11 @@ while [[ $# -gt 0 ]]; do
       output_dir=$2
       shift 2
       ;;
+    --release)
+      [[ $# -ge 2 ]] || { echo '--release needs a value' >&2; exit 64; }
+      release=$2
+      shift 2
+      ;;
     *)
       echo "unknown argument: $1" >&2
       exit 64
@@ -34,8 +40,12 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-[[ -n "$platform_slug" && -n "$target_root" && -n "$output_dir" ]] || {
-  echo 'usage: build-runtime-catalog.sh --platform <platform> --target-root <Buildroot-target> --output <feed-dir>' >&2
+[[ -n "$platform_slug" && -n "$target_root" && -n "$output_dir" && -n "$release" ]] || {
+  echo 'usage: build-runtime-catalog.sh --platform <platform> --release <rN> --target-root <Buildroot-target> --output <feed-dir>' >&2
+  exit 64
+}
+[[ "$release" =~ ^r[1-9][0-9]*$ ]] || {
+  echo "invalid immutable feed release: $release" >&2
   exit 64
 }
 
@@ -69,12 +79,18 @@ cleanup() { rm -rf -- "$work_root"; }
 trap cleanup EXIT
 owner_map="$output_dir/.tdvp-runtime-owners.tsv"
 ownership_report="$output_dir/.tdvp-runtime-ownership.tsv"
+target_provider_manifest="$output_dir/.tdvp-target-runtime-packages.tsv"
+image_provider_map="$output_dir/.tdvp-image-runtime-providers.tsv"
+package_manifest="$output_dir/.tdvp-runtime-catalog-packages.tsv"
 : >"$owner_map"
 : >"$ownership_report"
+: >"$target_provider_manifest"
+: >"$image_provider_map"
+: >"$package_manifest"
 
 is_abi_soname() {
   case "$1" in
-    ld-linux-riscv32-ilp32.so.1|ld-linux-riscv32-ilp32d.so.1|ld-linux-riscv64-lp64.so.1|ld-linux-riscv64-lp64d.so.1|libc.so.6|libdl.so.2|libm.so.6|libpthread.so.0|librt.so.1|libgcc_s.so.1|libstdc++.so.6)
+    ld-linux-riscv32-ilp32.so.1|ld-linux-riscv32-ilp32d.so.1|ld-linux-riscv64-lp64.so.1|ld-linux-riscv64-lp64d.so.1|libc.so.6|libdl.so.2|libm.so.6|libpthread.so.0|librt.so.1|libutil.so.1|libresolv.so.2|libgcc_s.so.1|libstdc++.so.6)
       return 0
       ;;
     *) return 1 ;;
@@ -129,8 +145,142 @@ done < <(find "$target_root/usr/lib" -maxdepth 1 -type f -name '*.so*' -print0 |
 
 [[ ${#soname_file[@]} -gt 0 ]] || { echo 'no non-ABI target SONAMEs found' >&2; exit 72; }
 
+# The production image records the package that owns every installed path.
+# Use that inventory to make the target-derived SONAME package a virtual
+# provider of the image-owned package name.  A thin image can install the
+# canonical runtime package; a transitional image already has the
+# byte-identical image package, so opkg can satisfy the same alias without a
+# file collision.
+image_manifest=${TDVP_IMAGE_PROVIDER_MANIFEST:-"$target_root/usr/share/tdvp/opkg/image-base.json"}
+if [[ -n "${TDVP_IMAGE_PROVIDER_MANIFEST:-}" ]]; then
+  [[ -f "$image_manifest" ]] || {
+    echo "configured image ownership manifest is missing: $image_manifest" >&2
+    exit 79
+  }
+  image_manifest_digest=$(sha256sum -- "$image_manifest" | awk '{print $1}')
+  [[ "$image_manifest_digest" == "$IMAGE_OWNERSHIP_MANIFEST_SHA256" ]] || {
+    echo "configured image ownership manifest digest differs from the platform lock: $image_manifest" >&2
+    exit 79
+  }
+fi
+declare -A image_path_owner=()
+declare -A image_path_present=()
+if [[ -f "$image_manifest" ]]; then
+  while IFS=$'\t' read -r path package; do
+    [[ -n "$path" && -n "$package" ]] || continue
+    image_path_owner[$path]=$package
+  done < <(python3 - "$image_manifest" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    owners = json.load(stream).get("owners", {})
+for path, package in owners.items():
+    print(f"{path}\t{package}")
+PY
+  )
+  while IFS= read -r path; do
+    [[ -n "$path" ]] && image_path_present[$path]=1
+  done < <(python3 - "$image_manifest" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    files = json.load(stream).get("files", {})
+for path in files:
+    print(path)
+PY
+  )
+else
+  # The reusable runtime-catalogue cache is captured before post-fakeroot,
+  # where image-base.json is installed.  Its Buildroot build tree still has
+  # the authoritative per-package installed-file records.  Recover unique
+  # target-path ownership from those records so incremental batches retain
+  # the exact same image-provider alternatives as a finished SD-card image.
+  build_dir=$(cd -- "$target_root/../build" 2>/dev/null && pwd || true)
+  [[ -n "$build_dir" && -d "$build_dir" ]] || {
+    echo "target image inventory and Buildroot ownership records are both unavailable: $image_manifest" >&2
+    exit 79
+  }
+  while IFS=$'\t' read -r path package; do
+    [[ -n "$path" && -n "$package" ]] || continue
+    image_path_owner[$path]=$package
+  done < <(python3 - "$target_root" "$build_dir" <<'PY'
+import csv
+import os
+import re
+import sys
+from collections import defaultdict
+from pathlib import PurePosixPath
+
+target_root, build_dir = map(os.path.realpath, sys.argv[1:3])
+claims = defaultdict(set)
+package_re = re.compile(r"[a-z0-9][a-z0-9+_.-]*\\Z")
+
+def normalized_target_path(raw):
+    raw = raw.strip().replace("\\\\", "/")
+    if not raw or raw.startswith("/"):
+        return None
+    path = PurePosixPath(raw)
+    if any(part in ("", ".", "..") for part in path.parts):
+        return None
+    parts = list(path.parts)
+    # Buildroot package records can predate usrmerge.  The cached target has
+    # the merged paths that the runtime scan uses, so translate only when the
+    # corresponding legacy directory is a symlink into /usr.
+    if parts[0] in ("bin", "sbin", "lib", "lib64"):
+        legacy = os.path.join(target_root, parts[0])
+        if os.path.islink(legacy):
+            parts.insert(0, "usr")
+    relative = "/" + "/".join(parts)
+    candidate = os.path.join(target_root, relative.lstrip("/"))
+    return relative if os.path.lexists(candidate) else None
+
+for current_root, _, files in os.walk(build_dir):
+    if ".files-list.txt" not in files:
+        continue
+    with open(os.path.join(current_root, ".files-list.txt"), newline="", encoding="utf-8") as stream:
+        for row in csv.reader(stream):
+            if len(row) != 2:
+                continue
+            package, raw_path = (field.strip() for field in row)
+            if not package_re.fullmatch(package):
+                continue
+            relative = normalized_target_path(raw_path)
+            if relative:
+                claims[relative].add("tdvp-image-" + package.replace("_", "-"))
+
+for relative, owners in sorted(claims.items()):
+    if len(owners) == 1:
+        print(f"{relative}\\t{owners.pop()}")
+PY
+  )
+  [[ ${#image_path_owner[@]} -gt 0 ]] || {
+    echo "Buildroot ownership records contain no installed target paths: $build_dir" >&2
+    exit 79
+  }
+  echo "recovered transitional image ownership from Buildroot records: $build_dir" >&2
+fi
+
+for soname in "${!soname_file[@]}"; do
+  relative=${soname_file[$soname]#"$target_root"}
+  image_package=${image_path_owner[$relative]:-}
+  [[ "$image_package" =~ ^tdvp-image-[a-z0-9][a-z0-9+.-]*$ ]] || continue
+  printf '%s|%s\n' "${soname_package[$soname]}" "$image_package" >>"$image_provider_map"
+done
+LC_ALL=C sort -u -o "$image_provider_map" "$image_provider_map"
+
+# A manifest entry for a SONAME that is already present in the selected target
+# is not a second provider.  It is a version attestation for the byte-identical
+# target-derived provider.  This preserves meaningful exact Depends relations
+# for source recipes that are deliberately deferred because the platform owns
+# their ABI for this release.
+declare -A target_provider_version=()
+declare -A target_provider_attested=()
+declare -A extra_owner_package=()
+declare -A extra_owner_version=()
 for soname in "${!soname_package[@]}"; do
-  printf '%s|%s|%s\n' "$soname" "${soname_package[$soname]}" "$runtime_version" >>"$owner_map"
+  target_provider_version[$soname]=$runtime_version
 done
 
 add_owner_map_record() {
@@ -146,9 +296,29 @@ add_owner_map_record() {
   [[ -n "$existing" ]] || printf '%s|%s|%s\n' "$soname" "$package" "$runtime_version" >>"$owner_map"
 }
 
+extra_owner_supports_release() {
+  local package=$1
+  local package_env="$repo_root/packages/$package/package.env"
+  local releases
+
+  [[ -f "$package_env" ]] || {
+    echo "extra runtime owner package has no recipe: $package" >&2
+    exit 74
+  }
+  releases=$(bash -c '
+    set -Eeuo pipefail
+    source "$1"
+    printf "%s" "${PACKAGE_RELEASES:-r1}"
+  ' bash "$package_env")
+  [[ " $releases " == *" $release "* ]]
+}
+
 # Shared runtimes that are deliberately built outside the firmware target
-# still participate in the same closure.  Their archived payload is reused by
-# r3 rather than recompiling an already-published shared library.
+# still participate in the same closure.  The owner manifest accumulates
+# records across immutable releases, so only entries selected by this release
+# may participate in its ownership map.  Entries that match a target SONAME
+# attest the target-derived package version; entries absent from target remain
+# source-built providers.
 while IFS='|' read -r soname package version; do
   soname=${soname%$'\r'}
   [[ -n "$soname" && "$soname" != \#* ]] || continue
@@ -156,12 +326,47 @@ while IFS='|' read -r soname package version; do
     echo "invalid extra runtime owner record: $soname" >&2
     exit 74
   }
-  [[ -z "${soname_package[$soname]:-}" ]] || {
-    echo "extra runtime owner duplicates target SONAME: $soname" >&2
+  extra_owner_supports_release "$package" || continue
+  if [[ -n "${soname_package[$soname]:-}" ]]; then
+    [[ -z "${target_provider_attested[$soname]:-}" ]] || {
+      echo "duplicate target SONAME version attestation: $soname" >&2
+      exit 75
+    }
+    for existing_soname in "${!soname_package[@]}"; do
+      if [[ "$existing_soname" != "$soname" && "${soname_package[$existing_soname]}" == "$package" && -z "${target_provider_attested[$existing_soname]:-}" ]]; then
+        echo "target provider package collides with an un-attested target SONAME: $package ($soname, $existing_soname)" >&2
+        exit 75
+      fi
+    done
+    # The generic SONAME encoder is deliberately only a safe fallback.  A
+    # reviewed manifest may assign several public SONAMEs (libevent is the
+    # reference case) to one semantic upstream provider package.
+    soname_package[$soname]=$package
+    target_provider_version[$soname]=$version
+    target_provider_attested[$soname]=1
+    continue
+  fi
+  [[ -z "${extra_owner_package[$soname]:-}" ]] || {
+    echo "duplicate extra runtime owner record: $soname" >&2
     exit 75
   }
-  printf '%s|%s|%s\n' "$soname" "$package" "$version" >>"$owner_map"
+  extra_owner_package[$soname]=$package
+  extra_owner_version[$soname]=$version
 done <"$extra_owner_manifest"
+
+# Materialise target providers only after all compatible version attestations
+# are known.  This file is private release evidence: build-all uses it to
+# defer a matching source recipe, and it is removed before publication.
+while IFS= read -r soname; do
+  package=${soname_package[$soname]}
+  version=${target_provider_version[$soname]}
+  printf '%s|%s|%s\n' "$soname" "$package" "$version" >>"$owner_map"
+  printf '%s|%s|%s\n' "$package" "$soname" "$version" >>"$target_provider_manifest"
+done < <(printf '%s\n' "${!soname_package[@]}" | LC_ALL=C sort)
+
+while IFS= read -r soname; do
+  printf '%s|%s|%s\n' "$soname" "${extra_owner_package[$soname]}" "${extra_owner_version[$soname]}" >>"$owner_map"
+done < <(printf '%s\n' "${!extra_owner_package[@]}" | LC_ALL=C sort)
 
 # Some upstreams put private but dynamically linked helper libraries below a
 # module directory (PulseAudio's libpulsecommon is the important example).
@@ -187,6 +392,22 @@ register_planned_data_file() {
   planned_data_paths[$relative]=$package
   return 0
 }
+
+register_runtime_needed_owner() {
+  local source=$1 package=$2 soname filename
+  soname=$(soname_of "$source")
+  if [[ -n "$soname" ]]; then
+    add_owner_map_record "$soname" "$package"
+    return 0
+  fi
+  # A platform-specific shared object can be named directly by an ELF NEEDED
+  # entry even when it has no DT_SONAME (Vivante libvg_lite is the reviewed
+  # K230 case). Its exact data-package owner must still enter the resolver;
+  # accept only library-like file names, never arbitrary data files.
+  filename=${source##*/}
+  [[ "$filename" =~ ^lib[A-Za-z0-9_+.-]+\.so(\.[A-Za-z0-9_+.-]+)*$ ]] || return 0
+  add_owner_map_record "$filename" "$package"
+}
 while IFS='|' read -r package description selectors; do
   package=${package%$'\r'}
   [[ -n "$package" && "$package" != \#* ]] || continue
@@ -197,8 +418,7 @@ while IFS='|' read -r package description selectors; do
       @remaining-usr-lib)
         while IFS= read -r -d '' module; do
           register_planned_data_file "$module" "$package" 1 || continue
-          soname=$(soname_of "$module")
-          [[ -n "$soname" ]] && add_owner_map_record "$soname" "$package"
+          register_runtime_needed_owner "$module" "$package"
         done < <(find "$target_root/usr/lib" -mindepth 2 -type f -name '*.so*' -print0 | LC_ALL=C sort -z)
         ;;
       @remaining-usr-libexec)
@@ -209,8 +429,7 @@ while IFS='|' read -r package description selectors; do
         if [[ -d "$target_root/usr/libexec" ]]; then
           while IFS= read -r -d '' module; do
             register_planned_data_file "$module" "$package" 1 || continue
-            soname=$(soname_of "$module")
-            [[ -n "$soname" ]] && add_owner_map_record "$soname" "$package"
+            register_runtime_needed_owner "$module" "$package"
           done < <(find "$target_root/usr/libexec" \( -type f -o -type l \) -print0 | LC_ALL=C sort -z)
         fi
         ;;
@@ -227,20 +446,75 @@ while IFS='|' read -r package description selectors; do
           if [[ -d "$source" && ! -L "$source" ]]; then
             while IFS= read -r -d '' module; do
               register_planned_data_file "$module" "$package" 0
-              soname=$(soname_of "$module")
-              [[ -n "$soname" ]] && add_owner_map_record "$soname" "$package"
+              register_runtime_needed_owner "$module" "$package"
             done < <(find "$source" \( -type f -o -type l \) -print0 | LC_ALL=C sort -z)
           elif [[ -f "$source" || -L "$source" ]]; then
             register_planned_data_file "$source" "$package" 0
-            soname=$(soname_of "$source")
-            [[ -n "$soname" ]] && add_owner_map_record "$soname" "$package"
+            register_runtime_needed_owner "$source" "$package"
           fi
         done
         ;;
     esac
   done
 done <"$data_manifest"
+
+# A runtime data package is also present in the immutable desktop image.  Add
+# its image alternative from the same locked ownership inventory used for
+# SONAME packages.  Where all payload paths have one unique image owner, keep
+# that precise owner.  A selector can deliberately group files from multiple
+# image packages (or an ambiguous Buildroot path); tdvp-image-base is the
+# installed, content-addressed aggregate for the whole verified image and is
+# the only safe common alternative in that case.  Every selected path must be
+# present in the verified image inventory: do not hide a missing path behind
+# the aggregate package.
+declare -A data_image_alias=()
+declare -A data_image_alias_invalid=()
+for relative in "${!planned_data_paths[@]}"; do
+  package=${planned_data_paths[$relative]}
+  if [[ -z "${image_path_present[$relative]:-}" && -z "${image_path_owner[$relative]:-}" ]]; then
+    data_image_alias_invalid[$package]=$relative
+    continue
+  fi
+  image_package=${image_path_owner[$relative]:-tdvp-image-base}
+  [[ "$image_package" =~ ^tdvp-image-[a-z0-9][a-z0-9+.-]*$ ]] || {
+    data_image_alias_invalid[$package]=$relative
+    continue
+  }
+  existing=${data_image_alias[$package]:-}
+  if [[ -z "$existing" ]]; then
+    data_image_alias[$package]=$image_package
+  elif [[ "$existing" != "$image_package" ]]; then
+    data_image_alias[$package]=tdvp-image-base
+  fi
+done
+for package in "${!data_image_alias_invalid[@]}"; do
+  echo "runtime data path is absent from the locked image inventory: $package ${data_image_alias_invalid[$package]}" >&2
+  exit 79
+done
+for package in "${!data_image_alias[@]}"; do
+  printf '%s|%s\n' "$package" "${data_image_alias[$package]}" >>"$image_provider_map"
+done
 LC_ALL=C sort -u -o "$owner_map" "$owner_map"
+
+# Extra-owner overrides can rename a SONAME's canonical package (for example
+# libz.so.1 is intentionally owned by the reviewed `libz` recipe rather than
+# the mechanically derived `libz-1`).  Add aliases for the final owner as
+# well, so applications follow the same image-provider path after overrides.
+while IFS='|' read -r soname owner version; do
+  soname=${soname%$'\r'}
+  owner=${owner%$'\r'}
+  [[ -n "$soname" && -n "$owner" && "$soname" != \#* ]] || continue
+  [[ -n "${soname_file[$soname]:-}" ]] || continue
+  relative=${soname_file[$soname]#"$target_root"}
+  image_package=${image_path_owner[$relative]:-}
+  [[ "$image_package" =~ ^tdvp-image-[a-z0-9][a-z0-9+.-]*$ ]] || continue
+  printf '%s|%s\n' "$owner" "$image_package" >>"$image_provider_map"
+done <"$owner_map"
+LC_ALL=C sort -u -o "$image_provider_map" "$image_provider_map"
+[[ -s "$image_provider_map" ]] || {
+  echo "no verified image-provider aliases were derived from target ownership" >&2
+  exit 79
+}
 
 copy_path() {
   local source=$1
@@ -273,11 +547,12 @@ build_generated_package() {
   local package=$1
   local description=$2
   local root=$3
+  local version=$4
   local package_dir="$work_root/$package"
   mkdir -p -- "$package_dir"
   cat >"$package_dir/package.env" <<EOF
 PACKAGE='$package'
-VERSION='$runtime_version'
+VERSION='$version'
 PACKAGE_ARCH='$ARCH'
 MAINTAINER='TDVP Device Team <devices@example.invalid>'
 DESCRIPTION='$description'
@@ -291,28 +566,48 @@ EOF
   mv -- "$root" "$package_dir/root"
   TDVP_FEED_BASE_ROOT="$target_root" \
   TDVP_RUNTIME_OWNER_MAP="$owner_map" \
+  TDVP_IMAGE_PROVIDER_MAP="$image_provider_map" \
   TDVP_READELF="$readelf_tool" \
     "$script_dir/build-ipk.sh" --platform "$platform_slug" "$package_dir" "$output_dir"
+  printf '%s|%s\n' "$package" "$version" >>"$package_manifest"
 }
 
-# First package every top-level non-ABI SONAME.  A package contains its real
-# object plus the exact loader and development symlinks that share its SONAME
-# prefix, so no other package can claim that library path.
-for soname in $(printf '%s\n' "${!soname_package[@]}" | LC_ALL=C sort); do
+# Group SONAMEs by their final owner after manifest overrides.  Most fallback
+# packages own one SONAME; reviewed semantic owners such as libevent own the
+# complete public family in one IPK.  A package cannot mix attested versions.
+declare -A target_package_version=()
+declare -A target_package_sonames=()
+while IFS= read -r soname; do
   package=${soname_package[$soname]}
+  version=${target_provider_version[$soname]}
+  if [[ -n "${target_package_version[$package]:-}" && "${target_package_version[$package]}" != "$version" ]]; then
+    echo "target provider package has conflicting SONAME versions: $package" >&2
+    exit 76
+  fi
+  target_package_version[$package]=$version
+  target_package_sonames[$package]+="$soname"$'\n'
+done < <(printf '%s\n' "${!soname_package[@]}" | LC_ALL=C sort)
+
+# First package every top-level non-ABI SONAME group.  A package contains each
+# real object plus the exact loader and development symlinks that share its
+# SONAME prefix, so no other package can claim that library path.
+for package in $(printf '%s\n' "${!target_package_version[@]}" | LC_ALL=C sort); do
   root="$work_root/root-$package"
   mkdir -p -- "$root"
-  canonical_library=$(readlink -f -- "${soname_file[$soname]}")
-  libraries=()
-  while IFS= read -r -d '' candidate; do
-    [[ "$(readlink -f -- "$candidate")" == "$canonical_library" ]] && libraries+=("$candidate")
-  done < <(find "$target_root/usr/lib" -maxdepth 1 \( -type f -o -type l \) -print0 | LC_ALL=C sort -z)
-  [[ ${#libraries[@]} -gt 0 ]] || { echo "no files match target SONAME prefix: $soname" >&2; exit 76; }
-  for library in "${libraries[@]}"; do
-    claim_path "$library" "$package"
-    copy_path "$library" "$root"
-  done
-  build_generated_package "$package" "TDVP K230 runtime library $soname" "$root"
+  while IFS= read -r soname; do
+    [[ -n "$soname" ]] || continue
+    canonical_library=$(readlink -f -- "${soname_file[$soname]}")
+    libraries=()
+    while IFS= read -r -d '' candidate; do
+      [[ "$(readlink -f -- "$candidate")" == "$canonical_library" ]] && libraries+=("$candidate")
+    done < <(find "$target_root/usr/lib" -maxdepth 1 \( -type f -o -type l \) -print0 | LC_ALL=C sort -z)
+    [[ ${#libraries[@]} -gt 0 ]] || { echo "no files match target SONAME prefix: $soname" >&2; exit 77; }
+    for library in "${libraries[@]}"; do
+      claim_path "$library" "$package"
+      copy_path "$library" "$root"
+    done
+  done <<< "${target_package_sonames[$package]}"
+  build_generated_package "$package" "TDVP K230 target runtime provider" "$root" "${target_package_version[$package]}"
 done
 
 copy_selector() {
@@ -324,7 +619,7 @@ copy_selector() {
     while IFS= read -r -d '' source; do
       relative=${source#"$target_root"}
       case "$relative" in
-        /usr/lib/ld-linux*|/usr/lib/libc.so*|/usr/lib/libdl.so*|/usr/lib/libm.so*|/usr/lib/libpthread.so*|/usr/lib/librt.so*|/usr/lib/libgcc_s.so*|/usr/lib/libstdc++.so*)
+        /usr/lib/ld-linux*|/usr/lib/libc.so*|/usr/lib/libdl.so*|/usr/lib/libm.so*|/usr/lib/libpthread.so*|/usr/lib/librt.so*|/usr/lib/libutil.so*|/usr/lib/libresolv.so*|/usr/lib/libgcc_s.so*|/usr/lib/libstdc++.so*)
           continue
           ;;
       esac
@@ -387,13 +682,17 @@ while IFS='|' read -r package description selectors; do
     [[ -n "$selector" ]] && copy_selector "$selector" "$package" "$root"
   done
   if find "$root" -mindepth 1 -print -quit | grep -q .; then
-    build_generated_package "$package" "$description" "$root"
+    build_generated_package "$package" "$description" "$root" "$runtime_version"
   else
     rm -rf -- "$root"
   fi
 done <"$data_manifest"
 
 LC_ALL=C sort -u -o "$ownership_report" "$ownership_report"
+LC_ALL=C sort -u -o "$package_manifest" "$package_manifest"
 printf 'runtime owner map: %s\n' "$owner_map"
 printf 'runtime ownership report: %s\n' "$ownership_report"
+printf 'target runtime provider manifest: %s\n' "$target_provider_manifest"
+printf 'image runtime provider map: %s\n' "$image_provider_map"
+printf 'runtime package manifest: %s\n' "$package_manifest"
 echo "built ${#soname_file[@]} non-ABI SONAME packages from $target_root"

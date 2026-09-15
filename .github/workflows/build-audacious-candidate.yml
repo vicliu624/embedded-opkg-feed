@@ -91,7 +91,18 @@ jobs:
         working-directory: firmware
         run: |
           chmod +x buildroot/tools/*.sh
-          bash buildroot/tools/ci-prepare-host.sh
+          echo "TDVP_HOST_PREP_START $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          timeout --signal=TERM --kill-after=60s 20m \
+            bash buildroot/tools/ci-prepare-host.sh 2>&1 | tee "$RUNNER_TEMP/tdvp-host-prep.log"
+          echo "TDVP_HOST_PREP_DONE $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Upload host preparation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdvp-host-prep-diagnostics-${{ github.run_id }}
+          path: ${{ runner.temp }}/tdvp-host-prep.log
+          if-no-files-found: warn
 
       - name: Stage the locked K230 SDK worktree
         working-directory: firmware

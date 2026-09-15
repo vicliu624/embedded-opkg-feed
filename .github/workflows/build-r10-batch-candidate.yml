@@ -855,3 +855,4 @@ jobs:
           path: candidate-merged
           if-no-files-found: error
           retention-days: 14
+          include-hidden-files: true

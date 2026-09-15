@@ -69,6 +69,9 @@ incoming_root_assignment='incoming_root="${RUNNER_TEMP}/tdvp-r10-incoming"'
 [[ "$(grep -Fc "$incoming_root_assignment" "$repo_root/.github/workflows/build-r10-batch-candidate.yml")" -ge 2 ]]
 grep -Fq 'install -m 0644 "$provider_map" "$feed_dir/.tdvp-image-runtime-providers.tsv"' \
   "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
+merged_upload=$(sed -n '/name: tdvp-k230-r10-merged-unsigned-/,/include-hidden-files: true/p' \
+  "$repo_root/.github/workflows/build-r10-batch-candidate.yml")
+grep -Fq 'include-hidden-files: true' <<<"$merged_upload"
 grep -Fq 'runtime_verification=$(mktemp -d)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'cp -a -- "$runtime_feed/." "$runtime_verification/"' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'bash ./scripts/make-index.sh "$runtime_verification"' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"

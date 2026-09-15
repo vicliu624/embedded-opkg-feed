@@ -28,6 +28,8 @@ source "$package_dir/../../support/buildroot-command-package.sh"
 # Keep one auditable TLS path: OpenSSL and zlib are separately owned feed
 # providers.  Do not inherit optional PSL, GnuTLS, IDN/IRI, c-ares, PCRE, or
 # util-linux UUID dependencies merely because a desktop SDK enables them.
-TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS='BR2_PACKAGE_LIBPSL BR2_PACKAGE_GNUTLS BR2_PACKAGE_LIBIDN2 BR2_PACKAGE_C_ARES BR2_PACKAGE_PCRE BR2_PACKAGE_PCRE2 BR2_PACKAGE_UTIL_LINUX_LIBUUID' \
+# The desktop may legitimately enable those Kconfig symbols for other
+# programs, so pass Wget's complete reviewed configure feature set directly.
+TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES='WGET_CONF_OPTS=--without-libpsl --with-ssl=openssl --disable-iri --without-libuuid --with-zlib --without-cares --disable-pcre --disable-pcre2' \
   tdvp_buildroot_command_package "$package_dir" "$sdk_root" "$configured_output" \
     BR2_PACKAGE_WGET wget 'WGET_VERSION = 1.25.0' 'wget'

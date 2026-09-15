@@ -49,6 +49,11 @@ tree_patch_hash=$(normalised_patch_sha256 "$tree_patch") || {
 
 # shellcheck source=../../support/buildroot-command-package.sh
 source "$package_dir/../../support/buildroot-command-package.sh"
-TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS='BR2_PACKAGE_ACL BR2_PACKAGE_LZ4 BR2_PACKAGE_OPENSSL BR2_PACKAGE_XXHASH BR2_PACKAGE_ZSTD' \
+# The desktop baseline keeps OpenSSL enabled for its own TLS consumers.  rsync
+# only needs its daemon-TLS and optional acceleration features disabled, so
+# override the rsync recipe's complete configure option set instead of
+# mutating shared Kconfig symbols. Keep Buildroot's mandatory external
+# zlib/popt settings intact.
+TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES='RSYNC_CONF_OPTS=--with-included-zlib=no --with-included-popt=no --disable-roll-simd --disable-md5-asm --disable-acl-support --disable-lz4 --disable-openssl --disable-xxhash --disable-zstd' \
   tdvp_buildroot_command_package "$package_dir" "$sdk_root" "$configured_output" \
     BR2_PACKAGE_RSYNC rsync 'RSYNC_VERSION = 3.4.1' 'rsync'

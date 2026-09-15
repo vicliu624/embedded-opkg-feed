@@ -68,6 +68,7 @@ run_fixture() {
   tdvp_buildroot_install "$output" "$install_root" \
     --enable BR2_TEST_FEATURE \
     --make-variable FIXTURE_CONF_OPTS=--no-optional-feature \
+    --make-variable FIXTURE_CONFIGURE_MODE=--with-mode=isolated \
     --make-variable FIXTURE_DEPENDENCIES= --target fixture
 }
 
@@ -80,6 +81,7 @@ run_fixture
 [[ "$(sha256sum "$output/.config.old" | awk '{print $1}')" == "$old_hash" ]]
 [[ "$(grep -Fc 'olddefconfig' "$output/.tdvp-make.log")" -eq 1 ]]
 grep -Fq 'FIXTURE_CONF_OPTS=--no-optional-feature' "$output/.tdvp-make.log"
+grep -Fq 'FIXTURE_CONFIGURE_MODE=--with-mode=isolated' "$output/.tdvp-make.log"
 grep -Fq 'FIXTURE_DEPENDENCIES=' "$output/.tdvp-make.log"
 for directory in bin etc usr/bin usr/lib usr/share; do
   test -d "$install_root/$directory"
@@ -101,6 +103,15 @@ if tdvp_buildroot_install "$output" "$install_root" \
 fi
 grep -Fq 'invalid Buildroot make variable: FIXTURE_BAD=$(touch)' \
   "$work/invalid-make-variable.log"
+
+if tdvp_buildroot_install "$output" "$install_root" \
+  --make-variable 'FIXTURE_BAD=--with-mode=$(touch)' --target fixture \
+  >"$work/invalid-equals-make-variable.log" 2>&1; then
+  echo 'Buildroot session accepted an unsafe make-variable value after an equals option' >&2
+  exit 1
+fi
+grep -Fq 'invalid Buildroot make variable: FIXTURE_BAD=--with-mode=$(touch)' \
+  "$work/invalid-equals-make-variable.log"
 
 fixture_repo="$work/source-lock-fixture"
 fixture_package="$fixture_repo/packages/example"

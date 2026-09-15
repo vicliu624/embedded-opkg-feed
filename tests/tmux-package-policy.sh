@@ -14,7 +14,11 @@ grep -Fq "LIBEVENT_DEPENDENCIES='" "$repo_root/packages/libevent/build.sh"
 grep -Fq 'archive-library --make-variable requires one safe NAME=value assignment' "$repo_root/support/buildroot-archive-library.sh"
 grep -Fq 'libevent OpenSSL support are excluded' "$repo_root/packages/tmux/source.lock"
 grep -Fq 'BR2_USE_MMU=y BR2_USE_WCHAR=y BR2_ENABLE_LOCALE=y BR2_PACKAGE_NCURSES=y' "$repo_root/packages/tmux/build.sh"
-grep -Fq 'BR2_PACKAGE_OPENSSL BR2_PACKAGE_SYSTEMD BR2_PACKAGE_UTF8PROC' "$repo_root/packages/tmux/build.sh"
+grep -Fq "TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES='TMUX_CONF_OPTS=--disable-systemd --disable-utf8proc'" "$repo_root/packages/tmux/build.sh"
+if grep -Fq 'TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS=' "$repo_root/packages/tmux/build.sh"; then
+  echo 'tmux must not disable global desktop Kconfig symbols' >&2
+  exit 1
+fi
 grep -Fq "'tmux'" "$repo_root/packages/tmux/build.sh"
 grep -Fqx 'libevent-2.1.so.7|libevent|2.1.12-1' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
 grep -Fqx 'libevent_pthreads-2.1.so.7|libevent|2.1.12-1' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"

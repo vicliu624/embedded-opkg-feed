@@ -12,6 +12,9 @@ for required_config in BR2_USE_MMU=y BR2_USE_WCHAR=y BR2_ENABLE_LOCALE=y BR2_PAC
 done
 # shellcheck source=../../support/buildroot-command-package.sh
 source "$package_dir/../../support/buildroot-command-package.sh"
-TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS='BR2_PACKAGE_OPENSSL BR2_PACKAGE_SYSTEMD BR2_PACKAGE_UTF8PROC' \
+# Systemd and utf8proc are desktop-wide Kconfig selections.  Keep that
+# baseline intact and disable only tmux's optional configure branches, so the
+# resulting command retains its reviewed libevent/ncurses-only runtime graph.
+TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES='TMUX_CONF_OPTS=--disable-systemd --disable-utf8proc' \
   tdvp_buildroot_command_package "$package_dir" "$sdk_root" "${TDVP_DEVEL_BUILDROOT_OUTPUT:-}" \
     BR2_PACKAGE_TMUX tmux 'TMUX_VERSION = 3.3a' 'tmux'

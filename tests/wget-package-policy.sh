@@ -35,8 +35,11 @@ expect_line 'optional PSL, GnuTLS, IDN/IRI, c-ares, PCRE, and libuuid closures a
 build_file="$package_dir/build.sh"
 expect_line 'BR2_PACKAGE_OPENSSL=y BR2_PACKAGE_LIBOPENSSL=y BR2_PACKAGE_ZLIB=y' "$build_file"
 expect_line 'WGET_VERSION = 1[.]25[.]0' "$build_file"
-expect_line 'BR2_PACKAGE_LIBPSL BR2_PACKAGE_GNUTLS BR2_PACKAGE_LIBIDN2 BR2_PACKAGE_C_ARES' "$build_file"
-expect_line 'BR2_PACKAGE_PCRE BR2_PACKAGE_PCRE2 BR2_PACKAGE_UTIL_LINUX_LIBUUID' "$build_file"
+expect_line "TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES='WGET_CONF_OPTS=--without-libpsl --with-ssl=openssl --disable-iri --without-libuuid --with-zlib --without-cares --disable-pcre --disable-pcre2'" "$build_file"
+if grep -Fq 'TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS=' "$build_file"; then
+  echo 'Wget must use recipe-local configure options instead of changing desktop Kconfig symbols' >&2
+  exit 1
+fi
 expect_line 'tdvp_buildroot_command_package' "$build_file"
 if grep -Eq '(^|[^A-Za-z0-9_])(apt|dpkg|debian)([^A-Za-z0-9_]|$)' "$build_file"; then
   echo 'Wget build must not import a Debian package or binary' >&2

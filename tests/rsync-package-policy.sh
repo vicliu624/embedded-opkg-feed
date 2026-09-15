@@ -36,7 +36,11 @@ test -f "$package_dir/patches/0001-configure.ac-use-pkg-config-to-retrieve-opens
 build_file="$package_dir/build.sh"
 expect_line "BR2_PACKAGE_ZLIB=y" "$build_file"
 expect_line 'RSYNC_VERSION = 3[.]4[.]1' "$build_file"
-expect_line 'BR2_PACKAGE_ACL BR2_PACKAGE_LZ4 BR2_PACKAGE_OPENSSL BR2_PACKAGE_XXHASH BR2_PACKAGE_ZSTD' "$build_file"
+expect_line "TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES='RSYNC_CONF_OPTS=--with-included-zlib=no --with-included-popt=no --disable-roll-simd --disable-md5-asm --disable-acl-support --disable-lz4 --disable-openssl --disable-xxhash --disable-zstd'" "$build_file"
+if grep -Fq 'TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS=' "$build_file"; then
+  echo 'rsync must use recipe-local configure options instead of changing desktop Kconfig symbols' >&2
+  exit 1
+fi
 expect_line 'normalised_patch_sha256' "$build_file"
 expect_line 'could not normalize the locked rsync patch' "$build_file"
 expect_line 'could not normalize the matching Buildroot rsync patch' "$build_file"

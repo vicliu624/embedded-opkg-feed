@@ -58,7 +58,9 @@ jobs:
 
       - name: Check recipe policy before the long target build
         run: |
-          for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
+          set -Eeuo pipefail
+          run_policy() { local name=$1; shift; echo "POLICY_START $name"; "$@"; echo "POLICY_PASS $name"; }
+          for script in scripts/*.sh tests/*.sh packages/*/build.sh; do run_policy "syntax:$script" bash -n "$script"; done
           bash ./tests/audacious-package-policy.sh
           bash ./tests/vim-package-policy.sh
           bash ./tests/archive-package-policy.sh
@@ -67,7 +69,11 @@ jobs:
           bash ./tests/python3-package-policy.sh
           bash ./tests/dev-tools-package-policy.sh
           bash ./tests/command-package-policy.sh
+          run_policy source-tools bash ./tests/source-tools-package-policy.sh
           bash ./tests/node22-package-policy.sh
+          run_policy source-lock bash ./tests/source-lock-policy.sh
+          run_policy build-all-source-lock bash ./tests/build-all-source-lock-policy.sh
+          run_policy source-lock-all bash ./scripts/verify-source-lock.sh --repo-root . --all
 
       - name: Restore SDK downloads and toolchain cache
         uses: actions/cache@v4
@@ -154,12 +160,15 @@ jobs:
               ;;
             r10)
               packages+=(
-                vim-runtime vim vim-plugin-repeat vim-plugin-surround vim-plugin-commentary vim-plugin-sleuth
+                vim-runtime vim vim-plugin-repeat vim-plugin-surround vim-plugin-commentary vim-plugin-sleuth vim-plugin-gitgutter
                 libmgba sdl2 sdl2-ttf tdvp-gba tdvp-mpv tdvp-netsurf
                 libbz2 liblzma libzstd archive-tools
                 git-runtime git gh
                 libpython3.13 python3-runtime python3
                 make pkgconf patch diffutils strace
+                tree less libz libmagic file which libjq jq dos2unix libpcre2-8 grep sed findutils
+                libncursesw libreadline gawk
+                tdvp-source-tools
                 tdvp-dev-tools
                 libcares libuv libnghttp2
                 libicudata libicuuc libicui18n libicuio

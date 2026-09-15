@@ -1,0 +1,11 @@
+# libreadline
+
+`libreadline` is the r10 owner of `libreadline.so.8`. It depends exactly on
+the wide-character ncurses provider required by the reviewed Buildroot recipe.
+The feed intentionally does not silently package the separate history library:
+it is not needed by the initial `gawk` target and must receive its own owner if
+a later candidate needs it.
+
+The source lock includes both GNU Readline and the ncurses archive because
+Buildroot's readline path can prepare ncurses/host-ncurses as part of a clean,
+offline library build.

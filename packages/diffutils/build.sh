@@ -5,5 +5,6 @@ IFS=$'\n\t'
 package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=../../support/buildroot-command-package.sh
 source "$package_dir/../../support/buildroot-command-package.sh"
-tdvp_buildroot_command_package "$package_dir" "$4" "${TDVP_DEVEL_BUILDROOT_OUTPUT:-}" \
+TDVP_COMMAND_FRONTEND_NAMES='diff=tdvp-diff cmp=tdvp-cmp' \
+  tdvp_buildroot_command_package "$package_dir" "$4" "${TDVP_DEVEL_BUILDROOT_OUTPUT:-}" \
   BR2_PACKAGE_DIFFUTILS diffutils 'DIFFUTILS_VERSION = 3.10' 'diff cmp diff3 sdiff'

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Build the terminal-only Vim package through the exact locked Buildroot tree,
-# then split its reusable runtime data from the executable leaf package.
+# Build terminal Vim from the exact Buildroot source recipe, split its runtime
+# data into this provider, and stage its executable only for the vim leaf.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -10,57 +10,80 @@ if [[ $# -ne 4 || "$1" != '--platform' || "$3" != '--sdk-root' ]]; then
 fi
 [[ "$2" == tdvp-k230-r1 ]] || { echo "vim-runtime does not support platform: $2" >&2; exit 65; }
 
-package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+package_dir=$(cd -- "$(dirname -- "$0")" && pwd)
 sdk_root=$4
+stage_root=${TDVP_FEED_STAGING_ROOT:?vim-runtime needs the release staging root}
+configured_output=$(printenv TDVP_VIM_BUILDROOT_OUTPUT || true)
+# shellcheck source=package.env
 source "$package_dir/package.env"
+# shellcheck source=../../support/buildroot-feed-session.sh
+source "$package_dir/../../support/buildroot-feed-session.sh"
 
-[[ -d "$sdk_root" && -d "${TDVP_FEED_STAGING_ROOT:-}" ]] || { echo 'vim-runtime needs the release staging root and matching Buildroot SDK' >&2; exit 66; }
-sdk_root=$(cd -- "$sdk_root" && pwd)
-build_output=${TDVP_VIM_BUILDROOT_OUTPUT:-$(cd -- "$sdk_root/.." && pwd)}
-[[ "$sdk_root" == "$build_output/host" && -f "$build_output/.config" && -f "$build_output/Makefile" && -d "$build_output/target" ]] || { echo 'TDVP_VIM_BUILDROOT_OUTPUT must be a completed matching Buildroot output' >&2; exit 67; }
-buildroot_tree=$(awk '$1 == "MAKEARGS" && ($2 == ":=" || $2 == "+=") && $3 == "-C" { print $4; exit }' "$build_output/Makefile")
-[[ -n "$buildroot_tree" && -d "$buildroot_tree/package/vim" && -x "$buildroot_tree/utils/config" ]] || { echo 'could not resolve the locked Buildroot Vim package from the SDK output' >&2; exit 68; }
-actual_buildroot_version=$(awk '$1 == "export" && $2 == "BR2_VERSION" && $3 == ":=" { print $4; exit }' "$buildroot_tree/Makefile")
-[[ "$actual_buildroot_version" == '2025.02.1' ]] || { echo "expected Buildroot 2025.02.1, got ${actual_buildroot_version:-unknown}" >&2; exit 69; }
-grep -Fqx 'VIM_VERSION = 9.1.0145' "$buildroot_tree/package/vim/vim.mk" || { echo 'locked Buildroot Vim version differs from the reviewed feed recipe' >&2; exit 70; }
-grep -Fqx "sha256  $SOURCE_ARCHIVE_SHA256  $SOURCE_ARCHIVE" "$buildroot_tree/package/vim/vim.hash" || { echo 'locked Buildroot Vim archive hash differs from the reviewed feed recipe' >&2; exit 71; }
+[[ -d "$sdk_root" && -d "$stage_root" ]] || {
+  echo 'vim-runtime needs the release staging root and matching Buildroot SDK' >&2
+  exit 66
+}
+output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
+tree=$(tdvp_buildroot_tree_from_output "$output")
+tdvp_assert_buildroot_2025_02_1 "$tree"
+grep -Fqx 'VIM_VERSION = 9.1.0145' "$tree/package/vim/vim.mk" || {
+  echo 'locked Buildroot Vim version differs from the reviewed feed recipe' >&2
+  exit 67
+}
+grep -Fqx "sha256  $SOURCE_ARCHIVE_SHA256  $SOURCE_ARCHIVE" "$tree/package/vim/vim.hash" || {
+  echo 'locked Buildroot Vim archive hash differs from the reviewed feed recipe' >&2
+  exit 68
+}
 
-config_backup=$(mktemp "$build_output/.config.tdvp-vim.XXXXXX")
+download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
 install_root=$(mktemp -d)
-payload_dir="$package_dir/root"
-config_hash=$(sha256sum "$build_output/.config" | awk '{print $1}')
-config_saved=0
-
+payload_dir=
+payload_link="$package_dir/root"
+payload_ready=0
+temporary_prefix=/tmp/tdvp-command-payload.
 cleanup() {
   local rc=$?
-  set +e
-  if [[ "$config_saved" -eq 1 ]]; then
-    cp -- "$config_backup" "$build_output/.config"
-    # Regenerate derived Buildroot configuration too: the Vim package is a
-    # feed build input, never a latent setting for the next firmware image.
-    env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" make -C "$build_output" olddefconfig || rc=98
-    [[ "$(sha256sum "$build_output/.config" | awk '{print $1}')" == "$config_hash" ]] || rc=99
-  fi
-  rm -f -- "$config_backup"
   rm -rf -- "$install_root"
+  rm -rf -- "$download_dir"
+  if [[ "$payload_ready" -eq 0 && -n "$payload_dir" && -d "$payload_dir" ]]; then
+    rm -rf -- "$payload_dir"
+    if [[ -L "$payload_link" && "$(readlink -f -- "$payload_link" 2>/dev/null || true)" == "$payload_dir" ]]; then
+      rm -f -- "$payload_link"
+    fi
+  fi
   exit "$rc"
 }
 trap cleanup EXIT
 
-cp -- "$build_output/.config" "$config_backup"; config_saved=1
-"$buildroot_tree/utils/config" --file "$build_output/.config" --enable BR2_PACKAGE_VIM --enable BR2_PACKAGE_VIM_RUNTIME
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" make -C "$build_output" olddefconfig
-grep -qx 'BR2_PACKAGE_VIM=y' "$build_output/.config"
-grep -qx 'BR2_PACKAGE_VIM_RUNTIME=y' "$build_output/.config"
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" make -C "$build_output" vim-dirclean
-env -i HOME="${HOME:-/tmp}" USER="${USER:-tdvp}" LOGNAME="${LOGNAME:-tdvp}" PATH="$sdk_root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" make -C "$build_output" TARGET_DIR="$install_root" vim-install-target
+tdvp_buildroot_install "$output" "$install_root" \
+  --offline-download-dir "$download_dir" \
+  --enable BR2_PACKAGE_VIM \
+  --enable BR2_PACKAGE_VIM_RUNTIME \
+  --target vim
 
-[[ -x "$install_root/usr/bin/vim" ]] || { echo 'Vim target install omitted /usr/bin/vim' >&2; exit 72; }
-find "$install_root/usr/share/vim" -type f -name 'defaults.vim' -print -quit | grep -q . || { echo 'Vim target install omitted its runtime files' >&2; exit 73; }
-rm -rf -- "$payload_dir"
+[[ -x "$install_root/usr/bin/vim" && -d "$install_root/usr/share/vim" ]] || {
+  echo 'Vim target install omitted its executable or runtime files' >&2
+  exit 69
+}
+find "$install_root/usr/share/vim" -type f -name defaults.vim -print -quit | grep -q . || {
+  echo 'Vim target install omitted defaults.vim' >&2
+  exit 70
+}
+if [[ -L "$payload_link" ]]; then
+  previous_payload=$(readlink -f -- "$payload_link" 2>/dev/null || true)
+  if [[ "$previous_payload" == "$temporary_prefix"* && -d "$previous_payload" ]]; then
+    rm -rf -- "$previous_payload"
+  fi
+fi
+rm -rf -- "$payload_link"
+payload_dir=$(mktemp -d "$temporary_prefix"XXXXXX)
+chmod 0755 -- "$payload_dir"
+ln -s -- "$payload_dir" "$payload_link"
 mkdir -p -- "$payload_dir/usr/share"
 cp -a -- "$install_root/usr/share/vim" "$payload_dir/usr/share/vim"
-install -Dm 0644 "$build_output/build/vim-9.1.0145/LICENSE" "$payload_dir/usr/share/licenses/vim-runtime/LICENSE"
-mkdir -p -- "$TDVP_FEED_STAGING_ROOT/usr"
-cp -a -- "$install_root/usr/." "$TDVP_FEED_STAGING_ROOT/usr/"
+install -Dm 0644 "$output/build/vim-9.1.0145/LICENSE" \
+  "$payload_dir/usr/share/licenses/vim-runtime/LICENSE"
+mkdir -p -- "$stage_root/usr"
+cp -a -- "$install_root/usr/." "$stage_root/usr/"
+payload_ready=1
 echo "vim-runtime payload ready: $payload_dir"

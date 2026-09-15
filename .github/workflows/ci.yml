@@ -36,6 +36,8 @@ jobs:
             bash ./scripts/verify-stable-channel.sh --platform tdvp-k230-r1
           bash ./tests/build-shared-package-policy.sh
           bash ./tests/audacious-package-policy.sh
+          bash ./tests/reuse-published-ipk-payload-policy.sh
+          bash ./tests/feed-overlay-composition-policy.sh
           bash ./tests/vim-package-policy.sh
 
   cardputer-source-lock:
@@ -63,3 +65,4 @@ jobs:
           test -f "$source_dir/packaging/tdvp-k230/tdvp-gba"
           test -f "$source_dir/extern/SDL/CMakeLists.txt"
           test -f "$source_dir/extern/mgba/CMakeLists.txt"
+          bash ./tests/tdvp-gba-source-archive-policy.sh

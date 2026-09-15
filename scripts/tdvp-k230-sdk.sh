@@ -63,7 +63,8 @@ tdvp_require_wayland_sdk_overlay() {
     lib/pkgconfig/freetype2.pc \
     include/freetype/freetype.h \
     include/zlib.h \
-    lib/libffi.so lib/libpulse.so lib/libasound.so lib/libfreetype.so; do
+    lib/libffi.so lib/libpulse.so lib/libasound.so lib/libfreetype.so \
+    share/wayland-protocols/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml; do
     [[ -e "$overlay/$required" ]] || {
       echo "invalid TDVP_K230_WAYLAND_SDK_OVERLAY: missing $required" >&2
       return 69

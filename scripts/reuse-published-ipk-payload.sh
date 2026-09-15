@@ -21,6 +21,11 @@ source "$package_dir/package.env"
 : "${PACKAGE_ARCH:?package.env must set PACKAGE_ARCH}"
 : "${REUSE_IPK_URL:?package.env must set REUSE_IPK_URL}"
 : "${REUSE_IPK_SHA256:?package.env must set REUSE_IPK_SHA256}"
+# A payload may be safely repackaged with a newer control-archive revision
+# when its immutable source IPK is pinned and its source version is declared
+# explicitly.  Keep the historical strict default for recipes that do not
+# make such a declaration.
+: "${REUSE_IPK_VERSION:=$VERSION}"
 [[ "$REUSE_IPK_SHA256" =~ ^[0-9a-f]{64}$ ]] || {
   echo "REUSE_IPK_SHA256 must be a lowercase SHA-256 digest for $PACKAGE" >&2
   exit 66
@@ -42,11 +47,14 @@ curl --fail --location --proto '=https' --tlsv1.2 --retry 3 --output "$source_ip
 
 ar p "$source_ipk" control.tar.gz | tar -xzO ./control >"$work_root/control"
 grep -qx "Package: $PACKAGE" "$work_root/control" || { echo "reused IPK has wrong Package: $PACKAGE" >&2; exit 69; }
-grep -qx "Version: $VERSION" "$work_root/control" || { echo "reused IPK has wrong Version: $VERSION" >&2; exit 70; }
+grep -qx "Version: $REUSE_IPK_VERSION" "$work_root/control" || {
+  echo "reused IPK has wrong source Version: $REUSE_IPK_VERSION" >&2
+  exit 70
+}
 grep -qx "Architecture: $PACKAGE_ARCH" "$work_root/control" || { echo "reused IPK has wrong Architecture: $PACKAGE_ARCH" >&2; exit 71; }
 
 payload_dir="$package_dir/root"
 rm -rf -- "$payload_dir"
 mkdir -p -- "$payload_dir"
 ar p "$source_ipk" data.tar.gz | tar -xzf - -C "$payload_dir"
-echo "reused immutable payload for $PACKAGE from $REUSE_IPK_URL"
+echo "reused immutable payload for $PACKAGE $REUSE_IPK_VERSION into control revision $VERSION from $REUSE_IPK_URL"

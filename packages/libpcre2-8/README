@@ -1,0 +1,11 @@
+# libpcre2-8
+
+`libpcre2-8` is the sole r10 owner of the public `libpcre2-8.so.0` runtime
+SONAME.  It is rebuilt from the Buildroot 2025.02.1 PCRE2 recipe using the
+locked source archive in `source.lock`; it does not ship headers, static
+archives, executables, or the optional POSIX wrapper library.
+
+GNU `grep` is the first consumer.  It declares both build- and runtime
+dependencies on this exact provider so the candidate feed can retain
+PCRE-compatible regular expressions without embedding a library in the
+command package.

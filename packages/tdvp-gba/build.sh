@@ -26,9 +26,9 @@ fi
 source "$feed_root/scripts/tdvp-k230-sdk.sh"
 # shellcheck source=../../support/buildroot-feed-session.sh
 source "$feed_root/support/buildroot-feed-session.sh"
+# shellcheck source=../../support/source-archive-library.sh
+source "$feed_root/support/source-archive-library.sh"
 
-source_root=${TDVP_GBA_SOURCE_DIR:-"$feed_root/../cardputer-zero-gameboy-emulator"}
-source_root=$(tdvp_verify_git_source "$source_root" "$SOURCE_REPOSITORY" "$SOURCE_REVISION")
 tdvp_require_k230_sdk "$4"
 tdvp_require_wayland_sdk_overlay
 tdvp_prepare_pkg_config
@@ -42,20 +42,20 @@ scanner="$buildroot_output/host/bin/wayland-scanner"
   echo "matching Buildroot wayland-scanner is missing: $scanner" >&2
   exit 66
 }
-linux_dmabuf_xml=$(find "$buildroot_output/build" -type f \
-  -path '*/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' -print -quit)
-[[ -n "$linux_dmabuf_xml" ]] || {
-  echo 'matching Buildroot wayland-protocols XML is missing: unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' >&2
+protocols_dir="$TDVP_K230_WAYLAND_SDK_OVERLAY/share/wayland-protocols"
+[[ -f "$protocols_dir/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml" ]] || {
+  echo 'matching Wayland SDK bridge is missing: unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' >&2
   exit 67
 }
-protocols_dir=$(cd -- "$(dirname -- "$linux_dmabuf_xml")/../.." && pwd)
 
 build_root=$(mktemp -d)
+source_tree=$(mktemp -d)
 payload_dir="$package_dir/root"
-cleanup() { rm -rf -- "$build_root"; }
+cleanup() { rm -rf -- "$build_root" "$source_tree"; }
 trap cleanup EXIT
 rm -rf -- "$payload_dir"
 mkdir -p -- "$payload_dir"
+source_root=$(tdvp_unpack_locked_source_archive "$package_dir" "$source_tree")
 
 (
   cd -- "$build_root"

@@ -5,6 +5,6 @@ IFS=$'\n\t'
 package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=../../support/buildroot-node-inputs.sh
 source "$package_dir/../../support/buildroot-node-inputs.sh"
-tdvp_prepare_node22_inputs "$package_dir" "$4" "${TDVP_NODE22_BUILDROOT_OUTPUT:-}"
-tdvp_copy_node22_input_library "$package_dir" 'libicuuc.so*'
+tdvp_prepare_node22_icu_inputs "$package_dir" "$4" "${TDVP_NODE22_BUILDROOT_OUTPUT:-}"
+tdvp_copy_node22_icu_input_library "$package_dir" 'libicuuc.so*'
 echo "libicuuc payload ready: $package_dir/root"

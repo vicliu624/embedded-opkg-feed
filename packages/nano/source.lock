@@ -1,0 +1,18 @@
+# Buildroot owns the cross-compile configuration. This record locks the
+# reviewed upstream archive consumed by its 2025.02.1 nano recipe.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='GNU nano'
+UPSTREAM_LICENSE='GPL-3.0-or-later'
+UPSTREAM_VERSION='8.2'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/nano/nano.mk'
+SOURCE_SELECTION_REASON='Buildroot 2025.02.1 provides the reviewed terminal-editor cross-build recipe; nano remains a private executable with a /usr/bin frontend and does not replace BusyBox.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 nano.mk and nano.hash; matching SDK selects wide ncurses and does not select the optional file/libmagic integration; no TDVP-specific patches.'
+SECURITY_STATUS='Buildroot recipe source SHA-256 is verified before candidate build; release-candidate security review remains required.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/nano/nano.hash'
+SOURCE_ARTIFACT_1_URL='https://sources.buildroot.net/nano/nano-8.2.tar.xz'
+SOURCE_ARTIFACT_1_FILE='nano-8.2.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='d5ad07dd862facae03051c54c6535e54c7ed7407318783fcad1ad2d7076fffeb'

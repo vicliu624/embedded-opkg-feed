@@ -1,0 +1,18 @@
+# The vim leaf is produced exclusively from the same locked Vim source build
+# performed by vim-runtime; it records the shared provenance explicitly.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='Vim'
+UPSTREAM_LICENSE='Charityware'
+UPSTREAM_VERSION='9.1.0145'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/vim/vim.mk'
+SOURCE_SELECTION_REASON='The leaf packages only the Vim executable and TDVP defaults produced by the matching vim-runtime source build; it does not import a prebuilt target binary.'
+NON_PLATFORM_BUILD_INPUTS='The matching vim-runtime package, Buildroot 2025.02.1 vim.mk and vim.hash; no TDVP-specific patches.'
+SECURITY_STATUS='The shared Vim source SHA-256 is verified before candidate build; release-candidate security review remains required.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/vim/vim.hash'
+SOURCE_ARTIFACT_1_URL='https://sources.buildroot.net/vim/vim-9.1.0145.tar.gz'
+SOURCE_ARTIFACT_1_FILE='vim-9.1.0145.tar.gz'
+SOURCE_ARTIFACT_1_SHA256='0056537cb57190aa41c12ba6c2ad04ce10e7f714cde4c1fe7193a37e1c44db46'

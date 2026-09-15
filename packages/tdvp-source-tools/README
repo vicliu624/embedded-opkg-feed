@@ -1,0 +1,49 @@
+# TDVP K230 source-maintenance tools
+
+`tdvp-source-tools` is an r10 installation profile, not a private copy of
+programs or libraries. It brings in independently versioned source-maintenance
+tools using exact dependencies:
+
+* `tree`, `less`, `file`, and `which` for layout, log inspection, type detection,
+  and command discovery;
+* `curl` for explicit HTTPS transfer, reusing the separately owned `libcurl-4`
+  runtime and the CA certificate store;
+* `wget` for simple scripted HTTPS/FTP retrieval, using the reviewed OpenSSL,
+  zlib, and CA-store closure without GnuTLS, PSL, IDN/IRI, or c-ares;
+* `rsync` for local trees and remote-shell synchronization, using separately
+  owned `libpopt`, `libz`, and `openssh-client` rather than private copies;
+* `tmux` for persistent multi-window terminal sessions, using separately owned
+  `libevent` and `libncursesw` without systemd, utf8proc, or OpenSSL event
+  support;
+* `dos2unix`, `grep`, `sed`, `findutils`, and `gawk` for source-tree and text
+  maintenance;
+* `jq` for JSON inspection and transformation.
+
+The runtime libraries remain independently owned and are pulled transitively:
+`jq -> libjq`, `grep -> libpcre2-8`, and
+`gawk -> libreadline -> libncursesw`. The profile carries only this document;
+uninstalling it does not remove tools that are still required by another
+installed package.
+
+After installing the unsigned r10 candidate on a real K230 device, verify:
+
+    tdvp-tree --version
+    less --version
+    file --version
+    tdvp-which grep
+    curl --version
+    curl --fail --show-error --location https://example.com/ -o /tmp/tdvp-curl-example.html
+    wget --version
+    wget --https-only -O /tmp/tdvp-wget-example.html https://example.com/
+    rsync --version
+    tmux -V
+    mkdir -p /tmp/tdvp-rsync-source /tmp/tdvp-rsync-destination && printf 'sync\n' > /tmp/tdvp-rsync-source/example && rsync -a /tmp/tdvp-rsync-source/ /tmp/tdvp-rsync-destination/
+    printf '{"answer":42}\n' | jq .answer
+    printf 'A\r\nB\r\n' > /tmp/tdvp-crlf.txt && tdvp-dos2unix /tmp/tdvp-crlf.txt
+    printf 'alpha\nbeta\n' | grep -P '^a'
+    printf 'alpha\n' | tdvp-sed 's/a/A/'
+    tdvp-find /tmp -maxdepth 1 -type f -print | tdvp-xargs -r -n1 basename
+    awk 'BEGIN { print 1 + 1 }'
+
+Before this real-device install/run/uninstall/rollback test succeeds, r10
+remains an unsigned candidate and must not be promoted to the public feed.

@@ -20,6 +20,8 @@ package_dir=$(cd -- "$package_input" && pwd)
 
 # shellcheck source=feed-platform.sh
 source "$script_dir/feed-platform.sh"
+# shellcheck source=../support/elf-runtime-policy.sh
+source "$repo_root/support/elf-runtime-policy.sh"
 tdvp_load_platform "$repo_root" "$platform_slug"
 
 [[ -f "$package_dir/package.env" ]] || {
@@ -176,7 +178,7 @@ assert_shared_library_payload_paths() {
   local protected_pattern
   for protected_pattern in \
     'ld-linux*' 'libc.so*' 'libdl.so*' 'libm.so*' 'libpthread.so*' \
-    'librt.so*' 'libgcc_s.so*' 'libstdc++.so*'; do
+    'librt.so*' 'libutil.so*' 'libresolv.so*' 'libgcc_s.so*' 'libstdc++.so*'; do
     if find "$payload_dir/usr/lib" -maxdepth 1 -name "$protected_pattern" -print -quit 2>/dev/null | grep -q .; then
       echo "shared-library payload attempts to replace protected runtime: $protected_pattern ($PACKAGE)" >&2
       exit 83
@@ -201,12 +203,38 @@ assert_runtime_payload_paths() {
   local protected_pattern
   for protected_pattern in \
     'ld-linux*' 'libc.so*' 'libdl.so*' 'libm.so*' 'libpthread.so*' \
-    'librt.so*' 'libgcc_s.so*' 'libstdc++.so*'; do
+    'librt.so*' 'libutil.so*' 'libresolv.so*' 'libgcc_s.so*' 'libstdc++.so*'; do
     if find "$payload_dir/usr/lib" -maxdepth 1 -name "$protected_pattern" -print -quit 2>/dev/null | grep -q .; then
       echo "runtime payload attempts to replace protected ABI runtime: $protected_pattern ($PACKAGE)" >&2
       exit 85
     fi
   done
+}
+
+assert_elf_runtime_search_path_policy() {
+  local readelf_tool=$1 elf=$2 base_root=${TDVP_FEED_BASE_ROOT:-}
+  local relative base_elf payload_mode base_mode
+  # Source-built payloads and target objects without a dynamic search path use
+  # the narrow shared policy.  A non-empty target path may survive only as a
+  # byte-identical ownership transfer from the locked base image; this matches
+  # the release-level closure audit and cannot be used to introduce an SDK or
+  # $ORIGIN path in a newly built library.
+  if ! "$readelf_tool" -dW "$elf" 2>/dev/null | grep -Eq '\((RPATH|RUNPATH)\)'; then
+    return 0
+  fi
+  if [[ "$PACKAGE_BASE_OVERLAY" == identical && -n "$base_root" ]]; then
+    relative=${elf#"$payload_dir"}
+    base_elf="$base_root$relative"
+    if [[ -f "$base_elf" ]] && cmp -s -- "$elf" "$base_elf"; then
+      payload_mode=$(stat -c '%a' -- "$elf")
+      base_mode=$(stat -c '%a' -- "$base_elf")
+      if [[ "$payload_mode" == "$base_mode" ]]; then
+        echo "$PACKAGE retains a byte-identical target RPATH/RUNPATH: $relative" >&2
+        return 0
+      fi
+    fi
+  fi
+  tdvp_assert_elf_without_runtime_search_path "$readelf_tool" "$elf"
 }
 
 case "$PACKAGE_KIND" in
@@ -226,6 +254,35 @@ mkdir -p -- "$control_dir" "$data_dir"
 declare -A declared_dependencies=()
 declare -a dependency_records=()
 
+# A full TDVP desktop image already owns a reviewed, byte-identical copy of
+# part of the runtime catalogue.  Its immutable tdvp-image-* status packages
+# are valid alternate satisfiers for those runtime requirements.  Keep the
+# canonical feed package first so a thin image still installs the independently
+# owned IPK; the alternate makes the same leaf package installable on the
+# complete production image without trying to overwrite files it already owns.
+declare -A image_provider_aliases=()
+image_provider_map=${TDVP_IMAGE_PROVIDER_MAP:-}
+if [[ -n "$image_provider_map" ]]; then
+  [[ -s "$image_provider_map" ]] || {
+    echo "TDVP_IMAGE_PROVIDER_MAP is not a non-empty provider map: $image_provider_map" >&2
+    exit 86
+  }
+  while IFS='|' read -r runtime_provider image_provider extra; do
+    runtime_provider=${runtime_provider%$'\r'}
+    image_provider=${image_provider%$'\r'}
+    [[ -z "$runtime_provider" || "$runtime_provider" == \#* ]] && continue
+    [[ -z "$extra" && "$runtime_provider" =~ ^[a-z0-9][a-z0-9+.-]*$ && \
+       "$image_provider" =~ ^tdvp-image-[a-z0-9][a-z0-9+.-]*$ ]] || {
+      echo "invalid TDVP image provider record: $runtime_provider|$image_provider${extra:+|$extra}" >&2
+      exit 86
+    }
+    case " ${image_provider_aliases[$runtime_provider]:-} " in
+      *" | $image_provider "*) ;;
+      *) image_provider_aliases[$runtime_provider]+=" | $image_provider" ;;
+    esac
+  done <"$image_provider_map"
+fi
+
 append_dependency() {
   local record=$1
   local name
@@ -237,12 +294,26 @@ append_dependency() {
   fi
 }
 
+append_dependency_with_image_alternatives() {
+  local record=$1
+  local name
+  name=$(printf '%s' "$record" | sed -E 's/^[[:space:]]*([^[:space:]<(=|]+).*/\1/')
+  [[ -n "$name" ]] || { echo "invalid dependency record for $PACKAGE: $record" >&2; exit 86; }
+  # Do not make the firmware ABI itself virtual.  All other aliases are
+  # metadata-only alternatives for paths that the immutable image inventory
+  # already owns; they never permit an arbitrary external provider.
+  if [[ "$name" != "$ABI_PACKAGE" && -n "${image_provider_aliases[$name]:-}" ]]; then
+    record+=${image_provider_aliases[$name]}
+  fi
+  append_dependency "$record"
+}
+
 append_dependency "$ABI_PACKAGE (= $ABI_VERSION)"
 if [[ -n "$PACKAGE_DEPENDS" ]]; then
   IFS=',' read -r -a configured_dependencies <<< "$PACKAGE_DEPENDS"
   for configured_dependency in "${configured_dependencies[@]}"; do
     configured_dependency=$(printf '%s' "$configured_dependency" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')
-    [[ -n "$configured_dependency" ]] && append_dependency "$configured_dependency"
+    [[ -n "$configured_dependency" ]] && append_dependency_with_image_alternatives "$configured_dependency"
   done
 fi
 
@@ -257,6 +328,9 @@ if [[ "$PACKAGE_AUTO_RUNTIME_DEPENDS" == 1 ]]; then
     echo "$PACKAGE enables PACKAGE_AUTO_RUNTIME_DEPENDS but TDVP_READELF is missing" >&2
     exit 88
   }
+  while IFS= read -r elf; do
+    assert_elf_runtime_search_path_policy "$readelf_tool" "$elf" || exit $?
+  done < <(find "$payload_dir" -type f \( -perm -u+x -o -name '*.so*' \) -print | LC_ALL=C sort)
   declare -A payload_sonames=()
   while IFS= read -r elf; do
     while IFS= read -r provided_soname; do
@@ -266,7 +340,14 @@ if [[ "$PACKAGE_AUTO_RUNTIME_DEPENDS" == 1 ]]; then
   while IFS= read -r elf; do
     while IFS= read -r soname; do
       [[ -n "$soname" ]] || continue
-      owner_record=$(awk -F'|' -v soname="$soname" '$1 == soname { print $2 "|" $3; exit }' "$runtime_owner_map")
+      owner_record=$(awk -F'|' -v soname="$soname" '
+        $1 == soname {
+          version = $3
+          sub(/\r$/, "", version)
+          print $2 "|" version
+          exit
+        }
+      ' "$runtime_owner_map")
       if [[ -z "$owner_record" && -n "${payload_sonames[$soname]:-}" ]]; then
         # A dlopen-module package can contain a small family of private
         # helper libraries below /usr/lib.  Its provider is this same IPK;
@@ -276,7 +357,7 @@ if [[ "$PACKAGE_AUTO_RUNTIME_DEPENDS" == 1 ]]; then
       fi
       if [[ -z "$owner_record" ]]; then
         case "$soname" in
-          ld-linux-riscv64-lp64d.so.1|libc.so.6|libdl.so.2|libm.so.6|libpthread.so.0|librt.so.1|libgcc_s.so.1|libstdc++.so.6)
+          ld-linux-riscv64-lp64d.so.1|libc.so.6|libdl.so.2|libm.so.6|libpthread.so.0|librt.so.1|libutil.so.1|libresolv.so.2|libgcc_s.so.1|libstdc++.so.6)
             continue
             ;;
           *)
@@ -287,7 +368,7 @@ if [[ "$PACKAGE_AUTO_RUNTIME_DEPENDS" == 1 ]]; then
       fi
       owner=${owner_record%%|*}
       owner_version=${owner_record#*|}
-      [[ "$owner" == "$PACKAGE" ]] || append_dependency "$owner (= $owner_version)"
+      [[ "$owner" == "$PACKAGE" ]] || append_dependency_with_image_alternatives "$owner (= $owner_version)"
     done < <("$readelf_tool" -d "$elf" 2>/dev/null | sed -n 's/.*Shared library: \[\(.*\)\]/\1/p')
   done < <(find "$payload_dir" -type f \( -perm -u+x -o -name '*.so*' \) -print | LC_ALL=C sort)
 elif [[ "$PACKAGE_AUTO_RUNTIME_DEPENDS" != 0 ]]; then

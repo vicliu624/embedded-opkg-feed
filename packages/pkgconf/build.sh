@@ -5,5 +5,6 @@ IFS=$'\n\t'
 package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=../../support/buildroot-command-package.sh
 source "$package_dir/../../support/buildroot-command-package.sh"
-tdvp_buildroot_command_package "$package_dir" "$4" "${TDVP_DEVEL_BUILDROOT_OUTPUT:-}" \
+TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES='PKGCONF_CONF_OPTS=--disable-shared --enable-static' \
+  tdvp_buildroot_command_package "$package_dir" "$4" "${TDVP_DEVEL_BUILDROOT_OUTPUT:-}" \
   BR2_PACKAGE_PKGCONF pkgconf 'PKGCONF_VERSION = 2.3.0' 'pkgconf pkg-config'

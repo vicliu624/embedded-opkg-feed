@@ -17,7 +17,12 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious, network-tools, desktop-tools, development-tools, nodejs]
+        options: [archive, audacious-foundation, audacious-core, audacious-plugins, audacious-app, audacious, network-tools, netsurf, media, games, desktop-tools, development-tools, nodejs]
+      dependency_run_id:
+        description: Successful prior Audacious layer run ID; required by audacious-plugins and audacious-app
+        required: false
+        default: ''
+        type: string
       source_run_ids:
         description: Comma-separated successful package-batch run IDs, used only by merge-batches
         required: false
@@ -33,7 +38,10 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  TDVP_FIRMWARE_REVISION: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+  # This published CPU1/VGLite baseline installs libvg_lite.so.  The runtime
+  # catalogue packages that exact target payload, so pinning an older image
+  # without BR2_PACKAGE_VG_LITE would produce an invalid feed base.
+  TDVP_FIRMWARE_REVISION: 23f210938e4882dbe3663840259c2520868f3b8b
   TDVP_PROFILE: k230_canmv_t_display_rm69a10_labwc_desktop_defconfig
   # Change when the reviewed platform SDK identity or the cached build
   # interface changes. Package source locks deliberately do not affect this key.
@@ -42,8 +50,15 @@ env:
   # Buildroot would re-run prerequisite packages (including the external
   # toolchain) despite the restored host toolchain and target sysroot.  The
   # cache deliberately excludes flash images.
-  TDVP_SDK_CACHE_KEY: tdvp-k230-r1-sdk-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10-v3
-  TDVP_BUILDROOT_DL_CACHE_KEY: tdvp-k230-r1-buildroot-dl-bae5c6e65c8f3b92eb912153ba2681f9e50308e0-rm69a10-v1
+  TDVP_SDK_CACHE_KEY: tdvp-k230-r1-sdk-23f210938e4882dbe3663840259c2520868f3b8b-rm69a10-v3
+  TDVP_BUILDROOT_DL_CACHE_KEY: tdvp-k230-r1-buildroot-dl-23f210938e4882dbe3663840259c2520868f3b8b-rm69a10-v1
+  # r2 rejects the earlier incomplete runtime-base cache.  The base is saved
+  # only after Packages and its image-provider alternatives have been checked.
+  TDVP_RUNTIME_BASE_CACHE_SCHEMA: r2
+  # The SDK cache deliberately excludes package build trees. Keep the small,
+  # ABI-bound development bridge separately so application batches do not
+  # repeatedly materialize development headers from Buildroot sources.
+  TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA: r3
 
 jobs:
   build-sdk-base:
@@ -59,7 +74,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: vicliu624/t-display-k230-vision-platform
-          ref: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+          ref: 23f210938e4882dbe3663840259c2520868f3b8b
           path: firmware
           submodules: recursive
           fetch-depth: 1
@@ -67,10 +82,16 @@ jobs:
       - name: Check policy before using build capacity
         run: |
           set -Eeuo pipefail
+          config="firmware/buildroot/k230-sdk-overlay/configs/$TDVP_PROFILE"
+          grep -Fxq 'BR2_PACKAGE_VG_LITE=y' "$config"
+          grep -Fxq 'BR2_PACKAGE_TDVP_VGLITE_ACCEPTANCE=y' "$config"
           for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
           bash ./tests/build-all-source-lock-policy.sh
+          bash ./tests/audacious-foundation-policy.sh
           bash ./tests/audacious-package-policy.sh
           bash ./tests/archive-package-policy.sh
+          bash ./tests/target-runtime-provider-deferral-policy.sh
+          bash ./tests/feed-overlay-composition-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
 
@@ -203,7 +224,18 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/tdvp-r10-runtime-base
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ env.TDVP_RUNTIME_BASE_CACHE_SCHEMA }}-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+
+      - name: Download the locked r10 image ownership manifest
+        if: steps.restore-runtime-base.outputs.cache-hit != 'true'
+        run: |
+          set -Eeuo pipefail
+          source ./platforms/tdvp-k230-r1/platform.env
+          manifest="${RUNNER_TEMP}/tdvp-r10-image-base.json"
+          curl --fail --location --proto '=https' --tlsv1.2 --retry 3 \
+            --output "$manifest" "$IMAGE_OWNERSHIP_MANIFEST_URL"
+          printf '%s  %s\n' "$IMAGE_OWNERSHIP_MANIFEST_SHA256" "$manifest" | sha256sum --check --status
+          printf 'TDVP_IMAGE_PROVIDER_MANIFEST=%s\n' "$manifest" >>"$GITHUB_ENV"
 
       - name: Package the target-runtime IPK base once
         if: steps.restore-runtime-base.outputs.cache-hit != 'true'
@@ -217,12 +249,29 @@ jobs:
             --output "${RUNNER_TEMP}/tdvp-r10-runtime-base" \
             --runtime-catalog-only
 
+      - name: Verify provider alternatives in the target-runtime base
+        run: |
+          set -Eeuo pipefail
+          runtime_feed="${RUNNER_TEMP}/tdvp-r10-runtime-base/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64"
+          # The runtime catalogue is an intentionally private cache input:
+          # build-all rejects a Packages index when a later batch reuses it.
+          # Verify its control archives in an isolated copy that has a
+          # transient deterministic index, leaving the cache protocol intact.
+          runtime_verification=$(mktemp -d)
+          trap 'rm -rf -- "$runtime_verification"' EXIT
+          cp -a -- "$runtime_feed/." "$runtime_verification/"
+          bash ./scripts/make-index.sh "$runtime_verification"
+          bash ./scripts/verify-image-provider-alternatives.sh \
+            --platform tdvp-k230-r1 \
+            --provider-map "$runtime_verification/.tdvp-image-runtime-providers.tsv" \
+            "$runtime_verification"
+
       - name: Save the target-runtime IPK base
         if: steps.restore-runtime-base.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: ${{ runner.temp }}/tdvp-r10-runtime-base
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ env.TDVP_RUNTIME_BASE_CACHE_SCHEMA }}-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
 
       - name: Upload target-runtime base evidence
         uses: actions/upload-artifact@v4
@@ -232,6 +281,7 @@ jobs:
             ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-runtime-owners.tsv
             ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-runtime-ownership.tsv
             ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-target-runtime-packages.tsv
+            ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-image-runtime-providers.tsv
           if-no-files-found: error
           retention-days: 14
           include-hidden-files: true
@@ -249,7 +299,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: vicliu624/t-display-k230-vision-platform
-          ref: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+          ref: 23f210938e4882dbe3663840259c2520868f3b8b
           path: firmware
           submodules: recursive
           fetch-depth: 1
@@ -280,6 +330,15 @@ jobs:
           key: ${{ env.TDVP_SDK_CACHE_KEY }}
           fail-on-cache-miss: true
 
+      - name: Restore the reviewed Buildroot package stamps
+        id: restore-package-stamps
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.br_*
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-package-stamps
+          fail-on-cache-miss: false
       - name: Verify the restored Buildroot package state
         run: |
           set -Eeuo pipefail
@@ -301,11 +360,18 @@ jobs:
           path: ${{ runner.temp }}/tdvp-r10-source-cache
           key: tdvp-k230-r10-source-${{ hashFiles('packages/**/source.lock') }}
 
+      - name: Restore the firmware-matched Wayland development bridge
+        id: restore-wayland-sdk-overlay
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/tdvp-wayland-sdk-overlay
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-wayland-sdk-overlay-${{ env.TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA }}-${{ hashFiles('scripts/prepare-tdvp-wayland-sdk-overlay.sh', 'scripts/tdvp-k230-sdk.sh') }}
+
       - name: Restore the required target-runtime IPK base
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/tdvp-r10-runtime-base
-          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ env.TDVP_RUNTIME_BASE_CACHE_SCHEMA }}-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
           fail-on-cache-miss: true
 
       - name: Materialize the immutable target-runtime base for this batch
@@ -315,15 +381,89 @@ jobs:
           mkdir -p candidate-dist
           cp -a "${RUNNER_TEMP}/tdvp-r10-runtime-base/." candidate-dist/
 
+      - name: Retrieve the attested prior Audacious layer
+        if: inputs.batch == 'audacious-plugins' || inputs.batch == 'audacious-app'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TDVP_DEPENDENCY_RUN_ID: ${{ inputs.dependency_run_id }}
+          TDVP_REQUESTED_BATCH: ${{ inputs.batch }}
+          TDVP_SDK_CACHE_IDENTITY: ${{ env.TDVP_SDK_CACHE_KEY }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$TDVP_DEPENDENCY_RUN_ID" =~ ^[0-9]+$ ]] || {
+            echo "$TDVP_REQUESTED_BATCH requires one successful dependency_run_id" >&2
+            exit 64
+          }
+          case "$TDVP_REQUESTED_BATCH" in
+            audacious-plugins) expected_batch=audacious-core ;;
+            audacious-app) expected_batch=audacious-plugins ;;
+            *) exit 64 ;;
+          esac
+          mapfile -t artifacts < <(
+            gh api --paginate \
+              "repos/$GITHUB_REPOSITORY/actions/runs/$TDVP_DEPENDENCY_RUN_ID/artifacts" \
+              --jq ".artifacts[].name | select(test(\"^tdvp-k230-r10-${expected_batch}-unsigned-\"))"
+          )
+          [[ ${#artifacts[@]} -eq 1 ]] || {
+            echo "run $TDVP_DEPENDENCY_RUN_ID must expose exactly one $expected_batch artifact" >&2
+            exit 65
+          }
+          incoming_root="$RUNNER_TEMP/tdvp-audacious-layer/$TDVP_DEPENDENCY_RUN_ID"
+          mkdir -p "$incoming_root"
+          gh run download "$TDVP_DEPENDENCY_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --name "${artifacts[0]}" --dir "$incoming_root"
+          manifest=$(find "$incoming_root" -type f -name tdvp-batch-manifest.tsv -print -quit)
+          [[ -n "$manifest" ]] || { echo 'prior Audacious layer has no batch manifest' >&2; exit 66; }
+          value() { awk -F '\t' -v key="$2" '$1 == key { print $2; exit }' "$1"; }
+          [[ "$(value "$manifest" platform)" == tdvp-k230-r1 ]] || { echo 'prior layer targets another platform' >&2; exit 67; }
+          [[ "$(value "$manifest" sdk_cache_key)" == "$TDVP_SDK_CACHE_IDENTITY" ]] || { echo 'prior layer has another SDK identity' >&2; exit 67; }
+          [[ "$(value "$manifest" batch)" == "$expected_batch" ]] || { echo 'prior layer batch identity is invalid' >&2; exit 67; }
+          staging=$(find "$incoming_root" -type f -name tdvp-build-staging-manifest.tsv -printf '%h\n' -quit)
+          [[ -n "$staging" && -d "$staging/usr" ]] || { echo 'prior Audacious layer has no usable private staging state' >&2; exit 68; }
+          mkdir -p "$RUNNER_TEMP/tdvp-audacious-import"
+          cp -a -- "$staging/." "$RUNNER_TEMP/tdvp-audacious-import/"
+          feed_dir=$(find "$incoming_root" -type d -path '*/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64' -print -quit)
+          [[ -n "$feed_dir" ]] || { echo 'prior Audacious layer has no r10 feed directory' >&2; exit 68; }
+          while IFS=$'\t' read -r record digest filename; do
+            [[ "$record" == ipk ]] || continue
+            [[ "$digest" =~ ^[0-9a-f]{64}$ && "$filename" =~ ^[A-Za-z0-9+._-]+\.ipk$ ]] || {
+              echo 'prior layer has an invalid IPK attestation' >&2
+              exit 69
+            }
+            [[ -f "$feed_dir/$filename" ]] || { echo "prior layer is missing $filename" >&2; exit 69; }
+            [[ "$(sha256sum "$feed_dir/$filename" | awk '{print $1}')" == "$digest" ]] || {
+              echo "prior layer hash mismatch for $filename" >&2
+              exit 69
+            }
+          done <"$manifest"
+          target_feed='candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          find "$feed_dir" -maxdepth 1 -type f -name '*.ipk' -exec cp -- {} "$target_feed/" \;
+
       - name: Check the selected batch policy
         run: |
           set -Eeuo pipefail
+          printf 'Buildroot package-stamp cache hit: %s\n' '${{ steps.restore-package-stamps.outputs.cache-hit }}'
           for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
           bash ./tests/build-all-source-lock-policy.sh
+          bash ./tests/audacious-foundation-policy.sh
           bash ./tests/audacious-package-policy.sh
           bash ./tests/archive-package-policy.sh
+          bash ./tests/target-runtime-provider-deferral-policy.sh
+          bash ./tests/feed-overlay-composition-policy.sh
           bash ./tests/source-lock-policy.sh
           bash ./scripts/verify-source-lock.sh --repo-root . --all
+
+      - name: Preflight the reviewed GBA source archive
+        if: inputs.batch == 'games'
+        env:
+          TDVP_GBA_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r10-source-cache
+        run: bash ./tests/tdvp-gba-source-archive-policy.sh
+
+      - name: Preflight the reviewed SDL2 PulseAudio patch
+        if: inputs.batch == 'games'
+        env:
+          TDVP_SDL2_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r10-source-cache
+        run: bash ./tests/sdl2-pulseaudio-patch-policy.sh
 
       - name: Install the reviewed Go host for development-tools
         if: inputs.batch == 'development-tools'
@@ -344,13 +484,38 @@ jobs:
           test "$(riscv64-linux-gnu-g++ -dumpversion | cut -d. -f1)" -ge 10
           command -v qemu-riscv64
 
+      - name: Materialize the private Audacious foundation layer
+        if: inputs.batch == 'audacious-foundation'
+        run: |
+          set -Eeuo pipefail
+          build_output="${RUNNER_TEMP}/tdvp-k230-sdk/output/$TDVP_PROFILE"
+          export TDVP_AUDACIOUS_BUILDROOT_OUTPUT="$build_output"
+          export TDVP_BUILDROOT_BASE_DOWNLOAD_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl"
+          export TDVP_AUDACIOUS_FOUNDATION_EVIDENCE_DIR=candidate-foundation-evidence
+          bash ./scripts/prepare-audacious-foundation.sh \
+            --platform tdvp-k230-r1 --sdk-root "$build_output/host"
+          test -s candidate-foundation-evidence/tdvp-audacious-foundation.tsv
+
       - name: Build only the selected package dependency closure
+        if: inputs.batch != 'audacious-foundation'
         run: |
           set -Eeuo pipefail
           case "${{ inputs.batch }}" in
             archive)
               package_args=(--package archive-tools)
               expected_packages=(libbz2 liblzma libzstd archive-tools)
+              ;;
+            audacious-core)
+              package_args=(--package audacious-core --export-staging candidate-staging)
+              expected_packages=(audacious-core)
+              ;;
+            audacious-plugins)
+              package_args=(--import-staging "${RUNNER_TEMP}/tdvp-audacious-import" --provided-package audacious-core --package audacious-plugins --export-staging candidate-staging)
+              expected_packages=(audacious-core audacious-plugins)
+              ;;
+            audacious-app)
+              package_args=(--import-staging "${RUNNER_TEMP}/tdvp-audacious-import" --provided-package audacious-core --provided-package audacious-plugins --package audacious --export-staging candidate-staging)
+              expected_packages=(audacious-core audacious-plugins audacious)
               ;;
             audacious)
               package_args=(--package audacious)
@@ -359,6 +524,27 @@ jobs:
             network-tools)
               package_args=(--package curl --package wget --package rsync --package iperf3 --package lsof --package netcat --package htop --package nano --package dialog --package ncdu --package pv --package tmux)
               expected_packages=(curl wget rsync iperf3 lsof netcat htop nano dialog ncdu pv tmux)
+              ;;
+            netsurf)
+              # Keep the first real image-provider installation proof narrow:
+              # NetSurf is a reusable immutable payload, so this batch only
+              # rebuilds its control archive against the r10 runtime graph.
+              package_args=(--package tdvp-netsurf)
+              expected_packages=(tdvp-netsurf)
+              ;;
+            media)
+              # Repackage the image-owned MPV payload with provider-aware
+              # dependencies.  Keep it separate from Vim so one media fix
+              # never turns into an unrelated desktop-tools rebuild.
+              package_args=(--package tdvp-mpv)
+              expected_packages=(tdvp-mpv)
+              ;;
+            games)
+              # This is the complete user-visible GBA closure.  Rebuilding
+              # the leaf and its own feed libraries together gives every
+              # dependency a coherent, upgradeable package revision.
+              package_args=(--package sdl2 --package sdl2-ttf --package libmgba --package tdvp-gba)
+              expected_packages=(sdl2 sdl2-ttf libmgba tdvp-gba)
               ;;
             desktop-tools)
               package_args=(--package vim --package vim-plugin-gitgutter --package tdvp-mpv --package tdvp-netsurf)
@@ -388,12 +574,61 @@ jobs:
           export TDVP_BUILDROOT_BASE_DOWNLOAD_DIR="${RUNNER_TEMP}/tdvp-k230-sdk/dl"
           export TDVP_NODE22_SOURCE_CACHE="${RUNNER_TEMP}/tdvp-r10-source-cache/nodejs"
 
+          # The cached Buildroot host tree can contain a staging sysroot
+          # symlink pointing at the temporary directory used by the runner
+          # that created the cache.  Remove only that stale link.  A real
+          # cached sysroot contains the external-toolchain startup objects
+          # needed by package configure/link tests and must be preserved.
+          staging_arch_dir="$build_output/host/riscv64-buildroot-linux-gnu"
+          staging_sysroot="$staging_arch_dir/sysroot"
+          if [[ -L "$staging_arch_dir" ]]; then
+            rm -f -- "$staging_arch_dir"
+          fi
+          mkdir -p -- "$staging_sysroot"
+          while IFS= read -r -d '' cached_link; do
+            rm -f -- "$cached_link"
+          done < <(find "$build_output/host" -type l -lname '/tmp/*' -print0)
+          test -d "$staging_sysroot"
+
+          overlay_root="${RUNNER_TEMP}/tdvp-wayland-sdk-overlay"
+          if [[ '${{ steps.restore-wayland-sdk-overlay.outputs.cache-hit }}' != true ]]; then
+            # The compact SDK cache retains target runtime libraries but does
+            # not guarantee every source archive is retained. The SDK cache
+            # can retain a Buildroot download stamp after its archive was
+            # excluded, so fetch the exact Buildroot-locked FreeType archive
+            # explicitly. This writes only the temporary download cache; it
+            # never configures, compiles, or installs into target/.
+            freetype_archive="${RUNNER_TEMP}/tdvp-k230-sdk/dl/freetype-2.13.3.tar.xz"
+            if [[ ! -f "$freetype_archive" ]]; then
+              curl --fail --location --proto '=https' --tlsv1.2 --retry 3 \
+                --output "$freetype_archive" \
+                'https://download.savannah.gnu.org/releases/freetype/freetype-2.13.3.tar.xz'
+            fi
+            printf '%s  %s\n' \
+              '0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289' \
+              "$freetype_archive" | sha256sum --check --status
+            bash ./scripts/prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$overlay_root"
+          fi
+          export TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay_root"
+          # Validate the generated bridge before starting a package build so a
+          # missing development view fails in seconds rather than after a
+          # cross-compiled dependency closure has consumed build capacity.
+          # shellcheck source=/dev/null
+          source ./scripts/tdvp-k230-sdk.sh
+          tdvp_require_wayland_sdk_overlay
+
           # Only selected SHA-256-locked source inputs are fetched. The result
           # is an unsigned partial candidate; it does not publish a release.
           bash ./scripts/build-all.sh \
             --platform tdvp-k230-r1 --release r10 \
             --output candidate-dist --source-cache "${RUNNER_TEMP}/tdvp-r10-source-cache" \
             --require-source-locks --reuse-runtime-catalog "${package_args[@]}"
+
+          case "${{ inputs.batch }}" in
+            audacious-core|audacious-plugins|audacious-app)
+              test -s candidate-staging/tdvp-build-staging-manifest.tsv
+              ;;
+          esac
 
           feed_dir='candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
           test -s "$feed_dir/Packages"
@@ -402,6 +637,18 @@ jobs:
             grep -Eq "^Package: ${package}$" "$feed_dir/Packages"
           done
           bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
+          runtime_feed="${RUNNER_TEMP}/tdvp-r10-runtime-base/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64"
+          provider_map="$runtime_feed/.tdvp-image-runtime-providers.tsv"
+          test -s "$provider_map"
+          bash ./scripts/verify-image-provider-alternatives.sh \
+            --platform tdvp-k230-r1 \
+            --provider-map "$provider_map" \
+            "$feed_dir"
+          # build-all consumes the map while it writes control archives but
+          # does not retain hidden catalogue evidence in its final directory.
+          # Preserve the exact reviewed map alongside this artifact so a later
+          # multi-batch merge can re-run the same release gate.
+          cp "$provider_map" "$feed_dir/.tdvp-image-runtime-providers.tsv"
 
           manifest='candidate-dist/tdvp-batch-manifest.tsv'
           {
@@ -419,11 +666,44 @@ jobs:
           } >"$manifest"
           test -s "$manifest"
 
+      # A successful batch has now materialized the dependency closure and its
+      # completion stamps.  Persist those stamps for the next batch; cache
+      # entries are immutable, so the first successful batch seeds the shared
+      # key and later batches can reuse it.
+      - name: Save the materialized Buildroot package stamps
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.br_*
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-package-stamps
+
+      - name: Save the firmware-matched Wayland development bridge
+        if: success() && steps.restore-wayland-sdk-overlay.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/tdvp-wayland-sdk-overlay
+          key: ${{ env.TDVP_SDK_CACHE_KEY }}-wayland-sdk-overlay-${{ env.TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA }}-${{ hashFiles('scripts/prepare-tdvp-wayland-sdk-overlay.sh', 'scripts/tdvp-k230-sdk.sh') }}
+
       - name: Upload the unsigned incremental batch
+        if: inputs.batch != 'audacious-foundation'
         uses: actions/upload-artifact@v4
         with:
           name: tdvp-k230-r10-${{ inputs.batch }}-unsigned-${{ github.sha }}
-          path: candidate-dist
+          path: |
+            candidate-dist
+            candidate-staging
+          if-no-files-found: error
+          retention-days: 14
+          include-hidden-files: true
+
+      - name: Upload the Audacious foundation evidence
+        if: inputs.batch == 'audacious-foundation'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdvp-k230-r10-audacious-foundation-state-${{ github.sha }}
+          path: candidate-foundation-evidence
           if-no-files-found: error
           retention-days: 14
 
@@ -440,7 +720,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: vicliu624/t-display-k230-vision-platform
-          ref: bae5c6e65c8f3b92eb912153ba2681f9e50308e0
+          ref: 23f210938e4882dbe3663840259c2520868f3b8b
           path: firmware
           submodules: recursive
           fetch-depth: 1
@@ -465,6 +745,7 @@ jobs:
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/.config.old
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/Makefile
+            ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/host
             ${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/target
           key: ${{ env.TDVP_SDK_CACHE_KEY }}
@@ -482,7 +763,7 @@ jobs:
             exit 64
           }
 
-          incoming_root="$RUNNER_TEMP/tdvp-r10-incoming"
+          incoming_root="${RUNNER_TEMP}/tdvp-r10-incoming"
           merged_feed="candidate-merged/$expected_release_path"
           mkdir -p "$incoming_root" "$merged_feed"
           IFS=',' read -r -a run_ids <<< "$TDVP_SOURCE_RUN_IDS"
@@ -496,7 +777,7 @@ jobs:
             run_dir="$incoming_root/$run_id"
             mkdir -p "$run_dir"
             mapfile -t artifacts < <(
-              gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json artifacts \
+              gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts" \
                 --jq '.artifacts[].name | select(test("^tdvp-k230-r10-.*-unsigned-"))'
             )
             [[ ${#artifacts[@]} -eq 1 ]] || {
@@ -551,11 +832,17 @@ jobs:
         run: |
           set -Eeuo pipefail
           feed_dir='candidate-merged/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          incoming_root="${RUNNER_TEMP}/tdvp-r10-incoming"
           build_output="${RUNNER_TEMP}/tdvp-k230-sdk/output/$TDVP_PROFILE"
           export TDVP_SDK_ROOT="$build_output/host"
           export TDVP_FEED_BASE_ROOT="$build_output/target"
           bash ./scripts/make-index.sh "$feed_dir"
           bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
+          provider_map=$(find "$incoming_root" -type f -name .tdvp-image-runtime-providers.tsv -print -quit)
+          [[ -n "$provider_map" ]] || { echo 'merged batches have no image-provider map' >&2; exit 72; }
+          install -m 0644 "$provider_map" "$feed_dir/.tdvp-image-runtime-providers.tsv"
+          bash ./scripts/verify-image-provider-alternatives.sh \
+            --platform tdvp-k230-r1 --provider-map "$provider_map" "$feed_dir"
           bash ./scripts/verify-runtime-closure.sh \
             --platform tdvp-k230-r1 --base-root "$TDVP_FEED_BASE_ROOT" "$feed_dir"
           bash ./scripts/verify-target-runtime-coverage.sh \
@@ -568,3 +855,4 @@ jobs:
           path: candidate-merged
           if-no-files-found: error
           retention-days: 14
+          include-hidden-files: true

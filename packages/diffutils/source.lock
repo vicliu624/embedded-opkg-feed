@@ -1,0 +1,18 @@
+# Buildroot owns the cross-compile configuration.  This record locks the
+# reviewed upstream archive consumed by its 2025.02.1 diffutils recipe.
+FORMAT_VERSION='1'
+SOURCE_TYPE='buildroot-derived'
+UPSTREAM_NAME='GNU Diffutils'
+UPSTREAM_LICENSE='GPL-3.0-or-later'
+UPSTREAM_VERSION='3.10'
+UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
+SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/diffutils/diffutils.mk'
+SOURCE_SELECTION_REASON='Buildroot 2025.02.1 provides the reviewed cross-build recipe; feed commands are private executables with frontends and do not replace BusyBox.'
+NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 diffutils.mk and diffutils.hash; no TDVP-specific patches.'
+SECURITY_STATUS='Buildroot recipe source SHA-256 is verified before candidate build; security review is release-candidate scoped.'
+VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hash'
+VERIFIED_AT='2026-09-02'
+VERIFICATION_REFERENCE='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/diffutils/diffutils.hash'
+SOURCE_ARTIFACT_1_URL='https://ftp.gnu.org/gnu/diffutils/diffutils-3.10.tar.xz'
+SOURCE_ARTIFACT_1_FILE='diffutils-3.10.tar.xz'
+SOURCE_ARTIFACT_1_SHA256='90e5e93cc724e4ebe12ede80df1634063c7a855692685919bfe60b556c9bd09e'

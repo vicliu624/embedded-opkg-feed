@@ -763,7 +763,7 @@ jobs:
             exit 64
           }
 
-          incoming_root="$RUNNER_TEMP/tdvp-r10-incoming"
+          incoming_root="${RUNNER_TEMP}/tdvp-r10-incoming"
           merged_feed="candidate-merged/$expected_release_path"
           mkdir -p "$incoming_root" "$merged_feed"
           IFS=',' read -r -a run_ids <<< "$TDVP_SOURCE_RUN_IDS"
@@ -832,6 +832,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           feed_dir='candidate-merged/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          incoming_root="${RUNNER_TEMP}/tdvp-r10-incoming"
           build_output="${RUNNER_TEMP}/tdvp-k230-sdk/output/$TDVP_PROFILE"
           export TDVP_SDK_ROOT="$build_output/host"
           export TDVP_FEED_BASE_ROOT="$build_output/target"

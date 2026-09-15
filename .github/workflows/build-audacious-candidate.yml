@@ -61,16 +61,16 @@ jobs:
           set -Eeuo pipefail
           run_policy() { local name=$1; shift; echo "POLICY_START $name"; "$@"; echo "POLICY_PASS $name"; }
           for script in scripts/*.sh tests/*.sh packages/*/build.sh; do run_policy "syntax:$script" bash -n "$script"; done
-          bash ./tests/audacious-package-policy.sh
-          bash ./tests/vim-package-policy.sh
-          bash ./tests/archive-package-policy.sh
-          bash ./tests/git-package-policy.sh
-          bash ./tests/gh-package-policy.sh
-          bash ./tests/python3-package-policy.sh
-          bash ./tests/dev-tools-package-policy.sh
-          bash ./tests/command-package-policy.sh
+          run_policy audacious bash ./tests/audacious-package-policy.sh
+          run_policy vim bash ./tests/vim-package-policy.sh
+          run_policy archive bash ./tests/archive-package-policy.sh
+          run_policy git bash ./tests/git-package-policy.sh
+          run_policy gh bash ./tests/gh-package-policy.sh
+          run_policy python3 bash ./tests/python3-package-policy.sh
+          run_policy dev-tools bash ./tests/dev-tools-package-policy.sh
+          run_policy command bash ./tests/command-package-policy.sh
           run_policy source-tools bash ./tests/source-tools-package-policy.sh
-          bash ./tests/node22-package-policy.sh
+          run_policy node22 bash ./tests/node22-package-policy.sh
           run_policy source-lock bash ./tests/source-lock-policy.sh
           run_policy build-all-source-lock bash ./tests/build-all-source-lock-policy.sh
           run_policy source-lock-all bash ./scripts/verify-source-lock.sh --repo-root . --all

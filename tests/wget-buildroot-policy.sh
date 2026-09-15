@@ -131,8 +131,9 @@ test -f "$payload_dir/usr/libexec/tdvp-wget/wget"
 test ! -L "$payload_dir/usr/libexec/tdvp-wget/wget"
 test "$(stat -c '%a' "$payload_dir/usr/libexec/tdvp-wget/wget")" = 755
 grep -Fqx 'fixture wget command' "$payload_dir/usr/libexec/tdvp-wget/wget"
-test -f "$payload_dir/usr/bin/wget"
-grep -Fqx 'exec /usr/libexec/tdvp-wget/wget "$@"' "$payload_dir/usr/bin/wget"
+test ! -e "$payload_dir/usr/bin/wget"
+test -f "$payload_dir/usr/bin/tdvp-wget"
+grep -Fqx 'exec /usr/libexec/tdvp-wget/wget "$@"' "$payload_dir/usr/bin/tdvp-wget"
 rm -f -- "$package_dir/root"
 rm -rf -- "$payload_dir"
 

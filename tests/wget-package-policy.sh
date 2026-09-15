@@ -20,6 +20,7 @@ expect_line "^PACKAGE='wget'$" "$package_dir/package.env"
 expect_line "^VERSION='1[.]25[.]0-1'$" "$package_dir/package.env"
 expect_line "^PACKAGE_KIND='application'$" "$package_dir/package.env"
 expect_line "^PACKAGE_SECTION='net'$" "$package_dir/package.env"
+expect_line "^DESCRIPTION='GNU Wget HTTPS download command for TDVP K230 \(tdvp-wget frontend\)'$" "$package_dir/package.env"
 expect_line "^PACKAGE_RELEASES='r10'$" "$package_dir/package.env"
 expect_line "^PACKAGE_DEPENDS='ca-certificates \\(= 2025[.]02[.]1-1\\), libssl-3 \\(= 3[.]4[.]1-1\\), libcrypto-3 \\(= 3[.]4[.]1-1\\), libz \\(= 1[.]3[.]1-1\\)'$" "$package_dir/package.env"
 expect_line "^PACKAGE_BUILD_DEPENDS='ca-certificates libssl-3 libcrypto-3 libz'$" "$package_dir/package.env"
@@ -37,6 +38,7 @@ expect_line 'optional PSL, GnuTLS, IDN/IRI, c-ares, PCRE, and libuuid closures a
 build_file="$package_dir/build.sh"
 expect_line 'BR2_PACKAGE_OPENSSL=y BR2_PACKAGE_LIBOPENSSL=y BR2_PACKAGE_ZLIB=y' "$build_file"
 expect_line 'WGET_VERSION = 1[.]25[.]0' "$build_file"
+expect_line "TDVP_COMMAND_FRONTEND_NAMES='wget=tdvp-wget'" "$build_file"
 expect_line "TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES='WGET_CONF_OPTS=--without-libpsl --with-ssl=openssl --disable-iri --without-libuuid --with-zlib --without-cares --disable-pcre --disable-pcre2'" "$build_file"
 if grep -Fq 'TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS=' "$build_file"; then
   echo 'Wget must use recipe-local configure options instead of changing desktop Kconfig symbols' >&2

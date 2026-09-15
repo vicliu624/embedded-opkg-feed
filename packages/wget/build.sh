@@ -30,6 +30,7 @@ source "$package_dir/../../support/buildroot-command-package.sh"
 # util-linux UUID dependencies merely because a desktop SDK enables them.
 # The desktop may legitimately enable those Kconfig symbols for other
 # programs, so pass Wget's complete reviewed configure feature set directly.
+TDVP_COMMAND_FRONTEND_NAMES='wget=tdvp-wget' \
 TDVP_COMMAND_BUILDROOT_MAKE_VARIABLES='WGET_CONF_OPTS=--without-libpsl --with-ssl=openssl --disable-iri --without-libuuid --with-zlib --without-cares --disable-pcre --disable-pcre2' \
   tdvp_buildroot_command_package "$package_dir" "$sdk_root" "$configured_output" \
     BR2_PACKAGE_WGET wget 'WGET_VERSION = 1.25.0' 'wget'

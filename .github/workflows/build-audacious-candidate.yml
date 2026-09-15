@@ -109,6 +109,7 @@ jobs:
           heartbeat() {
             while sleep 60; do
               echo "TDVP_BASE_BUILD_HEARTBEAT $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+              ps -eo pid,etime,pcpu,pmem,stat,cmd --sort=-pcpu | head -n 12 || true
             done
           }
           heartbeat &
@@ -116,8 +117,16 @@ jobs:
           trap 'kill "$heartbeat_pid" 2>/dev/null || true' EXIT
           echo "TDVP_BASE_BUILD_START $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           timeout --signal=TERM --kill-after=90s 270m \
-            bash buildroot/tools/build-k230-sdk-rm69a10.sh "$TDVP_WORKTREE"
+            bash buildroot/tools/build-k230-sdk-rm69a10.sh "$TDVP_WORKTREE" 2>&1 | tee "$RUNNER_TEMP/tdvp-base-build.log"
           echo "TDVP_BASE_BUILD_DONE $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Upload base build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdvp-base-build-diagnostics-${{ github.run_id }}
+          path: ${{ runner.temp }}/tdvp-base-build.log
+          if-no-files-found: warn
 
       - name: Install reviewed Go host for GitHub CLI source builds
         if: inputs.release == 'r9' || inputs.release == 'r10'

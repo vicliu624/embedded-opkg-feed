@@ -104,7 +104,20 @@ jobs:
 
       - name: Build the matching TDVP r1 base target
         working-directory: firmware
-        run: bash buildroot/tools/build-k230-sdk-rm69a10.sh "$TDVP_WORKTREE"
+        run: |
+          set -Eeuo pipefail
+          heartbeat() {
+            while sleep 60; do
+              echo "TDVP_BASE_BUILD_HEARTBEAT $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            done
+          }
+          heartbeat &
+          heartbeat_pid=$!
+          trap 'kill "$heartbeat_pid" 2>/dev/null || true' EXIT
+          echo "TDVP_BASE_BUILD_START $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          timeout --signal=TERM --kill-after=90s 270m \
+            bash buildroot/tools/build-k230-sdk-rm69a10.sh "$TDVP_WORKTREE"
+          echo "TDVP_BASE_BUILD_DONE $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
       - name: Install reviewed Go host for GitHub CLI source builds
         if: inputs.release == 'r9' || inputs.release == 'r10'

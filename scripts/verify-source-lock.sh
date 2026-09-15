@@ -125,7 +125,9 @@ validate_source_lock() {
     line_number=$((line_number + 1))
     line=${raw_line%$'\r'}
     [[ -z "$line" || "$line" == \#* ]] && continue
-    [[ "$line" != *"';"* ]] || die "$source_lock_path:$line_number must use the literal KEY='value' form"
+    case "$line" in
+      *"';"*) die "$source_lock_path:$line_number must use the literal KEY='value' form" ;;
+    esac
     if [[ "$line" =~ ^([A-Z][A-Z0-9_]*)=\'([^\']*)\'$ ]]; then
       key=${BASH_REMATCH[1]}
       value=${BASH_REMATCH[2]}

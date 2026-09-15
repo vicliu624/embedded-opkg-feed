@@ -67,6 +67,8 @@ sdk_stamp_path='${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/
 [[ "$(grep -Fc "$sdk_stamp_path" "$repo_root/.github/workflows/build-r10-batch-candidate.yml")" -ge 2 ]]
 incoming_root_assignment='incoming_root="${RUNNER_TEMP}/tdvp-r10-incoming"'
 [[ "$(grep -Fc "$incoming_root_assignment" "$repo_root/.github/workflows/build-r10-batch-candidate.yml")" -ge 2 ]]
+grep -Fq 'install -m 0644 "$provider_map" "$feed_dir/.tdvp-image-runtime-providers.tsv"' \
+  "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'runtime_verification=$(mktemp -d)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'cp -a -- "$runtime_feed/." "$runtime_verification/"' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'bash ./scripts/make-index.sh "$runtime_verification"' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"

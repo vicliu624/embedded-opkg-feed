@@ -840,6 +840,7 @@ jobs:
           bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
           provider_map=$(find "$incoming_root" -type f -name .tdvp-image-runtime-providers.tsv -print -quit)
           [[ -n "$provider_map" ]] || { echo 'merged batches have no image-provider map' >&2; exit 72; }
+          install -m 0644 "$provider_map" "$feed_dir/.tdvp-image-runtime-providers.tsv"
           bash ./scripts/verify-image-provider-alternatives.sh \
             --platform tdvp-k230-r1 --provider-map "$provider_map" "$feed_dir"
           bash ./scripts/verify-runtime-closure.sh \

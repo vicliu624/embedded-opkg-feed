@@ -22,6 +22,7 @@ leaf_dir="$fixture_repo/packages/curl"
 tree="$work_root/buildroot"
 output="$work_root/output"
 stage_root="$work_root/staging"
+base_root="$work_root/locked-image"
 mkdir -p -- \
   "$package_dir" \
   "$leaf_dir" \
@@ -30,7 +31,8 @@ mkdir -p -- \
   "$tree/package/libcurl" \
   "$output/host/bin" \
   "$output/target" \
-  "$stage_root"
+  "$stage_root" \
+  "$base_root/usr/bin"
 cp -- "$repo_root/support/buildroot-feed-session.sh" "$fixture_repo/support/"
 cp -- "$repo_root/support/elf-runtime-policy.sh" "$fixture_repo/support/"
 cp -- "$repo_root/support/source-archive-library.sh" "$fixture_repo/support/"
@@ -110,6 +112,8 @@ case "$1" in
 esac
 EOF
 chmod 0755 "$output/host/bin/riscv64-unknown-linux-gnu-readelf"
+printf 'fixture locked image curl command\n' >"$base_root/usr/bin/curl"
+chmod 0755 -- "$base_root/usr/bin/curl"
 printf 'ORIGINAL_CONFIG=y\n' >"$output/.config"
 config_hash=$(sha256sum "$output/.config" | awk '{print $1}')
 
@@ -130,13 +134,13 @@ grep -Fqx 'fixture curl command' "$stage_root/usr/bin/curl"
 expected_marker=$'format=1\nsource-package=libcurl-4\nbuildroot-package=libcurl\ncommand=/usr/bin/curl'
 [[ "$(cat "$stage_root/.tdvp-buildroot-command-libcurl-curl")" == "$expected_marker" ]]
 
-TDVP_FEED_STAGING_ROOT="$stage_root" \
+TDVP_FEED_STAGING_ROOT="$stage_root" TDVP_FEED_BASE_ROOT="$base_root" \
   bash "$leaf_dir/build.sh" --platform tdvp-k230-r1 --sdk-root "$output/host"
 leaf_payload=$(readlink -f -- "$leaf_dir/root")
 test -f "$leaf_payload/usr/bin/curl"
 test ! -L "$leaf_payload/usr/bin/curl"
 test "$(stat -c '%a' "$leaf_payload/usr/bin/curl")" = 755
-cmp -s "$stage_root/usr/bin/curl" "$leaf_payload/usr/bin/curl"
+cmp -s "$base_root/usr/bin/curl" "$leaf_payload/usr/bin/curl"
 
 if TDVP_FEED_STAGING_ROOT="$stage_root" \
   tdvp_build_archive_library "$package_dir" "$output/host" '' \

@@ -76,6 +76,7 @@ for argument in "$@"; do
   fi
   case "$argument" in
     TARGET_DIR=*) target_root=${argument#TARGET_DIR=} ;;
+    RSYNC_CONF_OPTS=*) printf '%s\n' "$argument" >>"$output/.tdvp-make-vars.log" ;;
   esac
   previous=$argument
 done
@@ -120,14 +121,15 @@ bash "$package_dir/build.sh" --platform tdvp-k230-r1 --sdk-root "$output/host"
 [[ "$(sha256sum "$output/.config" | awk '{print $1}')" == "$config_hash" ]]
 for record in \
   enable:BR2_PACKAGE_BUSYBOX_SHOW_OTHERS \
-  enable:BR2_PACKAGE_RSYNC \
-  disable:BR2_PACKAGE_ACL \
-  disable:BR2_PACKAGE_LZ4 \
-  disable:BR2_PACKAGE_OPENSSL \
-  disable:BR2_PACKAGE_XXHASH \
-  disable:BR2_PACKAGE_ZSTD; do
+  enable:BR2_PACKAGE_RSYNC; do
   grep -Fqx "$record" "$output/.tdvp-kconfig.log"
 done
+if grep -Fq 'disable:' "$output/.tdvp-kconfig.log"; then
+  echo 'rsync must not disable firmware-wide Kconfig symbols' >&2
+  exit 1
+fi
+grep -Fqx 'RSYNC_CONF_OPTS=--with-included-zlib=no --with-included-popt=no --disable-roll-simd --disable-md5-asm --disable-acl-support --disable-lz4 --disable-openssl --disable-xxhash --disable-zstd' \
+  "$output/.tdvp-make-vars.log"
 payload_dir=$(readlink -f -- "$package_dir/root")
 test -f "$payload_dir/usr/libexec/tdvp-rsync/rsync"
 test ! -L "$payload_dir/usr/libexec/tdvp-rsync/rsync"

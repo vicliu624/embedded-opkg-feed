@@ -8,7 +8,10 @@ grep -Fqx "PACKAGE_KIND='shared-library'" "$repo_root/packages/libevent/package.
 grep -Fqx "PACKAGE='tmux'" "$repo_root/packages/tmux/package.env"
 grep -Fqx "PACKAGE_DEPENDS='libevent (= 2.1.12-1), libncursesw (= 6.4-20230603-1)'" "$repo_root/packages/tmux/package.env"
 grep -Fq "'libevent*.so.7*'" "$repo_root/packages/libevent/build.sh"
-grep -Fq 'BR2_PACKAGE_OPENSSL' "$repo_root/packages/libevent/build.sh"
+if grep -Eq 'BR2_PACKAGE_OPENSSL[[:space:]]*=' "$repo_root/packages/libevent/build.sh"; then
+  echo 'libevent must not rewrite the firmware-wide OpenSSL Kconfig selection' >&2
+  exit 1
+fi
 grep -Fq "LIBEVENT_CONF_OPTS=--disable-libevent-regress --disable-samples --disable-openssl" "$repo_root/packages/libevent/build.sh"
 grep -Fq "LIBEVENT_DEPENDENCIES='" "$repo_root/packages/libevent/build.sh"
 grep -Fq 'archive-library --make-variable requires one safe NAME=value assignment' "$repo_root/support/buildroot-archive-library.sh"

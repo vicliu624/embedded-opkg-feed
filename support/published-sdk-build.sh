@@ -116,8 +116,15 @@ EOF
       while read -r patch_name _; do
         [[ -z "$patch_name" || "$patch_name" == \#* ]] || patch -p1 <"debian/patches/$patch_name"
       done <debian/patches/series
-      make -f unix/Makefile generic CC="$CC" LD="$CC" CF="$CFLAGS -DUNIX" LF="$LDFLAGS"
-      install -Dm0755 unzip "$install_root/usr/bin/unzip"
+      # Like zip, UnZip's generic configure executes target conftest
+      # programs. Supply the reviewed Linux/glibc feature set directly.
+      unzip_cf="-I. -Ibzip2 -DUNIX -DUNICODE_SUPPORT -DUTF8_MAYBE_NATIVE -D_MBCS -DHAVE_DIRENT_H -DHAVE_TERMIOS_H $CFLAGS"
+      make -f unix/Makefile unzips CC="$CC" LD="$CC" CF="$unzip_cf" \
+        LF="-o unzip" LF2="$LDFLAGS" \
+        FL="-o funzip" FL2="$LDFLAGS" \
+        SL="-o unzipsfx" SL2="$LDFLAGS"
+      make -f unix/Makefile prefix="$install_root/usr" BINDIR="$install_root/usr/bin" \
+        MANDIR="$install_root/usr/share/man/man1" install
       ;;
     p7zip)
       cp makefile.linux_any_cpu_gcc_4.X makefile.machine

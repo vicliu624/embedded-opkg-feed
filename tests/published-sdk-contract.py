@@ -40,6 +40,13 @@ class PublishedSdkContract(unittest.TestCase):
         self.assertIn("make -f unix/Makefile zips", zip_builder)
         self.assertNotIn("generic", zip_builder)
 
+    def test_legacy_unzip_never_executes_cross_compiled_probes(self):
+        builder = (ROOT / "support/published-sdk-build.sh").read_text()
+        unzip_builder = builder.split("    unzip)\n", 1)[1].split("    p7zip)\n", 1)[0]
+        self.assertIn("-DHAVE_DIRENT_H", unzip_builder)
+        self.assertIn("make -f unix/Makefile unzips", unzip_builder)
+        self.assertNotIn("make -f unix/Makefile generic", unzip_builder)
+
     def test_source_builds_use_the_sdk_stable_optimization_path(self):
         builder = (ROOT / "support/published-sdk-build.sh").read_text()
         self.assertIn('CFLAGS="$CFLAGS -fPIC -fno-shrink-wrap -O1"', builder)

@@ -215,10 +215,10 @@ from pathlib import PurePosixPath
 
 target_root, build_dir = map(os.path.realpath, sys.argv[1:3])
 claims = defaultdict(set)
-package_re = re.compile(r"[a-z0-9][a-z0-9+_.-]*\\Z")
+package_re = re.compile(r"[a-z0-9][a-z0-9+_.-]*\Z")
 
 def normalized_target_path(raw):
-    raw = raw.strip().replace("\\\\", "/")
+    raw = raw.strip().replace("\\", "/")
     if not raw or raw.startswith("/"):
         return None
     path = PurePosixPath(raw)
@@ -252,7 +252,7 @@ for current_root, _, files in os.walk(build_dir):
 
 for relative, owners in sorted(claims.items()):
     if len(owners) == 1:
-        print(f"{relative}\\t{owners.pop()}")
+        print(f"{relative}\t{owners.pop()}")
 PY
   )
   [[ ${#image_path_owner[@]} -gt 0 ]] || {

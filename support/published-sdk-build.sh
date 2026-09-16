@@ -128,7 +128,14 @@ EOF
       ;;
     p7zip)
       cp makefile.linux_any_cpu_gcc_4.X makefile.machine
-      make -j"$jobs" all2 CC="$CC" CXX="$CXX" CC_SHARED="$CC -fPIC" CXX_SHARED="$CXX -fPIC"
+      # p7zip concatenates CC/CXX into several intermediate command lines.
+      # They must be compiler paths, while sysroot and hardening settings go
+      # through the Buildroot-supported ALLFLAGS variables.
+      p7_cc="$sdk_root/bin/riscv64-unknown-linux-gnu-gcc"
+      p7_cxx="$sdk_root/bin/riscv64-unknown-linux-gnu-g++"
+      p7_flags="--sysroot=$sysroot $CFLAGS"
+      make -j"$jobs" 7za CC="$p7_cc" CXX="$p7_cxx" \
+        ALLFLAGS_C="$p7_flags" ALLFLAGS_CPP="$p7_flags" LDFLAGS="$LDFLAGS"
       install -Dm0755 bin/7za "$install_root/usr/bin/7za"
       ;;
     ca-certificates)

@@ -51,6 +51,14 @@ class PublishedSdkContract(unittest.TestCase):
         builder = (ROOT / "support/published-sdk-build.sh").read_text()
         self.assertIn('CFLAGS="$CFLAGS -fPIC -fno-shrink-wrap -O1"', builder)
 
+    def test_p7zip_receives_a_compiler_path_and_separate_flags(self):
+        builder = (ROOT / "support/published-sdk-build.sh").read_text()
+        p7zip_builder = builder.split("    p7zip)\n", 1)[1].split("    ca-certificates)\n", 1)[0]
+        self.assertIn('p7_cc="$sdk_root/bin/riscv64-unknown-linux-gnu-gcc"', p7zip_builder)
+        self.assertIn('ALLFLAGS_C="$p7_flags"', p7zip_builder)
+        self.assertIn('make -j"$jobs" 7za', p7zip_builder)
+        self.assertNotIn('all2', p7zip_builder)
+
     @unittest.skipUnless(shutil.which("mke2fs") and shutil.which("debugfs"), "e2fsprogs required")
     def test_extract_and_validate_named_root_partition(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -36,6 +36,7 @@ class PublishedSdkContract(unittest.TestCase):
         zip_builder = builder.split("    zip)\n", 1)[1].split("    unzip)\n", 1)[0]
         self.assertIn("-DUIDGID_NOT_16BIT", zip_builder)
         self.assertIn("-DLARGE_FILE_SUPPORT", zip_builder)
+        self.assertIn("OCRCU8='crc32_.o'", zip_builder)
         self.assertIn("make -f unix/Makefile zips", zip_builder)
         self.assertNotIn("generic", zip_builder)
 

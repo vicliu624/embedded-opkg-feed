@@ -104,7 +104,8 @@ EOF
       zip_cflags="-I. -DUNIX -DUIDGID_NOT_16BIT -DLARGE_FILE_SUPPORT -DUNICODE_SUPPORT -DHAVE_DIRENT_H -DHAVE_TERMIOS_H $CFLAGS"
       make -f unix/Makefile zips CC="$CC" CPP="$CC -E" CFLAGS="$zip_cflags" \
         LFLAGS1='' LFLAGS2="$LDFLAGS -lbz2" LN='ln -s' \
-        CC_BZ="$CC" CFLAGS_BZ="$CFLAGS" IZ_BZIP2='' LIB_BZ=''
+        CC_BZ="$CC" CFLAGS_BZ="$CFLAGS" IZ_BZIP2='' LIB_BZ='' \
+        OCRCU8='crc32_.o' OCRCTB=''
       make -f unix/Makefile prefix="$install_root/usr" BINDIR="$install_root/usr/bin" \
         MANDIR="$install_root/usr/share/man/man1" install
       ;;

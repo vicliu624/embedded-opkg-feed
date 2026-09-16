@@ -62,6 +62,7 @@ jobs:
           run_policy() { local name=$1; shift; echo "POLICY_START $name"; "$@"; echo "POLICY_PASS $name"; }
           for script in scripts/*.sh tests/*.sh packages/*/build.sh; do run_policy "syntax:$script" bash -n "$script"; done
           run_policy audacious bash ./tests/audacious-package-policy.sh
+          run_policy wayland-sdk-overlay bash ./tests/tdvp-wayland-sdk-overlay-protocols.sh
           run_policy vim bash ./tests/vim-package-policy.sh
           run_policy archive bash ./tests/archive-package-policy.sh
           run_policy git bash ./tests/git-package-policy.sh

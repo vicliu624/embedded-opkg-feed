@@ -70,6 +70,11 @@ find_freetype_headers_dir() {
   local dl_root archive expected_sha actual_sha source_root
   dl_root=${TDVP_BUILDROOT_BASE_DOWNLOAD_DIR:-"$build_root/../../dl"}
   archive=${TDVP_FREETYPE_SOURCE_ARCHIVE:-"$dl_root/freetype-2.13.3.tar.xz"}
+  # Full Buildroot builds use a per-package download directory. Keep the flat
+  # incremental-cache layout and explicit archive override working as before.
+  if [[ -z "${TDVP_FREETYPE_SOURCE_ARCHIVE:-}" && ! -f "$archive" ]]; then
+    archive="$dl_root/freetype/freetype-2.13.3.tar.xz"
+  fi
   expected_sha=${TDVP_FREETYPE_SOURCE_SHA256:-0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289}
   [[ -f "$archive" ]] || die "locked FreeType source archive is missing: $archive"
   actual_sha=$(sha256sum -- "$archive" | awk '{print $1}')

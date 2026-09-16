@@ -31,6 +31,18 @@ class PublishedSdkContract(unittest.TestCase):
         self.assertLess(content.index('cmp "$cache/tdvp-sdk-manifest.json"'), content.index('verify-sdk.py'))
         self.assertIn('fetch "$SDK_IMAGE_ARCHIVE" "$SDK_IMAGE_SHA256"', content)
 
+    def test_legacy_zip_never_executes_cross_compiled_probes(self):
+        builder = (ROOT / "support/published-sdk-build.sh").read_text()
+        zip_builder = builder.split("    zip)\n", 1)[1].split("    unzip)\n", 1)[0]
+        self.assertIn("-DUIDGID_NOT_16BIT", zip_builder)
+        self.assertIn("-DLARGE_FILE_SUPPORT", zip_builder)
+        self.assertIn("make -f unix/Makefile zips", zip_builder)
+        self.assertNotIn("generic", zip_builder)
+
+    def test_source_builds_use_the_sdk_stable_optimization_path(self):
+        builder = (ROOT / "support/published-sdk-build.sh").read_text()
+        self.assertIn('CFLAGS="$CFLAGS -fPIC -fno-shrink-wrap -O1"', builder)
+
     @unittest.skipUnless(shutil.which("mke2fs") and shutil.which("debugfs"), "e2fsprogs required")
     def test_extract_and_validate_named_root_partition(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -28,7 +28,10 @@ tdvp_sdk_install() (
   source "$sdk_root/environment-setup.sh"
   sysroot="$work/sysroot"
   export CC="$CC --sysroot=$sysroot" CXX="$CXX --sysroot=$sysroot"
-  export CFLAGS="$CFLAGS -fPIC -fno-shrink-wrap" CXXFLAGS="$CXXFLAGS -fPIC -fno-shrink-wrap"
+  # Xuantie GCC 14.1.1 has reproducible cfgcleanup ICEs in several older
+  # upstreams at -O2/-O3. Preserve the SDK ABI and hardening policy while
+  # using its stable -O1 code-generation path for newly built feed payloads.
+  export CFLAGS="$CFLAGS -fPIC -fno-shrink-wrap -O1" CXXFLAGS="$CXXFLAGS -fPIC -fno-shrink-wrap -O1"
   export PKG_CONFIG_SYSROOT_DIR="$sysroot"
   export PKG_CONFIG_LIBDIR="$sysroot/usr/lib/pkgconfig:$sysroot/usr/share/pkgconfig"
   export PKG_CONFIG=$(command -v /usr/bin/pkg-config)
@@ -95,8 +98,15 @@ EOF
       make prefix=/usr PREFIX=/usr DESTDIR="$install_root" ENABLE_NLS= install
       ;;
     zip)
-      make -f unix/Makefile generic CC="$CC" CPP="$CC -E" CFLAGS="$CFLAGS" LFLAGS1="$LDFLAGS"
-      make -f unix/Makefile prefix=/usr BINDIR=/usr/bin MANDIR=/usr/share/man/man1 DESTDIR="$install_root" install
+      # Info-ZIP 3.0's Unix configure script runs target conftest binaries.
+      # Supply the reviewed Linux/glibc cross values directly, so it cannot
+      # misdiagnose libc functions after an exec-format failure.
+      zip_cflags="-I. -DUNIX -DUIDGID_NOT_16BIT -DLARGE_FILE_SUPPORT -DUNICODE_SUPPORT -DHAVE_DIRENT_H -DHAVE_TERMIOS_H $CFLAGS"
+      make -f unix/Makefile zips CC="$CC" CPP="$CC -E" CFLAGS="$zip_cflags" \
+        LFLAGS1='' LFLAGS2="$LDFLAGS -lbz2" LN='ln -s' \
+        CC_BZ="$CC" CFLAGS_BZ="$CFLAGS" IZ_BZIP2='' LIB_BZ=''
+      make -f unix/Makefile prefix="$install_root/usr" BINDIR="$install_root/usr/bin" \
+        MANDIR="$install_root/usr/share/man/man1" install
       ;;
     unzip)
       local debian_archive patch_name

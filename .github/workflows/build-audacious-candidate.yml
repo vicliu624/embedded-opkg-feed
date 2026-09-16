@@ -60,6 +60,7 @@ jobs:
         run: |
           for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
           bash ./tests/audacious-package-policy.sh
+          bash ./tests/tdvp-wayland-sdk-overlay-protocols.sh
           bash ./tests/vim-package-policy.sh
           bash ./tests/archive-package-policy.sh
           bash ./tests/git-package-policy.sh

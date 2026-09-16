@@ -10,7 +10,7 @@ temporary=$(mktemp -d)
 cleanup() { rm -rf -- "$temporary"; }
 trap cleanup EXIT
 
-output="$temporary/output"
+output="$temporary/output/profile"
 sysroot="$output/host/riscv64-buildroot-linux-gnu/sysroot"
 include="$sysroot/usr/include"
 lib="$sysroot/usr/lib"
@@ -56,3 +56,39 @@ TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay"
 tdvp_require_wayland_sdk_overlay
 
 echo 'Wayland SDK overlay protocol bridge: PASS'
+
+# A full Buildroot build stores downloads below the package name, unlike the
+# flat archive cache prepared by the incremental candidate workflow.
+mkdir -p "$temporary/dl/freetype"
+mv "$temporary/dl/freetype-2.13.3.tar.xz" "$temporary/dl/freetype/"
+TDVP_FREETYPE_SOURCE_SHA256="$freetype_sha" \
+  bash "$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh" \
+    "$output" "$temporary/buildroot-overlay"
+cmp "$overlay/include/freetype/freetype.h" "$temporary/buildroot-overlay/include/freetype/freetype.h"
+
+echo 'Wayland SDK overlay Buildroot download layout: PASS'
+
+# An explicit archive is authoritative, even if a valid default exists.
+if TDVP_FREETYPE_SOURCE_ARCHIVE="$temporary/missing.tar.xz" \
+  TDVP_FREETYPE_SOURCE_SHA256="$freetype_sha" \
+  bash "$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh" \
+    "$output" "$temporary/override-overlay" >"$temporary/error.log" 2>&1; then
+  echo 'missing explicit archive unexpectedly accepted' >&2
+  exit 1
+fi
+grep -Fq 'locked FreeType source archive is missing:' "$temporary/error.log"
+
+if TDVP_FREETYPE_SOURCE_SHA256=invalid \
+  bash "$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh" \
+    "$output" "$temporary/invalid-overlay" >"$temporary/error.log" 2>&1; then
+  echo 'archive with incorrect digest unexpectedly accepted' >&2
+  exit 1
+fi
+grep -Fq 'locked FreeType source archive digest differs:' "$temporary/error.log"
+
+mv "$temporary/dl/freetype/freetype-2.13.3.tar.xz" "$temporary/dl/"
+TDVP_FREETYPE_SOURCE_SHA256="$freetype_sha" \
+  bash "$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh" \
+    "$output" "$temporary/flat-overlay"
+cmp "$overlay/include/ft2build.h" "$temporary/flat-overlay/include/ft2build.h"
+echo 'Wayland SDK overlay archive selection and integrity: PASS'

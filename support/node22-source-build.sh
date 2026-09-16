@@ -132,12 +132,17 @@ tdvp_build_node22_to_stage() {
   # shellcheck source=source-archive-library.sh
   source "$package_dir/../../support/source-archive-library.sh"
   tdvp_require_k230_sdk "$sdk_root"
-  output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
+  if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+    output=
+  else
+    output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
+  fi
   cross_cc=${cross_cc:-"$TDVP_K230_HOST_DIR/bin/riscv64-unknown-linux-gnu-gcc"}
   cross_cxx=${cross_cxx:-"$TDVP_K230_HOST_DIR/bin/riscv64-unknown-linux-gnu-g++"}
   cross_ar=${cross_ar:-"$TDVP_K230_HOST_DIR/bin/riscv64-unknown-linux-gnu-gcc-ar"}
   cross_ranlib=${cross_ranlib:-"$TDVP_K230_HOST_DIR/bin/riscv64-unknown-linux-gnu-gcc-ranlib"}
   host_python=${TDVP_NODE22_HOST_PYTHON:-"$TDVP_K230_HOST_DIR/bin/python3.13"}
+  [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]] || host_python=$(command -v python3)
   host_cc=${TDVP_NODE22_HOST_CC:-$(command -v gcc-10 2>/dev/null || command -v gcc)}
   host_cxx=${TDVP_NODE22_HOST_CXX:-$(command -v g++-10 2>/dev/null || command -v g++)}
   if [[ -z "$qemu" ]]; then
@@ -147,6 +152,7 @@ tdvp_build_node22_to_stage() {
   fi
   stage_root=$TDVP_FEED_STAGING_ROOT
   target_pkg_config="$TDVP_K230_HOST_DIR/bin/pkg-config"
+  [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]] || target_pkg_config=$(command -v pkg-config)
   [[ -x "$target_pkg_config" ]] || {
     echo "Node 22 requires the matching Buildroot target pkg-config wrapper: $target_pkg_config" >&2
     return 83
@@ -163,8 +169,11 @@ tdvp_build_node22_to_stage() {
     return 84
   }
   host_icu_root="$output/build/host-icu-73-2/source"
+  [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]] || host_icu_root="$stage_root/.tdvp-native/icu"
   host_icu_libdir="$host_icu_root/lib"
-  for required in "$host_icu_root/common/unicode/utypes.h" \
+  local host_icu_header="$host_icu_root/common/unicode/utypes.h"
+  [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]] || host_icu_header="$host_icu_root/include/unicode/utypes.h"
+  for required in "$host_icu_header" \
     "$host_icu_libdir/libicui18n.so" "$host_icu_libdir/libicuuc.so" "$host_icu_libdir/libicudata.so"; do
     [[ -e "$required" ]] || { echo "Node 22 requires the matching Buildroot host ICU 73.2 input: $required" >&2; return 85; }
   done
@@ -261,7 +270,7 @@ EOF
   # would make those host tools parse the RISC-V sysroot headers.
   target_flags="--sysroot=$TDVP_K230_SYSROOT -I$stage_root/usr/include -march=rv64gc -mabi=lp64d -O2 -pipe -fPIC"
   target_ldflags="--sysroot=$TDVP_K230_SYSROOT -Wl,-rpath-link,$TDVP_K230_SYSROOT/usr/lib -static-libstdc++ -static-libgcc"
-  if grep -Fqx 'BR2_TOOLCHAIN_HAS_LIBATOMIC=y' "$output/.config"; then
+  if [[ -e "$TDVP_K230_SYSROOT/usr/lib/libatomic.so" ]] || grep -Fqx 'BR2_TOOLCHAIN_HAS_LIBATOMIC=y' "$output/.config" 2>/dev/null; then
     target_ldflags="$target_ldflags -latomic"
   fi
   # This path is inspected after the build sub-shell exits.  Define it in the
@@ -296,6 +305,7 @@ EOF
     # produced by the same locked Buildroot ICU source transaction, while the
     # RISC-V target toolset gets its ICU headers/libraries only from staging.
     export TDVP_NODE22_HOST_ICU_INCLUDE="$host_icu_root/common:$host_icu_root/i18n"
+    [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]] || export TDVP_NODE22_HOST_ICU_INCLUDE="$host_icu_root/include"
     export TDVP_NODE22_HOST_ICU_LIBRARIES="-L$host_icu_libdir -licui18n -licuuc -licudata"
     export TDVP_NODE22_HOST_LIBUV_LIBRARIES="$host_uv_library -ldl -lrt"
     export LD_LIBRARY_PATH="$host_icu_libdir${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"

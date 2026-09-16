@@ -38,6 +38,7 @@ jobs:
           bash ./tests/audacious-package-policy.sh
           bash ./tests/tdvp-wayland-sdk-overlay-protocols.sh
           python3 ./tests/buildroot-image-ownership.py
+          python3 ./tests/published-sdk-contract.py
           bash ./tests/reuse-published-ipk-payload-policy.sh
           bash ./tests/feed-overlay-composition-policy.sh
           bash ./tests/vim-package-policy.sh

@@ -382,6 +382,9 @@ register_planned_data_file() {
   local package=$2
   local allow_existing=$3
   local relative=${source#"$target_root"}
+  # The inventory cannot hash itself. It belongs to the immutable image's
+  # identity, not a distributable runtime-data package.
+  [[ "$relative" != /usr/share/tdvp/opkg/image-base.json ]] || return 1
   if [[ -n "${planned_data_paths[$relative]:-}" ]]; then
     if [[ "$allow_existing" == 1 ]]; then
       return 1
@@ -642,6 +645,7 @@ copy_selector() {
   if [[ "$selector" == '@remaining-usr-share' ]]; then
     while IFS= read -r -d '' source; do
       relative=${source#"$target_root"}
+      [[ "$relative" != /usr/share/tdvp/opkg/image-base.json ]] || continue
       [[ -n "${claimed_paths[$relative]:-}" ]] && continue
       claim_path "$source" "$package"
       copy_path "$source" "$root"

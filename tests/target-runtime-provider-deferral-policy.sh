@@ -29,7 +29,6 @@ grep -Fq "printf '%s|%s\\n' \"\$package\" \"\${data_image_alias[\$package]}\" >>
 grep -Fq 'TDVP_IMAGE_PROVIDER_MANIFEST' "$catalogue"
 grep -Fq 'IMAGE_OWNERSHIP_MANIFEST_SHA256' "$catalogue"
 grep -Fq '[[ -s "$image_provider_map" ]]' "$build_all"
-grep -Fq 'Download the locked r10 image ownership manifest' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq "IMAGE_OWNERSHIP_MANIFEST_SHA256='c97f8b1b3910807b9cbad0fb3dd4f43538d90de231259b0022bc7fea8ada49a6'" "$repo_root/platforms/tdvp-k230-r1/platform.env"
 grep -Fq 'options: [archive, audacious-foundation, audacious-core, audacious-plugins, audacious-app, audacious, network-tools, netsurf, media, games, desktop-tools, development-tools, nodejs]' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'netsurf)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
@@ -39,19 +38,11 @@ grep -Fq 'media)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'package_args=(--package tdvp-mpv)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'games)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'package_args=(--package sdl2 --package sdl2-ttf --package libmgba --package tdvp-gba)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$overlay_root"' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'export TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay_root"' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'tdvp_require_wayland_sdk_overlay' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'copy_header_file zlib.h' "$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh"
 grep -Fq 'copy_wayland_protocols' "$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh"
 grep -Fq 'share/wayland-protocols/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' "$repo_root/scripts/tdvp-k230-sdk.sh"
 grep -Fq 'locked FreeType source archive digest differs' "$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh"
-grep -Fq 'https://download.savannah.gnu.org/releases/freetype/freetype-2.13.3.tar.xz' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq '0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA: r3' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'Restore the firmware-matched Wayland development bridge' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 ! grep -Fq 'freetype-dirclean freetype' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'Save the firmware-matched Wayland development bridge' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'Verify provider alternatives in the target-runtime base' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'verify-image-provider-alternatives.sh' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'include-hidden-files: true' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
@@ -61,10 +52,7 @@ grep -Fq 'TDVP_GBA_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r10-source-cache' "$rep
 test -f "$repo_root/tests/sdl2-pulseaudio-patch-policy.sh"
 grep -Fq 'Preflight the reviewed SDL2 PulseAudio patch' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'TDVP_SDL2_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r10-source-cache' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'TDVP_RUNTIME_BASE_CACHE_SCHEMA: r2' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'runtime-${{ env.TDVP_RUNTIME_BASE_CACHE_SCHEMA }}-' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-sdk_stamp_path='${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*'
-[[ "$(grep -Fc "$sdk_stamp_path" "$repo_root/.github/workflows/build-r10-batch-candidate.yml")" -ge 2 ]]
 incoming_root_assignment='incoming_root="${RUNNER_TEMP}/tdvp-r10-incoming"'
 [[ "$(grep -Fc "$incoming_root_assignment" "$repo_root/.github/workflows/build-r10-batch-candidate.yml")" -ge 2 ]]
 grep -Fq 'install -m 0644 "$provider_map" "$feed_dir/.tdvp-image-runtime-providers.tsv"' \
@@ -105,3 +93,6 @@ grep -Fq 'runtime provider name $provider_name is supplied by both' "$runtime_cl
 grep -Fq 'find "$library_root" -maxdepth 1 -type f -name '\''lib*.so*'\'' -print' "$runtime_closure"
 
 echo 'target runtime provider deferral policy: PASS'
+
+grep -Fq "uses: ./.github/actions/published-sdk" "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
+grep -Fq "TDVP_RUNTIME_BASE_CACHE_SCHEMA: published-r10-v1" "$repo_root/.github/workflows/build-r10-batch-candidate.yml"

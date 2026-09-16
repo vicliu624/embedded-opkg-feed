@@ -24,6 +24,20 @@ platform_slug=$2
 sdk_root=$4
 package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 feed_root=$(cd -- "$package_dir/../.." && pwd)
+if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  source "$feed_root/support/published-sdk-build.sh"
+  source "$feed_root/support/source-archive-library.sh"
+  source "$feed_root/support/elf-runtime-policy.sh"
+  install_root=$(mktemp -d)
+  trap 'rm -rf "$install_root"' EXIT
+  tdvp_sdk_install "$package_dir" "$sdk_root" netsurf "$install_root"
+  payload_dir=$(tdvp_prepare_generated_payload_root "$package_dir")
+  cp -a "$install_root/." "$payload_dir/"
+  install -Dm0644 "$package_dir/tdvp-netsurf.desktop" "$payload_dir/usr/share/applications/tdvp-netsurf.desktop"
+  install -Dm0644 "$install_root/usr/share/netsurf/netsurf.png" "$payload_dir/usr/share/icons/hicolor/128x128/apps/tdvp-netsurf.png"
+  tdvp_remove_elf_runtime_search_paths "$sdk_root/bin/riscv64-unknown-linux-gnu-readelf" "$payload_dir/usr/bin/netsurf"
+  exit 0
+fi
 # shellcheck source=../../support/buildroot-feed-session.sh
 source "$feed_root/support/buildroot-feed-session.sh"
 

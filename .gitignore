@@ -1,6 +1,7 @@
 dist/
 dist-*/
 .cache/
+__pycache__/
 .tdvp-sdk-overlay/
 *.ipk
 *.tar

@@ -1,0 +1,35 @@
+name: Prepare published TDVP CPU0 SDK
+description: Verify the release SDK and paired final-image runtime without building firmware
+runs:
+  using: composite
+  steps:
+    - name: Install application build tools
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          build-essential python3 cmake ninja-build meson pkg-config \
+          autoconf automake libtool autopoint gettext intltool gperf bison flex \
+          libssl-dev zlib1g-dev libglib2.0-bin libwayland-bin \
+          qemu-user e2fsprogs patchelf curl xz-utils bzip2 unzip rsync xxd
+    - name: Cache immutable release downloads
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/tdvp-release-downloads
+        key: tdvp-release-downloads-${{ hashFiles('platforms/tdvp-k230-r1/platform.env') }}
+    - name: Verify and prepare published inputs
+      shell: bash
+      run: |
+        set -Eeuo pipefail
+        bash scripts/prepare-published-sdk.sh \
+          "$RUNNER_TEMP/tdvp-release-downloads" "$RUNNER_TEMP/tdvp-published"
+        sdk="$RUNNER_TEMP/tdvp-published/tdvp-sdk"
+        overlay="$RUNNER_TEMP/tdvp-wayland-sdk-overlay"
+        bash scripts/prepare-published-sdk-overlay.sh "$sdk" "$overlay"
+        {
+          echo "TDVP_SDK_ROOT=$sdk"
+          echo "TDVP_FEED_BASE_ROOT=$RUNNER_TEMP/tdvp-published/target"
+          echo "TDVP_IMAGE_PROVIDER_MANIFEST=$sdk/metadata/tdvp-image-base.json"
+          echo "TDVP_READELF=$sdk/bin/riscv64-unknown-linux-gnu-readelf"
+          echo "TDVP_K230_WAYLAND_SDK_OVERLAY=$overlay"
+        } >> "$GITHUB_ENV"

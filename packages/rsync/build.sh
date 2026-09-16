@@ -15,6 +15,7 @@ sdk_root=$4
 configured_output=$(printenv TDVP_DEVEL_BUILDROOT_OUTPUT || true)
 # shellcheck source=../../support/buildroot-feed-session.sh
 source "$package_dir/../../support/buildroot-feed-session.sh"
+if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
 output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
 grep -Fqx 'BR2_PACKAGE_ZLIB=y' "$output/.config" || {
   echo 'matching Buildroot output lacks required rsync SDK feature: BR2_PACKAGE_ZLIB=y' >&2
@@ -48,6 +49,7 @@ tree_patch_hash=$(normalised_patch_sha256 "$tree_patch") || {
 }
 
 # shellcheck source=../../support/buildroot-command-package.sh
+fi
 source "$package_dir/../../support/buildroot-command-package.sh"
 # The desktop baseline keeps OpenSSL enabled for its own TLS consumers.  rsync
 # only needs its daemon-TLS and optional acceleration features disabled, so

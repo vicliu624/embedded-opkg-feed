@@ -22,8 +22,7 @@ source "$package_dir/../../support/elf-runtime-policy.sh"
   echo 'vim requires vim-runtime to populate the release staging root first' >&2
   exit 66
 }
-output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
-readelf_tool="$output/host/bin/riscv64-unknown-linux-gnu-readelf"
+readelf_tool="$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"
 [[ -x "$readelf_tool" ]] || { echo "matching SDK has no target readelf: $readelf_tool" >&2; exit 67; }
 
 payload_dir=

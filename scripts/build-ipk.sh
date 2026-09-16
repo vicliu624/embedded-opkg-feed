@@ -317,6 +317,14 @@ if [[ -n "$PACKAGE_DEPENDS" ]]; then
   done
 fi
 
+if [[ -n "${TDVP_SDK_ROOT:-}" && -f "$TDVP_SDK_ROOT/tdvp-sdk-manifest.json" ]]; then
+  sdk_audit_args=("$TDVP_SDK_ROOT" "$payload_dir")
+  if [[ "$PACKAGE_BASE_OVERLAY" == identical && -n "${TDVP_FEED_BASE_ROOT:-}" ]]; then
+    sdk_audit_args+=("$TDVP_FEED_BASE_ROOT")
+  fi
+  python3 "$script_dir/verify-published-sdk-payload.py" "${sdk_audit_args[@]}"
+fi
+
 if [[ "$PACKAGE_AUTO_RUNTIME_DEPENDS" == 1 ]]; then
   runtime_owner_map=${TDVP_RUNTIME_OWNER_MAP:-}
   readelf_tool=${TDVP_READELF:-}

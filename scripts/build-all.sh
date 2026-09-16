@@ -663,6 +663,11 @@ build_package() {
 
   package_dir=${recipe_dir[$package]}
   local reuse_published_payloads=${TDVP_REUSE_PUBLISHED_PAYLOADS:-1}
+  # The released CPU0 SDK has a scalar policy absent from historical leaf
+  # payloads. Rebuild source recipes instead of assuming old IPKs satisfy it.
+  if [[ -n "${TDVP_SDK_ROOT:-}" && -f "$TDVP_SDK_ROOT/tdvp-sdk-manifest.json" ]]; then
+    reuse_published_payloads=0
+  fi
   # A strict offline release is a source-and-target rebuild, not a republish
   # that silently fetches a historical IPK. Source-locked recipes must use
   # their local cache/build path; target-derived recipes remain byte-identical

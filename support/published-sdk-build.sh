@@ -144,8 +144,12 @@ EOF
       ;;
     ca-certificates)
       make
+      mkdir -p \
+        "$install_root/etc" \
+        "$install_root/usr/share/ca-certificates"
       make DESTDIR="$install_root" install
-      install -Dm0644 debian/copyright "$install_root/usr/share/licenses/ca-certificates/copyright"
+      install -Dm0644 debian/copyright \
+        "$install_root/usr/share/licenses/ca-certificates/copyright"
       ;;
     netsurf)
       printf 'override NETSURF_USE_DUKTAPE := YES\noverride NETSURF_USE_WEBP := YES\n' >netsurf/Makefile.config

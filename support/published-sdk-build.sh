@@ -178,7 +178,7 @@ EOF
           ;;
         libcurl) options+=(--with-openssl --disable-ldap --disable-ldaps --without-libpsl --without-libidn2 --without-librtmp --without-libssh2 --without-nghttp2) ;;
         pcre2) options+=(--enable-pcre2-8 --disable-pcre2-16 --disable-pcre2-32 --disable-jit) ;;
-        ncurses) options+=(--with-shared --without-debug --without-ada --enable-widec --enable-pc-files --with-pkg-config-libdir=/usr/lib/pkgconfig --without-cxx-binding) ;;
+        ncurses) options+=(--with-shared --without-debug --without-ada --enable-widec --enable-pc-files --with-pkg-config-libdir=/usr/lib/pkgconfig --without-cxx-binding --with-termlib --enable-overwrite) ;;
         libffi) options+=(--disable-multi-os-directory --disable-docs) ;;
         mpdecimal) export LD="$CC" ;;
         sqlite) options+=(--disable-readline --disable-static); CFLAGS="$CFLAGS -O1" ;;

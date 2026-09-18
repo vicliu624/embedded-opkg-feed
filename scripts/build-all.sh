@@ -330,15 +330,13 @@ target_catalogue_has_package() {
   find "$feed_dir" -maxdepth 1 -type f -name "${package}_*.ipk" -print -quit | grep -q .
 }
 
-# A reused runtime catalogue is an immutable, explicitly attested input.  It
-# may already carry a data/runtime package that has a source recipe (for
-# example ca-certificates).  Defer only a package listed in the catalogue's
-# own manifest and only when the staged IPK control metadata has the exact
-# recipe name and version.  A failed source-build candidate cannot therefore
-# be mistaken for a reusable runtime provider.
+# The runtime catalogue is an immutable, explicitly attested provider set.
+# It may have been generated in this transaction or reused from a prior
+# runtime-base artifact. If it already carries a package that also has a
+# source recipe, defer the final source-built IPK when package name and
+# version match exactly.
 assert_runtime_catalogue_package() {
   local package=$1 version staged_version
-  [[ "$reuse_runtime_catalog" -eq 1 ]] || return 0
   version=$(read_recipe_value "${recipe_dir[$package]}/package.env" VERSION)
   staged_version=$(awk -F '|' -v package="$package" '
     $1 == package { print $2; exit }

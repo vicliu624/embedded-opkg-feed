@@ -73,6 +73,10 @@ grep -Fq 'runtime_catalogue_package_manifest="$feed_dir/.tdvp-runtime-catalog-pa
 grep -Fq 'assert_runtime_catalogue_package()' "$build_all"
 grep -Fq 'runtime_catalogue_package[$package]=1' "$build_all"
 grep -Fq 'source recipe deferred; runtime catalogue already provides:' "$build_all"
+if grep -Fq '[[ "$reuse_runtime_catalog" -eq 1 ]] || return 0' "$build_all"; then
+  echo 'runtime catalogue package deferral must apply to both freshly generated and reused catalogues' >&2
+  exit 1
+fi
 grep -Fq 'source runtime recipe deferred; target owns' "$build_all"
 grep -Fq 'PACKAGE_SOURCE_STAGING' "$build_all"
 grep -Fq 'source staging recipe retained; target owns final runtime' "$build_all"

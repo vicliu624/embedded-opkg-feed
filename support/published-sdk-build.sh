@@ -45,13 +45,17 @@ tdvp_sdk_install() (
   local -a options=() make_options=()
   case "$component" in
     tdvp-audacious|tdvp-audacious-plugins)
+      command -v glib-compile-resources >/dev/null || {
+        echo 'Audacious source build requires host glib-compile-resources' >&2
+        exit 66
+      }
       cat >"$work/cross.ini" <<EOF
 [binaries]
 c = ['$sdk_root/bin/riscv64-unknown-linux-gnu-gcc', '--sysroot=$sysroot']
 cpp = ['$sdk_root/bin/riscv64-unknown-linux-gnu-g++', '--sysroot=$sysroot']
 ar = '$sdk_root/bin/riscv64-unknown-linux-gnu-ar'
 strip = '$sdk_root/bin/riscv64-unknown-linux-gnu-strip'
-pkgconfig = '/usr/bin/pkg-config'
+pkg-config = '/usr/bin/pkg-config'
 [host_machine]
 system = 'linux'
 cpu_family = 'riscv64'

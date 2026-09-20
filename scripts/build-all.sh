@@ -381,6 +381,31 @@ if [[ -n "$target_runtime_provider_manifest" ]]; then
   done <"$target_runtime_provider_manifest"
 fi
 
+sdk_platform_provider_manifest="$repo_root/platforms/$platform_slug/sdk-development-providers.tsv"
+if [[ -f "$sdk_platform_provider_manifest" ]]; then
+  while IFS='|' read -r package soname provider_files; do
+    package=${package%$'\r'}
+    [[ -n "$package" && "$package" != \#* ]] || continue
+    [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ && -n "$soname" && -n "$provider_files" ]] || {
+      echo "invalid SDK platform provider record: $package" >&2
+      exit 73
+    }
+    [[ -n "${target_runtime_provider[$package]:-}" ]] || {
+      echo "SDK platform provider is absent from the target runtime catalogue: $package" >&2
+      exit 73
+    }
+    [[ " ${target_runtime_provider_sonames[$package]} " == *" $soname "* ]] || {
+      echo "SDK platform provider SONAME is not attested by the target runtime catalogue: $package $soname" >&2
+      exit 73
+    }
+    [[ -z "${sdk_development_provider_files[$package]:-}" ]] || {
+      echo "SDK platform provider duplicates a recipe provider: $package" >&2
+      exit 73
+    }
+    sdk_development_provider_files[$package]=$provider_files
+  done <"$sdk_platform_provider_manifest"
+fi
+
 while IFS= read -r package_env; do
   package_dir=$(dirname -- "$package_env")
   package=$(read_recipe_value "$package_env" PACKAGE)
@@ -423,6 +448,10 @@ while IFS= read -r package_env; do
   # Keep this declaration even when the target-runtime catalogue defers the
   # recipe itself. Consumers still need a reviewed record of the exact SDK
   # files offered by that immutable runtime provider.
+  [[ -z "${sdk_development_provider_files[$package]:-}" ]] || {
+    echo "recipe SDK development provider duplicates a platform provider: $package" >&2
+    exit 67
+  }
   sdk_development_provider_files[$package]=$package_sdk_development_files
   if [[ -n "${target_runtime_provider[$package]:-}" ]]; then
     target_version=${target_runtime_provider[$package]}

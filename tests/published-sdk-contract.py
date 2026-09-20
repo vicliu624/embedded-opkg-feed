@@ -10,6 +10,7 @@ import struct
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("extractor", ROOT / "scripts/extract-published-rootfs.py")
@@ -84,6 +85,13 @@ class PublishedSdkContract(unittest.TestCase):
     def test_source_builds_use_the_sdk_stable_optimization_path(self):
         builder = (ROOT / "support/published-sdk-build.sh").read_text()
         self.assertIn('CFLAGS="$CFLAGS -fPIC -fno-shrink-wrap -O1"', builder)
+
+    def test_rootfs_extractor_finds_debugfs_in_standard_sbin_paths(self):
+        with mock.patch.object(extractor.shutil, "which", side_effect=lambda path: "/usr/sbin/debugfs" if path == "/usr/sbin/debugfs" else None):
+            self.assertEqual(extractor.find_debugfs(), "/usr/sbin/debugfs")
+        with mock.patch.object(extractor.shutil, "which", return_value=None):
+            with self.assertRaisesRegex(EnvironmentError, "install e2fsprogs"):
+                extractor.find_debugfs()
 
     def test_p7zip_receives_a_compiler_path_and_separate_flags(self):
         builder = (ROOT / "support/published-sdk-build.sh").read_text()

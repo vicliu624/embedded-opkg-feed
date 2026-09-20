@@ -17,6 +17,17 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
+def find_debugfs():
+    """Locate e2fsprogs' extractor in login and non-login host PATHs."""
+    for candidate in ("debugfs", "/usr/sbin/debugfs", "/sbin/debugfs"):
+        resolved = shutil.which(candidate)
+        if resolved:
+            return resolved
+    raise EnvironmentError(
+        "published rootfs extraction requires e2fsprogs debugfs; install e2fsprogs"
+    )
+
+
 def extract(archive, inventory_path, destination):
     if destination.exists():
         raise ValueError(f"destination exists: {destination}")
@@ -56,7 +67,7 @@ def extract(archive, inventory_path, destination):
                     remaining -= len(block)
         destination.mkdir(parents=True)
         # The image is read-only. No loop device, sudo, or target executable.
-        result = subprocess.run(["debugfs", "-R", f"rdump / {destination}", str(partition)],
+        result = subprocess.run([find_debugfs(), "-R", f"rdump / {destination}", str(partition)],
                                 stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
         if result.returncode:
             raise ValueError(f"rootfs extraction failed: {result.stderr}")

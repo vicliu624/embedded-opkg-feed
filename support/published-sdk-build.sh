@@ -176,7 +176,7 @@ EOF
           export vim_cv_toupper_broken=no vim_cv_terminfo=yes vim_cv_tgetent=zero vim_cv_bcopy_handles_overlap=no
           export vim_cv_strcpy_handles_overlap=no
           ;;
-        dialog) options+=(--with-curses-lib=ncursesw) ;;
+        dialog) options+=(--with-ncursesw) ;;
         libcurl) options+=(--with-openssl --disable-ldap --disable-ldaps --without-libpsl --without-libidn2 --without-librtmp --without-libssh2 --without-nghttp2) ;;
         pcre2) options+=(--enable-pcre2-8 --disable-pcre2-16 --disable-pcre2-32 --disable-jit) ;;
         ncurses) options+=(--with-shared --without-debug --without-ada --enable-widec --enable-pc-files --with-pkg-config-libdir=/usr/lib/pkgconfig --without-cxx-binding --with-termlib --enable-overwrite) ;;

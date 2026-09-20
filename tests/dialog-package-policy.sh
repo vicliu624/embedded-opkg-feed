@@ -3,9 +3,9 @@ set -Eeuo pipefail
 IFS=$'\n\t'
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 grep -Fqx "PACKAGE='dialog'" "$repo_root/packages/dialog/package.env"
-grep -Fqx "PACKAGE_DEPENDS='libncursesw (= 6.4-20230603-1)'" "$repo_root/packages/dialog/package.env"
+grep -Fqx "PACKAGE_DEPENDS='libncursesw-6 (= 2025.02.1-1)'" "$repo_root/packages/dialog/package.env"
 grep -Fqx "PACKAGE_BUILD_DEPENDS=''" "$repo_root/packages/dialog/package.env"
-grep -Fqx "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libncursesw'" "$repo_root/packages/dialog/package.env"
+grep -Fqx "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libncursesw-6'" "$repo_root/packages/dialog/package.env"
 grep -Fqx "PACKAGE_SDK_DEVELOPMENT_FILES='usr/include/curses.h usr/lib/pkgconfig/ncursesw.pc usr/lib/libncursesw.so'" "$repo_root/packages/libncursesw/package.env"
 grep -Fqx 'PACKAGE_SOURCE_STAGING=0' "$repo_root/packages/libncursesw/package.env"
 grep -Fq 'BR2_USE_MMU=y BR2_ENABLE_LOCALE=y BR2_PACKAGE_NCURSES=y' "$repo_root/packages/dialog/build.sh"

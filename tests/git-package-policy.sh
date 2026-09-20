@@ -32,7 +32,7 @@ done
 expect_line "^PACKAGE_KIND='runtime'$" "$repo_root/packages/git-runtime/package.env"
 expect_line "^PACKAGE_BUILD_DEPENDS=''$" \
   "$repo_root/packages/git-runtime/package.env"
-expect_line "^PACKAGE_SDK_DEVELOPMENT_DEPENDS='libz libssl-3 libcrypto-3 libexpat-1 libpcre2-8 libcurl-4'$" \
+expect_line "^PACKAGE_SDK_DEVELOPMENT_DEPENDS='libz-1 libssl-3 libcrypto-3 libexpat-1 libpcre2-8-0 libcurl-4'$" \
   "$repo_root/packages/git-runtime/package.env"
 expect_line "^PACKAGE_DEPENDS='ca-certificates \\(= 2025[.]02[.]1-1\\)'$" \
   "$repo_root/packages/git-runtime/package.env"

@@ -47,9 +47,9 @@ for package in libpython3.13 python3-runtime python3; do
   bash "$repo_root/scripts/verify-source-lock.sh" --package-dir "$package_dir" >/dev/null
 done
 
-expect_line "PACKAGE_BUILD_DEPENDS='libbz2 liblzma libz libexpat-1 libffi-8 libmpdec-4 libsqlite3-0 libssl-3 libcrypto-3'" \
+expect_line "PACKAGE_BUILD_DEPENDS='libbz2 liblzma libmpdec-4 libsqlite3-0'" \
   "$repo_root/packages/libpython3.13/package.env"
-expect_line "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libncursesw libreadline'" \
+expect_line "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libz libexpat-1 libffi-8 libssl-3 libcrypto-3 libncursesw libreadline'" \
   "$repo_root/packages/libpython3.13/package.env"
 expect_line "PACKAGE_DEPENDS='libpython3.13 (= 3.13.3-1), libbz2 (= 1.0.8-1), liblzma (= 5.6.4-1), libz (= 1.3.1-1), libncursesw (= 6.4-20230603-1), libreadline (= 8.2-1), libexpat-1 (= 2.7.0-1), libffi-8 (= 3.4.6-1), libmpdec-4 (= 4.0.0-1), libsqlite3-0 (= 3.48.0-1), libssl-3 (= 3.4.1-1), libcrypto-3 (= 3.4.1-1), ca-certificates (= 2025.02.1-1)'" \
   "$repo_root/packages/python3-runtime/package.env"

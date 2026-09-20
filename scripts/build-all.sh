@@ -434,7 +434,8 @@ while IFS= read -r package_env; do
   if [[ -n "$package_sdk_development_files" ]]; then
     IFS=' ' read -r -a development_files <<< "$package_sdk_development_files"
     for development_file in "${development_files[@]}"; do
-      [[ "$development_file" =~ ^usr/(include|lib|share)/[A-Za-z0-9_+./-]+$ && \
+      [[ ( "$development_file" =~ ^usr/(include|lib|share)/[A-Za-z0-9_+./-]+$ || \
+           "$development_file" =~ ^usr/bin/[A-Za-z0-9_+.-]+-config$ ) && \
          "$development_file" != *'..'* && "$development_file" != *'//' ]] || {
         echo "invalid PACKAGE_SDK_DEVELOPMENT_FILES path for $package: $development_file" >&2
         exit 66

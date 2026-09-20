@@ -261,10 +261,12 @@ sdk_root="$work_root/package-sdk"
 mkdir -p -- \
   "$sdk_root/sysroot/usr/include" \
   "$sdk_root/sysroot/usr/lib/pkgconfig" \
-  "$sdk_root/sysroot/usr/lib"
+  "$sdk_root/sysroot/usr/lib" \
+  "$sdk_root/sysroot/usr/bin"
 printf '%s\n' 'fixture SDK header' >"$sdk_root/sysroot/usr/include/fixture-sdk.h"
 printf '%s\n' 'Name: fixture-sdk' >"$sdk_root/sysroot/usr/lib/pkgconfig/fixture-sdk.pc"
 printf '%s\n' 'fixture SDK linker name' >"$sdk_root/sysroot/usr/lib/libfixture-sdk.so"
+printf '%s\n' '#!/bin/sh' >"$sdk_root/sysroot/usr/bin/fixture-config"
 
 sdk_provider_dir="$fixture_root/packages/fixture-sdk-runtime"
 sdk_consumer_dir="$fixture_root/packages/fixture-sdk-consumer"
@@ -277,7 +279,7 @@ printf '%s\n' \
   "SUPPORTED_PLATFORMS='fixture'" \
   "PACKAGE_KIND='runtime'" \
   "PACKAGE_RELEASES='r1'" \
-  "PACKAGE_SDK_DEVELOPMENT_FILES='usr/include/fixture-sdk.h usr/lib/pkgconfig/fixture-sdk.pc usr/lib/libfixture-sdk.so'" \
+  "PACKAGE_SDK_DEVELOPMENT_FILES='usr/include/fixture-sdk.h usr/lib/pkgconfig/fixture-sdk.pc usr/lib/libfixture-sdk.so usr/bin/fixture-config'" \
   "PACKAGE_AUTO_RUNTIME_DEPENDS=0" \
   "PACKAGE_BASE_OVERLAY='deny'" \
   >"$sdk_provider_dir/package.env"
@@ -328,6 +330,24 @@ grep -Fq 'SDK development dependency is missing for fixture-sdk-consumer: fixtur
   "$work_root/sdk-development-missing.log"
 grep -Fq 'validate_sdk_development_dependencies()' "$fixture_root/scripts/build-all.sh"
 grep -Fq 'PACKAGE_SDK_DEVELOPMENT_DEPENDS' "$fixture_root/scripts/build-all.sh"
+printf '%s\n' 'Name: fixture-sdk' >"$sdk_root/sysroot/usr/lib/pkgconfig/fixture-sdk.pc"
+
+# Target configuration helpers are valid SDK development interfaces.  Keep
+# the executable allowance narrow so a recipe cannot claim arbitrary target
+# commands as build-time inputs.
+sed -i 's|usr/bin/fixture-config|usr/bin/fixture-helper|' "$sdk_provider_dir/package.env"
+invalid_sdk_path_output="$work_root/output-sdk-development-invalid-path"
+if TDVP_SDK_ROOT="$sdk_root" bash "$fixture_root/scripts/build-all.sh" \
+  --platform fixture --release r1 --output "$invalid_sdk_path_output" \
+  --require-source-locks --package fixture-sdk-consumer \
+  >"$work_root/sdk-development-invalid-path.log" 2>&1; then
+  echo 'build-all accepted an arbitrary SDK target executable' >&2
+  exit 1
+fi
+grep -Fq 'invalid PACKAGE_SDK_DEVELOPMENT_FILES path for fixture-sdk-runtime: usr/bin/fixture-helper' \
+  "$work_root/sdk-development-invalid-path.log"
+sed -i 's|usr/bin/fixture-helper|usr/bin/fixture-config|' "$sdk_provider_dir/package.env"
+rm -rf -- "$sdk_provider_dir" "$sdk_consumer_dir"
 
 # Removing the literal, reviewable exemption turns the same profile into an
 # unprovenanced recipe.  The failure must happen before its build hook creates

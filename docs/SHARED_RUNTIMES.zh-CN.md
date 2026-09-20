@@ -33,11 +33,14 @@ PACKAGE_KIND='shared-library'        # 或 application / runtime
 PACKAGE_RELEASES='r6'
 PACKAGE_SECTION='libraries'          # 例如 libraries、utils、desktop、games
 PACKAGE_BUILD_DEPENDS='sdl2'         # 仅构建 staging
+PACKAGE_SDK_DEVELOPMENT_DEPENDS='libncursesw' # 已发布 SDK 提供开发文件
 PACKAGE_DEPENDS='sdl2 (= 2.30.11-1)' # opkg 运行时关系
 PACKAGE_AUTO_RUNTIME_DEPENDS=1       # 由 ELF NEEDED 生成其余精确依赖
 ```
 
 `build-all.sh` 为一次 release 创建一个临时 `TDVP_FEED_STAGING_ROOT`。库 recipe 的头文件、CMake 元数据和未版本化 linker symlink 只进入此 staging；最终 `.ipk` 只能包含运行时 `lib*.so*` 和属于该包的许可/文档。平台 catalog 还会把 target 中所有非 ABI SONAME、模块和运行时数据拆成独立 `runtime` 包，并生成 SONAME → `Package (= Version)` 所有者图。应用从同一 staging 动态链接，不能再复制这些库到自身载荷。
+
+`PACKAGE_SDK_DEVELOPMENT_DEPENDS` 适用于另一类 provider：运行时库已由发布镜像拥有，配套 package-build SDK 提供它的开发接口。库配方通过 `PACKAGE_SDK_DEVELOPMENT_FILES` 一次声明头文件、pkg-config 元数据和链接器名称。`build-all.sh` 会在下载源码前验证 `TDVP_SDK_ROOT/sysroot` 中存在这些精确路径，运行时关系继续由 `PACKAGE_DEPENDS` 保持。这样可以把运行时关系和链接关系写清楚，也避免为了临时 staging 重编平台 ABI 库。
 
 ## 强制发布检查
 

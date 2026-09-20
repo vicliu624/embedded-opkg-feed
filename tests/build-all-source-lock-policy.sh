@@ -253,6 +253,82 @@ grep -Fq 'runtime catalogue base ready for incremental batches' \
   "$fixture_root/scripts/build-all.sh"
 grep -Fq 'reusing cached target-runtime catalogue' "$fixture_root/scripts/build-all.sh"
 
+# A platform-owned runtime can provide development files from the released SDK
+# without becoming a source-staging build dependency. The selected consumer
+# must validate those files before its hook runs; the provider hook is absent
+# by design, proving build-all did not schedule a duplicate source rebuild.
+sdk_root="$work_root/package-sdk"
+mkdir -p -- \
+  "$sdk_root/sysroot/usr/include" \
+  "$sdk_root/sysroot/usr/lib/pkgconfig" \
+  "$sdk_root/sysroot/usr/lib"
+printf '%s\n' 'fixture SDK header' >"$sdk_root/sysroot/usr/include/fixture-sdk.h"
+printf '%s\n' 'Name: fixture-sdk' >"$sdk_root/sysroot/usr/lib/pkgconfig/fixture-sdk.pc"
+printf '%s\n' 'fixture SDK linker name' >"$sdk_root/sysroot/usr/lib/libfixture-sdk.so"
+
+sdk_provider_dir="$fixture_root/packages/fixture-sdk-runtime"
+sdk_consumer_dir="$fixture_root/packages/fixture-sdk-consumer"
+mkdir -p -- "$sdk_provider_dir" "$sdk_consumer_dir"
+printf '%s\n' \
+  "PACKAGE='fixture-sdk-runtime'" \
+  "VERSION='1.0-1'" \
+  "DESCRIPTION='Fixture platform runtime development provider'" \
+  "MAINTAINER='TDVP test <tests@example.invalid>'" \
+  "SUPPORTED_PLATFORMS='fixture'" \
+  "PACKAGE_KIND='runtime'" \
+  "PACKAGE_RELEASES='r1'" \
+  "PACKAGE_SDK_DEVELOPMENT_FILES='usr/include/fixture-sdk.h usr/lib/pkgconfig/fixture-sdk.pc usr/lib/libfixture-sdk.so'" \
+  "PACKAGE_AUTO_RUNTIME_DEPENDS=0" \
+  "PACKAGE_BASE_OVERLAY='deny'" \
+  >"$sdk_provider_dir/package.env"
+printf '%s\n' \
+  "PACKAGE='fixture-sdk-consumer'" \
+  "VERSION='1.0-1'" \
+  "DESCRIPTION='Fixture SDK development dependency consumer'" \
+  "MAINTAINER='TDVP test <tests@example.invalid>'" \
+  "SUPPORTED_PLATFORMS='fixture'" \
+  "PACKAGE_KIND='application'" \
+  "PACKAGE_RELEASES='r1'" \
+  "PACKAGE_SDK_DEVELOPMENT_DEPENDS='fixture-sdk-runtime'" \
+  "PACKAGE_AUTO_RUNTIME_DEPENDS=0" \
+  "PACKAGE_BASE_OVERLAY='deny'" \
+  "SOURCE_LOCK_EXEMPT_REASON='Fixture SDK dependency test contains only generated documentation.'" \
+  >"$sdk_consumer_dir/package.env"
+printf '%s\n' \
+  '#!/usr/bin/env bash' \
+  'set -Eeuo pipefail' \
+  'test -e "$TDVP_SDK_ROOT/sysroot/usr/include/fixture-sdk.h"' \
+  'package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)' \
+  'payload_dir=$(mktemp -d "${TMPDIR:-/tmp}/tdvp-command-payload.XXXXXX")' \
+  'rm -rf -- "$package_dir/root"' \
+  'ln -s -- "$payload_dir" "$package_dir/root"' \
+  'mkdir -p -- "$payload_dir/usr/share/doc/fixture-sdk-consumer"' \
+  "printf '%s\\n' 'Fixture SDK consumer documentation.' >\"\$payload_dir/usr/share/doc/fixture-sdk-consumer/README\"" \
+  >"$sdk_consumer_dir/build.sh"
+chmod +x -- "$sdk_consumer_dir/build.sh"
+
+sdk_output="$work_root/output-sdk-development"
+TDVP_SDK_ROOT="$sdk_root" bash "$fixture_root/scripts/build-all.sh" \
+  --platform fixture --release r1 --output "$sdk_output" \
+  --require-source-locks --package fixture-sdk-consumer
+sdk_feed="$sdk_output/fixture/riscv64"
+test -s "$sdk_feed/fixture-sdk-consumer_1.0-1_riscv64.ipk"
+test ! -e "$sdk_feed/fixture-sdk-runtime_1.0-1_riscv64.ipk"
+
+rm -f -- "$sdk_root/sysroot/usr/lib/pkgconfig/fixture-sdk.pc"
+missing_sdk_output="$work_root/output-sdk-development-missing"
+if TDVP_SDK_ROOT="$sdk_root" bash "$fixture_root/scripts/build-all.sh" \
+  --platform fixture --release r1 --output "$missing_sdk_output" \
+  --require-source-locks --package fixture-sdk-consumer \
+  >"$work_root/sdk-development-missing.log" 2>&1; then
+  echo 'build-all accepted a missing SDK development file' >&2
+  exit 1
+fi
+grep -Fq 'SDK development dependency is missing for fixture-sdk-consumer: fixture-sdk-runtime requires usr/lib/pkgconfig/fixture-sdk.pc' \
+  "$work_root/sdk-development-missing.log"
+grep -Fq 'validate_sdk_development_dependencies()' "$fixture_root/scripts/build-all.sh"
+grep -Fq 'PACKAGE_SDK_DEVELOPMENT_DEPENDS' "$fixture_root/scripts/build-all.sh"
+
 # Removing the literal, reviewable exemption turns the same profile into an
 # unprovenanced recipe.  The failure must happen before its build hook creates
 # a payload, so it cannot leave a candidate artifact behind.

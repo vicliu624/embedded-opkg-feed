@@ -38,11 +38,21 @@ PACKAGE_KIND='shared-library'        # or application / runtime
 PACKAGE_RELEASES='r6'
 PACKAGE_SECTION='libraries'          # e.g. libraries, utils, desktop, games
 PACKAGE_BUILD_DEPENDS='sdl2'         # staging only
+PACKAGE_SDK_DEVELOPMENT_DEPENDS='libncursesw' # files from the released SDK
 PACKAGE_DEPENDS='sdl2 (= 2.30.11-1)' # opkg runtime relationship
 PACKAGE_AUTO_RUNTIME_DEPENDS=1       # derive remaining exact dependencies from ELF NEEDED
 ```
 
 `build-all.sh` constructs one temporary `TDVP_FEED_STAGING_ROOT`. Library recipes install headers, CMake metadata and unversioned linker symlinks there only. The resulting `.ipk` may contain only runtime `lib*.so*` files plus the package's own licence/documentation paths. The platform catalogue also splits every non-ABI target SONAME, plugin, and runtime-data set into independent `runtime` packages and generates a SONAME → `Package (= Version)` owner map. Application recipes link against the same staging root and do not copy those libraries into their own payload.
+
+`PACKAGE_SDK_DEVELOPMENT_DEPENDS` covers a different provider class: a runtime
+library already owned by the released image whose development interface is in
+the paired package-build SDK. Its library recipe declares
+`PACKAGE_SDK_DEVELOPMENT_FILES` once. `build-all.sh` validates those exact
+files in `TDVP_SDK_ROOT/sysroot` before fetching sources, then leaves the
+runtime dependency in `PACKAGE_DEPENDS`. This preserves the runtime and linker
+relationship without recompiling an ABI-owned base library into temporary
+staging.
 
 ## Mandatory release checks
 

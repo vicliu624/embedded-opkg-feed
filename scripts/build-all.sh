@@ -273,6 +273,7 @@ fi
 
 declare -A recipe_dir=()
 declare -A recipe_build_depends=()
+declare -A recipe_sdk_development_depends=()
 declare -A recipe_runtime_depends=()
 declare -A recipe_kind=()
 declare -A build_state=()
@@ -280,6 +281,7 @@ declare -A force_source_build=()
 declare -A provided_package=()
 declare -A runtime_catalogue_package=()
 declare -A source_staging_provider=()
+declare -A sdk_development_provider_files=()
 declare -A target_runtime_provider=()
 declare -A target_runtime_provider_sonames=()
 declare -a available_packages=()
@@ -302,8 +304,11 @@ read_recipe_value() {
 # needs every declared runtime package in its partial catalogue, so extract
 # only the package name while leaving version validation to build-ipk and
 # verify-feed. Build-only dependencies accept comma-separated or
-# space-delimited PACKAGE_BUILD_DEPENDS entries; normalisation occurs when
-# recipe metadata is loaded so every dependency-graph pass sees the same set.
+# space-delimited PACKAGE_BUILD_DEPENDS and PACKAGE_SDK_DEVELOPMENT_DEPENDS
+# entries; normalisation occurs when recipe metadata is loaded so every
+# dependency-graph pass sees the same set. The latter identifies development
+# files supplied by the immutable platform SDK and does not add a source-build
+# edge for an ABI-owned base library.
 emit_runtime_dependency_names() {
   local package=$1 raw dependency
   local -a dependencies=()
@@ -388,6 +393,9 @@ while IFS= read -r package_env; do
   package_source_staging=${package_source_staging:-0}
   package_build_depends=$(read_recipe_value "$package_env" PACKAGE_BUILD_DEPENDS)
   package_build_depends=${package_build_depends//,/ }
+  package_sdk_development_depends=$(read_recipe_value "$package_env" PACKAGE_SDK_DEVELOPMENT_DEPENDS)
+  package_sdk_development_depends=${package_sdk_development_depends//,/ }
+  package_sdk_development_files=$(read_recipe_value "$package_env" PACKAGE_SDK_DEVELOPMENT_FILES)
   package_runtime_depends=$(read_recipe_value "$package_env" PACKAGE_DEPENDS)
 
   [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || {
@@ -398,10 +406,24 @@ while IFS= read -r package_env; do
     echo "invalid PACKAGE_SOURCE_STAGING for $package: $package_source_staging" >&2
     exit 66
   }
+  if [[ -n "$package_sdk_development_files" ]]; then
+    IFS=' ' read -r -a development_files <<< "$package_sdk_development_files"
+    for development_file in "${development_files[@]}"; do
+      [[ "$development_file" =~ ^usr/(include|lib|share)/[A-Za-z0-9_+./-]+$ && \
+         "$development_file" != *'..'* && "$development_file" != *'//' ]] || {
+        echo "invalid PACKAGE_SDK_DEVELOPMENT_FILES path for $package: $development_file" >&2
+        exit 66
+      }
+    done
+  fi
   if [[ " $supported_platforms " != *" $PLATFORM_SLUG "* ]] || \
      [[ " $package_releases " != *" $release "* ]]; then
     continue
   fi
+  # Keep this declaration even when the target-runtime catalogue defers the
+  # recipe itself. Consumers still need a reviewed record of the exact SDK
+  # files offered by that immutable runtime provider.
+  sdk_development_provider_files[$package]=$package_sdk_development_files
   if [[ -n "${target_runtime_provider[$package]:-}" ]]; then
     target_version=${target_runtime_provider[$package]}
     target_sonames=${target_runtime_provider_sonames[$package]% }
@@ -427,6 +449,7 @@ while IFS= read -r package_env; do
   }
   recipe_dir[$package]=$package_dir
   recipe_build_depends[$package]=$package_build_depends
+  recipe_sdk_development_depends[$package]=$package_sdk_development_depends
   recipe_runtime_depends[$package]=$package_runtime_depends
   recipe_kind[$package]=$package_kind
   source_staging_provider[$package]=$package_source_staging
@@ -540,6 +563,42 @@ fi
   echo "no package recipes support $platform_slug feed $release" >&2
   exit 68
 }
+
+# Validate platform-SDK development dependencies after selection and before
+# source fetches or package hooks. A provider names its headers, pkg-config
+# metadata and linker names once through PACKAGE_SDK_DEVELOPMENT_FILES; every
+# consumer names only that provider. This catches a missing development closure
+# at the release boundary instead of allowing a recipe to rebuild the platform
+# library merely to recover headers or linker symlinks.
+validate_sdk_development_dependencies() {
+  local package dependency development_file provider_files
+  local -a dependencies=() development_files=()
+  for package in "${selected_packages[@]}"; do
+    IFS=' ' read -r -a dependencies <<< "${recipe_sdk_development_depends[$package]:-}"
+    [[ ${#dependencies[@]} -gt 0 ]] || continue
+    [[ -n "${TDVP_SDK_ROOT:-}" && -d "${TDVP_SDK_ROOT}/sysroot" ]] || {
+      echo "$package declares PACKAGE_SDK_DEVELOPMENT_DEPENDS but no TDVP_SDK_ROOT sysroot is available" >&2
+      exit 77
+    }
+    for dependency in "${dependencies[@]}"; do
+      [[ -n "$dependency" ]] || continue
+      provider_files=${sdk_development_provider_files[$dependency]:-}
+      [[ -n "$provider_files" ]] || {
+        echo "$package declares PACKAGE_SDK_DEVELOPMENT_DEPENDS on $dependency, but that provider declares no PACKAGE_SDK_DEVELOPMENT_FILES" >&2
+        exit 77
+      }
+      IFS=' ' read -r -a development_files <<< "$provider_files"
+      for development_file in "${development_files[@]}"; do
+        [[ -e "${TDVP_SDK_ROOT}/sysroot/$development_file" || -L "${TDVP_SDK_ROOT}/sysroot/$development_file" ]] || {
+          echo "SDK development dependency is missing for $package: $dependency requires $development_file" >&2
+          exit 77
+        }
+      done
+    done
+  done
+}
+
+validate_sdk_development_dependencies
 
 # Validate every lock that is already present before invoking a package hook.
 # A full legacy migration can opt into --require-source-locks; the CI changed

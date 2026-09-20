@@ -5,8 +5,3 @@ libglib-2.0-0|libglib-2.0.so.0|usr/include/glib-2.0/glib.h usr/lib/pkgconfig/gli
 libgtk-3-0|libgtk-3.so.0|usr/include/gtk-3.0/gtk/gtk.h usr/lib/pkgconfig/gtk+-3.0.pc usr/lib/libgtk-3.so
 libavcodec-58|libavcodec.so.58|usr/include/libavcodec/avcodec.h usr/lib/pkgconfig/libavcodec.pc usr/lib/libavcodec.so
 libavformat-58|libavformat.so.58|usr/include/libavformat/avformat.h usr/lib/pkgconfig/libavformat.pc usr/lib/libavformat.so
-libz-1|libz.so.1|usr/include/zlib.h usr/lib/pkgconfig/zlib.pc usr/lib/libz.so
-libncursesw-6|libncursesw.so.6|usr/include/curses.h usr/lib/pkgconfig/ncursesw.pc usr/lib/libncursesw.so
-libreadline-8|libreadline.so.8|usr/include/readline/readline.h usr/lib/pkgconfig/readline.pc usr/lib/libreadline.so
-libpcre2-8-0|libpcre2-8.so.0|usr/include/pcre2.h usr/lib/pkgconfig/libpcre2-8.pc usr/lib/libpcre2-8.so usr/bin/pcre2-config
-libpopt-0|libpopt.so.0|usr/include/popt.h usr/lib/libpopt.so

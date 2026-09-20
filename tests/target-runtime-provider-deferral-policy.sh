@@ -78,9 +78,6 @@ if grep -Fq '[[ "$reuse_runtime_catalog" -eq 1 ]] || return 0' "$build_all"; the
   exit 1
 fi
 grep -Fq 'source runtime recipe deferred; target owns' "$build_all"
-grep -Fq 'PACKAGE_PLATFORM_RUNTIME_PROVIDER' "$build_all"
-grep -Fq 'platform owns canonical provider' "$build_all"
-grep -Fq 'SDK interface differs from platform provider' "$build_all"
 grep -Fq 'PACKAGE_SOURCE_STAGING' "$build_all"
 grep -Fq 'PACKAGE_SDK_DEVELOPMENT_DEPENDS' "$build_all"
 grep -Fq 'PACKAGE_SDK_DEVELOPMENT_FILES' "$build_all"
@@ -90,19 +87,9 @@ grep -Fq 'sole final runtime IPK provider for that package name' "$build_all"
 grep -Fq 'PACKAGE_SOURCE_STAGING=0' "$repo_root/packages/libcurl-4/package.env"
 grep -Fq "PACKAGE_SDK_DEVELOPMENT_FILES='usr/include/curl/curl.h usr/lib/pkgconfig/libcurl.pc usr/lib/libcurl.so usr/bin/curl-config'" "$repo_root/packages/libcurl-4/package.env"
 grep -Fq "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libcurl-4'" "$repo_root/packages/git-runtime/package.env"
-grep -Fq "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libreadline-8'" "$repo_root/packages/gawk/package.env"
-grep -Fqx "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libncursesw-6'" "$repo_root/packages/dialog/package.env"
+grep -Fq "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libreadline'" "$repo_root/packages/gawk/package.env"
+grep -Fqx "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libncursesw'" "$repo_root/packages/dialog/package.env"
 grep -Fqx "PACKAGE_SDK_DEVELOPMENT_FILES='usr/include/curses.h usr/lib/pkgconfig/ncursesw.pc usr/lib/libncursesw.so'" "$repo_root/packages/libncursesw/package.env"
-for declaration in \
-  'packages/libz/package.env:libz-1' \
-  'packages/libncursesw/package.env:libncursesw-6' \
-  'packages/libreadline/package.env:libreadline-8' \
-  'packages/libpcre2-8/package.env:libpcre2-8-0' \
-  'packages/libpopt/package.env:libpopt-0'; do
-  recipe=${declaration%%:*}
-  provider=${declaration#*:}
-  grep -Fqx "PACKAGE_PLATFORM_RUNTIME_PROVIDER='$provider'" "$repo_root/$recipe"
-done
 grep -Fq 'package_build_depends=${package_build_depends//,/ }' "$build_all"
 grep -Fq 'target runtime provider version is not attested for' "$build_all"
 grep -Fq '[[ -n "${target_runtime_provider[$dependency]:-}" && "${source_staging_provider[$dependency]:-0}" != 1 ]] && continue' "$build_all"

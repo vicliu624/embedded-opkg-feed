@@ -421,7 +421,6 @@ while IFS= read -r package_env; do
   package_sdk_development_depends=$(read_recipe_value "$package_env" PACKAGE_SDK_DEVELOPMENT_DEPENDS)
   package_sdk_development_depends=${package_sdk_development_depends//,/ }
   package_sdk_development_files=$(read_recipe_value "$package_env" PACKAGE_SDK_DEVELOPMENT_FILES)
-  package_platform_runtime_provider=$(read_recipe_value "$package_env" PACKAGE_PLATFORM_RUNTIME_PROVIDER)
   package_runtime_depends=$(read_recipe_value "$package_env" PACKAGE_DEPENDS)
 
   [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || {
@@ -443,20 +442,6 @@ while IFS= read -r package_env; do
       }
     done
   fi
-  if [[ -n "$package_platform_runtime_provider" ]]; then
-    [[ "$package_platform_runtime_provider" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || {
-      echo "invalid PACKAGE_PLATFORM_RUNTIME_PROVIDER for $package: $package_platform_runtime_provider" >&2
-      exit 66
-    }
-    [[ "$package_kind" == shared-library || "$package_kind" == runtime ]] || {
-      echo "PACKAGE_PLATFORM_RUNTIME_PROVIDER requires a runtime recipe: $package" >&2
-      exit 66
-    }
-    [[ -n "$package_sdk_development_files" ]] || {
-      echo "PACKAGE_PLATFORM_RUNTIME_PROVIDER requires SDK development files: $package" >&2
-      exit 66
-    }
-  fi
   if [[ " $supported_platforms " != *" $PLATFORM_SLUG "* ]] || \
      [[ " $package_releases " != *" $release "* ]]; then
     continue
@@ -469,22 +454,6 @@ while IFS= read -r package_env; do
     exit 67
   }
   sdk_development_provider_files[$package]=$package_sdk_development_files
-  # A historical source recipe may retain its locked provenance while the
-  # released platform owns the ABI under a different canonical package name.
-  # Only the platform catalogue is allowed to provide that final runtime IPK.
-  if [[ -n "$package_platform_runtime_provider" ]]; then
-    target_version=${target_runtime_provider[$package_platform_runtime_provider]:-}
-    [[ -n "$target_version" ]] || {
-      echo "PACKAGE_PLATFORM_RUNTIME_PROVIDER is absent from the target runtime catalogue: $package -> $package_platform_runtime_provider" >&2
-      exit 73
-    }
-    [[ "${sdk_development_provider_files[$package_platform_runtime_provider]:-}" == "$package_sdk_development_files" ]] || {
-      echo "PACKAGE_PLATFORM_RUNTIME_PROVIDER SDK interface differs from platform provider: $package -> $package_platform_runtime_provider" >&2
-      exit 73
-    }
-    echo "source runtime recipe deferred; platform owns canonical provider: $package -> $package_platform_runtime_provider ($target_version)" >&2
-    continue
-  fi
   if [[ -n "${target_runtime_provider[$package]:-}" ]]; then
     target_version=${target_runtime_provider[$package]}
     target_sonames=${target_runtime_provider_sonames[$package]% }

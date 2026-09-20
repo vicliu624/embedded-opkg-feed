@@ -78,6 +78,19 @@ if grep -Fq '[[ "$reuse_runtime_catalog" -eq 1 ]] || return 0' "$build_all"; the
   exit 1
 fi
 grep -Fq 'source runtime recipe deferred; target owns' "$build_all"
+for ownership in \
+  'libz.so.1|libz|1.3.1-1' \
+  'libncursesw.so.6|libncursesw|6.4-20230603-1' \
+  'libreadline.so.8|libreadline|8.2-1' \
+  'libpcre2-8.so.0|libpcre2-8|10.44-1' \
+  'libpopt.so.0|libpopt|1.19-1'; do
+  grep -Fqx "$ownership" "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
+done
+# The extra-owner table, rather than a package name guessed from the SONAME,
+# is the canonical r10 provider identity.  build-runtime-catalog consumes it
+# before build-all defers matching source recipes.
+grep -Fq 'extra-owner overrides can rename a SONAME' "$catalogue"
+grep -Fq 'done <"$extra_owner_manifest"' "$catalogue"
 grep -Fq 'PACKAGE_SOURCE_STAGING' "$build_all"
 grep -Fq 'PACKAGE_SDK_DEVELOPMENT_DEPENDS' "$build_all"
 grep -Fq 'PACKAGE_SDK_DEVELOPMENT_FILES' "$build_all"

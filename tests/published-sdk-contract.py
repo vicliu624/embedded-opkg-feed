@@ -42,7 +42,8 @@ class PublishedSdkContract(unittest.TestCase):
         self.assertIn('"package_build") is not True', content)
         for path in ("usr/include/curses.h", "usr/lib/pkgconfig/ncursesw.pc",
                      "usr/include/curl/curl.h", "usr/include/glib-2.0/glib.h",
-                     "usr/include/openssl/ssl.h", "usr/include/zlib.h"):
+                     "usr/include/openssl/ssl.h", "usr/include/zlib.h",
+                     "usr/bin/curl-config"):
             self.assertIn(path, content)
 
     def test_package_sdk_preflight_checks_schema_two_development_closure(self):

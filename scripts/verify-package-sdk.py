@@ -38,6 +38,9 @@ REQUIRED_DEVELOPMENT = {
         "usr/lib/libwayland-client.so",
         "usr/lib/libz.so",
     ),
+    "target_tools": (
+        "usr/bin/curl-config",
+    ),
 }
 
 

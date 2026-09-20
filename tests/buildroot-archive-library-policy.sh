@@ -134,7 +134,7 @@ grep -Fqx 'fixture curl command' "$stage_root/usr/bin/curl"
 expected_marker=$'format=1\nsource-package=libcurl-4\nbuildroot-package=libcurl\ncommand=/usr/bin/curl'
 [[ "$(cat "$stage_root/.tdvp-buildroot-command-libcurl-curl")" == "$expected_marker" ]]
 
-TDVP_FEED_STAGING_ROOT="$stage_root" TDVP_FEED_BASE_ROOT="$base_root" \
+TDVP_FEED_BASE_ROOT="$base_root" \
   bash "$leaf_dir/build.sh" --platform tdvp-k230-r1 --sdk-root "$output/host"
 leaf_payload=$(readlink -f -- "$leaf_dir/root")
 test -f "$leaf_payload/usr/bin/curl"

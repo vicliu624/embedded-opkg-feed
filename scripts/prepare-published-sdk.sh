@@ -28,6 +28,7 @@ sdk="$destination/tdvp-sdk"
 cmp "$cache/tdvp-sdk-manifest.json" "$sdk/tdvp-sdk-manifest.json"
 cmp "$cache/tdvp-image-base.json" "$sdk/metadata/tdvp-image-base.json"
 python3 "$sdk/verify-sdk.py" "$sdk" --smoke
+python3 "$repo_root/scripts/verify-package-sdk.py" "$sdk" --host-tools
 python3 "$repo_root/scripts/extract-published-rootfs.py" \
   "$cache/$SDK_IMAGE_ARCHIVE" "$sdk/metadata/tdvp-image-base.json" "$destination/target"
 printf 'published SDK ready: %s\n' "$sdk"

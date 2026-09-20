@@ -10,7 +10,7 @@ runs:
         sudo apt-get install -y --no-install-recommends \
           build-essential python3 cmake ninja-build meson pkg-config \
           autoconf automake libtool autopoint gettext intltool gperf bison flex \
-          libssl-dev zlib1g-dev libglib2.0-bin libwayland-bin \
+          libssl-dev zlib1g-dev libglib2.0-dev-bin libwayland-bin \
           qemu-user e2fsprogs patchelf curl xz-utils bzip2 unzip rsync xxd
     - name: Cache immutable release downloads
       uses: actions/cache@v4

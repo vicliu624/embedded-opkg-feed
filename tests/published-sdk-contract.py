@@ -15,6 +15,9 @@ ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("extractor", ROOT / "scripts/extract-published-rootfs.py")
 extractor = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(extractor)
+preflight_spec = importlib.util.spec_from_file_location("package_sdk_preflight", ROOT / "scripts/verify-package-sdk.py")
+preflight = importlib.util.module_from_spec(preflight_spec)
+preflight_spec.loader.exec_module(preflight)
 
 
 class PublishedSdkContract(unittest.TestCase):
@@ -30,6 +33,37 @@ class PublishedSdkContract(unittest.TestCase):
         self.assertLess(content.index('fetch "$SDK_ARCHIVE"'), content.index('tar -xzf'))
         self.assertLess(content.index('cmp "$cache/tdvp-sdk-manifest.json"'), content.index('verify-sdk.py'))
         self.assertIn('fetch "$SDK_IMAGE_ARCHIVE" "$SDK_IMAGE_SHA256"', content)
+        self.assertIn('verify-package-sdk.py" "$sdk" --host-tools', content)
+
+    def test_package_sdk_preflight_requires_schema_two_contract_and_r10_closure(self):
+        content = (ROOT / "scripts/verify-package-sdk.py").read_text()
+        self.assertIn('PACKAGE_KIND = "tdvp-cpu0-sdk"', content)
+        self.assertIn('"package_build") is not True', content)
+        for path in ("usr/include/curses.h", "usr/lib/pkgconfig/ncursesw.pc",
+                     "usr/include/curl/curl.h", "usr/include/glib-2.0/glib.h",
+                     "usr/include/openssl/ssl.h", "usr/include/zlib.h"):
+            self.assertIn(path, content)
+
+    def test_package_sdk_preflight_checks_schema_two_development_closure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            sdk = Path(tmp) / "tdvp-sdk"
+            development = {category: list(paths) for category, paths in preflight.REQUIRED_DEVELOPMENT.items()}
+            for paths in development.values():
+                for relative in paths:
+                    path = sdk / "sysroot" / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(b"fixture")
+            manifest = {
+                "schema": 2,
+                "kind": "tdvp-cpu0-sdk",
+                "capabilities": {"application_build": True, "package_build": True},
+                "development": development,
+            }
+            (sdk / "tdvp-sdk-manifest.json").write_text(json.dumps(manifest))
+            preflight.verify(sdk, check_host_tools=False)
+            (sdk / "sysroot/usr/include/curses.h").unlink()
+            with self.assertRaisesRegex(ValueError, "curses.h"):
+                preflight.verify(sdk, check_host_tools=False)
 
     def test_legacy_zip_never_executes_cross_compiled_probes(self):
         builder = (ROOT / "support/published-sdk-build.sh").read_text()

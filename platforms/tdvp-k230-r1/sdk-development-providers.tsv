@@ -1,7 +1,7 @@
 # package|SONAME|space-separated paths relative to TDVP_SDK_ROOT/sysroot
 # These providers are emitted from the locked r10 target runtime catalogue;
 # they have no source recipe because the image is their runtime authority.
-libglib-2.0|libglib-2.0.so.0|usr/include/glib-2.0/glib.h usr/lib/pkgconfig/glib-2.0.pc usr/lib/libglib-2.0.so
-libgtk-3|libgtk-3.so.0|usr/include/gtk-3.0/gtk/gtk.h usr/lib/pkgconfig/gtk+-3.0.pc usr/lib/libgtk-3.so
-libavcodec|libavcodec.so.59|usr/include/libavcodec/avcodec.h usr/lib/pkgconfig/libavcodec.pc usr/lib/libavcodec.so
-libavformat|libavformat.so.59|usr/include/libavformat/avformat.h usr/lib/pkgconfig/libavformat.pc usr/lib/libavformat.so
+libglib-2.0-0|libglib-2.0.so.0|usr/include/glib-2.0/glib.h usr/lib/pkgconfig/glib-2.0.pc usr/lib/libglib-2.0.so
+libgtk-3-0|libgtk-3.so.0|usr/include/gtk-3.0/gtk/gtk.h usr/lib/pkgconfig/gtk+-3.0.pc usr/lib/libgtk-3.so
+libavcodec-58|libavcodec.so.58|usr/include/libavcodec/avcodec.h usr/lib/pkgconfig/libavcodec.pc usr/lib/libavcodec.so
+libavformat-58|libavformat.so.58|usr/include/libavformat/avformat.h usr/lib/pkgconfig/libavformat.pc usr/lib/libavformat.so

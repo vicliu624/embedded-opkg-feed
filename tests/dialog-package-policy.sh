@@ -10,6 +10,7 @@ grep -Fqx "PACKAGE_SDK_DEVELOPMENT_FILES='usr/include/curses.h usr/lib/pkgconfig
 grep -Fqx 'PACKAGE_SOURCE_STAGING=0' "$repo_root/packages/libncursesw/package.env"
 grep -Fq 'BR2_USE_MMU=y BR2_ENABLE_LOCALE=y BR2_PACKAGE_NCURSES=y' "$repo_root/packages/dialog/build.sh"
 grep -Fq 'DIALOG_VERSION = 1.3-20220117' "$repo_root/packages/dialog/build.sh"
+grep -Fq 'dialog) options+=(--with-curses-lib=ncursesw) ;;' "$repo_root/support/published-sdk-build.sh"
 grep -Fq 'does not select the optional libiconv closure' "$repo_root/packages/dialog/source.lock"
 grep -Fq "SOURCE_ARTIFACT_2_FILE='pkgconf-2.3.0.tar.xz'" "$repo_root/packages/dialog/source.lock"
 echo 'locked-source dialog policy: PASS'

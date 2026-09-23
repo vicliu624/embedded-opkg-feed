@@ -7,6 +7,12 @@ IFS=$'\n\t'
 
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 
+# This script builds a synthetic platform fixture.  The r11 Action exports the
+# real device SDK and target root globally; allowing those values into the
+# fixture would combine its fake platform ABI with the real image closure.
+unset TDVP_FEED_BASE_ROOT TDVP_SDK_ROOT TDVP_READELF \
+  TDVP_IMAGE_PROVIDER_MANIFEST TDVP_RUNTIME_OWNER_MAP
+
 # The r10 batch workflow runs this policy entry point. Keep the generated
 # control-file contract for full-image runtime alternatives in that path as
 # well as in the lightweight CI job.
@@ -31,6 +37,8 @@ for script in \
   fetch-source-cache.sh \
   make-index.sh \
   verify-feed.sh \
+  verify-published-sdk-payload.py \
+  verify-runtime-closure.sh \
   verify-source-lock.sh; do
   cp -- "$repo_root/scripts/$script" "$fixture_root/scripts/$script"
 done

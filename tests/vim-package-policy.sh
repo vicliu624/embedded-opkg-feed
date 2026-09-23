@@ -43,14 +43,14 @@ for plugin in repeat surround commentary sleuth; do
   env_file="$repo_root/packages/vim-plugin-$plugin/package.env"
   expect_line "^PACKAGE='vim-plugin-$plugin'$" "$env_file"
   expect_line "^PACKAGE_KIND='runtime'$" "$env_file"
-  expect_line "^PACKAGE_RELEASES='r8 r9 r10'$" "$env_file"
+  expect_line "^PACKAGE_RELEASES='r8 r9 r10 r11'$" "$env_file"
   expect_line "^SOURCE_REVISION='[0-9a-f]{40}'$" "$env_file"
   expect_line "^SOURCE_ARCHIVE_SHA256='[0-9a-f]{64}'$" "$env_file"
   test -f "$repo_root/packages/vim-plugin-$plugin/source.lock"
 done
 
 expect_line "^PACKAGE='vim-plugin-gitgutter'$" "$repo_root/packages/vim-plugin-gitgutter/package.env"
-expect_line "^PACKAGE_RELEASES='r10'$" "$repo_root/packages/vim-plugin-gitgutter/package.env"
+expect_line "^PACKAGE_RELEASES='r10 r11'$" "$repo_root/packages/vim-plugin-gitgutter/package.env"
 expect_line "^PACKAGE_DEPENDS='vim-runtime \(= 9\.1\.0145-1\), git \(= 2\.48\.1-1\)'$" "$repo_root/packages/vim-plugin-gitgutter/package.env"
 expect_line "^UPSTREAM_LICENSE='MIT'$" "$repo_root/packages/vim-plugin-gitgutter/source.lock"
 

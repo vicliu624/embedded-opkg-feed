@@ -358,6 +358,7 @@ done <"$extra_owner_manifest"
 # are known.  This file is private release evidence: build-all uses it to
 # defer a matching source recipe, and it is removed before publication.
 while IFS= read -r soname; do
+  [[ -n "$soname" ]] || continue
   package=${soname_package[$soname]}
   version=${target_provider_version[$soname]}
   printf '%s|%s|%s\n' "$soname" "$package" "$version" >>"$owner_map"
@@ -365,6 +366,9 @@ while IFS= read -r soname; do
 done < <(printf '%s\n' "${!soname_package[@]}" | LC_ALL=C sort)
 
 while IFS= read -r soname; do
+  # With zero source-built extra owners, Bash expands the associative-array
+  # key list to one empty record.  There is no package key for that record.
+  [[ -n "$soname" ]] || continue
   printf '%s|%s|%s\n' "$soname" "${extra_owner_package[$soname]}" "${extra_owner_version[$soname]}" >>"$owner_map"
 done < <(printf '%s\n' "${!extra_owner_package[@]}" | LC_ALL=C sort)
 

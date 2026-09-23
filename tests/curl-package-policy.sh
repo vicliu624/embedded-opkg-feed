@@ -18,7 +18,7 @@ expect_line() {
 expect_line "^PACKAGE='curl'$" "$package_dir/package.env"
 expect_line "^VERSION='8[.]12[.]1-1'$" "$package_dir/package.env"
 expect_line "^PACKAGE_KIND='application'$" "$package_dir/package.env"
-expect_line "^PACKAGE_RELEASES='r10'$" "$package_dir/package.env"
+expect_line "^PACKAGE_RELEASES='r10 r11'$" "$package_dir/package.env"
 expect_line "^PACKAGE_DEPENDS='libcurl-4 \\(= 8[.]12[.]1-1\\), ca-certificates \\(= 2025[.]02[.]1-1\\)'$" "$package_dir/package.env"
 expect_line "^PACKAGE_BUILD_DEPENDS=''$" "$package_dir/package.env"
 expect_line '^PACKAGE_AUTO_RUNTIME_DEPENDS=1$' "$package_dir/package.env"

@@ -342,6 +342,10 @@ target_catalogue_has_package() {
 # version match exactly.
 assert_runtime_catalogue_package() {
   local package=$1 version staged_version
+  # A regular feed build has no target-runtime catalogue.  Do not pass an
+  # empty filename to awk: it would read this build process's standard input
+  # and wait indefinitely.
+  [[ -n "$runtime_catalogue_package_manifest" && -s "$runtime_catalogue_package_manifest" ]] || return 0
   version=$(read_recipe_value "${recipe_dir[$package]}/package.env" VERSION)
   staged_version=$(awk -F '|' -v package="$package" '
     $1 == package { print $2; exit }

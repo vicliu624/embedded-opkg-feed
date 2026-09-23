@@ -10,10 +10,10 @@ on:
       release:
         description: Immutable feed revision to cross-build and audit
         required: true
-        default: r10
+        default: r11
         type: choice
         options:
-          - r10
+          - r11
 
 permissions:
   contents: read
@@ -61,14 +61,14 @@ jobs:
         uses: ./.github/actions/published-sdk
 
       - name: Install reviewed Go host for GitHub CLI source builds
-        if: inputs.release == 'r9' || inputs.release == 'r10'
+        if: inputs.release == 'r11'
         uses: actions/setup-go@v5
         with:
           go-version: '1.26.7'
           check-latest: false
 
       - name: Install reviewed Node v22 RISC-V source-build host
-        if: inputs.release == 'r10'
+        if: inputs.release == 'r11'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
@@ -109,7 +109,7 @@ jobs:
                 tdvp-dev-tools
               )
               ;;
-            r10)
+            r11)
               packages+=(
                 vim-runtime vim vim-plugin-repeat vim-plugin-surround vim-plugin-commentary vim-plugin-sleuth vim-plugin-gitgutter
                 libmgba sdl2 sdl2-ttf tdvp-gba tdvp-mpv tdvp-netsurf

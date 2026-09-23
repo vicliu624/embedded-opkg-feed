@@ -5,14 +5,14 @@ repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 for package in make pkgconf patch diffutils strace; do
   env_file="$repo_root/packages/$package/package.env"
   grep -Fqx "PACKAGE='$package'" "$env_file"
-  grep -Fqx "PACKAGE_RELEASES='r9 r10'" "$env_file"
+  grep -Fqx "PACKAGE_RELEASES='r9 r10 r11'" "$env_file"
   grep -Fq 'tdvp_buildroot_command_package' "$repo_root/packages/$package/build.sh"
   test -f "$repo_root/packages/$package/source.lock"
 done
 for package in tree less file which jq dos2unix grep sed findutils gawk htop nano; do
   env_file="$repo_root/packages/$package/package.env"
   grep -Fqx "PACKAGE='$package'" "$env_file"
-  grep -Fqx "PACKAGE_RELEASES='r10'" "$env_file"
+  grep -Fqx "PACKAGE_RELEASES='r10 r11'" "$env_file"
   grep -Fq 'tdvp_buildroot_command_package' "$repo_root/packages/$package/build.sh"
   test -f "$repo_root/packages/$package/source.lock"
 done
@@ -60,7 +60,8 @@ grep -Fqx "PACKAGE_KIND='shared-library'" "$repo_root/packages/libjq/package.env
 grep -Fq 'tdvp_build_archive_library' "$repo_root/packages/libjq/build.sh"
 test -f "$repo_root/packages/libjq/source.lock"
 grep -Fqx "PACKAGE_DEPENDS='libpcre2-8 (= 10.44-1)'" "$repo_root/packages/grep/package.env"
-grep -Fqx "PACKAGE_BUILD_DEPENDS='libpcre2-8'" "$repo_root/packages/grep/package.env"
+grep -Fqx "PACKAGE_BUILD_DEPENDS=''" "$repo_root/packages/grep/package.env"
+grep -Fqx "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libpcre2-8'" "$repo_root/packages/grep/package.env"
 grep -Fqx "PACKAGE='libpcre2-8'" "$repo_root/packages/libpcre2-8/package.env"
 grep -Fqx "PACKAGE_KIND='shared-library'" "$repo_root/packages/libpcre2-8/package.env"
 grep -Fq 'tdvp_build_archive_library' "$repo_root/packages/libpcre2-8/build.sh"
@@ -77,7 +78,8 @@ grep -Fqx "PACKAGE_SDK_DEVELOPMENT_FILES='usr/include/readline/readline.h usr/li
 grep -Fq 'tdvp_build_archive_library' "$repo_root/packages/libreadline/build.sh"
 test -f "$repo_root/packages/libreadline/source.lock"
 grep -Fqx "PACKAGE_DEPENDS='libreadline (= 8.2-1)'" "$repo_root/packages/gawk/package.env"
-grep -Fqx "PACKAGE_BUILD_DEPENDS='libreadline'" "$repo_root/packages/gawk/package.env"
+grep -Fqx "PACKAGE_BUILD_DEPENDS=''" "$repo_root/packages/gawk/package.env"
+grep -Fqx "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libreadline'" "$repo_root/packages/gawk/package.env"
 grep -Fq "'dos2unix'" "$repo_root/packages/dos2unix/build.sh"
 grep -Fq "TDVP_COMMAND_FRONTEND_NAMES='dos2unix=tdvp-dos2unix'" "$repo_root/packages/dos2unix/build.sh"
 grep -Fq "'grep'" "$repo_root/packages/grep/build.sh"

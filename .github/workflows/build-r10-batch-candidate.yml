@@ -1,4 +1,4 @@
-name: Build TDVP K230 r10 incremental feed batches
+name: Build TDVP K230 r11 incremental feed batches
 
 # All modes consume the hash-locked published SDK and image. No firmware build.
 on:
@@ -32,12 +32,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: tdvp-k230-r10-${{ inputs.mode }}-${{ inputs.batch }}-${{ github.ref }}
+  group: tdvp-k230-r11-${{ inputs.mode }}-${{ inputs.batch }}-${{ github.ref }}
   cancel-in-progress: false
 
 env:
-  TDVP_SDK_CACHE_KEY: tdvp-published-sdk-3bb9c586ef16661b30f5dd5d6be8a4cfc2ee3f93b9328566a0b7f62044b53e67
-  TDVP_RUNTIME_BASE_CACHE_SCHEMA: published-r10-v1
+  TDVP_SDK_CACHE_KEY: tdvp-published-sdk-43145ab90e678abb459e9cb618ec93fcd82aaa644b0633ddded91184c40941e9
+  TDVP_RUNTIME_BASE_CACHE_SCHEMA: published-r11-v1
 
 jobs:
   build-sdk-base:
@@ -69,7 +69,7 @@ jobs:
         id: restore-runtime-base
         uses: actions/cache/restore@v4
         with:
-          path: ${{ runner.temp }}/tdvp-r10-runtime-base
+          path: ${{ runner.temp }}/tdvp-r11-runtime-base
           key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ env.TDVP_RUNTIME_BASE_CACHE_SCHEMA }}-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
 
       - name: Package the target-runtime IPK base once
@@ -77,14 +77,14 @@ jobs:
         run: |
           set -Eeuo pipefail
           bash ./scripts/build-all.sh \
-            --platform tdvp-k230-r1 --release r10 \
-            --output "${RUNNER_TEMP}/tdvp-r10-runtime-base" \
+            --platform tdvp-k230-r1 --release r11 \
+            --output "${RUNNER_TEMP}/tdvp-r11-runtime-base" \
             --runtime-catalog-only
 
       - name: Verify provider alternatives in the target-runtime base
         run: |
           set -Eeuo pipefail
-          runtime_feed="${RUNNER_TEMP}/tdvp-r10-runtime-base/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64"
+          runtime_feed="${RUNNER_TEMP}/tdvp-r11-runtime-base/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r11/riscv64"
           # The runtime catalogue is an intentionally private cache input:
           # build-all rejects a Packages index when a later batch reuses it.
           # Verify its control archives in an isolated copy that has a
@@ -102,24 +102,24 @@ jobs:
         if: steps.restore-runtime-base.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: ${{ runner.temp }}/tdvp-r10-runtime-base
+          path: ${{ runner.temp }}/tdvp-r11-runtime-base
           key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ env.TDVP_RUNTIME_BASE_CACHE_SCHEMA }}-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
 
       - name: Upload target-runtime base evidence
         uses: actions/upload-artifact@v4
         with:
-          name: tdvp-k230-r10-runtime-base-evidence-${{ github.sha }}
+          name: tdvp-k230-r11-runtime-base-evidence-${{ github.sha }}
           path: |
-            ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-runtime-owners.tsv
-            ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-runtime-ownership.tsv
-            ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-target-runtime-packages.tsv
-            ${{ runner.temp }}/tdvp-r10-runtime-base/**/.tdvp-image-runtime-providers.tsv
+            ${{ runner.temp }}/tdvp-r11-runtime-base/**/.tdvp-runtime-owners.tsv
+            ${{ runner.temp }}/tdvp-r11-runtime-base/**/.tdvp-runtime-ownership.tsv
+            ${{ runner.temp }}/tdvp-r11-runtime-base/**/.tdvp-target-runtime-packages.tsv
+            ${{ runner.temp }}/tdvp-r11-runtime-base/**/.tdvp-image-runtime-providers.tsv
           if-no-files-found: error
           retention-days: 14
           include-hidden-files: true
 
   build-package-batch:
-    name: Build r10 ${{ inputs.batch }} without rebuilding the SDK
+    name: Build r11 ${{ inputs.batch }} without rebuilding the SDK
     if: inputs.mode == 'build-package-batch'
     runs-on: ubuntu-24.04
     timeout-minutes: 180
@@ -133,22 +133,22 @@ jobs:
       - name: Restore or create the hash-locked source cache
         uses: actions/cache@v4
         with:
-          path: ${{ runner.temp }}/tdvp-r10-source-cache
-          key: tdvp-k230-r10-source-${{ hashFiles('packages/**/source.lock') }}
+          path: ${{ runner.temp }}/tdvp-r11-source-cache
+          key: tdvp-k230-r11-source-${{ hashFiles('packages/**/source.lock') }}
 
       - name: Restore the required target-runtime IPK base
         uses: actions/cache/restore@v4
         with:
-          path: ${{ runner.temp }}/tdvp-r10-runtime-base
+          path: ${{ runner.temp }}/tdvp-r11-runtime-base
           key: ${{ env.TDVP_SDK_CACHE_KEY }}-runtime-${{ env.TDVP_RUNTIME_BASE_CACHE_SCHEMA }}-${{ hashFiles('platforms/tdvp-k230-r1/platform.env', 'platforms/tdvp-k230-r1/*.tsv', 'scripts/build-runtime-catalog.sh', 'scripts/build-ipk.sh', 'support/elf-runtime-policy.sh') }}
           fail-on-cache-miss: true
 
       - name: Materialize the immutable target-runtime base for this batch
         run: |
           set -Eeuo pipefail
-          test -d "${RUNNER_TEMP}/tdvp-r10-runtime-base"
+          test -d "${RUNNER_TEMP}/tdvp-r11-runtime-base"
           mkdir -p candidate-dist
-          cp -a "${RUNNER_TEMP}/tdvp-r10-runtime-base/." candidate-dist/
+          cp -a "${RUNNER_TEMP}/tdvp-r11-runtime-base/." candidate-dist/
 
       - name: Retrieve the attested prior Audacious layer
         if: inputs.batch == 'audacious-plugins' || inputs.batch == 'audacious-app'
@@ -171,7 +171,7 @@ jobs:
           mapfile -t artifacts < <(
             gh api --paginate \
               "repos/$GITHUB_REPOSITORY/actions/runs/$TDVP_DEPENDENCY_RUN_ID/artifacts" \
-              --jq ".artifacts[].name | select(test(\"^tdvp-k230-r10-${expected_batch}-unsigned-\"))"
+              --jq ".artifacts[].name | select(test(\"^tdvp-k230-r11-${expected_batch}-unsigned-\"))"
           )
           [[ ${#artifacts[@]} -eq 1 ]] || {
             echo "run $TDVP_DEPENDENCY_RUN_ID must expose exactly one $expected_batch artifact" >&2
@@ -191,8 +191,8 @@ jobs:
           [[ -n "$staging" && -d "$staging/usr" ]] || { echo 'prior Audacious layer has no usable private staging state' >&2; exit 68; }
           mkdir -p "$RUNNER_TEMP/tdvp-audacious-import"
           cp -a -- "$staging/." "$RUNNER_TEMP/tdvp-audacious-import/"
-          feed_dir=$(find "$incoming_root" -type d -path '*/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64' -print -quit)
-          [[ -n "$feed_dir" ]] || { echo 'prior Audacious layer has no r10 feed directory' >&2; exit 68; }
+          feed_dir=$(find "$incoming_root" -type d -path '*/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r11/riscv64' -print -quit)
+          [[ -n "$feed_dir" ]] || { echo 'prior Audacious layer has no r11 feed directory' >&2; exit 68; }
           while IFS=$'\t' read -r record digest filename; do
             [[ "$record" == ipk ]] || continue
             [[ "$digest" =~ ^[0-9a-f]{64}$ && "$filename" =~ ^[A-Za-z0-9+._-]+\.ipk$ ]] || {
@@ -205,7 +205,7 @@ jobs:
               exit 69
             }
           done <"$manifest"
-          target_feed='candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          target_feed='candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r11/riscv64'
           find "$feed_dir" -maxdepth 1 -type f -name '*.ipk' -exec cp -- {} "$target_feed/" \;
 
       - name: Check the selected batch policy
@@ -224,13 +224,13 @@ jobs:
       - name: Preflight the reviewed GBA source archive
         if: inputs.batch == 'games'
         env:
-          TDVP_GBA_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r10-source-cache
+          TDVP_GBA_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r11-source-cache
         run: bash ./tests/tdvp-gba-source-archive-policy.sh
 
       - name: Preflight the reviewed SDL2 PulseAudio patch
         if: inputs.batch == 'games'
         env:
-          TDVP_SDL2_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r10-source-cache
+          TDVP_SDL2_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r11-source-cache
         run: bash ./tests/sdl2-pulseaudio-patch-policy.sh
 
       - name: Install the reviewed Go host for development-tools
@@ -303,7 +303,7 @@ jobs:
             netsurf)
               # Keep the first real image-provider installation proof narrow:
               # NetSurf is a reusable immutable payload, so this batch only
-              # rebuilds its control archive against the r10 runtime graph.
+              # rebuilds its control archive against the r11 runtime graph.
               package_args=(--package tdvp-netsurf)
               expected_packages=(tdvp-netsurf)
               ;;
@@ -339,8 +339,8 @@ jobs:
           # Only selected SHA-256-locked source inputs are fetched. The result
           # is an unsigned partial candidate; it does not publish a release.
           bash ./scripts/build-all.sh \
-            --platform tdvp-k230-r1 --release r10 \
-            --output candidate-dist --source-cache "${RUNNER_TEMP}/tdvp-r10-source-cache" \
+            --platform tdvp-k230-r1 --release r11 \
+            --output candidate-dist --source-cache "${RUNNER_TEMP}/tdvp-r11-source-cache" \
             --require-source-locks --reuse-runtime-catalog "${package_args[@]}"
 
           case "${{ inputs.batch }}" in
@@ -349,14 +349,14 @@ jobs:
               ;;
           esac
 
-          feed_dir='candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          feed_dir='candidate-dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r11/riscv64'
           test -s "$feed_dir/Packages"
           for package in "${expected_packages[@]}"; do
             find "$feed_dir" -maxdepth 1 -type f -name "${package}_*.ipk" -print -quit | grep -q .
             grep -Eq "^Package: ${package}$" "$feed_dir/Packages"
           done
           bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
-          runtime_feed="${RUNNER_TEMP}/tdvp-r10-runtime-base/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64"
+          runtime_feed="${RUNNER_TEMP}/tdvp-r11-runtime-base/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r11/riscv64"
           provider_map="$runtime_feed/.tdvp-image-runtime-providers.tsv"
           test -s "$provider_map"
           bash ./scripts/verify-image-provider-alternatives.sh \
@@ -389,7 +389,7 @@ jobs:
         if: inputs.batch != 'audacious-foundation'
         uses: actions/upload-artifact@v4
         with:
-          name: tdvp-k230-r10-${{ inputs.batch }}-unsigned-${{ github.sha }}
+          name: tdvp-k230-r11-${{ inputs.batch }}-unsigned-${{ github.sha }}
           path: |
             candidate-dist
             candidate-staging
@@ -401,13 +401,13 @@ jobs:
         if: inputs.batch == 'audacious-foundation'
         uses: actions/upload-artifact@v4
         with:
-          name: tdvp-k230-r10-audacious-foundation-state-${{ github.sha }}
+          name: tdvp-k230-r11-audacious-foundation-state-${{ github.sha }}
           path: candidate-foundation-evidence
           if-no-files-found: error
           retention-days: 14
 
   merge-package-batches:
-    name: Merge verified r10 batches without recompiling
+    name: Merge verified r11 batches without recompiling
     if: inputs.mode == 'merge-batches'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -424,13 +424,13 @@ jobs:
           TDVP_SOURCE_RUN_IDS: ${{ inputs.source_run_ids }}
         run: |
           set -Eeuo pipefail
-          expected_release_path='tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
+          expected_release_path='tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r11/riscv64'
           [[ "$TDVP_SOURCE_RUN_IDS" =~ ^[0-9]+(,[0-9]+)*$ ]] || {
             echo 'merge-batches requires a comma-separated list of GitHub Actions run IDs' >&2
             exit 64
           }
 
-          incoming_root="${RUNNER_TEMP}/tdvp-r10-incoming"
+          incoming_root="${RUNNER_TEMP}/tdvp-r11-incoming"
           merged_feed="candidate-merged/$expected_release_path"
           mkdir -p "$incoming_root" "$merged_feed"
           IFS=',' read -r -a run_ids <<< "$TDVP_SOURCE_RUN_IDS"
@@ -445,7 +445,7 @@ jobs:
             mkdir -p "$run_dir"
             mapfile -t artifacts < <(
               gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts" \
-                --jq '.artifacts[].name | select(test("^tdvp-k230-r10-.*-unsigned-"))'
+              --jq '.artifacts[].name | select(test("^tdvp-k230-r11-.*-unsigned-"))'
             )
             [[ ${#artifacts[@]} -eq 1 ]] || {
               echo "run $run_id must expose exactly one unsigned incremental batch artifact" >&2
@@ -498,8 +498,8 @@ jobs:
       - name: Re-index and validate the merged candidate without compiling
         run: |
           set -Eeuo pipefail
-          feed_dir='candidate-merged/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64'
-          incoming_root="${RUNNER_TEMP}/tdvp-r10-incoming"
+          feed_dir='candidate-merged/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r11/riscv64'
+          incoming_root="${RUNNER_TEMP}/tdvp-r11-incoming"
           bash ./scripts/make-index.sh "$feed_dir"
           bash ./scripts/verify-feed.sh --platform tdvp-k230-r1 "$feed_dir"
           provider_map=$(find "$incoming_root" -type f -name .tdvp-image-runtime-providers.tsv -print -quit)
@@ -515,7 +515,7 @@ jobs:
       - name: Upload the merged unsigned candidate
         uses: actions/upload-artifact@v4
         with:
-          name: tdvp-k230-r10-merged-unsigned-${{ github.sha }}
+          name: tdvp-k230-r11-merged-unsigned-${{ github.sha }}
           path: candidate-merged
           if-no-files-found: error
           retention-days: 14

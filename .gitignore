@@ -9,6 +9,9 @@ __pycache__/
 *.tar.xz
 *.sig
 *.asc
+# Package hooks materialize their payload under this directory.  It is a
+# transient build artifact and must never appear as recipe source.
+packages/*/root
 # Feed index signatures are release artifacts, not local signing material.
 # Keep generic detached signatures ignored, but let `git add -- site` include
 # the two public signatures that opkg clients must fetch with each index.

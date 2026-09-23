@@ -18,7 +18,7 @@ expect_line() {
 expect_line "^PACKAGE='libpopt'$" "$package_dir/package.env"
 expect_line "^VERSION='1[.]19-1'$" "$package_dir/package.env"
 expect_line "^PACKAGE_KIND='shared-library'$" "$package_dir/package.env"
-expect_line "^PACKAGE_RELEASES='r10'$" "$package_dir/package.env"
+expect_line "^PACKAGE_RELEASES='r10 r11'$" "$package_dir/package.env"
 expect_line '^PACKAGE_DEPENDS='"''"'$' "$package_dir/package.env"
 expect_line '^PACKAGE_AUTO_RUNTIME_DEPENDS=1$' "$package_dir/package.env"
 expect_line "BR2_PACKAGE_POPT popt 'libpopt[.]so[.]0\*'" "$package_dir/build.sh"

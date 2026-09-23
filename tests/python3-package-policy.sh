@@ -37,7 +37,7 @@ bash -n "$helper" \
 for package in libpython3.13 python3-runtime python3; do
   package_dir="$repo_root/packages/$package"
   expect_line "PACKAGE='$package'" "$package_dir/package.env"
-  expect_line "PACKAGE_RELEASES='r10'" "$package_dir/package.env"
+  expect_line "PACKAGE_RELEASES='r10 r11'" "$package_dir/package.env"
   expect_line "SOURCE_ARCHIVE='$expected_archive'" "$package_dir/package.env"
   expect_line "SOURCE_ARCHIVE_SHA256='$expected_sha'" "$package_dir/package.env"
   expect_line "UPSTREAM_NAME='CPython'" "$package_dir/source.lock"

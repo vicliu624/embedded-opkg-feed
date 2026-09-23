@@ -20,7 +20,7 @@ for package in git git-runtime; do
   package_dir="$repo_root/packages/$package"
   expect_line "^PACKAGE='$package'$" "$package_dir/package.env"
   expect_line "^VERSION='2[.]48[.]1-1'$" "$package_dir/package.env"
-  expect_line "^PACKAGE_RELEASES='r10'$" "$package_dir/package.env"
+  expect_line "^PACKAGE_RELEASES='r10 r11'$" "$package_dir/package.env"
   expect_line "^SOURCE_REVISION='2[.]48[.]1'$" "$package_dir/package.env"
   expect_line "^SOURCE_ARCHIVE_SHA256='1c5d545f5dc1eb51e95d2c50d98fdf88b1a36ba1fa30e9ae5d5385c6024f82ad'$" "$package_dir/package.env"
   test -f "$package_dir/source.lock"

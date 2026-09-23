@@ -11,7 +11,7 @@ for package in libbz2 liblzma libzstd archive-tools; do
   test -f "$repo_root/packages/$package/package.env"
   test -f "$repo_root/packages/$package/source.lock"
   grep -Fqx "PACKAGE='$package'" "$repo_root/packages/$package/package.env"
-  grep -Fqx "PACKAGE_RELEASES='r9 r10'" "$repo_root/packages/$package/package.env"
+  grep -Fqx "PACKAGE_RELEASES='r9 r10 r11'" "$repo_root/packages/$package/package.env"
 done
 grep -Fqx 'libbz2.so.1.0|libbz2|1.0.8-1' <<<"$owner_map"
 grep -Fqx 'liblzma.so.5|liblzma|5.6.4-1' <<<"$owner_map"

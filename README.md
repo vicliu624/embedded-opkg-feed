@@ -87,12 +87,12 @@ export TDVP_FEED_BASE_ROOT=/path/to/new-inputs/target
 export TDVP_IMAGE_PROVIDER_MANIFEST="$TDVP_SDK_ROOT/metadata/tdvp-image-base.json"
 export TDVP_K230_WAYLAND_SDK_OVERLAY=/path/to/new-overlay
 bash scripts/prepare-published-sdk-overlay.sh "$TDVP_SDK_ROOT" "$TDVP_K230_WAYLAND_SDK_OVERLAY"
-./scripts/build-all.sh --platform tdvp-k230-r1 --release r10 --output dist
+./scripts/build-all.sh --platform tdvp-k230-r1 --release r11 --output dist
 ./scripts/verify-feed.sh --platform tdvp-k230-r1 \
-  dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r10/riscv64
+dist/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r11/riscv64
 ```
 
-r10 使用固件 Release `v2026.09.12-r10` 发布的 CPU0 SDK 与配套镜像，
+r11 使用固件 Release `v2026.09.23-r11` 发布的 CPU0 package-build SDK 与配套镜像，
 归档哈希固定在 `platforms/tdvp-k230-r1/platform.env`。构建机为 Ubuntu 24.04 x86_64，
 所需宿主工具见 `.github/actions/published-sdk/action.yml`。不需要固件 checkout、
 `/opt/toolchain` 或预先完成的 Buildroot 输出目录。输入、暂存区与运行时清单的边界见

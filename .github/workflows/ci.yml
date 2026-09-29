@@ -41,6 +41,7 @@ jobs:
           python3 ./tests/image-backed-compose.py
           python3 ./tests/image-reference-audit.py
           bash ./tests/image-backed-finalization-preflight.sh
+          bash ./tests/image-report-publication.sh
           bash ./tests/audacious-package-policy.sh
           bash ./tests/tdvp-wayland-sdk-overlay-protocols.sh
           python3 ./tests/buildroot-image-ownership.py

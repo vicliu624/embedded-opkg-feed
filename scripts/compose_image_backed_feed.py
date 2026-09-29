@@ -20,6 +20,7 @@ import tarfile
 import tempfile
 
 from image_backed_payload import plan_image_payload
+from image_candidate_history import load_previous_candidate, projected_version, compare_versions
 
 DEPENDENCY_FIELDS = ("Depends", "Pre-Depends", "Recommends", "Suggests")
 NAME = r"[a-z0-9][a-z0-9+.-]*"
@@ -114,7 +115,7 @@ def rewrite_dependencies(value, packages, versions, image_packages):
     return ", ".join(groups)
 
 
-def compose_image_backed_feed(source, image, manifest_digest, output):
+def compose_image_backed_feed(source, image, manifest_digest, output, previous=None):
     source, image = Path(source).resolve(), Path(image).resolve()
     output = Path(output).parent.resolve() / Path(output).name
     if os.path.lexists(output):
@@ -123,6 +124,7 @@ def compose_image_backed_feed(source, image, manifest_digest, output):
         raise ValueError("candidate parent directory must exist")
     if output.is_relative_to(source) or output.is_relative_to(image):
         raise ValueError("candidate must be outside input trees")
+    history = load_previous_candidate(previous, control_fields)
     with tempfile.TemporaryDirectory(prefix="tdvp-image-compose-", dir=output.parent) as temporary:
         work = Path(temporary)
         candidate = work / "candidate"
@@ -146,6 +148,8 @@ def compose_image_backed_feed(source, image, manifest_digest, output):
                               "data": payload_data, "atoms": atoms}
         if not packages:
             raise ValueError("no input IPKs")
+        if history.keys() - packages.keys():
+            raise ValueError("previous packages missing from candidate: " + ", ".join(sorted(history.keys() - packages.keys())))
         image_packages = json.loads((image / "usr/share/tdvp/opkg/image-base.json").read_text())["installed_packages"]
         changed = {name for name, package in packages.items() if package["plan"]["image_files"]
                    or any(atom[0].startswith("tdvp-image-") for atom in package["atoms"])}
@@ -155,7 +159,7 @@ def compose_image_backed_feed(source, image, manifest_digest, output):
             if expanded == changed:
                 break
             changed = expanded
-        versions = {}
+        versions, composition = {}, {}
         for name in sorted(changed):
             reachable, pending = set(), [name]
             while pending:
@@ -164,14 +168,19 @@ def compose_image_backed_feed(source, image, manifest_digest, output):
                     continue
                 reachable.add(dependency)
                 pending.extend(atom[0] for atom in packages[dependency]["atoms"])
-            identity = {"format": 2, "image": manifest_digest,
+            identity = {"format": 3, "image": manifest_digest,
                         "inputs": {item: packages[item]["sha256"] for item in sorted(reachable)}}
-            suffix = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:20]
-            versions[name] = packages[name]["fields"]["Version"] + "+tdvpimg." + suffix
+            digest = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
+            version, revision, reused = projected_version(packages[name]["fields"]["Version"], digest, history.get(name))
+            versions[name] = version
+            composition[name] = (digest, revision, reused)
         report = {"schema": 1, "image_manifest_sha256": manifest_digest, "packages": {}}
         for name, package in sorted(packages.items()):
             fields, plan, staging = dict(package["fields"]), package["plan"], package["staging"]
             if name not in changed:
+                old = history.get(name)
+                if old and old['sha256'] != package['sha256'] and not compare_versions(fields['Version'], 'gt', old['fields']['Version']):
+                    raise ValueError('changed raw package requires a higher version: ' + name)
                 shutil.copyfile(package["source"], candidate / package["source"].name)
                 report["packages"][name] = {"version": fields["Version"], "reused": True, "source_sha256": package["sha256"]}
                 continue
@@ -182,6 +191,10 @@ def compose_image_backed_feed(source, image, manifest_digest, output):
                 if fields.get(key):
                     fields[key] = rewrite_dependencies(fields[key], packages, versions, image_packages)
             fields["Version"] = versions[name]
+            identity, revision, reuse_previous = composition[name]
+            fields["X-TDVP-Source-Version"] = package["fields"]["Version"]
+            fields["X-TDVP-Composition-Identity"] = identity
+            fields["X-TDVP-Composition-Revision"] = str(revision)
             fields["X-TDVP-Image-Manifest-SHA256"] = manifest_digest
             fields["X-TDVP-Image-Plan-SHA256"] = hashlib.sha256(json.dumps(plan, sort_keys=True).encode()).hexdigest()
             if plan["image_files"]:
@@ -224,8 +237,11 @@ def compose_image_backed_feed(source, image, manifest_digest, output):
             (staging / "data.tar.gz").write_bytes(package["data"])
             (staging / "debian-binary").write_bytes(b"2.0\n")
             filename = name + "_" + fields["Version"] + "_riscv64.ipk"
-            subprocess.run(["ar", "rD", str(candidate / filename), "debian-binary", "control.tar.gz", "data.tar.gz"],
-                           cwd=staging, check=True, capture_output=True)
+            if reuse_previous:
+                shutil.copyfile(history[name]['ipk'], candidate / filename)
+            else:
+                subprocess.run(["ar", "rD", str(candidate / filename), "debian-binary", "control.tar.gz", "data.tar.gz"],
+                               cwd=staging, check=True, capture_output=True)
             report["packages"][name] = {"version": fields["Version"], "reused": False,
                                         "source_sha256": package["sha256"], "plan": plan}
         (candidate / "image-backed-report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
@@ -240,9 +256,10 @@ if __name__ == "__main__":
     parser.add_argument("--image-root", required=True)
     parser.add_argument("--image-manifest-sha256", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--previous", help="previous verified candidate, required after the first publication")
     args = parser.parse_args()
     try:
-        result = compose_image_backed_feed(args.source, args.image_root, args.image_manifest_sha256, args.output)
+        result = compose_image_backed_feed(args.source, args.image_root, args.image_manifest_sha256, args.output, args.previous)
     except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:
         parser.exit(1, str(error) + "\n")
     print(json.dumps({"packages": len(result["packages"]),

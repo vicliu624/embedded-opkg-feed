@@ -29,12 +29,26 @@ also receive exact versions, so an older image cannot satisfy them solely by
 having the same owner names. This requires the maintenance opkg fix that checks
 constraints on held candidates.
 
-Changed packages receive a `+tdvpimg.<digest>` version suffix. Its identity
+Changed packages receive a `+tdvpimg.<revision>.<digest>` version suffix. Its identity
 includes composition format, image manifest and the input IPK hashes in that
 package's dependency closure. Adding an unrelated package leaves existing
 versions and bytes unchanged. Changes to a dependency's input also invalidate
 affected consumer identities. Unaffected IPKs are copied byte-for-byte. New
 application payloads are not recompiled during composition.
+
+For subsequent compositions, pass `--previous <verified-candidate-directory>`
+to the composer. It verifies the predecessor's index, IPKs and bound report;
+signature authentication is a caller responsibility. Unchanged identities reuse
+the predecessor's version and IPK bytes. Changed identities increment the
+composition revision, including affected consumers, so content hashes never
+determine upgrade ordering. Source downgrades, omitted predecessor packages,
+changed unprojected bytes without a higher version, and experimental hash-only
+predecessors are rejected. The version policy uses Debian ordering through
+`dpkg`; native opkg upgrade tests verify the emitted version behavior.
+
+Production predecessor selection must be wired and verified before publication;
+calling the composer without a predecessor is only suitable for initial candidate
+generation. The earlier hash-only candidates were experimental and unpublished.
 
 `image-backed-report.json` records input hashes, generated versions and file
 plans. Each changed package carries the image-manifest and plan hashes in its
@@ -62,6 +76,7 @@ Run the filesystem and composition tests with Python 3.12 or newer:
 python3 tests/image-backed-payload.py
 python3 tests/image-reference-audit.py
 TDVP_TEST_OPKG=/path/to/patched/native/opkg python3 tests/image-backed-compose.py
+TDVP_TEST_OPKG=/path/to/patched/native/opkg python3 tests/image-backed-upgrade.py
 ```
 
 The native test uses isolated offline roots and inert package files. It verifies

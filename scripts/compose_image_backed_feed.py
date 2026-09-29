@@ -26,7 +26,7 @@ NAME = r"[a-z0-9][a-z0-9+.-]*"
 ATOM = re.compile(r"^\s*(" + NAME + r")(?:\s*\((=|>=|<=|>>|<<|>|<)\s*([^()\s]+)\))?\s*$")
 
 
-def control_fields(text):
+def control_fields(text, allow_projected=False):
     fields, previous = {}, None
     for line in text.splitlines():
         if line.startswith((" ", "\t")) and previous:
@@ -46,7 +46,7 @@ def control_fields(text):
         raise ValueError("invalid package version")
     if fields.get("Architecture") != "riscv64":
         raise ValueError("image-bound packages must use riscv64")
-    if "X-TDVP-Image-Manifest-SHA256" in fields:
+    if "X-TDVP-Image-Manifest-SHA256" in fields and not allow_projected:
         raise ValueError("already projected package; use its original build input")
     return fields
 

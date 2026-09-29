@@ -97,6 +97,12 @@ while IFS= read -r ipk; do
   mkdir -p -- "$archive/control" "$archive/root"
   ar p "$ipk" control.tar.gz | tar -xzf - -C "$archive/control"
   ar p "$ipk" data.tar.gz | tar -xzf - -C "$archive/root"
+  if grep -q '^X-TDVP-Image-' "$archive/control/control"; then
+    python3 "$script_dir/materialize_image_references.py" \
+      --control "$archive/control/control" --payload-root "$archive/root" \
+      --image-root "$base_root" --report "$feed_dir/image-backed-report.json" \
+      --image-manifest-sha256 "${IMAGE_OWNERSHIP_MANIFEST_SHA256:-}"
+  fi
   package=$(read_control_field "$archive/control/control" Package)
   depends=$(read_control_field "$archive/control/control" Depends)
   [[ -n "$package" ]] || { echo "package control is missing Package: $ipk" >&2; exit 71; }

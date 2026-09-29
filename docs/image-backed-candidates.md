@@ -39,13 +39,28 @@ application payloads are not recompiled during composition.
 `image-backed-report.json` records input hashes, generated versions and file
 plans. Each changed package carries the image-manifest and plan hashes in its
 control metadata; the generated index includes these fields. Signing is a
-separate operation. A verifier must validate the report against these hashes
-and the locked image before treating image-backed files as runtime providers.
+separate operation. `verify-runtime-closure.sh` and
+`verify-target-runtime-coverage.sh` validate the report through
+`materialize_image_references.py` before treating referenced files as providers.
+The expected manifest digest comes from `IMAGE_OWNERSHIP_MANIFEST_SHA256` in the
+selected platform lock. Report hashes, exact owner requirements, canonical paths,
+remaining payload contents and actual image-file metadata must all match.
+Verified files are copied only into disposable audit roots; the IPKs and base
+image remain untouched. Original ELF dependency, RPATH and unique-provider checks
+then run over these audit roots.
+
+```sh
+bash scripts/verify-runtime-closure.sh --platform tdvp-k230-r1 \
+  --base-root "$MATCHING_IMAGE_ROOT" "$NEW_CANDIDATE_DIRECTORY"
+bash scripts/verify-target-runtime-coverage.sh --platform tdvp-k230-r1 \
+  --base-root "$MATCHING_IMAGE_ROOT" "$NEW_CANDIDATE_DIRECTORY"
+```
 
 Run the filesystem and composition tests with Python 3.12 or newer:
 
 ```sh
 python3 tests/image-backed-payload.py
+python3 tests/image-reference-audit.py
 TDVP_TEST_OPKG=/path/to/patched/native/opkg python3 tests/image-backed-compose.py
 ```
 

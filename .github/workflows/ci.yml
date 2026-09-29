@@ -39,6 +39,7 @@ jobs:
           python3 ./tests/runtime-closure-search-path.py
           python3 ./tests/image-backed-payload.py
           python3 ./tests/image-backed-compose.py
+          python3 ./tests/image-reference-audit.py
           bash ./tests/audacious-package-policy.sh
           bash ./tests/tdvp-wayland-sdk-overlay-protocols.sh
           python3 ./tests/buildroot-image-ownership.py

@@ -41,14 +41,21 @@ to the composer. It verifies the predecessor's index, IPKs and bound report;
 signature authentication is a caller responsibility. Unchanged identities reuse
 the predecessor's version and IPK bytes. Changed identities increment the
 composition revision, including affected consumers, so content hashes never
-determine upgrade ordering. Source downgrades, omitted predecessor packages,
-changed unprojected bytes without a higher version, and experimental hash-only
+determine upgrade ordering. Changed feed-only payloads also receive an ordered
+composition revision, even when their upstream recipe version stays unchanged.
+Source downgrades, omitted predecessor packages and experimental hash-only
 predecessors are rejected. The version policy uses Debian ordering through
 `dpkg`; native opkg upgrade tests verify the emitted version behavior.
 
-Production predecessor selection must be wired and verified before publication;
-calling the composer without a predecessor is only suitable for initial candidate
-generation. The earlier hash-only candidates were experimental and unpublished.
+The merge workflow retrieves the signed immutable predecessor specified in
+`platforms/<platform>/feed-predecessor.json`. Its URL and index SHA256 are reviewed
+release inputs. `fetch-feed-predecessor.py` verifies both signatures before
+fetching packages, validates every payload, and checks reference reports when
+present. A matching local IPK cache avoids redundant downloads. The finalizer
+also checks signatures and requires this exact locked index. Update the lock to
+the newly published immutable release before preparing its successor; never
+point it at the mutable stable channel. The earlier hash-only candidates were
+experimental and unpublished.
 
 `image-backed-report.json` records input hashes, generated versions and file
 plans. Each changed package carries the image-manifest and plan hashes in its
@@ -95,7 +102,8 @@ requires a previously verified matching SDK and a raw indexed candidate:
 ```sh
 TDVP_SDK_ROOT="$MATCHING_SDK" bash scripts/finalize-image-backed-feed.sh \
   --platform tdvp-k230-r1 --base-root "$MATCHING_IMAGE_ROOT" \
-  --source "$RAW_INDEXED_CANDIDATE" --output "$NEW_FINAL_DIRECTORY"
+  --source "$RAW_INDEXED_CANDIDATE" --output "$NEW_FINAL_DIRECTORY" \
+  --previous "$VERIFIED_PREDECESSOR"
 ```
 
 The destination must not exist. Intermediate artifacts remain in a temporary
@@ -103,3 +111,6 @@ sibling directory until all checks pass; a failing check removes that temporary
 directory. The raw source IPKs remain unchanged and must be retained for future
 incremental composition. This entry point does not sign, promote or deploy a
 feed. Maintenance-image and device acceptance remain separate release gates.
+Omitting history is an error. `--initial` is an explicit alternative only for a
+platform's first candidate or isolated initial-candidate tests; the production
+merge workflow always supplies the locked predecessor.

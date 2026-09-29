@@ -94,6 +94,20 @@ class Upgrade(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'source version downgrade'):
             projected_version('1-1', '0' * 64, previous)
 
+    def test_changed_feed_only_payload_gets_revision(self):
+        first = self.compose('first')
+        staging = self.f.work / 'staging-independent'
+        (staging / 'payload/usr/bin/independent').write_bytes(b'updated')
+        (staging / 'data.tar.gz').write_bytes(fixture.archive_directory(staging / 'payload'))
+        subprocess.run(['ar', 'rD', str(self.f.source / 'independent_1-1_riscv64.ipk'), 'data.tar.gz'], cwd=staging, check=True)
+        second = self.compose('second', first)
+        fields = self.f.fields(next(second.glob('independent_*.ipk')))
+        self.assertEqual(fields['X-TDVP-Composition-Revision'], '1')
+        self.assertEqual(subprocess.run(['dpkg', '--compare-versions', fields['Version'], 'gt', '1-1']).returncode, 0)
+        third = self.compose('third', second)
+        for path in second.glob('*.ipk'):
+            self.assertEqual(path.read_bytes(), (third / path.name).read_bytes())
+
     def test_first_migration_from_plain_version_increases(self):
         version, revision, reused = projected_version('1-1', 'a' * 64, {'fields': {'Version': '1-1'}})
         self.assertEqual(revision, 1)

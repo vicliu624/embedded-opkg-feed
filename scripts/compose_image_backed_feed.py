@@ -153,6 +153,10 @@ def compose_image_backed_feed(source, image, manifest_digest, output, previous=N
         image_packages = json.loads((image / "usr/share/tdvp/opkg/image-base.json").read_text())["installed_packages"]
         changed = {name for name, package in packages.items() if package["plan"]["image_files"]
                    or any(atom[0].startswith("tdvp-image-") for atom in package["atoms"])}
+        # Feed-only libraries also need an ordered packaging revision when
+        # rebuilt or repackaged against the same upstream recipe version.
+        changed |= {name for name, package in packages.items()
+                    if name in history and history[name]['sha256'] != package['sha256']}
         while True:
             expanded = changed | {name for name, package in packages.items()
                                   if any(atom[0] in changed for atom in package["atoms"])}

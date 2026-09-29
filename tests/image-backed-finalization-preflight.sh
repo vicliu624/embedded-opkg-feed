@@ -7,15 +7,21 @@ mkdir "$work_root/base" "$work_root/source" "$work_root/existing"
 printf 'preserve\n' > "$work_root/existing/sentinel"
 set +e
 bash "$repo_root/scripts/finalize-image-backed-feed.sh" --platform tdvp-k230-r1 \
-  --base-root "$work_root/base" --source "$work_root/source" --output "$work_root/existing"
+  --base-root "$work_root/base" --source "$work_root/source" --output "$work_root/existing" --initial
 result=$?
 set -e
 [[ $result == 65 && $(cat "$work_root/existing/sentinel") == preserve ]]
 set +e
 env -u TDVP_SDK_ROOT bash "$repo_root/scripts/finalize-image-backed-feed.sh" \
   --platform tdvp-k230-r1 --base-root "$work_root/base" \
-  --source "$work_root/source" --output "$work_root/missing-sdk"
+  --source "$work_root/source" --output "$work_root/missing-sdk" --initial
 result=$?
 set -e
 [[ $result == 66 && ! -e "$work_root/missing-sdk" ]]
+set +e
+bash "$repo_root/scripts/finalize-image-backed-feed.sh" --platform tdvp-k230-r1 \
+  --base-root "$work_root/base" --source "$work_root/source" --output "$work_root/missing-history"
+result=$?
+set -e
+[[ $result == 64 && ! -e "$work_root/missing-history" ]]
 echo 'image-backed finalization preflight: PASS'

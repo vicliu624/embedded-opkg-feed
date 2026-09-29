@@ -2,8 +2,15 @@
 # Finalize verified raw build artifacts without compiling or signing packages.
 set -Eeuo pipefail
 IFS=$'\n\t'
-if [[ $# -ne 8 || "$1" != --platform || "$3" != --base-root || "$5" != --source || "$7" != --output ]]; then
-  echo "usage: $0 --platform <slug> --base-root <root> --source <raw-feed> --output <new-directory>" >&2
+if [[ $# -lt 9 || "$1" != --platform || "$3" != --base-root || "$5" != --source || "$7" != --output ]]; then
+  echo "usage: $0 --platform <slug> --base-root <root> --source <raw-feed> --output <new-directory> (--previous <signed-feed> | --initial)" >&2
+  exit 64
+fi
+history_args=()
+if [[ $# == 10 && "$9" == --previous ]]; then
+  history_args=(--previous "$(realpath -e -- "${10}")")
+elif [[ $# != 9 || "$9" != --initial ]]; then
+  echo 'choose --previous <signed-feed> or explicitly --initial' >&2
   exit 64
 fi
 platform=$2
@@ -22,6 +29,19 @@ tdvp_load_platform "$repo_root" "$platform"
   echo 'platform image ownership digest is missing' >&2; exit 67;
 }
 bash "$script_dir/verify-feed.sh" --platform "$platform" "$source_dir"
+if [[ ${#history_args[@]} -gt 0 ]]; then
+  bash "$script_dir/verify-feed.sh" --require-signature --platform "$platform" "${history_args[1]}"
+  python3 - "$repo_root/platforms/$platform/feed-predecessor.json" "${history_args[1]}/Packages" <<'PY'
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+lock = json.loads(Path(sys.argv[1]).read_text())
+if lock.get('schema') != 1 or hashlib.sha256(Path(sys.argv[2]).read_bytes()).hexdigest() != lock.get('index_sha256'):
+    raise SystemExit('predecessor differs from platform publication lock')
+PY
+fi
 # Allocate beside the destination so the final rename stays on one filesystem.
 mkdir -p -- "$(dirname -- "$output")"
 work_root=$(mktemp -d "$(dirname -- "$output")/.tdvp-finalize.XXXXXXXX")
@@ -29,7 +49,7 @@ trap 'rm -rf -- "$work_root"' EXIT
 candidate="$work_root/candidate"
 python3 "$script_dir/compose_image_backed_feed.py" \
   --source "$source_dir" --image-root "$base_root" \
-  --image-manifest-sha256 "$IMAGE_OWNERSHIP_MANIFEST_SHA256" --output "$candidate"
+  --image-manifest-sha256 "$IMAGE_OWNERSHIP_MANIFEST_SHA256" --output "$candidate" "${history_args[@]}"
 bash "$script_dir/verify-feed.sh" --platform "$platform" "$candidate"
 bash "$script_dir/verify-runtime-closure.sh" --platform "$platform" --base-root "$base_root" "$candidate"
 bash "$script_dir/verify-target-runtime-coverage.sh" --platform "$platform" --base-root "$base_root" "$candidate"

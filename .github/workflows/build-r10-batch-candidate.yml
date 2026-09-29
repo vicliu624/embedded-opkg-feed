@@ -508,9 +508,13 @@ jobs:
           bash ./scripts/verify-image-provider-alternatives.sh \
             --platform tdvp-k230-r1 --provider-map "$provider_map" "$feed_dir"
           final_dir="candidate-final/${feed_dir#candidate-merged/}"
+          predecessor="${RUNNER_TEMP}/tdvp-feed-predecessor"
+          python3 ./scripts/fetch-feed-predecessor.py \
+            --lock platforms/tdvp-k230-r1/feed-predecessor.json \
+            --public-key keys/tdvp-repo-public.asc --cache "$feed_dir" --output "$predecessor"
           bash ./scripts/finalize-image-backed-feed.sh \
             --platform tdvp-k230-r1 --base-root "$TDVP_FEED_BASE_ROOT" \
-            --source "$feed_dir" --output "$final_dir"
+            --source "$feed_dir" --output "$final_dir" --previous "$predecessor"
 
       - name: Retain raw merged packages for future incremental composition
         uses: actions/upload-artifact@v4

@@ -5,6 +5,13 @@
 *.yml text eol=lf
 *.md text eol=lf
 
+# Signed repository artifacts must retain their exact published bytes on every
+# host; checkout and archive conversion would invalidate detached signatures.
+site/feed/**/Packages -text
+site/feed/**/*.asc -text
+site/feed/**/*.gz -text
+site/feed/**/*.ipk -text
+
 # Embedded third-party patches use their own leading marker characters and may
 # carry tabs or an intentionally blank added line that must be retained for
 # `patch` to reproduce the upstream hunk.  Do not evaluate those patch-format

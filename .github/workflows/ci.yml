@@ -35,6 +35,7 @@ jobs:
           TDVP_FEED_SITE_ROOT="$channel_fixture/site" \
             bash ./scripts/verify-stable-channel.sh --platform tdvp-k230-r1
           bash ./tests/build-shared-package-policy.sh
+          python3 ./tests/desktop-cache-hooks.py
           bash ./tests/audacious-package-policy.sh
           bash ./tests/tdvp-wayland-sdk-overlay-protocols.sh
           python3 ./tests/buildroot-image-ownership.py

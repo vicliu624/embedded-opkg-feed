@@ -403,10 +403,11 @@ fi
 # Copy while preserving executable mode and symlinks. Payloads and build hooks
 # must be reviewed; a PR cannot promote generated release artifacts.
 cp -a -- "$payload_dir/." "$data_dir/"
+python3 "$script_dir/write-desktop-cache-hooks.py" "$data_dir" "$control_dir"
 (
   cd -- "$control_dir"
   tar --format=gnu --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
-    -cf - ./control | gzip -n -9 >"$work_dir/control.tar.gz"
+    -cf - . | gzip -n -9 >"$work_dir/control.tar.gz"
 )
 (
   cd -- "$data_dir"

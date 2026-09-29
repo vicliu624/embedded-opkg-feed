@@ -17,6 +17,7 @@ unset TDVP_FEED_BASE_ROOT TDVP_SDK_ROOT TDVP_READELF \
 # control-file contract for full-image runtime alternatives in that path as
 # well as in the lightweight CI job.
 bash "$repo_root/tests/build-shared-package-policy.sh"
+python3 "$repo_root/tests/desktop-cache-hooks.py"
 
 work_root=$(mktemp -d)
 cleanup() { rm -rf -- "$work_root"; }
@@ -38,6 +39,7 @@ for script in \
   make-index.sh \
   verify-feed.sh \
   verify-published-sdk-payload.py \
+  write-desktop-cache-hooks.py \
   verify-runtime-closure.sh \
   verify-source-lock.sh; do
   cp -- "$repo_root/scripts/$script" "$fixture_root/scripts/$script"

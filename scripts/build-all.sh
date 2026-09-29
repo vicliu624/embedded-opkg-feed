@@ -847,4 +847,5 @@ fi
 # normal Packages catalogue is the public inventory.
 rm -f -- "$feed_dir/.tdvp-runtime-owners.tsv" "$feed_dir/.tdvp-runtime-ownership.tsv" \
   "$feed_dir/.tdvp-target-runtime-packages.tsv" "$feed_dir/.tdvp-image-runtime-providers.tsv"
-echo "feed ready for offline signing: $feed_dir"
+echo "raw build candidate ready: $feed_dir"
+echo 'Run finalize-image-backed-feed.sh with the matching image and SDK before signing.'

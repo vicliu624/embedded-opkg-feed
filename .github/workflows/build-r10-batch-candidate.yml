@@ -507,16 +507,25 @@ jobs:
           install -m 0644 "$provider_map" "$feed_dir/.tdvp-image-runtime-providers.tsv"
           bash ./scripts/verify-image-provider-alternatives.sh \
             --platform tdvp-k230-r1 --provider-map "$provider_map" "$feed_dir"
-          bash ./scripts/verify-runtime-closure.sh \
-            --platform tdvp-k230-r1 --base-root "$TDVP_FEED_BASE_ROOT" "$feed_dir"
-          bash ./scripts/verify-target-runtime-coverage.sh \
-            --platform tdvp-k230-r1 --base-root "$TDVP_FEED_BASE_ROOT" "$feed_dir"
+          final_dir="candidate-final/${feed_dir#candidate-merged/}"
+          bash ./scripts/finalize-image-backed-feed.sh \
+            --platform tdvp-k230-r1 --base-root "$TDVP_FEED_BASE_ROOT" \
+            --source "$feed_dir" --output "$final_dir"
+
+      - name: Retain raw merged packages for future incremental composition
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdvp-k230-r11-merged-raw-${{ github.sha }}
+          path: candidate-merged
+          if-no-files-found: error
+          retention-days: 14
+          include-hidden-files: true
 
       - name: Upload the merged unsigned candidate
         uses: actions/upload-artifact@v4
         with:
           name: tdvp-k230-r11-merged-unsigned-${{ github.sha }}
-          path: candidate-merged
+          path: candidate-final
           if-no-files-found: error
           retention-days: 14
           include-hidden-files: true

@@ -69,3 +69,22 @@ installation, removal, exact owner constraints and base protection. It does not
 execute RISC-V applications or replace real device validation. The portable CI
 job runs archive and metadata tests; the native transaction case requires the
 explicit binary above and otherwise reports a skip.
+
+## Final candidate entry point
+
+`scripts/finalize-image-backed-feed.sh` combines input index verification,
+composition, output index verification, reference-aware runtime closure and
+coverage, and the released SDK's ELF policy for every delivered payload. It
+requires a previously verified matching SDK and a raw indexed candidate:
+
+```sh
+TDVP_SDK_ROOT="$MATCHING_SDK" bash scripts/finalize-image-backed-feed.sh \
+  --platform tdvp-k230-r1 --base-root "$MATCHING_IMAGE_ROOT" \
+  --source "$RAW_INDEXED_CANDIDATE" --output "$NEW_FINAL_DIRECTORY"
+```
+
+The destination must not exist. Intermediate artifacts remain in a temporary
+sibling directory until all checks pass; a failing check removes that temporary
+directory. The raw source IPKs remain unchanged and must be retained for future
+incremental composition. This entry point does not sign, promote or deploy a
+feed. Maintenance-image and device acceptance remain separate release gates.

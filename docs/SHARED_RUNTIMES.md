@@ -14,6 +14,24 @@ This is not a generic RISC-V repository. Every package is `riscv64`, belongs to 
 
 ## Composable-ownership contract
 
+### r11 verification status
+
+The released r11 image records preinstalled files under held, Essential
+`tdvp-image-*` packages. A byte-identical file in a catalogue IPK still has a
+different owner: opkg rejects an explicit installation with a file clash.
+`PACKAGE_BASE_OVERLAY=identical` checks payload equality during packaging; it
+does not transfer ownership in the installed database.
+
+Consumer dependencies can reuse image providers through declared alternatives.
+That does not prove every catalogue IPK can itself be installed on this image.
+The maintenance-image/feed work must resolve this distinction before promotion.
+Acceptance requires real isolated install/remove transactions, unchanged base
+files and ownership, and rejection of mismatched held-provider versions. A
+successful dependency plan or ELF closure check alone is insufficient.
+
+The following catalogue requirements describe the distribution contract. The
+independent-installation requirement is currently an open release blocker.
+
 From r4 forward, this is not an “application plus a few exception libraries” feed. It is a composable, distribution-style userland catalogue. The only runtime an application may assume implicitly from the base image is the ABI seed: all target dynamic loaders, glibc's `libc/libdl/libm/libpthread/librt`, `libgcc_s`, and `libstdc++`, alongside the kernel, drivers, and boot chain. Those components are not opkg-upgradeable.
 
 **Every other dynamic SONAME included in a feed release has exactly one independently installable IPK owner in that release.** The catalogue is deliberately completed incrementally: a new application may expose a library that no prior release needed. Before the leaf application is published, that library must enter the new feed release as a reusable provider; it must not be statically bundled into the application or silently borrowed from the target rootfs. A release's runtime catalogue packages the non-ABI SONAMEs, runtime data and loadable modules that are selected from its verified target; examples include GTK3/GLib, Wayland/EGL/Mesa, ALSA/PulseAudio, SDL2, libmGBA, libcurl, libpng, libjpeg, libutf8proc, the FFmpeg/MPV stack, `gtk3-data`, `gdk-pixbuf-loaders`, `glib-networking`, `pulse-modules`, `tdvp-gdk-committed-compat`, `tdvp-hardware-runtime`, `tdvp-runtime-libexec`, and `shared-mime-info`. The release verifier scans `/usr/lib`, `/usr/libexec`, `/usr/local/lib`, and `/usr/local/libexec`; local library locations are included specifically so custom shared objects cannot remain implicit base-image dependencies.
@@ -38,11 +56,21 @@ PACKAGE_KIND='shared-library'        # or application / runtime
 PACKAGE_RELEASES='r6'
 PACKAGE_SECTION='libraries'          # e.g. libraries, utils, desktop, games
 PACKAGE_BUILD_DEPENDS='sdl2'         # staging only
+PACKAGE_SDK_DEVELOPMENT_DEPENDS='libncursesw' # files from the released SDK
 PACKAGE_DEPENDS='sdl2 (= 2.30.11-1)' # opkg runtime relationship
 PACKAGE_AUTO_RUNTIME_DEPENDS=1       # derive remaining exact dependencies from ELF NEEDED
 ```
 
 `build-all.sh` constructs one temporary `TDVP_FEED_STAGING_ROOT`. Library recipes install headers, CMake metadata and unversioned linker symlinks there only. The resulting `.ipk` may contain only runtime `lib*.so*` files plus the package's own licence/documentation paths. The platform catalogue also splits every non-ABI target SONAME, plugin, and runtime-data set into independent `runtime` packages and generates a SONAME → `Package (= Version)` owner map. Application recipes link against the same staging root and do not copy those libraries into their own payload.
+
+`PACKAGE_SDK_DEVELOPMENT_DEPENDS` covers a different provider class: a runtime
+library already owned by the released image whose development interface is in
+the paired package-build SDK. Its library recipe declares
+`PACKAGE_SDK_DEVELOPMENT_FILES` once. `build-all.sh` validates those exact
+files in `TDVP_SDK_ROOT/sysroot` before fetching sources, then leaves the
+runtime dependency in `PACKAGE_DEPENDS`. This preserves the runtime and linker
+relationship without recompiling an ABI-owned base library into temporary
+staging.
 
 ## Mandatory release checks
 
@@ -51,7 +79,7 @@ Before an immutable feed is signed, the release build verifies:
 - each non-ABI SONAME has exactly one feed provider;
 - every non-ABI dynamically linked object already in `/usr/lib` or `/usr/libexec` has one byte-identical feed owner;
 - every application's or module's direct `NEEDED` SONAME is covered by an exact declared dependency, never by the target rootfs as a back door;
-- a base-image overlay is accepted only when file bytes, modes, and symlink targets are identical, making it a transfer of package ownership rather than a replacement;
+- payload equality checks cover bytes, modes, and symlink targets; separate installation tests must prove that file ownership remains unique and base protection is preserved;
 - a shared runtime cannot write protected loader/glibc/libstdc++ files;
 - two feed packages do not export the same ELF SONAME;
 - newly introduced payload ELF files have no RPATH/RUNPATH; legacy target ELF may retain one only after a byte-identical audit;

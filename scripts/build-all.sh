@@ -273,6 +273,7 @@ fi
 
 declare -A recipe_dir=()
 declare -A recipe_build_depends=()
+declare -A recipe_sdk_development_depends=()
 declare -A recipe_runtime_depends=()
 declare -A recipe_kind=()
 declare -A build_state=()
@@ -280,6 +281,7 @@ declare -A force_source_build=()
 declare -A provided_package=()
 declare -A runtime_catalogue_package=()
 declare -A source_staging_provider=()
+declare -A sdk_development_provider_files=()
 declare -A target_runtime_provider=()
 declare -A target_runtime_provider_sonames=()
 declare -a available_packages=()
@@ -302,8 +304,11 @@ read_recipe_value() {
 # needs every declared runtime package in its partial catalogue, so extract
 # only the package name while leaving version validation to build-ipk and
 # verify-feed. Build-only dependencies accept comma-separated or
-# space-delimited PACKAGE_BUILD_DEPENDS entries; normalisation occurs when
-# recipe metadata is loaded so every dependency-graph pass sees the same set.
+# space-delimited PACKAGE_BUILD_DEPENDS and PACKAGE_SDK_DEVELOPMENT_DEPENDS
+# entries; normalisation occurs when recipe metadata is loaded so every
+# dependency-graph pass sees the same set. The latter identifies development
+# files supplied by the immutable platform SDK and does not add a source-build
+# edge for an ABI-owned base library.
 emit_runtime_dependency_names() {
   local package=$1 raw dependency
   local -a dependencies=()
@@ -330,15 +335,17 @@ target_catalogue_has_package() {
   find "$feed_dir" -maxdepth 1 -type f -name "${package}_*.ipk" -print -quit | grep -q .
 }
 
-# A reused runtime catalogue is an immutable, explicitly attested input.  It
-# may already carry a data/runtime package that has a source recipe (for
-# example ca-certificates).  Defer only a package listed in the catalogue's
-# own manifest and only when the staged IPK control metadata has the exact
-# recipe name and version.  A failed source-build candidate cannot therefore
-# be mistaken for a reusable runtime provider.
+# The runtime catalogue is an immutable, explicitly attested provider set.
+# It may have been generated in this transaction or reused from a prior
+# runtime-base artifact. If it already carries a package that also has a
+# source recipe, defer the final source-built IPK when package name and
+# version match exactly.
 assert_runtime_catalogue_package() {
   local package=$1 version staged_version
-  [[ "$reuse_runtime_catalog" -eq 1 ]] || return 0
+  # A regular feed build has no target-runtime catalogue.  Do not pass an
+  # empty filename to awk: it would read this build process's standard input
+  # and wait indefinitely.
+  [[ -n "$runtime_catalogue_package_manifest" && -s "$runtime_catalogue_package_manifest" ]] || return 0
   version=$(read_recipe_value "${recipe_dir[$package]}/package.env" VERSION)
   staged_version=$(awk -F '|' -v package="$package" '
     $1 == package { print $2; exit }
@@ -378,6 +385,31 @@ if [[ -n "$target_runtime_provider_manifest" ]]; then
   done <"$target_runtime_provider_manifest"
 fi
 
+sdk_platform_provider_manifest="$repo_root/platforms/$platform_slug/sdk-development-providers.tsv"
+if [[ -f "$sdk_platform_provider_manifest" ]]; then
+  while IFS='|' read -r package soname provider_files; do
+    package=${package%$'\r'}
+    [[ -n "$package" && "$package" != \#* ]] || continue
+    [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ && -n "$soname" && -n "$provider_files" ]] || {
+      echo "invalid SDK platform provider record: $package" >&2
+      exit 73
+    }
+    [[ -n "${target_runtime_provider[$package]:-}" ]] || {
+      echo "SDK platform provider is absent from the target runtime catalogue: $package" >&2
+      exit 73
+    }
+    [[ " ${target_runtime_provider_sonames[$package]} " == *" $soname "* ]] || {
+      echo "SDK platform provider SONAME is not attested by the target runtime catalogue: $package $soname" >&2
+      exit 73
+    }
+    [[ -z "${sdk_development_provider_files[$package]:-}" ]] || {
+      echo "SDK platform provider duplicates a recipe provider: $package" >&2
+      exit 73
+    }
+    sdk_development_provider_files[$package]=$provider_files
+  done <"$sdk_platform_provider_manifest"
+fi
+
 while IFS= read -r package_env; do
   package_dir=$(dirname -- "$package_env")
   package=$(read_recipe_value "$package_env" PACKAGE)
@@ -390,6 +422,9 @@ while IFS= read -r package_env; do
   package_source_staging=${package_source_staging:-0}
   package_build_depends=$(read_recipe_value "$package_env" PACKAGE_BUILD_DEPENDS)
   package_build_depends=${package_build_depends//,/ }
+  package_sdk_development_depends=$(read_recipe_value "$package_env" PACKAGE_SDK_DEVELOPMENT_DEPENDS)
+  package_sdk_development_depends=${package_sdk_development_depends//,/ }
+  package_sdk_development_files=$(read_recipe_value "$package_env" PACKAGE_SDK_DEVELOPMENT_FILES)
   package_runtime_depends=$(read_recipe_value "$package_env" PACKAGE_DEPENDS)
 
   [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || {
@@ -400,10 +435,29 @@ while IFS= read -r package_env; do
     echo "invalid PACKAGE_SOURCE_STAGING for $package: $package_source_staging" >&2
     exit 66
   }
+  if [[ -n "$package_sdk_development_files" ]]; then
+    IFS=' ' read -r -a development_files <<< "$package_sdk_development_files"
+    for development_file in "${development_files[@]}"; do
+      [[ ( "$development_file" =~ ^usr/(include|lib|share)/[A-Za-z0-9_+./-]+$ || \
+           "$development_file" =~ ^usr/bin/[A-Za-z0-9_+.-]+-config$ ) && \
+         "$development_file" != *'..'* && "$development_file" != *'//' ]] || {
+        echo "invalid PACKAGE_SDK_DEVELOPMENT_FILES path for $package: $development_file" >&2
+        exit 66
+      }
+    done
+  fi
   if [[ " $supported_platforms " != *" $PLATFORM_SLUG "* ]] || \
      [[ " $package_releases " != *" $release "* ]]; then
     continue
   fi
+  # Keep this declaration even when the target-runtime catalogue defers the
+  # recipe itself. Consumers still need a reviewed record of the exact SDK
+  # files offered by that immutable runtime provider.
+  [[ -z "${sdk_development_provider_files[$package]:-}" ]] || {
+    echo "recipe SDK development provider duplicates a platform provider: $package" >&2
+    exit 67
+  }
+  sdk_development_provider_files[$package]=$package_sdk_development_files
   if [[ -n "${target_runtime_provider[$package]:-}" ]]; then
     target_version=${target_runtime_provider[$package]}
     target_sonames=${target_runtime_provider_sonames[$package]% }
@@ -429,6 +483,7 @@ while IFS= read -r package_env; do
   }
   recipe_dir[$package]=$package_dir
   recipe_build_depends[$package]=$package_build_depends
+  recipe_sdk_development_depends[$package]=$package_sdk_development_depends
   recipe_runtime_depends[$package]=$package_runtime_depends
   recipe_kind[$package]=$package_kind
   source_staging_provider[$package]=$package_source_staging
@@ -542,6 +597,58 @@ fi
   echo "no package recipes support $platform_slug feed $release" >&2
   exit 68
 }
+
+# Validate platform-SDK development dependencies after selection and before
+# source fetches or package hooks. A provider names its headers, pkg-config
+# metadata and linker names once through PACKAGE_SDK_DEVELOPMENT_FILES; every
+# consumer names only that provider. This catches a missing development closure
+# at the release boundary instead of allowing a recipe to rebuild the platform
+# library merely to recover headers or linker symlinks.
+validate_sdk_development_dependencies() {
+  local package dependency development_file provider_files
+  local -a dependencies=() development_files=()
+  for package in "${selected_packages[@]}"; do
+    IFS=' ' read -r -a dependencies <<< "${recipe_sdk_development_depends[$package]:-}"
+    [[ ${#dependencies[@]} -gt 0 ]] || continue
+    [[ -n "${TDVP_SDK_ROOT:-}" && -d "${TDVP_SDK_ROOT}/sysroot" ]] || {
+      echo "$package declares PACKAGE_SDK_DEVELOPMENT_DEPENDS but no TDVP_SDK_ROOT sysroot is available" >&2
+      exit 77
+    }
+    for dependency in "${dependencies[@]}"; do
+      [[ -n "$dependency" ]] || continue
+      provider_files=${sdk_development_provider_files[$dependency]:-}
+      [[ -n "$provider_files" ]] || {
+        echo "$package declares PACKAGE_SDK_DEVELOPMENT_DEPENDS on $dependency, but that provider declares no PACKAGE_SDK_DEVELOPMENT_FILES" >&2
+        exit 77
+      }
+      IFS=' ' read -r -a development_files <<< "$provider_files"
+      for development_file in "${development_files[@]}"; do
+        [[ -e "${TDVP_SDK_ROOT}/sysroot/$development_file" || -L "${TDVP_SDK_ROOT}/sysroot/$development_file" ]] || {
+          echo "SDK development dependency is missing for $package: $dependency requires $development_file" >&2
+          exit 77
+        }
+      done
+    done
+  done
+}
+
+validate_sdk_development_dependencies
+for package in "${selected_packages[@]}"; do
+  tdvp_assert_package_host_dependencies "${recipe_dir[$package]}"
+done
+
+# A later batch imports the exact source-provider identities alongside headers
+# and linker files. Base-image rows must still agree with this runtime catalogue.
+if [[ -n "$staging_import_dir" && -f "$staging_import_dir/tdvp-runtime-owners.tsv" ]]; then
+  imported_owner_arguments=()
+  for package in "${provided_packages[@]}"; do
+    version=$(read_recipe_value "${recipe_dir[$package]}/package.env" VERSION)
+    imported_owner_arguments+=(--allowed-package "$package=$version")
+  done
+  python3 "$script_dir/register-runtime-owners.py" --owner-map "$runtime_owner_map" \
+    --payload-root "$staging_import_dir" --readelf "$readelf_tool" \
+    --import-map "$staging_import_dir/tdvp-runtime-owners.tsv" "${imported_owner_arguments[@]}"
+fi
 
 # Validate every lock that is already present before invoking a package hook.
 # A full legacy migration can opt into --require-source-locks; the CI changed
@@ -663,6 +770,11 @@ build_package() {
 
   package_dir=${recipe_dir[$package]}
   local reuse_published_payloads=${TDVP_REUSE_PUBLISHED_PAYLOADS:-1}
+  # The released CPU0 SDK has a scalar policy absent from historical leaf
+  # payloads. Rebuild source recipes instead of assuming old IPKs satisfy it.
+  if [[ -n "${TDVP_SDK_ROOT:-}" && -f "$TDVP_SDK_ROOT/tdvp-sdk-manifest.json" ]]; then
+    reuse_published_payloads=0
+  fi
   # A strict offline release is a source-and-target rebuild, not a republish
   # that silently fetches a historical IPK. Source-locked recipes must use
   # their local cache/build path; target-derived recipes remain byte-identical
@@ -701,6 +813,12 @@ build_package() {
   TDVP_IMAGE_PROVIDER_MAP="$image_provider_map" \
   TDVP_READELF="$readelf_tool" \
     "$script_dir/build-ipk.sh" --platform "$platform_slug" "$package_dir" "$feed_dir"
+  if [[ "${recipe_kind[$package]}" == shared-library && -n "$runtime_owner_map" ]]; then
+    version=$(read_recipe_value "$package_dir/package.env" VERSION)
+    python3 "$script_dir/register-runtime-owners.py" --owner-map "$runtime_owner_map" \
+      --payload-root "$package_dir/root" --readelf "$readelf_tool" \
+      --package "$package" --version "$version"
+  fi
   # Package build hooks materialise their payload under an ignored root/
   # directory so build-ipk can stay deliberately simple.  The signed IPK is
   # now complete; discard that transient tree before continuing so a growing
@@ -736,6 +854,9 @@ if [[ -n "$staging_export_dir" ]]; then
       >>"$staging_export_dir/tdvp-build-staging-manifest.tsv"
   done
   assert_staging_links_are_internal "$staging_export_dir"
+  if [[ -n "$runtime_owner_map" ]]; then
+    cp -- "$runtime_owner_map" "$staging_export_dir/tdvp-runtime-owners.tsv"
+  fi
 fi
 
 "$script_dir/make-index.sh" "$feed_dir"
@@ -751,4 +872,5 @@ fi
 # normal Packages catalogue is the public inventory.
 rm -f -- "$feed_dir/.tdvp-runtime-owners.tsv" "$feed_dir/.tdvp-runtime-ownership.tsv" \
   "$feed_dir/.tdvp-target-runtime-packages.tsv" "$feed_dir/.tdvp-image-runtime-providers.tsv"
-echo "feed ready for offline signing: $feed_dir"
+echo "raw build candidate ready: $feed_dir"
+echo 'Run finalize-image-backed-feed.sh with the matching image and SDK before signing.'

@@ -15,7 +15,7 @@ for package in \
   env_file="$repo_root/packages/$package/package.env"
   test -f "$env_file"
   grep -Fqx "PACKAGE='$package'" "$env_file"
-  grep -Fqx "PACKAGE_RELEASES='r10'" "$env_file"
+  grep -Fqx "PACKAGE_RELEASES='r10 r11'" "$env_file"
 done
 
 for package in \

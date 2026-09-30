@@ -84,7 +84,6 @@ tdvp_build_archive_library() {
   source "$package_dir/../../support/buildroot-feed-session.sh"
   # shellcheck source=elf-runtime-policy.sh
   source "$package_dir/../../support/elf-runtime-policy.sh"
-  output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
   # Do not fall back to the build host's readelf: payload sanitisation must
   # inspect the exact target ELF format emitted by the matched SDK.
   readelf_tool=${TDVP_READELF:-"$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"}
@@ -93,6 +92,8 @@ tdvp_build_archive_library() {
     return 70
   }
   local tree
+  if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
   tree=$(tdvp_buildroot_tree_from_output "$output")
   tdvp_assert_buildroot_2025_02_1 "$tree"
   grep -Fqx "$expected_source_line" "$tree/package/$buildroot_package/${buildroot_package}.mk" || {
@@ -113,6 +114,7 @@ tdvp_build_archive_library() {
     install_options+=(--offline-download-dir "$download_dir")
   fi
 
+  fi
   install_root=$(mktemp -d)
   payload_link="$package_dir/root"
   temporary_prefix=/tmp/tdvp-command-payload.
@@ -129,9 +131,14 @@ tdvp_build_archive_library() {
     return "$rc"
   }
   trap cleanup_archive_library RETURN
+  if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+    source "$package_dir/../../support/published-sdk-build.sh"
+    tdvp_sdk_install "$package_dir" "$sdk_root" "$buildroot_package" "$install_root"
+  else
   tdvp_buildroot_install "$output" "$install_root" "${install_options[@]}" \
     "${enable_options[@]}" "${disable_options[@]}" "${make_variable_options[@]}" \
     --target "$buildroot_package"
+  fi
   compgen -G "$install_root/usr/lib/$library_glob" >/dev/null || {
     echo "$buildroot_package target install omitted $library_glob" >&2
     return 72
@@ -162,6 +169,11 @@ tdvp_build_archive_library() {
       "buildroot-package=$buildroot_package" \
       "command=$staged_command" \
       >"$stage_marker"
+  fi
+  # Preserve target modes and ELF symlinks on a POSIX staging filesystem. The
+  if [[ -f "$sdk_root/tdvp-sdk-manifest.json" && -n "${TDVP_FEED_STAGING_ROOT:-}" ]]; then
+    mkdir -p "$TDVP_FEED_STAGING_ROOT/usr"
+    cp -a "$install_root/usr/." "$TDVP_FEED_STAGING_ROOT/usr/"
   fi
   # Preserve target modes and ELF symlinks on a POSIX staging filesystem. The
   # repository can live on Windows drvfs, where copying to root/ would turn a

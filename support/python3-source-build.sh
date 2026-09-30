@@ -161,6 +161,7 @@ tdvp_build_python3_source_stage() {
   source "$package_dir/../../support/buildroot-feed-session.sh"
   # shellcheck source=elf-runtime-policy.sh
   source "$package_dir/../../support/elf-runtime-policy.sh"
+  if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
   output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
   tree=$(tdvp_buildroot_tree_from_output "$output")
   tdvp_assert_buildroot_2025_02_1 "$tree"
@@ -178,10 +179,17 @@ tdvp_build_python3_source_stage() {
     return 81
   }
 
+  fi
   sysroot="$sdk_root/riscv64-buildroot-linux-gnu/sysroot"
   readelf_tool="$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"
   strip_tool="$sdk_root/bin/riscv64-unknown-linux-gnu-strip"
   host_python="$sdk_root/bin/python3.13"
+  if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+    sysroot="$sdk_root/sysroot"
+    source "$package_dir/../../support/published-native-inputs.sh"
+    tdvp_sdk_host_python "$package_dir" "$TDVP_FEED_STAGING_ROOT/.tdvp-native/python"
+    host_python="$TDVP_FEED_STAGING_ROOT/.tdvp-native/python/bin/python3.13"
+  fi
   for tool in "$readelf_tool" "$strip_tool" "$host_python" \
     "$sdk_root/bin/riscv64-unknown-linux-gnu-gcc" \
     "$sdk_root/bin/riscv64-unknown-linux-gnu-g++" \
@@ -223,6 +231,14 @@ tdvp_build_python3_source_stage() {
     return 89
   }
   install_root="$work_root/install-root"
+  if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+    mkdir -p "$work_root/sysroot"
+    cp -a --reflink=auto "$sysroot/." "$work_root/sysroot/"
+    if [[ -d "$TDVP_FEED_STAGING_ROOT/usr" ]]; then
+      cp -a "$TDVP_FEED_STAGING_ROOT/usr/." "$work_root/sysroot/usr/"
+    fi
+    sysroot="$work_root/sysroot"
+  fi
 
   (
     cd -- "$source_root"
@@ -234,6 +250,7 @@ tdvp_build_python3_source_stage() {
     export RANLIB="$sdk_root/bin/riscv64-unknown-linux-gnu-gcc-ranlib"
     export READELF="$readelf_tool"
     export PKG_CONFIG="$sdk_root/bin/pkg-config"
+    [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]] || export PKG_CONFIG=/usr/bin/pkg-config
     export PKG_CONFIG_SYSROOT_DIR="$sysroot"
     export PKG_CONFIG_LIBDIR="$sysroot/usr/lib/pkgconfig:$sysroot/usr/share/pkgconfig"
     export PKG_CONFIG_PATH=''

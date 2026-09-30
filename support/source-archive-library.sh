@@ -167,11 +167,9 @@ tdvp_build_direct_archive_library() {
   # shellcheck source=elf-runtime-policy.sh
   source "$package_dir/../../support/elf-runtime-policy.sh"
   tdvp_require_k230_sdk "$sdk_root"
-  output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
-  [[ -f "$output/.config" ]] || {
-    echo "matching Buildroot output has no configuration: $output" >&2
-    return 74
-  }
+  if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+    output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
+  fi
   sysroot=$TDVP_K230_SYSROOT
   readelf_tool=$TDVP_K230_READELF
   strip_tool=$TDVP_K230_STRIP

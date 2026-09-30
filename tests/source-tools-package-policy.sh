@@ -7,7 +7,7 @@ env_file="$package_dir/package.env"
 
 grep -Fqx "PACKAGE='tdvp-source-tools'" "$env_file"
 grep -Fqx "VERSION='1.6-1'" "$env_file"
-grep -Fqx "PACKAGE_RELEASES='r10'" "$env_file"
+grep -Fqx "PACKAGE_RELEASES='r10 r11'" "$env_file"
 grep -Fqx "PACKAGE_DEPENDS='tree (= 2.1.1-1), less (= 661-1), file (= 5.45-1), which (= 2.21-1), curl (= 8.12.1-1), wget (= 1.25.0-1), rsync (= 3.4.1-1), tmux (= 3.3a-1), dos2unix (= 7.5.2-1), jq (= 1.7.1-1), grep (= 3.11-1), sed (= 4.9-1), findutils (= 4.10.0-1), gawk (= 5.3.1-1)'" "$env_file"
 grep -Fqx "PACKAGE_BUILD_DEPENDS='tree less file which curl wget rsync tmux dos2unix jq grep sed findutils gawk'" "$env_file"
 grep -Fqx 'PACKAGE_AUTO_RUNTIME_DEPENDS=0' "$env_file"

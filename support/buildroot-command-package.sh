@@ -19,9 +19,10 @@ tdvp_buildroot_command_package() {
   source "$package_dir/../../support/buildroot-feed-session.sh"
   # shellcheck source=elf-runtime-policy.sh
   source "$package_dir/../../support/elf-runtime-policy.sh"
-  output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
-  readelf_tool="$output/host/bin/riscv64-unknown-linux-gnu-readelf"
+  readelf_tool="$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"
   [[ -x "$readelf_tool" ]] || { echo "matching SDK has no target readelf: $readelf_tool" >&2; return 79; }
+  if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
   tree=$(tdvp_buildroot_tree_from_output "$output")
   tdvp_assert_buildroot_2025_02_1 "$tree"
   grep -Fqx "$source_line" "$tree/package/$buildroot_package/${buildroot_package}.mk" || {
@@ -31,6 +32,7 @@ tdvp_buildroot_command_package() {
   if [[ -f "$package_dir/source.lock" ]]; then
     download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
     install_options+=(--offline-download-dir "$download_dir")
+  fi
   fi
   # A leaf command must not silently inherit an optional Buildroot feature
   # whose shared runtime has not been admitted into this feed. Recipes may
@@ -79,10 +81,15 @@ tdvp_buildroot_command_package() {
     return "$rc"
   }
   trap cleanup_command_package RETURN
+  if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+    source "$package_dir/../../support/published-sdk-build.sh"
+    tdvp_sdk_install "$package_dir" "$sdk_root" "$buildroot_package" "$install_root"
+  else
   tdvp_buildroot_install "$output" "$install_root" "${install_options[@]}" \
     --enable BR2_PACKAGE_BUSYBOX_SHOW_OTHERS \
     --enable "$config_symbol" "${disable_options[@]}" \
     "${make_variable_options[@]}" --target "$buildroot_package"
+  fi
   # Keep generated payloads on a POSIX filesystem. The feed repository is
   # often a Windows drvfs mount where every copied file looks executable;
   # using a symlink lets build-ipk preserve the target's 0755/0644 modes.

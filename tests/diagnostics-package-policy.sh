@@ -11,7 +11,7 @@ env_file="$package_dir/package.env"
 
 grep -Fqx "PACKAGE='tdvp-diagnostics'" "$env_file"
 grep -Fqx "VERSION='1.1-1'" "$env_file"
-grep -Fqx "PACKAGE_RELEASES='r10'" "$env_file"
+grep -Fqx "PACKAGE_RELEASES='r10 r11'" "$env_file"
 grep -Fqx "PACKAGE_DEPENDS='strace (= 6.13-1), htop (= 3.3.0-1), lsof (= 4.99.4-1), iperf3 (= 3.18-1), netcat (= 0.7.1-1)'" "$env_file"
 grep -Fqx "PACKAGE_BUILD_DEPENDS='strace htop lsof iperf3 netcat'" "$env_file"
 grep -Fqx 'PACKAGE_AUTO_RUNTIME_DEPENDS=0' "$env_file"

@@ -35,8 +35,24 @@ jobs:
           TDVP_FEED_SITE_ROOT="$channel_fixture/site" \
             bash ./scripts/verify-stable-channel.sh --platform tdvp-k230-r1
           bash ./tests/build-shared-package-policy.sh
+          python3 ./tests/desktop-cache-hooks.py
+          python3 ./tests/runtime-closure-search-path.py
+          python3 ./tests/runtime-owner-registration-policy.py
+          bash ./tests/package-host-dependencies-policy.sh
+          bash ./tests/historical-library-migration-policy.sh
+          python3 ./tests/historical-runtime-reference-policy.py
+          python3 ./tests/historical-catalogue-continuity.py
+          python3 ./tests/image-backed-payload.py
+          python3 ./tests/image-backed-compose.py
+          python3 ./tests/image-backed-upgrade.py
+          python3 ./tests/feed-predecessor.py
+          python3 ./tests/image-reference-audit.py
+          bash ./tests/image-backed-finalization-preflight.sh
+          bash ./tests/image-report-publication.sh
           bash ./tests/audacious-package-policy.sh
           bash ./tests/tdvp-wayland-sdk-overlay-protocols.sh
+          python3 ./tests/buildroot-image-ownership.py
+          python3 ./tests/published-sdk-contract.py
           bash ./tests/reuse-published-ipk-payload-policy.sh
           bash ./tests/feed-overlay-composition-policy.sh
           bash ./tests/vim-package-policy.sh

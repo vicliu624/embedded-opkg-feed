@@ -17,6 +17,12 @@ tdvp_prepare_node22_icu_inputs() {
   }
   # shellcheck source=buildroot-feed-session.sh
   source "$package_dir/../../support/buildroot-feed-session.sh"
+  if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+    source "$package_dir/../../support/published-native-inputs.sh"
+    tdvp_sdk_icu_inputs "$package_dir" "$sdk_root"
+    export TDVP_NODE22_ICU_READELF="$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"
+    return 0
+  fi
   output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
   tree=$(tdvp_buildroot_tree_from_output "$output")
   tdvp_assert_buildroot_2025_02_1 "$tree"

@@ -25,6 +25,7 @@ source "$package_dir/../../support/buildroot-feed-session.sh"
 # shellcheck source=../../support/elf-runtime-policy.sh
 source "$package_dir/../../support/elf-runtime-policy.sh"
 
+if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
 output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
 tree=$(tdvp_buildroot_tree_from_output "$output")
 tdvp_assert_buildroot_2025_02_1 "$tree"
@@ -48,6 +49,7 @@ for required_config in BR2_PACKAGE_LIBOPENSSL=y BR2_PACKAGE_ZLIB=y; do
   }
 done
 
+fi
 : "${TDVP_SOURCE_CACHE_ROOT:?openssh-client requires the verified TDVP source cache}"
 cache_archive="$TDVP_SOURCE_CACHE_ROOT/sha256/$SOURCE_ARCHIVE_SHA256/$SOURCE_ARCHIVE"
 [[ -f "$cache_archive" && ! -L "$cache_archive" ]] || {
@@ -68,6 +70,10 @@ for tool in "$compiler" "$archiver" "$ranlib" "$pkgconf" "$readelf_tool"; do
   [[ -x "$tool" ]] || { echo "matching SDK tool is absent: $tool" >&2; exit 72; }
 done
 sysroot="$sdk_root/riscv64-buildroot-linux-gnu/sysroot"
+if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  sysroot="$sdk_root/sysroot"
+  pkgconf=$(command -v pkg-config)
+fi
 [[ -d "$sysroot/usr/include" && -d "$sysroot/usr/lib" ]] || {
   echo "matching SDK sysroot is incomplete: $sysroot" >&2
   exit 73

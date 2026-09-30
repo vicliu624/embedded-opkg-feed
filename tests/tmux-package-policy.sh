@@ -7,6 +7,8 @@ grep -Fqx "PACKAGE='libevent'" "$repo_root/packages/libevent/package.env"
 grep -Fqx "PACKAGE_KIND='shared-library'" "$repo_root/packages/libevent/package.env"
 grep -Fqx "PACKAGE='tmux'" "$repo_root/packages/tmux/package.env"
 grep -Fqx "PACKAGE_DEPENDS='libevent (= 2.1.12-1), libncursesw (= 6.4-20230603-1)'" "$repo_root/packages/tmux/package.env"
+grep -Fqx "PACKAGE_BUILD_DEPENDS='libevent'" "$repo_root/packages/tmux/package.env"
+grep -Fqx "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libncursesw'" "$repo_root/packages/tmux/package.env"
 grep -Fq "'libevent*.so.7*'" "$repo_root/packages/libevent/build.sh"
 if grep -Eq 'BR2_PACKAGE_OPENSSL[[:space:]]*=' "$repo_root/packages/libevent/build.sh"; then
   echo 'libevent must not rewrite the firmware-wide OpenSSL Kconfig selection' >&2

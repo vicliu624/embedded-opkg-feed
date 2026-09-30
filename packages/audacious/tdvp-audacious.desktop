@@ -1,7 +1,9 @@
 [Desktop Entry]
 Type=Application
-Name=Music Player
-Name[zh_CN]=音乐播放器
+Name=Audacious
+Name[zh_CN]=Audacious 音乐播放器
+GenericName=Music Player
+GenericName[zh_CN]=音乐播放器
 Comment=Play local music and playlists
 Comment[zh_CN]=播放本地音乐和播放列表
 Exec=tdvp-audacious %U

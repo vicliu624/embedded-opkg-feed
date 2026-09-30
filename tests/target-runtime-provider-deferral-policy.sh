@@ -29,8 +29,7 @@ grep -Fq "printf '%s|%s\\n' \"\$package\" \"\${data_image_alias[\$package]}\" >>
 grep -Fq 'TDVP_IMAGE_PROVIDER_MANIFEST' "$catalogue"
 grep -Fq 'IMAGE_OWNERSHIP_MANIFEST_SHA256' "$catalogue"
 grep -Fq '[[ -s "$image_provider_map" ]]' "$build_all"
-grep -Fq 'Download the locked r10 image ownership manifest' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq "IMAGE_OWNERSHIP_MANIFEST_SHA256='c97f8b1b3910807b9cbad0fb3dd4f43538d90de231259b0022bc7fea8ada49a6'" "$repo_root/platforms/tdvp-k230-r1/platform.env"
+grep -Fq "IMAGE_OWNERSHIP_MANIFEST_SHA256='0c0d0f2f4b1a2cb5e1278939bc17143f2b76b5654e26dc1648b274ba41f79cb6'" "$repo_root/platforms/tdvp-k230-r1/platform.env"
 grep -Fq 'options: [archive, audacious-foundation, audacious-core, audacious-plugins, audacious-app, audacious, network-tools, netsurf, media, games, desktop-tools, development-tools, nodejs]' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'netsurf)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'package_args=(--package tdvp-netsurf)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
@@ -39,37 +38,26 @@ grep -Fq 'media)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'package_args=(--package tdvp-mpv)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'games)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'package_args=(--package sdl2 --package sdl2-ttf --package libmgba --package tdvp-gba)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'prepare-tdvp-wayland-sdk-overlay.sh "$build_output" "$overlay_root"' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'export TDVP_K230_WAYLAND_SDK_OVERLAY="$overlay_root"' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'tdvp_require_wayland_sdk_overlay' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'copy_header_file zlib.h' "$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh"
 grep -Fq 'copy_wayland_protocols' "$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh"
 grep -Fq 'share/wayland-protocols/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml' "$repo_root/scripts/tdvp-k230-sdk.sh"
 grep -Fq 'locked FreeType source archive digest differs' "$repo_root/scripts/prepare-tdvp-wayland-sdk-overlay.sh"
-grep -Fq 'https://download.savannah.gnu.org/releases/freetype/freetype-2.13.3.tar.xz' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq '0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'TDVP_WAYLAND_SDK_OVERLAY_CACHE_SCHEMA: r3' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'Restore the firmware-matched Wayland development bridge' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 ! grep -Fq 'freetype-dirclean freetype' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'Save the firmware-matched Wayland development bridge' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'Verify provider alternatives in the target-runtime base' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'verify-image-provider-alternatives.sh' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'include-hidden-files: true' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 test -f "$repo_root/tests/tdvp-gba-source-archive-policy.sh"
 grep -Fq 'Preflight the reviewed GBA source archive' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'TDVP_GBA_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r10-source-cache' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
+grep -Fq 'TDVP_GBA_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r11-source-cache' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 test -f "$repo_root/tests/sdl2-pulseaudio-patch-policy.sh"
 grep -Fq 'Preflight the reviewed SDL2 PulseAudio patch' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'TDVP_SDL2_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r10-source-cache' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-grep -Fq 'TDVP_RUNTIME_BASE_CACHE_SCHEMA: r2' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
+grep -Fq 'TDVP_SDL2_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r11-source-cache' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'runtime-${{ env.TDVP_RUNTIME_BASE_CACHE_SCHEMA }}-' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-sdk_stamp_path='${{ runner.temp }}/tdvp-k230-sdk/output/${{ env.TDVP_PROFILE }}/build/**/.stamp_*'
-[[ "$(grep -Fc "$sdk_stamp_path" "$repo_root/.github/workflows/build-r10-batch-candidate.yml")" -ge 2 ]]
-incoming_root_assignment='incoming_root="${RUNNER_TEMP}/tdvp-r10-incoming"'
+incoming_root_assignment='incoming_root="${RUNNER_TEMP}/tdvp-r11-incoming"'
 [[ "$(grep -Fc "$incoming_root_assignment" "$repo_root/.github/workflows/build-r10-batch-candidate.yml")" -ge 2 ]]
 grep -Fq 'install -m 0644 "$provider_map" "$feed_dir/.tdvp-image-runtime-providers.tsv"' \
   "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
-merged_upload=$(sed -n '/name: tdvp-k230-r10-merged-unsigned-/,/include-hidden-files: true/p' \
+merged_upload=$(sed -n '/name: tdvp-k230-r11-merged-unsigned-/,/include-hidden-files: true/p' \
   "$repo_root/.github/workflows/build-r10-batch-candidate.yml")
 grep -Fq 'include-hidden-files: true' <<<"$merged_upload"
 grep -Fq 'runtime_verification=$(mktemp -d)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
@@ -84,12 +72,42 @@ grep -Fq 'target_runtime_provider_manifest="$feed_dir/.tdvp-target-runtime-packa
 grep -Fq 'runtime_catalogue_package_manifest="$feed_dir/.tdvp-runtime-catalog-packages.tsv"' "$build_all"
 grep -Fq 'assert_runtime_catalogue_package()' "$build_all"
 grep -Fq 'runtime_catalogue_package[$package]=1' "$build_all"
+grep -Fq '[[ -n "$runtime_catalogue_package_manifest" && -s "$runtime_catalogue_package_manifest" ]] || return 0' "$build_all"
 grep -Fq 'source recipe deferred; runtime catalogue already provides:' "$build_all"
+if grep -Fq '[[ "$reuse_runtime_catalog" -eq 1 ]] || return 0' "$build_all"; then
+  echo 'runtime catalogue package deferral must apply to both freshly generated and reused catalogues' >&2
+  exit 1
+fi
 grep -Fq 'source runtime recipe deferred; target owns' "$build_all"
+for ownership in \
+  'libz.so.1|libz|1.3.1-1' \
+  'libncursesw.so.6|libncursesw|6.4-20230603-1' \
+  'libreadline.so.8|libreadline|8.2-1' \
+  'libpcre2-8.so.0|libpcre2-8|10.44-1' \
+  'libpopt.so.0|libpopt|1.19-1'; do
+  grep -Fqx "$ownership" "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
+done
+# The extra-owner table is the canonical provider identity for libraries whose
+# package name cannot safely be inferred from a SONAME.  The catalogue must
+# load those overrides before build-all defers matching source recipes.
+grep -Fq 'done <"$extra_owner_manifest"' "$catalogue"
+# A complete image ownership manifest can leave the optional extra-owner map
+# empty.  Bash expands an empty associative-array key list to one empty line;
+# the catalogue must discard that line before using it as an array key.
+grep -Fq '[[ -n "$soname" ]] || continue' "$catalogue"
+grep -Fq 'There is no package key for that record.' "$catalogue"
 grep -Fq 'PACKAGE_SOURCE_STAGING' "$build_all"
+grep -Fq 'PACKAGE_SDK_DEVELOPMENT_DEPENDS' "$build_all"
+grep -Fq 'PACKAGE_SDK_DEVELOPMENT_FILES' "$build_all"
+grep -Fq 'validate_sdk_development_dependencies()' "$build_all"
 grep -Fq 'source staging recipe retained; target owns final runtime' "$build_all"
 grep -Fq 'sole final runtime IPK provider for that package name' "$build_all"
-grep -Fq 'PACKAGE_SOURCE_STAGING=1' "$repo_root/packages/libcurl-4/package.env"
+grep -Fq 'PACKAGE_SOURCE_STAGING=0' "$repo_root/packages/libcurl-4/package.env"
+grep -Fq "PACKAGE_SDK_DEVELOPMENT_FILES='usr/include/curl/curl.h usr/lib/pkgconfig/libcurl.pc usr/lib/libcurl.so usr/bin/curl-config'" "$repo_root/packages/libcurl-4/package.env"
+grep -Fq "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libz libssl-3 libcrypto-3 libexpat-1 libpcre2-8 libcurl-4'" "$repo_root/packages/git-runtime/package.env"
+grep -Fq "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libreadline'" "$repo_root/packages/gawk/package.env"
+grep -Fqx "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libncursesw'" "$repo_root/packages/dialog/package.env"
+grep -Fqx "PACKAGE_SDK_DEVELOPMENT_FILES='usr/include/curses.h usr/lib/pkgconfig/ncursesw.pc usr/lib/libncursesw.so'" "$repo_root/packages/libncursesw/package.env"
 grep -Fq 'package_build_depends=${package_build_depends//,/ }' "$build_all"
 grep -Fq 'target runtime provider version is not attested for' "$build_all"
 grep -Fq '[[ -n "${target_runtime_provider[$dependency]:-}" && "${source_staging_provider[$dependency]:-0}" != 1 ]] && continue' "$build_all"
@@ -105,3 +123,6 @@ grep -Fq 'runtime provider name $provider_name is supplied by both' "$runtime_cl
 grep -Fq 'find "$library_root" -maxdepth 1 -type f -name '\''lib*.so*'\'' -print' "$runtime_closure"
 
 echo 'target runtime provider deferral policy: PASS'
+
+grep -Fq "uses: ./.github/actions/published-sdk" "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
+grep -Fq "TDVP_RUNTIME_BASE_CACHE_SCHEMA: published-r11-v1" "$repo_root/.github/workflows/build-r10-batch-candidate.yml"

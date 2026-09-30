@@ -53,6 +53,7 @@ python3 "$script_dir/compose_image_backed_feed.py" \
 bash "$script_dir/verify-feed.sh" --platform "$platform" "$candidate"
 bash "$script_dir/verify-runtime-closure.sh" --platform "$platform" --base-root "$base_root" "$candidate"
 bash "$script_dir/verify-target-runtime-coverage.sh" --platform "$platform" --base-root "$base_root" "$candidate"
+python3 "$script_dir/verify-historical-package-continuity.py" --repo-root "$repo_root" --candidate "$candidate"
 # Audit only the delivered payload. Image references have already been checked
 # against locked image bytes by the two reference-aware gates above.
 python3 - "$candidate" "$TDVP_SDK_ROOT" "$script_dir" <<'PY'

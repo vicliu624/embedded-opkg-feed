@@ -40,6 +40,8 @@ jobs:
           python3 ./tests/runtime-owner-registration-policy.py
           bash ./tests/package-host-dependencies-policy.sh
           bash ./tests/historical-library-migration-policy.sh
+          python3 ./tests/historical-runtime-reference-policy.py
+          python3 ./tests/historical-catalogue-continuity.py
           python3 ./tests/image-backed-payload.py
           python3 ./tests/image-backed-compose.py
           python3 ./tests/image-backed-upgrade.py

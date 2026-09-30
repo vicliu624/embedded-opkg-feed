@@ -8,6 +8,8 @@ tdvp_sdk_install() (
   local package_dir=$1 sdk_root=$2 component=$3 install_root=$4
   local repo_root work source_root sysroot jobs archive
   repo_root=$(cd -- "$package_dir/../.." && pwd)
+  source "$repo_root/scripts/feed-platform.sh"
+  tdvp_assert_package_host_dependencies "$package_dir"
   source "$repo_root/support/source-archive-library.sh"
   work=$(mktemp -d /tmp/tdvp-sdk-build.XXXXXX)
   trap 'rm -rf -- "$work"' EXIT
@@ -150,6 +152,20 @@ EOF
       make DESTDIR="$install_root" install
       install -Dm0644 debian/copyright \
         "$install_root/usr/share/licenses/ca-certificates/copyright"
+      ;;
+    webp)
+      options+=(--disable-sdl --disable-gl --disable-tiff --disable-gif
+        --enable-libwebpdemux --enable-libwebpmux)
+      ./configure --build="$(gcc -dumpmachine)" --host=riscv64-unknown-linux-gnu \
+        --prefix=/usr --libdir=/usr/lib --with-sysroot="$sysroot" \
+        --disable-static --enable-shared "${options[@]}"
+      # Target libraries use the loader's standard /usr/lib search path.
+      # Avoid install-time hardcoding/relinking against the build host.
+      sed -i -e 's/^hardcode_into_libs=yes$/hardcode_into_libs=no/' \
+        -e 's/^hardcode_action=relink$/hardcode_action=immediate/' \
+        -e 's/^hardcode_automatic=no$/hardcode_automatic=yes/' libtool
+      make -j"$jobs"
+      make DESTDIR="$install_root" install
       ;;
     netsurf)
       printf 'override NETSURF_USE_DUKTAPE := YES\noverride NETSURF_USE_WEBP := YES\n' >netsurf/Makefile.config

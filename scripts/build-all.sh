@@ -633,6 +633,22 @@ validate_sdk_development_dependencies() {
 }
 
 validate_sdk_development_dependencies
+for package in "${selected_packages[@]}"; do
+  tdvp_assert_package_host_dependencies "${recipe_dir[$package]}"
+done
+
+# A later batch imports the exact source-provider identities alongside headers
+# and linker files. Base-image rows must still agree with this runtime catalogue.
+if [[ -n "$staging_import_dir" && -f "$staging_import_dir/tdvp-runtime-owners.tsv" ]]; then
+  imported_owner_arguments=()
+  for package in "${provided_packages[@]}"; do
+    version=$(read_recipe_value "${recipe_dir[$package]}/package.env" VERSION)
+    imported_owner_arguments+=(--allowed-package "$package=$version")
+  done
+  python3 "$script_dir/register-runtime-owners.py" --owner-map "$runtime_owner_map" \
+    --payload-root "$staging_import_dir" --readelf "$readelf_tool" \
+    --import-map "$staging_import_dir/tdvp-runtime-owners.tsv" "${imported_owner_arguments[@]}"
+fi
 
 # Validate every lock that is already present before invoking a package hook.
 # A full legacy migration can opt into --require-source-locks; the CI changed
@@ -797,6 +813,12 @@ build_package() {
   TDVP_IMAGE_PROVIDER_MAP="$image_provider_map" \
   TDVP_READELF="$readelf_tool" \
     "$script_dir/build-ipk.sh" --platform "$platform_slug" "$package_dir" "$feed_dir"
+  if [[ "${recipe_kind[$package]}" == shared-library && -n "$runtime_owner_map" ]]; then
+    version=$(read_recipe_value "$package_dir/package.env" VERSION)
+    python3 "$script_dir/register-runtime-owners.py" --owner-map "$runtime_owner_map" \
+      --payload-root "$package_dir/root" --readelf "$readelf_tool" \
+      --package "$package" --version "$version"
+  fi
   # Package build hooks materialise their payload under an ignored root/
   # directory so build-ipk can stay deliberately simple.  The signed IPK is
   # now complete; discard that transient tree before continuing so a growing
@@ -832,6 +854,9 @@ if [[ -n "$staging_export_dir" ]]; then
       >>"$staging_export_dir/tdvp-build-staging-manifest.tsv"
   done
   assert_staging_links_are_internal "$staging_export_dir"
+  if [[ -n "$runtime_owner_map" ]]; then
+    cp -- "$runtime_owner_map" "$staging_export_dir/tdvp-runtime-owners.tsv"
+  fi
 fi
 
 "$script_dir/make-index.sh" "$feed_dir"

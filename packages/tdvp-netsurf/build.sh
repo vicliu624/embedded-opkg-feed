@@ -35,7 +35,7 @@ if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
   cp -a "$install_root/." "$payload_dir/"
   install -Dm0644 "$package_dir/tdvp-netsurf.desktop" "$payload_dir/usr/share/applications/tdvp-netsurf.desktop"
   install -Dm0644 "$install_root/usr/share/netsurf/netsurf.png" "$payload_dir/usr/share/icons/hicolor/128x128/apps/tdvp-netsurf.png"
-  tdvp_remove_elf_runtime_search_paths "$sdk_root/bin/riscv64-unknown-linux-gnu-readelf" "$payload_dir/usr/bin/netsurf"
+  tdvp_remove_elf_runtime_search_paths "$sdk_root/bin/riscv64-unknown-linux-gnu-readelf" "$payload_dir/usr/bin/netsurf-gtk3"
   exit 0
 fi
 # shellcheck source=../../support/buildroot-feed-session.sh

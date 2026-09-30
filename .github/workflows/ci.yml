@@ -39,6 +39,7 @@ jobs:
           python3 ./tests/runtime-closure-search-path.py
           python3 ./tests/runtime-owner-registration-policy.py
           bash ./tests/package-host-dependencies-policy.sh
+          bash ./tests/historical-library-migration-policy.sh
           python3 ./tests/image-backed-payload.py
           python3 ./tests/image-backed-compose.py
           python3 ./tests/image-backed-upgrade.py

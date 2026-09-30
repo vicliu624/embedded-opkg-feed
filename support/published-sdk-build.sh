@@ -178,6 +178,25 @@ EOF
       make "${make_options[@]}" DESTDIR="$install_root" install
       install -Dm0644 netsurf/COPYING "$install_root/usr/share/doc/tdvp-netsurf/COPYING"
       ;;
+    libubootenv)
+      printf '%s\n' "include(\"$sdk_root/toolchain.cmake\")" \
+        "set(CMAKE_SYSROOT \"$sysroot\")" \
+        "set(CMAKE_FIND_ROOT_PATH \"$sysroot\")" \
+        'set(PKG_CONFIG_EXECUTABLE "/usr/bin/pkg-config" CACHE FILEPATH "Private target pkg-config" FORCE)' \
+        >"$work/private-toolchain.cmake"
+      cmake -S . -B "$work/build" -DCMAKE_TOOLCHAIN_FILE="$work/private-toolchain.cmake" \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_FLAGS="$CFLAGS" \
+        -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS"
+      cmake --build "$work/build" -j"$jobs"
+      DESTDIR="$install_root" cmake --install "$work/build"
+      ;;
+    mxml)
+      ./configure --build="$(gcc -dumpmachine)" --host=riscv64-unknown-linux-gnu \
+        --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static
+      make -j"$jobs"
+      make DSTROOT="$install_root" install
+      ;;
     libopenssl)
       ./Configure linux64-riscv64 shared --prefix=/usr --openssldir=/etc/ssl no-tests
       make -j"$jobs"
@@ -200,6 +219,8 @@ EOF
         mpdecimal) export LD="$CC" ;;
         sqlite) options+=(--disable-readline --disable-static); CFLAGS="$CFLAGS -O1" ;;
         expat) options+=(--without-docbook --without-tests --without-examples) ;;
+        libyaml) options+=(--enable-shared --disable-static) ;;
+        libmicrohttpd) options+=(--enable-shared --disable-static --disable-curl --disable-examples --disable-https --with-threads=auto) ;;
         jq) options+=(--disable-docs --with-oniguruma=no) ;;
         pkgconf) options+=(--disable-shared --enable-static) ;;
         libevent) options+=(--disable-samples --disable-libevent-regress) ;;

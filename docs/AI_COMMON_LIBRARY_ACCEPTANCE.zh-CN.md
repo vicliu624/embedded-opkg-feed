@@ -1165,3 +1165,33 @@ ipk-notice-verification.json。本地完整 portable 检查捕获旧 Vim
 依赖断言，更新后重跑通过，日志
 vim-notices-final-portable.dlEUobAa/portable-ci.log。许可原文交付
 不替代条款审查；新修订尚未正式签名/发布/设备安装。
+
+Vim 9.1.0145-2 和开发 profile 1.0-4 在
+vim-profile-revisions.j65dpuzu/ipks 生成；Vim 新/旧 data.tar.gz 所有
+成员类型/mode/link/data 完全一致，没有重编程序。将六个新控制
+修订合并到新 raw pool common-notices-revised-raw.08ab_9b1，保持
+346 个唯一包名，索引与声明依赖闭包通过。生产 finalize 对新池
+成功，输出 paired-common-notices-revised-346，旧输出保留。
+
+使用隔离 fixture RSA key 签署候选索引（非正式发布 key），运行
+配对 image 的真实 opkg。先 --noaction --combine install 全346包，
+签名检查开启，保护文件和 status 不变；随后在独立 root 执行完整
+安装与 offline configure。控制脚本审计捕获新增 Vim postinst，
+逐个读取后确认与 Audacious/NetSurf 一样在非根 IPKG_INSTROOT /
+PKG_ROOT 下提前退出，再放行离线配置。346 个版本与 index 全部
+一致，共507个 installed 条目；libc/opkg/Labwc/image-base.json
+摘要未变。日志 common-346-opkg-plan.log、
+common-346-opkg-install-audited.log 及 common-346-opkg-plan/*.log。
+
+安装后 QEMU 从该 root 运行 Git/gh/Vim/jq/Make/which 版本检查，
+并以安装后的 Python 执行 NumPy/SciPy/OpenCV 计算与 Pillow PNG
+round-trip，均通过。测试 harness 最初把 /usr/bin/vim wrapper 当
+ELF，改为调用其实际 libexec 程序后通过；未修改包程序或绕过
+ELF policy。日志 common-346-installed-smoke-fixed.log。该验证
+不替代真实设备、GPU/CPU1/网络验收，也不证明全功能或许可审查。
+
+清理三个已结束 portable 源码副本（各372MiB逻辑大小）：
+vim-notices-portable.LcX9Zpj2/repo、vim-notices-final-portable.dlEUobAa/repo、
+go-notices-portable.qjE8Gmyo/repo。删除前核对精确路径与非Git属性，
+日志/源码锁/当前源码/SDK/全部IPK保留；副本可从已提交代码重建。
+Node 原容器仍在运行，达到2078/3570，未重启或取消。

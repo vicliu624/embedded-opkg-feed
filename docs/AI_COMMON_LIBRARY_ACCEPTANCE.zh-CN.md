@@ -1103,3 +1103,21 @@ OpenSSH 路径原先先编译源码，再用 image 中已存在的五个程序�
 程序与 image cmp 全部一致，LICENCE 存在，SDK 识别 0 新 ELF。
 日志 common-tools-remaining.FRKolnAQ/openssh-reuse-notices.log。
 尚未完成全部已构建工具的 notices 重包、法律审查或 opkg 验收。
+
+实际补包推进到 19 个常用工具/库：diffutils、dos2unix、libmagic、
+file、findutils、gawk、Git 两个包、grep、libjq、jq、less、
+openssh-client、patch、sed、strace、tree、vim、which。源码锁定
+验证通过后从归档提取根 notice，只增加许可文件，不重编程序。
+dos2unix 的文件名为 COPYING.txt，已补入共享 SDK 采集名单和检查。
+首次补包验证捕获 tarfile data filter 未恢复原目录 mode，丢弃该
+未签名验证输出作为交付输入，保留日志；新 assembly 显式恢复原
+member mode，新 notice 目录为 0755。
+
+tool-notices-repack.7yy8wi_n/ipks 实际 19 IPK 均重新经过配对 SDK
+CPU0 policy 和标准 build-ipk 打包；直接比较旧/新 data.tar.gz 的
+所有原成员，类型、链接目标、mode 与文件内容全部不变。新增
+notice 内容摘要全部匹配锁定归档提取结果。报告
+tool-notices-repack.7yy8wi_n/ipk-notice-verification.json。
+共享 Ubuntu 24.04 前置检查再次通过，日志 copying-txt-shared-policy.log。
+该组尚未合并到最终候选或通过 opkg 安装；Make .tar.lz notice、
+profile、Node/ICU 及其它包的完整 notice/许可审查仍继续。

@@ -7,7 +7,7 @@ for helper in buildroot-command-package.sh buildroot-archive-library.sh; do
   trap_line=$(grep -n 'trap .* RETURN' "$repo_root/support/$helper" | head -n1 | cut -d: -f1)
   [[ "$load_line" -lt "$trap_line" ]]
 done
-grep -Fq 'COPYING.LESSER LICENSE LICENSE.txt LICENCE LICENCE.txt COPYRIGHT NOTICE PATENTS' "$repo_root/support/published-sdk-build.sh"
+grep -Fq 'COPYING COPYING.txt COPYING.LESSER LICENSE LICENSE.txt LICENCE LICENCE.txt COPYRIGHT NOTICE PATENTS' "$repo_root/support/published-sdk-build.sh"
 grep -Fq '"$source_dir/COPYING" "$payload_dir/usr/share/licenses/git-runtime/COPYING"' "$repo_root/packages/git-runtime/build.sh"
 grep -Fq '"$stage_root/usr/share/licenses/git/COPYING" "$payload_dir/usr/share/licenses/git/COPYING"' "$repo_root/packages/git/build.sh"
 grep -Fq '"$source_dir/LICENCE" "$payload_dir/usr/share/licenses/openssh-client/LICENCE"' "$repo_root/packages/openssh-client/build.sh"

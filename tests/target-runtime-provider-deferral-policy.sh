@@ -29,7 +29,13 @@ grep -Fq "printf '%s|%s\\n' \"\$package\" \"\${data_image_alias[\$package]}\" >>
 grep -Fq 'TDVP_IMAGE_PROVIDER_MANIFEST' "$catalogue"
 grep -Fq 'IMAGE_OWNERSHIP_MANIFEST_SHA256' "$catalogue"
 grep -Fq '[[ -s "$image_provider_map" ]]' "$build_all"
-grep -Fq "IMAGE_OWNERSHIP_MANIFEST_SHA256='0c0d0f2f4b1a2cb5e1278939bc17143f2b76b5654e26dc1648b274ba41f79cb6'" "$repo_root/platforms/tdvp-k230-r1/platform.env"
+source "$repo_root/platforms/tdvp-k230-r1/platform.env"
+[[ "$IMAGE_OWNERSHIP_MANIFEST_SHA256" =~ ^[0-9a-f]{64}$ ]] || {
+  echo 'image ownership lock needs a SHA256 digest' >&2; exit 1;
+}
+[[ "$IMAGE_OWNERSHIP_MANIFEST_URL" == "$SDK_RELEASE_URL/tdvp-image-base.json" ]] || {
+  echo 'image ownership and SDK must use the same immutable release' >&2; exit 1;
+}
 grep -Fq 'options: [archive, audacious-foundation, audacious-core, audacious-plugins, audacious-app, audacious, network-tools, netsurf, media, games, desktop-tools, development-tools, nodejs, ai-common]' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'netsurf)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 grep -Fq 'package_args=(--package tdvp-netsurf)' "$repo_root/.github/workflows/build-r10-batch-candidate.yml"

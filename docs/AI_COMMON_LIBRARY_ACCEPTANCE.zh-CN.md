@@ -830,3 +830,39 @@ action。新增 published-sdk-cache-identity.py 执行真实 action shell，
 验证两种 SDK 摘要、非法值拒绝及三个模式的共同入口。回归通过，完整
 Ubuntu24 portable CI 再次通过，目录 sdk-cache-identity-portable.F1thOsvL。
 没有取消 CI、重复编译镜像或推广 stable。
+
+### 2026-10-10 签名与包损坏拒绝验收
+
+runtime base run 37957180516 在策略阶段失败，公开 SDK/image 准备成功。
+本地逐项复核全部七项 batch policy 与全仓库 source lock，只有
+target-runtime-provider-deferral-policy 的旧 r11 inventory 固定摘要
+断言失败；CI 修复计划等待用户确认，尚未实现。
+
+等待期间在 signature-rejection.CGSe7kuE 新镜像副本执行真实 target
+opkg，check_signature=1 保持开启。篡改索引返回 Bad signature；有效
+签名索引加大小变化的 IPK 返回 File size mismatch；同大小字节损坏
+被认定 corrupt package 并拒绝；有效签名但空信任公钥环返回 No public
+key。四种拒绝均未改变数据库，目标新许可证文件未落盘。测试密钥与
+公钥环仅用于夹具，不代表生产密钥签名验收。日志 tampered-index.log、
+corrupted-ipk.log、same-size-corrupted-ipk.log、unknown-key.log 保留。
+同大小坏包日志没有显式 checksum 字样，首次日志文本断言过严而退出，
+实际安装已拒绝且数据库检查已通过；按真实 corrupt package 输出核对。
+
+2026-10-10 磁盘复核：两份已结束的失败快照
+staged-portable-rc2.uRBkN1IX/repo、staged-linux-portable-rc2.lDIZBZMD/repo
+各 372 MiB，均解析精确路径并确认原始归档与日志存在后删除。只清理
+可重建源码副本，保留原始 archive、portable-ci.log、成功验收 root、
+IPK、源码缓存及发布产物。清理后构建机约 55 GiB 可用。CI 修复授权
+仍等待确认，没有重新派发失败 runtime-base run。
+
+用户随后明确同意修复并继续。旧 r11 固定摘要断言改为读取当前 lock、
+校验 SHA256 格式及 image ownership URL 与 SDK release 一致；实际
+下载摘要校验和 catalogue inventory 核验未删除。新增共享入口
+check-batch-build-policy.sh，保留原七项策略、全部 shell 语法及全仓库
+source lock 验证，快速 CI 与两个构建模式统一调用。新增
+batch-policy-entrypoint.py 验证入口覆盖、当前 release 接受、非法摘要
+及不匹配 release 拒绝；初版 fixture 缺平台 TSV，补齐 fixture 数据
+后通过。真实 SDK/image 环境的 Ubuntu24 共享前置检查通过，日志
+shared-batch-policy.5wWYlFLB/shared-policy.log。完整快速 CI 再次通过，
+日志 shared-policy-portable.q19rvzYi/portable-ci.log；没有弱化失败断言
+为忽略错误，也没有重编镜像或关闭签名验证。

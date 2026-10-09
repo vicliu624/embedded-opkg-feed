@@ -80,6 +80,8 @@ jobs:
           python3 ./tests/buildroot-image-ownership.py
           python3 ./tests/published-sdk-contract.py
           python3 ./tests/published-sdk-cache-identity.py
+          python3 ./tests/batch-policy-entrypoint.py
+          bash scripts/check-batch-build-policy.sh
           bash ./tests/reuse-published-ipk-payload-policy.sh
           bash ./tests/feed-overlay-composition-policy.sh
           bash ./tests/vim-package-policy.sh

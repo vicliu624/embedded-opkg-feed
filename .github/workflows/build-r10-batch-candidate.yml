@@ -53,16 +53,7 @@ jobs:
 
       - name: Check policy before using build capacity
         run: |
-          set -Eeuo pipefail
-          for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
-          bash ./tests/build-all-source-lock-policy.sh
-          bash ./tests/audacious-foundation-policy.sh
-          bash ./tests/audacious-package-policy.sh
-          bash ./tests/archive-package-policy.sh
-          bash ./tests/target-runtime-provider-deferral-policy.sh
-          bash ./tests/feed-overlay-composition-policy.sh
-          bash ./tests/source-lock-policy.sh
-          bash ./scripts/verify-source-lock.sh --repo-root . --all
+          bash scripts/check-batch-build-policy.sh
 
       - name: Restore the target-runtime IPK base
         id: restore-runtime-base
@@ -259,16 +250,7 @@ jobs:
 
       - name: Check the selected batch policy
         run: |
-          set -Eeuo pipefail
-          for script in scripts/*.sh tests/*.sh packages/*/build.sh; do bash -n "$script"; done
-          bash ./tests/build-all-source-lock-policy.sh
-          bash ./tests/audacious-foundation-policy.sh
-          bash ./tests/audacious-package-policy.sh
-          bash ./tests/archive-package-policy.sh
-          bash ./tests/target-runtime-provider-deferral-policy.sh
-          bash ./tests/feed-overlay-composition-policy.sh
-          bash ./tests/source-lock-policy.sh
-          bash ./scripts/verify-source-lock.sh --repo-root . --all
+          bash scripts/check-batch-build-policy.sh
 
       - name: Preflight the reviewed GBA source archive
         if: inputs.batch == 'games'

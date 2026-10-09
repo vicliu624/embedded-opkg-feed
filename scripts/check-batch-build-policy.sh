@@ -4,6 +4,9 @@ set -Eeuo pipefail
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 python3 "$repo_root/tests/extra-runtime-owner-version-policy.py"
 python3 "$repo_root/tests/node-provider-version-policy.py"
+python3 "$repo_root/tests/source-recipe-exact-dependencies.py"
+python3 "$repo_root/tests/icu-native-source-layout.py"
+bash "$repo_root/tests/dev-tools-package-policy.sh"
 for script in "$repo_root"/scripts/*.sh "$repo_root"/tests/*.sh "$repo_root"/packages/*/build.sh; do
   bash -n "$script"
 done

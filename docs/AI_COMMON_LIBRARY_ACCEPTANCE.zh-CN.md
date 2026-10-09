@@ -926,3 +926,50 @@ SONAME 行全部匹配 recipe；该检查与 Node 十二条依赖检查同时进
 owner-registration-proof.EC7HKeYw。既有 runtime base cache 含旧 seed，
 新声明会改变其缓存身份，需要重新生成 metadata/base 包装，不编译
 镜像；旧公开缓存或 IPK 不得直接改写冒充新输入。
+
+等待新 runtime base 时清理三个已结束的快速 CI 源码副本，各 372 MiB：
+staged-explicit-lf-rc2.8MF5YxPL/repo、shared-policy-portable.q19rvzYi/repo、
+node-provider-portable.MHAOOaqc/repo。删除前核对绝对路径、保留日志和
+源码归档，合计约 1116 MiB 可重建内容。未清理当前工作源码、成功
+安装 root、IPK、SDK、Node 输入归档或编译缓存；构建机约 55 GiB 可用。
+
+新 runtime base run 37965484919 成功，耗时 6m49s，provider 检查、缓存
+和 evidence 上传均成功。取回四份 evidence，与本地旧基础层比较：
+runtime ownership、target runtime packages、image aliases 三份完全
+相同；外部 owner map 七条修订值均正确。仅在任务专属新 output
+复用原 base IPK 并配置新 evidence，保留旧公开缓存与旧失败输出。
+本地 Node 重建第一次被旧容器留下的悬空 libcares/root 拒绝，安全
+检查未放宽；检查精确链接及目标不存在后 unlink 该生成链接，切换
+到任务映射的持久 TMPDIR。四运行包构建现已越过 owner 注册，进入
+ICU 原生生成器编译，日志 node-local-source.nbTt3Ffl/runtime-build-persistent-payload.log。
+仍为进行中，未完成 Node 构建/安装验收或发布；AI fixture 修复等待
+确认，没有重新派发 AI 失败批次。
+
+后续本地构建在 ICU 原生 `make install` 停止：锁定归档包含
+`icu/LICENSE`，helper 仅复制 `icu/source/`，安装规则读取
+`$(srcdir)/../LICENSE` 时缺失。修复保留原始 LICENSE 的父目录位置。
+新增 `icu-native-source-layout.py` 执行真实 helper 的准备路径，用
+隔离归档 fixture 验证 configure 收到字节一致的父目录许可证，
+并验证未完成构建不会产生完成 marker。该测试与全配方 exact edge
+检查进入快速 CI 和共享前置检查；Ubuntu 24.04 容器共享检查通过。
+exact edge 检查覆盖 178 个 r11 配方中的 135 条 source-provider 边；
+明确使用 SDK 开发文件的 libcurl-4、libncursesw 仍由实际 image/IPK
+闭包校验负责。开发工具 profile 修订为 1.0-2，允许 Python runtime
+修订升级，Node profile 引用同步；原生 Python 扩展的 ABI 约束保持。
+本地完整 Node/ICU 构建重新启动，日志为
+`node-local-source.nbTt3Ffl/runtime-build-icu-license.log`，尚未宣称
+完整构建成功。测试 fixture 验证不能替代实际 ICU 安装验收。
+
+实际构建随后越过 ICU native install，进入 RISC-V target 编译；
+原生安装日志已完成许可证安装，native/LICENSE 与已安装
+share/icu/73.2/LICENSE 字节一致。该证据证明本次许可证布局故障
+已在真实 ICU 原生安装中修复，仍不证明完整 Node 构建完成。
+
+扩展验收范围到全部 r11 源码配方，与 317 包候选对照：140 个配方
+具有匹配版本的候选包，38 个未包含，无已包含配方版本漂移。
+缺项主要为 Node/ICU、Git、Vim、文本工具与开发 profile。审计报告
+whole-recipe-candidate-coverage-317.json 和 missing-38-source-input-audit.json
+保存在配对验收目录。38 项中 34 项具有 source.lock、4 项为明确
+exempt profile；27 份唯一锁定归档中 2 份已有校验通过的缓存，
+25 份尚缺。已启动逐配方抓取与摘要校验，日志目录
+common-tool-source-inputs.UbAxW2R4；未将输入缓存视为已交付 IPK。

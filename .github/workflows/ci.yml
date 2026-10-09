@@ -83,6 +83,9 @@ jobs:
           python3 ./tests/batch-policy-entrypoint.py
           python3 ./tests/node-provider-version-policy.py
           python3 ./tests/extra-runtime-owner-version-policy.py
+          python3 ./tests/source-recipe-exact-dependencies.py
+          python3 ./tests/icu-native-source-layout.py
+          bash ./tests/dev-tools-package-policy.sh
           bash scripts/check-batch-build-policy.sh
           bash ./tests/reuse-published-ipk-payload-policy.sh
           bash ./tests/feed-overlay-composition-policy.sh

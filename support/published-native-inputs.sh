@@ -27,6 +27,8 @@ tdvp_sdk_icu_inputs() (
   # Retain this native build for Node's host V8 generators in this transaction.
   mkdir -p "$native/build" "$native/source"
   cp -a "$source_root/source/." "$native/source/"
+  # ICU's install-icu rule reads $(srcdir)/../LICENSE, outside source/.
+  cp -a "$source_root/LICENSE" "$native/LICENSE"
   (
     cd "$native/build"
     env -u CC -u CXX -u AR -u RANLIB -u CFLAGS -u CXXFLAGS -u CPPFLAGS -u LDFLAGS \

@@ -406,12 +406,15 @@ tdvp_python3_replace_payload_root() {
 
 tdvp_prepare_python_payload() {
   local package_dir=$1 split=$2 sdk_root=$3
-  local stage_dir source_root payload_dir root_link readelf_tool payload_ready=0
+  local stage_dir source_root payload_dir root_link readelf_tool license_archive payload_ready=0
   stage_dir=$(tdvp_python3_stage_dir)
   tdvp_python3_assert_stage_marker "$stage_dir"
   source_root="$stage_dir/usr"
   readelf_tool="$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"
   [[ -x "$readelf_tool" ]] || { echo "matching SDK has no target readelf: $readelf_tool" >&2; return 97; }
+  # Each independently distributable split carries the upstream terms, even
+  # when an existing development/runtime stage is reused without compiling.
+  license_archive=$(tdvp_python3_locked_archive "$package_dir")
   root_link="$package_dir/root"
   payload_dir=$(tdvp_python3_replace_payload_root "$package_dir")
   cleanup_python3_payload() {
@@ -459,6 +462,13 @@ tdvp_prepare_python_payload() {
       return 101
       ;;
   esac
+  mkdir -p -- "$payload_dir/usr/share/licenses/$(basename -- "$package_dir")"
+  tar -xOf "$license_archive" "Python-$TDVP_PYTHON3_VERSION/LICENSE" \
+    >"$payload_dir/usr/share/licenses/$(basename -- "$package_dir")/LICENSE"
+  [[ -s "$payload_dir/usr/share/licenses/$(basename -- "$package_dir")/LICENSE" ]] || {
+    echo 'locked CPython archive omitted its license text' >&2
+    return 104
+  }
   tdvp_python3_assert_payload_elfs "$readelf_tool" "$payload_dir"
   if [[ "$split" == runtime ]]; then
     local dynload pyexpat

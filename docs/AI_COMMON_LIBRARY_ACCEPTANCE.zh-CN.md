@@ -1235,3 +1235,11 @@ image-reference 包也不能据此视为许可交付完毕。
 CPython 拆包三条出口，不能只在单个叶子包补文件。共享 notice
 复制机制已存在，下一步需核对这些入口的 staging 来源、锁定源码
 许可与复用分支，并确保补充声明不改变原有程序／库载荷。
+
+CPython 三拆包出口已补原始 LICENSE 提取：复用既有 staging 时也
+调用 tdvp_python3_locked_archive，先核对 source.lock 与归档 SHA256，
+再提取 Python-3.13.3/LICENSE 到各自 licenses namespace，空文本拒绝。
+python3-package-policy 通过；Linux 隔离非ELF fixture 执行真实
+libpython/cli 投影，两份 LICENSE 与真实锁定归档字节一致。
+fixture 跳过 staging marker/ELF 校验，仅证明许可投影，不证明
+新的 Python 运行时或 IPK 已交付。历史 IPK 与版本修订尚未更新。

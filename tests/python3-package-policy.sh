@@ -83,6 +83,9 @@ expect_line 'tdvp_prepare_python_payload "$package_dir" runtime "$4"' \
   "$repo_root/packages/python3-runtime/build.sh"
 expect_line 'tdvp_prepare_python_payload "$package_dir" cli "$4"' \
   "$repo_root/packages/python3/build.sh"
+expect_line '  license_archive=$(tdvp_python3_locked_archive "$package_dir")' "$helper"
+expect_line '  tar -xOf "$license_archive" "Python-$TDVP_PYTHON3_VERSION/LICENSE" \' "$helper"
+expect_line '    echo '\''locked CPython archive omitted its license text'\'' >&2' "$helper"
 expect_absent 'tdvp_buildroot_install|--enable[[:space:]]+BR2_PACKAGE_PYTHON3' "$helper"
 test ! -e "$repo_root/support/buildroot-python3.sh"
 

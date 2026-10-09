@@ -103,4 +103,6 @@ tdvp_copy_node22_icu_input_library() {
   while IFS= read -r -d '' elf; do
     tdvp_remove_elf_runtime_search_paths "$TDVP_NODE22_ICU_READELF" "$elf"
   done < <(find "$payload_dir/usr/lib" -maxdepth 1 -type f -print0 | LC_ALL=C sort -z)
+  python3 "$package_dir/../../support/install-archive-source-license.py" \
+    "$(tdvp_source_archive_locked_file "$package_dir")" "$package_dir" "$payload_dir" 'icu/LICENSE'
 }

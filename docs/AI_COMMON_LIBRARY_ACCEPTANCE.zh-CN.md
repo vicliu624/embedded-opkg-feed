@@ -1364,3 +1364,30 @@ IPK并复用当前候选cares/uv/nghttp2，QEMU通过Node22.23.2/ICU73.2、
 路径扫描发现ICU四包、libnode/node未带独立声明，npm-runtime
 196个notice路径存在；许可完整性仍需核对，六包需复用程序载荷
 补声明并递增相应修订后，才合入正式配对候选。
+
+Node/ICU六个拆包出口现统一读取锁定归档的regular LICENSE，
+install-archive-source-license.py再次验证source.lock、归档SHA256、
+成员路径/类型/大小，并复用install-source-licenses.py保留原文与
+SOURCE.json。测试覆盖原始字节、来源、幂等、链接、越界路径、
+缺文件和哈希损坏拒绝，接入公共批次preflight/快速CI。
+
+ICU四包修订73.2-2，libnode/node为22.23.2-3，npm-runtime/npm为
+10.9.8-3，Node profile为1.0-6；同步精确依赖及五条SONAME owner。
+九个IPK在node-licensed-repack.vm6zygqa/ipks成功生成，八个既有拆包
+的全部原始type/mode/link/content与原编译IPK一致，六包新增
+LICENSE及来源记录；Node profile首次生成，没有重复编译Node。
+Node政策、12条精确边、189条owner与135条source-provider edge通过。
+
+九包与现有346包组成common-node-licensed-raw.0j53ipp5，共355个
+唯一包名，索引/哈希/声明闭包与81项AI/common覆盖通过。按
+PACKAGE声明身份及r11/K230 scope核对178配方，缺包/版本漂移为零，
+报告node-licensed-355-declared-identity-coverage.json；首次按目录名
+扫描将compat目录误判为缺包，保留原报告，语义核对确认该目录
+声明tdvp-cardputer-zero-gba而非目录名，未改变配方或缩小范围。
+
+完整78行portable CI block通过，日志node-licensed-portable.rxKgiu/
+portable-ci.log。355包生产finalization以已锁定公共predecessor启动，
+日志common-node-licensed-finalization.log，尚待结束及新签名安装验收。
+清理已结束CI repo副本372MiB及两个宿主实验root副本848/849MiB，
+精确realpath/非链接/无.git核对后删除；日志/IPK/工具源码与编译/
+SDK/缓存保留，生成副本可重建，不把逻辑大小当作df精确回收量。

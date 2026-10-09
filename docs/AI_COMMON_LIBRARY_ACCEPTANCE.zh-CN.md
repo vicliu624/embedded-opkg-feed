@@ -1652,3 +1652,12 @@ common-third-second-pass-regression.log。以上为匹配镜像隔离安装
 及 QEMU 运行验收，未称为设备生产源安装或正式发布。
 远端只读复查仍为 a8a531 镜像身份，与候选绑定的 13cab 不同，
 没有向该设备安装本候选。
+
+匹配候选安装根的 GnuTLS 证书实网检查通过：使用临时本机
+OpenSSL TLS 服务及独立测试证书，目标客户端显式加载测试 CA，
+校验 localhost，读取加密 HTTP 200 响应；错误主机名和无关 CA
+都被拒绝（退出码 7）。记录 common-third-source-build.RDqdo9vA/
+gnutls-certificate-loopback.log。未替换系统证书，临时服务/证书
+自动清理。首次测试在接收记录时 E_AGAIN 被直接当失败，补上
+有限重试及外部超时后通过，证书检查未放宽。本检查覆盖 TLS
+传输，HTTP3 的证书与帧验收仍需单独完成。

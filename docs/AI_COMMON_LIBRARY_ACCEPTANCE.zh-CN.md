@@ -1243,3 +1243,16 @@ python3-package-policy 通过；Linux 隔离非ELF fixture 执行真实
 libpython/cli 投影，两份 LICENSE 与真实锁定归档字节一致。
 fixture 跳过 staging marker/ELF 校验，仅证明许可投影，不证明
 新的 Python 运行时或 IPK 已交付。历史 IPK 与版本修订尚未更新。
+
+剩余 notice 缺口的14个 source.lock 已逐一验证，补下载8个缺失归档
+并核对各自固定 SHA256；完整报告 common-remaining-source-notice-audit-complete.json。
+13个归档根目录有原始许可，pv 的许可在 docs/COPYING。公共源码
+出口此前漏掉 libyaml 的 License、mpdecimal 的 COPYRIGHT.txt、
+xz 的 COPYING.0BSD/GPLv2/GPLv3/LGPLv2.1，以及 pv 的 docs/COPYING，
+现已补入显式路径清单。source-notice-filenames.py 执行真实复制循环，
+验证原始字节、0644模式及仅复制声明文件；接入已被快速CI和批次
+preflight调用的 common-tool-notice-policy.sh。
+
+声明投影与载荷生命周期回归均通过，未重编目标程序。此处证明
+未来打包出口已修，当前346包中的历史IPK尚需修订和重新打包，
+不能将源码修改等同于已签名发布。Node 原任务到2791/3570仍运行。

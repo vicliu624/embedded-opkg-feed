@@ -272,7 +272,7 @@ EOF
   esac
   # The calling recipe owns its staging projection and package split.
   for license in COPYING COPYING.txt COPYING.LESSER LICENSE LICENSE.txt LICENCE LICENCE.txt COPYRIGHT NOTICE PATENTS \
-    License COPYRIGHT.txt COPYING.0BSD COPYING.GPLv2 COPYING.GPLv3 COPYING.LGPLv2.1; do
+    License COPYRIGHT.txt COPYING.0BSD COPYING.GPLv2 COPYING.GPLv3 COPYING.LGPLv2.1 docs/COPYING; do
     if [[ -f "$source_root/$license" ]]; then
       install -Dm0644 "$source_root/$license" "$install_root/usr/share/licenses/$component/$license"
     fi

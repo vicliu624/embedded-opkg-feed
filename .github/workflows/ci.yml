@@ -87,6 +87,7 @@ jobs:
           python3 ./tests/icu-native-source-layout.py
           bash ./tests/published-sdk-lzip-policy.sh
           python3 ./tests/command-staging-export-integration.py
+          python3 ./tests/go-package-notices.py
           bash ./tests/dev-tools-package-policy.sh
           bash scripts/check-batch-build-policy.sh
           bash ./tests/reuse-published-ipk-payload-policy.sh

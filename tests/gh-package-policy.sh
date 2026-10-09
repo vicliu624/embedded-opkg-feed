@@ -32,6 +32,7 @@ grep -Fq 'github.com/cli/cli/v2/internal/build.Version=${VERSION%-*}' "$build_fi
 grep -Fq -- '-tags=netgo,osusergo' "$build_file"
 grep -Fq 'libc.so.6|libpthread.so.0|libdl.so.2)' "$build_file"
 grep -Fq 'tdvp_prepare_generated_payload_root' "$build_file"
+grep -Fq 'scripts/install-go-package-notices.py' "$build_file"
 helper="$repo_root/support/go-module-vendor-cache.sh"
 bash -n "$repo_root/scripts/prepare-go-module-vendor-cache.sh"
 bash -n "$helper" "$build_file"

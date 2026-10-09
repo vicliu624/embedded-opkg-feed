@@ -103,6 +103,9 @@ tdvp_assert_elf_without_runtime_search_path "$TDVP_K230_READELF" "$target_binary
 
 payload_dir=$(tdvp_prepare_generated_payload_root "$package_dir")
 install -Dm 0755 "$target_binary" "$payload_dir/usr/bin/gh"
+python3 "$package_dir/../../scripts/install-go-package-notices.py" \
+  --source "$source_root" --go-root "$work_root/go-host/go" \
+  --output "$payload_dir/usr/share/licenses/gh"
 "$TDVP_K230_READELF" -h "$payload_dir/usr/bin/gh" | grep -Fq 'Machine:                           RISC-V' || {
   echo 'gh payload is not RISC-V' >&2
   exit 69

@@ -1054,3 +1054,26 @@ ELF 校验、QEMU 输出 gh version 2.98.0、IPK 打包全部成功。
 运行通过，日志 gh-external-link-portable.Pm8yhQQM/portable-ci.log。
 当前 gh IPK 仅含程序；上游与 vendor 许可证交付、正式安装与
 发布审查仍待完成，不将该包视为已完成发布。
+
+后续补齐 gh notice 交付。新增 install-go-package-notices.py，保留
+上游 LICENSE、Go LICENSE/PATENTS 及 vendor notices 原始字节、
+相对路径，并生成 SHA-256 清单；支持 LICENSE 与 LICENCE 拼写。
+实际锁定 vendor 清单含 179 个模块，177 个有源码目录，另外
+go-minisign 与 gotest.tools/v3 未 materialize 为 vendor 源码，单独
+记录而不虚构 notice。收集到 223 份文件；177 个 materialized
+模块均有直接 notice。该清单是保留证据，不替代许可条款审查。
+
+go-package-notices.py 覆盖文件字节/摘要、未覆盖模块显式报告、
+未 materialize 模块区分、拒绝覆盖、拒绝符号链接；加入快速 CI
+和共享检查。完整 Ubuntu 24.04 portable CI block 通过，日志
+go-notices-portable.qjE8Gmyo/portable-ci.log。
+
+对已验证 gh payload 加入 notices 后重新打包，不重编程序，保留
+此前 unsigned IPK。实际 licensed-ipks/gh_2.98.0-2_riscv64.ipk 的
+SHA-256 为 87c92d593125306c12a05f892c3b8365fd93ecde5f933c78f05e9c83bc447f77。
+直接读取该 IPK，223 份 notice 全部与清单摘要一致；可执行文件
+摘要仍为 cc8de391ec9499efa21e441ed1db70f09438e748fb443d7416ee2bfbb79180e5。
+配对 SDK ELF 校验与 QEMU 版本输出再次通过，报告
+gh-offline-build.7ogNBYXk/notice-ipk-verification.json。
+8dde9f2 的快速 CI run 37973968555 成功；此包尚未正式签名、
+公开发布或完成设备安装，法律与安全审查范围不因 notices 齐备缩减。

@@ -6,7 +6,6 @@ for package in libyaml-0-2 libmxml-1 libmicrohttpd-12 libubootenv-0; do
   (
     source "$repo_root/packages/$package/package.env"
     expected_version=2025.02.1-3
-    [[ "$package" != libubootenv-0 ]] || expected_version=2025.02.1-2
     [[ "$PACKAGE" == "$package" && "$VERSION" == "$expected_version" ]]
     [[ "$PACKAGE_KIND" == shared-library && "$PACKAGE_AUTO_RUNTIME_DEPENDS" == 1 ]]
     [[ "$PACKAGE_BASE_OVERLAY" == deny ]]

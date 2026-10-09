@@ -1271,3 +1271,18 @@ portable CI block通过，日志 remaining-notices-portable.N47Hj4/portable-ci-r
 第二次捕获historical-library-migration旧修订断言，同步明确区分
 三包-3与未变化libubootenv-0的-2后全量通过。正式索引未改写，
 22包仍需按新控制元数据重打包及重新验收。
+
+对全部346个实际raw IPK控制字段再次做传递依赖审计，发现三项
+ELF自动依赖消费者：libubootenv-0、python3-tflite-runtime、tdvp-netsurf。
+同步递增其修订，影响范围为25个配方，报告
+remaining-notice-actual-ipk-consumer-plan.json。Node profile尚无旧IPK，
+等待live Node任务后首次生成；其余24包在remaining-notices-repack.z2wkq410/ipks
+通过真实build-ipk及SDK CPU0策略，新IPK原有成员type/mode/link/content
+与旧IPK相同。Python标准库和CLI也加入各自namespace的锁定LICENSE。
+前一中间打包remaining-notices-repack.ol4ybzy_未包含这两份补充，
+保留用于诊断，不作为最终合并输入。
+
+新24包合入独立common-final-notices-raw.82ba289h，保留346个唯一包名；
+索引、哈希和声明依赖闭包通过。历史库／TFLite策略、189条owner与
+135条source-provider edge再次通过。生产finalization已针对锁定公共
+predecessor启动，日志common-final-notices-finalization.log，尚待结束。

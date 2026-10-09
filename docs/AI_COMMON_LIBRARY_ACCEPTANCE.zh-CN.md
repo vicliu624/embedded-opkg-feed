@@ -1222,3 +1222,16 @@ which 的移除被依赖检查拒绝；该操作具有部分执行结果，不�
 原子卸载事务。测试先恢复 profile，再按上述顺序验证，不使用
 force-depends。此证据只覆盖一个 profile/leaf 样本，未覆盖全部包
 的升级、卸载与恢复。Node 原任务到2606/3570仍在运行。
+
+对 paired-common-notices-revised-346 的全部实际 IPK 做 notice 路径
+初筛：277 包带 image-reference 控制字段，单独保留其镜像来源；
+其余69包中55包有许可证／copyright／NOTICE 等文件，14包未检出：
+iperf3、libbz2、libevent、liblzma、libmicrohttpd-12、libmpdec-4、
+libmxml-1、libpython3.13、libwebp-7、libyaml-0-2、lsof、netcat、
+pkgconf、pv。该初筛只识别路径，尚未验证文本完整性或条款，
+image-reference 包也不能据此视为许可交付完毕。
+
+源码入口核对显示缺口跨越 archive-library、command-package 和
+CPython 拆包三条出口，不能只在单个叶子包补文件。共享 notice
+复制机制已存在，下一步需核对这些入口的 staging 来源、锁定源码
+许可与复用分支，并确保补充声明不改变原有程序／库载荷。

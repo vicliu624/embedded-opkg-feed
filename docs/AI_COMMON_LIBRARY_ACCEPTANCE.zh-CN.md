@@ -1399,3 +1399,27 @@ SDK/缓存保留，生成副本可重建，不把逻辑大小当作df精确回�
 逐包求解与整批安装/配置已启动，日志common-node-licensed-opkg.log，
 尚待结束。正式发布密钥与stable未改动；完整AI源码批次的两个
 fixture SDK/base-root隔离修正仍等待明确授权，未改那两个测试。
+
+355包fresh-root验收终态成功：355次独立单包求解、全包实际安装/
+configure通过，516个installed版本一致，基础保护文件未变，日志
+common-node-licensed-opkg.log。安装后的Node22.23.2/ICU73.2、npm10.9.8
+以及npm离线本地tarball安装、lockfile生成、模块加载通过，日志
+common-node-licensed-installed-node-separated.log。首次fixture把同一
+文件用于user/global npmrc被npm拒绝，仅修正fixture为两个独立
+空配置重跑，不改npm程序或包载荷；不据此宣称联网registry或
+原生addon安装通过。
+
+升级实验继续覆盖默认入口：opkg_solver_upgrade对无参数及多参数
+升级选择批量准备，单包保留原路径，安装/卸载入口不变；批量
+函数先保存所有旧状态再标记，避免重复参数污染快照，并去重
+所选新包。独立RISC-V工具增量重编完成，签名开启下默认全升级、
+显式多包、重复包名预演通过；重复单provider仍不突破旧消费者
+约束。普通opkg upgrade实际升级/configure346个候选版本通过，
+507 installed一致，基础文件未变；日志
+opkg-combined-upgrade-experiment.PPZJeo/target-default-case.log及目录。
+
+创建并附着独立镜像工作树opkg-coordinated-upgrade，分支
+codex/opkg-coordinated-upgrade。origin/main为b5ba5a6且缺少已发布
+r12-rc2的四个opkg保护补丁；明确fetch发布tag并本地ff到0701ec6，
+当前无文件修改，未合并GitHub main/PR3。后续受控补丁应以这份
+已发布源码为基线；没有触发整镜像构建或替换设备工具。

@@ -1670,3 +1670,74 @@ nghttp3 1.18.0 上游内部协议 suite 已交叉编译并经 QEMU 运行：
 tdvp-nghttp3-protocol.7XHITD1v/protocol-suite.log。
 此套件链接上游内部静态库，不替换既有共享库/IPK；不能将其
 与独立 QUIC 互通、TLS 证书测试拼接成完整 HTTP3 端到端证明。
+
+## 已复现的 cJSON 安全验收缺口（2026-10-10）
+
+当前 libcjson 同时交付 libcjson_utils.so.1。使用
+tests/cjson-failed-patch-preservation.c 在 382 包安装根执行：
+对 {"x":42} 应用缺少 value 的 replace /x，API 返回错误码 7，
+原字段却被删除，程序明确返回 10。官方 1.7.19 源码本机编译
+也复现同样行为。记录 cjson-security-source.pYdKR314 下
+failed-patch-target.log、failed-patch-upstream.log。
+此结果与 CVE-2026-67217 描述一致；GitHub 公告标记 Unreviewed、
+未给确定修复版本，因此以本地复现证据作为当前阻断依据。
+升级到 1.7.19 不能关闭本问题，源码锁 SECURITY_STATUS 已标记
+未通过。CVE-2026-67215 递归问题及其他公告仍待核对。
+参考 https://github.com/advisories/GHSA-pr46-97qf-f32c 和
+https://github.com/advisories/GHSA-5q3m-r3x7-8phg。
+包管理求解/安装成功与安全验收分别记录，382 包候选保持未发布。
+
+补充接口约定核对：上游 cJSON_Utils.h 第 48 行明确说明
+ApplyPatches 失败时不保证原子性，并给出复制后应用、成功再
+提交的包装方案。前述复现证明此调用风险，不能独立证明
+API 违背承诺，也不能单凭这个测试判定必须改写原有接口。
+保留原接口，新增 tests/cjson-atomic-wrapper-contract.c 验证官方
+建议的所有权处理：失败保留原对象和值，成功提交新对象。
+目标 SDK 下升级构建 1.7.19 并运行该包装测试通过，记录
+cjson-security-build.AXSosV6R/build.log、atomic-wrapper.log。
+配方/源码锁/owner 版本已改 1.7.19-1，纳入上游空指针、重叠
+拷贝、复制递归保护及 JSON pointer 索引修复。源码归档摘要为
+7fa616e3046edfa7a28a32d5f9eacfd23f92900fe1f8ccd988c1662f30454562。
+这个版本仍不能代表 2026 公告全部关闭，深度/循环输入等继续
+核对；新 IPK 和整批候选还需重验，已验证旧池保留原样。
+接口来源：https://github.com/DaveGamble/cJSON/blob/v1.7.19/cJSON_Utils.h。
+
+1.7.19 新 IPK 已打包，记录 cjson-security-build.AXSosV6R/pack.log；
+上游 22 项目标测试全部通过，记录 upstream-suite-binfmt-root.log。
+首次 CTest 使用 binfmt 而未带目标加载器根目录失败，指定
+QEMU_LD_PREFIX 后同批测试通过，源码和断言未改动。
+升级后完整快速 CI 本地通过，记录 cjson-updated-portable.4kLrXVyT/
+portable-ci.log。新的 common-cjson-updated-raw.aznyL6KA 只替换
+libcjson 的 IPK，旧 382 池保留；新生产配对尚在运行。
+
+新增 cjson-input-boundary-smoke.c 未通过，退出码 5：超范围
+JSON Pointer 索引 /a/184467440737095516160 没有被拒绝。
+1.7.19 decode_array_index_from_pointer 累加 size_t 时没有溢出
+检查，范围外数值可能绕回有效索引。这个边界保持失败状态，
+不能依据上游 suite 通过认定此版本所有输入已安全。后续需要
+上游修复核对、补丁和明确的边界回归。原接口非原子性与本项
+索引边界风险分别处理，不混淆 API 使用约定与数值校验缺口。
+
+索引边界修复已加入包级 0001 补丁：十进制累加前检查
+parsed_index > (SIZE_MAX - digit) / 10，并拒绝空索引。使用
+等价的 (size_t)-1 保持上游 C89 编译兼容。新版本 1.7.19-2，
+新增 patch 宿主依赖；共享 CMake 入口没有修改。补丁函数有
+三处调用（查询、分离、应用），GitNexus 未索引上游函数，
+人工核对调用范围。首次缺尾部上下文被 fuzz=0 检查拒绝，
+补齐上下文后仍以 fuzz=0 应用。
+目标边界及官方原子包装用法测试通过；补丁后上游 22 项测试
+全部通过，记录 cjson-index-fixed-build.qcgENWqa 下 build-context-fixed.log、
+upstream-suite.log。1.7.19-1 的生产配对检查已完成，仅作未修补
+对照，未发布；修补 -2 的 IPK/配对/安装仍需单独验收。
+
+修补 -2 IPK 已打包，CPU0 两个 ELF 检查通过；新的原始池
+common-cjson-index-fixed-raw.PsKuGVoG 复用其余 381 个已验证 IPK。
+生产配对仍在运行，记录 common-cjson-index-fixed-382-finalization.log。
+新增 cjson-source-security-policy.py 将补丁内容摘要、unified diff
+结构、host patch 依赖、源码锁和两 SONAME 的 -2 owner 纳入
+共享快速入口。独立策略及完整快速 CI 本地通过，记录
+cjson-index-fixed-portable.2SXOKcj2/portable-ci.log。
+首次策略错误地按空格解析带引号字段，独立测试即发现，修正
+后再执行完整 CI；包元数据和实际依赖未放宽。
+包 README 记录原子包装约定及输入深度限制，避免把原 API
+失败时的修改行为当作事务保证。其他安全审查未完成。

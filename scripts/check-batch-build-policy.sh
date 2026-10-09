@@ -5,6 +5,7 @@ repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 python3 "$repo_root/tests/common-seven-library-policy.py"
 python3 "$repo_root/tests/common-system-network-library-policy.py"
 python3 "$repo_root/tests/common-event-data-network-policy.py"
+python3 "$repo_root/tests/cjson-source-security-policy.py"
 python3 "$repo_root/tests/pkgconfig-build-prefix-normalization.py"
 python3 "$repo_root/tests/extra-runtime-owner-version-policy.py"
 python3 "$repo_root/tests/node-provider-version-policy.py"

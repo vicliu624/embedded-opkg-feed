@@ -85,8 +85,8 @@ libflatbuffers.so.24.12.23|libflatbuffers|24.12.23-1
 liblz4.so.1|liblz4|1.10.0-1
 libncnn.so.1|libncnn|20250503-1
 libdouble-conversion.so.3|libdouble-conversion|3.3.0-1
-libcjson.so.1|libcjson|1.7.18-1
-libcjson_utils.so.1|libcjson|1.7.18-1
+libcjson.so.1|libcjson|1.7.19-2
+libcjson_utils.so.1|libcjson|1.7.19-2
 libyaml-cpp.so.0.8|libyaml-cpp|0.8.0-1
 libspdlog.so.1.15|libspdlog|1.15.2-1
 libfmt.so.11|libfmt|11.0.2-1

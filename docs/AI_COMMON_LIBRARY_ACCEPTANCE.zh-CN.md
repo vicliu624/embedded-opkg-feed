@@ -1622,3 +1622,33 @@ third-ipk-dependency-and-base-overlap-proof.json 确认交付路径与
 保留；释放约 744 MiB，可从验证源副本重新生成。
 复用 374 个既有 IPK 加入新八包，形成 common-third-raw.6UfomWYu。
 382 包生产 finalizer 尚在运行，未把中间结果视作安装或发布完成。
+
+382 包生产 finalizer 已成功结束，记录 common-third-382-finalization.log；
+候选为 paired-common-third-382。855c52e 快速 CI 38004800279 通过。
+测试密钥签署索引后已启动整体/逐包求解及实际安装，尚未终结；
+新增 common-third-installed-smoke.py 用于检查安装版本、九 SONAME、
+基础 libxml2.so.2 的链接及字节保留、两个目标运行程序。
+
+QUIC 实网补充：上游 ngtcp2 1.25.0 的未改写 GnuTLS C 示例可用
+当前 CPU0 SDK 编译，实际链接 ngtcp2/crypto_gnutls/GnuTLS/libev。
+本机临时 aioquic 1.3.0 服务与自签名证书夹具完成 QUIC TLS 握手，
+服务收到解密的 GET 请求，记录 http3-network-source.SSP3Awpp/
+quic-loopback-runtime.log；宿主依赖仅安装在任务 venv，保存 pip
+依赖报告，未改系统 Python。第一次 pip 因已有 SOCKS 代理缺少
+支持失败，临时解除代理后直连成功，未关闭证书校验。
+上游客户端使用 hq-interop 且未开启对端证书校验。本结果不覆盖
+HTTP3 framing、响应内容或证书验证；这些后续门槛保持未完成。
+
+382 包求解/安装完整结果：整体及 382 次逐包求解通过，签名检查
+开启；实际 install/configure 验证全部候选版本，543 个已安装包，
+基础保护文件未变。记录 common-third-382-opkg-plan.log、
+common-third-382-opkg-install.log。安装后第三轮八库/九 SONAME、
+目标运行程序通过；旧 libxml2.so.2 摘要和链接保持不变。
+另外对两版本同进程 old-first/new-first 加载顺序分别检查：
+版本字符串和解析函数地址不同，两个库均独立解析文档成功。
+记录 common-third-installed-runtime.log、common-third-installed-xml-parallel.log。
+上一轮十二库十个目标程序的安装后回归也通过，记录
+common-third-second-pass-regression.log。以上为匹配镜像隔离安装
+及 QEMU 运行验收，未称为设备生产源安装或正式发布。
+远端只读复查仍为 a8a531 镜像身份，与候选绑定的 13cab 不同，
+没有向该设备安装本候选。

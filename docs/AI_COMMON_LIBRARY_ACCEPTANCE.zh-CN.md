@@ -1303,3 +1303,33 @@ Node增长期间df变化等同于精确回收量。
 新候选使用隔离fixture key签署验收索引，启动fresh image root的
 真实target opkg逐包求解与全包安装/配置，日志
 common-final-notices-opkg.log；该任务尚待结束。未使用正式发布私钥。
+
+新生产候选的fresh-root验收结束：346次独立单包求解、全346包
+实际安装/离线configure通过，507个installed条目与index一致，
+基础libc/opkg/Labwc/image-base摘要未变。安装后Git/gh/Vim/jq/
+Make/which及NumPy/SciPy/OpenCV/Pillow计算和PNG往返通过，日志
+common-final-notices-installed-smoke.log。GitHub快速CI37987272901成功。
+
+额外升级测试发现两个独立限制。两个均从公共r10 predecessor
+生成的未发布兄弟候选，53项合成版本改变，其中15项被dpkg/opkg
+判为下降，不能直接视为连续发布历史；报告
+common-final-notices-sibling-upgrade-diagnosis.json。隔离实验先验证
+旧fixture索引签名，再直接按真实旧候选历史生成ordered fixture，
+不修改production predecessor锁，不把该实验产物发布。
+
+按历史递增修订后的346包，字母序--combine upgrade仍被旧消费者
+反向精确约束拒绝。实际opkg-0.7.0源码与-V4日志定位：
+opkg_prepare_upgrade_pkg逐个选候选后才标记旧消费者deinstall，
+pkg_breaks_reverse_dep会在消费者尚未处理时排除新provider。
+根据已安装图和新index的依赖并集生成consumer-first顺序，
+未变化的Pulse依赖循环另验证版本相同后置于尾部；同一图的
+升级预演、实际upgrade及configure通过，346版本一致、507 installed，
+基础保护文件未变。日志common-final-notices-consumer-first-upgrade.log。
+这证明排序影响结果，尚未构成设备端通用升级修复，也不证明
+发生变化的循环依赖可升级或单包请求能自动协调全部精确依赖。
+
+两个失败预演root的status和四个基础保护文件均与旧安装根摘要
+一致，证明common-final-notices-failed-plan-protected-proof.json保留。
+删除这两个已结束实验的root副本（各849MiB逻辑大小），精确路径
+位于common-final-notices-upgrade/root与common-final-notices-ordered-upgrade/root；
+日志、签名、index、排序JSON与摘要报告保留，可由旧安装根重建。

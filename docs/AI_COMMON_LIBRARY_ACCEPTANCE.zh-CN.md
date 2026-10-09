@@ -1423,3 +1423,17 @@ codex/opkg-coordinated-upgrade。origin/main为b5ba5a6且缺少已发布
 r12-rc2的四个opkg保护补丁；明确fetch发布tag并本地ff到0701ec6，
 当前无文件修改，未合并GitHub main/PR3。后续受控补丁应以这份
 已发布源码为基线；没有触发整镜像构建或替换设备工具。
+
+镜像分支已正式提交并推送16d8e84，包含opkg第五补丁、七项
+自包含升级回归、现有native入口接入及验证记录，保留原四补丁。
+完整native入口42项通过（seed22/alternatives8/ownership5/upgrade7）；
+同一新测试对旧原生工具失败三项，能捕获原回归。构建机日志
+opkg-formal-regression.ljN0yZ/regression-complete.log及regression-old-binary.log。
+首次本地因PATH/umask不同触发旧seed测试失败；对齐CI后，补
+惰性fixture MD5校验和、显式离线configure，并把held断言限定为
+不选新包且状态未变，最终完整通过。生产SHA256/签名未放宽。
+
+新工作树已单独建立GitNexus索引，staged检测确认仅四文件，
+影响集中于新增测试流程，未修改桌面或硬件。镜像分支仅push，
+未创建PR；gh run list该分支为空，未触发长镜像Action。设备工具
+尚未替换；此结果不代替新镜像/SDK配对发布和真实设备验收。

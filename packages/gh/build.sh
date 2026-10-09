@@ -72,8 +72,15 @@ mkdir -p -- "$empty_module_cache" "$go_build_cache"
     GOFLAGS='-mod=vendor' \
     GOOS=linux \
     GOARCH=riscv64 \
-    CGO_ENABLED=0 \
-    "$go_binary" build -trimpath -buildvcs=false -ldflags='-s -w' -o "$target_binary" ./cmd/gh
+    GORISCV64=rva20u64 \
+    CGO_ENABLED=1 \
+    CC="$sdk_root/bin/riscv64-unknown-linux-gnu-gcc" \
+    CGO_CPPFLAGS="--sysroot=$TDVP_K230_SYSROOT" \
+    CGO_CFLAGS='-march=rv64gc -mabi=lp64d -O1 -fPIC' \
+    CGO_LDFLAGS="--sysroot=$TDVP_K230_SYSROOT" \
+    "$go_binary" build -trimpath -buildvcs=false -tags=netgo,osusergo \
+      -ldflags="-s -w -X github.com/cli/cli/v2/internal/build.Version=${VERSION%-*} -linkmode=external -extld=$sdk_root/bin/riscv64-unknown-linux-gnu-gcc -extldflags=--sysroot=$TDVP_K230_SYSROOT" \
+      -o "$target_binary" ./cmd/gh
 )
 [[ -f "$target_binary" && ! -L "$target_binary" ]] || {
   echo 'Go did not produce the gh target binary' >&2
@@ -83,10 +90,14 @@ mkdir -p -- "$empty_module_cache" "$go_build_cache"
   echo 'gh target binary is not RISC-V' >&2
   exit 67
 }
-if "$TDVP_K230_READELF" -dW "$target_binary" 2>/dev/null | grep -F 'Shared library:'; then
-  echo 'gh must remain a self-contained Go target binary; unexpected dynamic dependency' >&2
-  exit 68
-fi
+# The SDK external linker supplies genuine RISC-V attributes through its
+# target objects. Keep Go DNS/user lookup paths and admit only libc support.
+while IFS= read -r dependency; do
+  case "$dependency" in
+    libc.so.6|libpthread.so.0|libdl.so.2) ;;
+    *) echo "unexpected gh dynamic dependency: $dependency" >&2; exit 68 ;;
+  esac
+done < <("$TDVP_K230_READELF" -dW "$target_binary" | sed -n 's/.*Shared library: \[\([^]]*\)\].*/\1/p')
 "$TDVP_K230_STRIP" --strip-unneeded "$target_binary"
 tdvp_assert_elf_without_runtime_search_path "$TDVP_K230_READELF" "$target_binary"
 

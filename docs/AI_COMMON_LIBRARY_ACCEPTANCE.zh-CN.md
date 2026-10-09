@@ -1030,4 +1030,27 @@ Ubuntu 24.04 全共享前置检查通过，日志 command-staging-integration.lo
 common-tools-remaining.FRKolnAQ，包含 make、openssh-client、patch、
 sed、strace、tree、Vim runtime/plugins 和 which 共 14 个 root。
 Make 重新作为真实 producer 验证完整导出修复；此前已成功的 12 个
-工具/IPK 保留用于候选合并，不在此批次重复构建。新批次尚未完成。
+工具/IPK 保留用于候选合并。该批次的 Vim plugin 依赖闭包额外要求
+Git，因前一失败批次没有成功导出的 receipt，Git 两个包再次构建。
+新批次尚未完成。
+
+剩余工具批次随后仅在 which 分派处停止；配方、锁定归档已有，
+发布 SDK 通用 Autotools 分派未包含 which。增加该叶子分支后，
+which-leaf-build.log 记录真实源码构建、CPU0 ELF 校验、QEMU 版本
+输出和 which_2.21-1_riscv64.ipk 打包成功。保留其余已产出包，未
+通过绕过分派错误把原失败批次标记成功。
+
+gh 配方已改为 Go rva20u64、netgo/osusergo、配对 SDK GCC 外部
+链接，并对白名单 libc/pthread/dl 支持库之外的动态依赖拒绝。
+开启 runtime 自动依赖解析，实际 control 将 libc 基线归入锁定
+platform ABI，同时保留 Git/CA 依赖。gh 修订为 2.98.0-2；开发
+profile 及 Node profile 修订为 1.0-3，全部精确引用同步。源码与
+179-module vendor 锁定摘要不变，未修改 SDK verifier。
+
+external-link-versioned-build.log 证明完整 gh 无网络编译、原 SDK
+ELF 校验、QEMU 输出 gh version 2.98.0、IPK 打包全部成功。
+早期 DEV 版本输出证据保留，最终通过显式上游 build.Version
+注入修复。gh 外部链接完整 portable CI block 在 Ubuntu 24.04
+运行通过，日志 gh-external-link-portable.Pm8yhQQM/portable-ci.log。
+当前 gh IPK 仅含程序；上游与 vendor 许可证交付、正式安装与
+发布审查仍待完成，不将该包视为已完成发布。

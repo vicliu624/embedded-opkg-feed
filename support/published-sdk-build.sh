@@ -252,7 +252,7 @@ EOF
           make_options+=(FILE_COMPILE="$work/native/src/file")
           options+=(--disable-libseccomp)
           ;;
-        xz|tar|gzip|readline|popt|make|patch|diffutils|strace|grep|sed|findutils|gawk|less|htop|nano|ncdu|pv|dialog|tmux|iperf3|lsof) ;;
+        xz|tar|gzip|readline|popt|make|patch|diffutils|strace|grep|sed|findutils|gawk|less|htop|nano|ncdu|pv|dialog|tmux|iperf3|lsof|which) ;;
         *) echo "no published-SDK source build for component: $component" >&2; exit 64 ;;
       esac
       local reviewed_options

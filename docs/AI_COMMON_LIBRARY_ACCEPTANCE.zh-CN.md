@@ -897,3 +897,32 @@ node-provider-portable.MHAOOaqc。Node 源码/编译脚本未改，旧 IPK 未
 覆盖，尚未重建、实机验证或发布新 Node 五包，不能据此声称 Node
 交付已经完成。静态 extra-runtime-owners 表的历史镜像 attestation
 未改写为未经镜像证明的新 Node runtime 版本。
+
+Node recipe 修订提交 773f81d 已推送，GitHub 快速 CI run 37961893964
+成功。进一步核对本地原生/交叉构建输入，未找到可用的 Node/ICU 已
+构建缓存；c-ares、nghttp2、libuv 锁定源码均已有且实际摘要通过。
+只下载缺失的 Node 22.23.2 与 ICU 73.2 源码到内容寻址缓存，两个
+SHA256 重新计算通过，日志 node-input-download.L99gsYBp。没有重复
+下载三份已有库、复用错误版本的旧二进制或开始重编 Node。五份源码
+输入现已齐备；SDK/source cache 的准备不等于 Node 实际构建完成。
+
+### 2026-10-10 实际 source builder 暴露旧 owner seed
+
+本地 Node 预检先因 profile 闭包带入整个 dev-tools、离线缓存缺 tar
+而在编译前停止，未删除 profile 依赖；改以四个运行包为重建验收根。
+新 SDK 下 libcares 实际编译/打包通过，随后 register-runtime-owners
+拒绝旧 owner seed 的 1.34.2-1，构建目录 node-local-source.nbTt3Ffl。
+整表审查发现七条版本落后：mGBA、c-ares、nghttp2、Node、ONNX 两个
+SONAME、AI client。确认这些 SONAME 都不在锁定基础镜像，表头也明示
+外部 feed providers，先前把这些旧行当作镜像 attestation 而保留的
+判断不准确；现只同步外部 provider 声明，未重写真实 image inventory。
+新增 extra-runtime-owner-version-policy.py，189 条 eligible source
+SONAME 行全部匹配 recipe；该检查与 Node 十二条依赖检查同时进入
+共享前置入口。TSV 新增 LF Git attribute，修正 Windows 转存副本的
+行尾假失败。Node policy、完整 Ubuntu24 portable CI 及共享前置检查
+通过，日志 owner-version-portable.Bykvbp9l/portable-ci-lf.log。
+提取实际新 libcares IPK 验证：新声明注册成功，旧 seed 仍被 collision
+拒绝且拒绝后 map 不变，证明未放宽冲突保护；日志
+owner-registration-proof.EC7HKeYw。既有 runtime base cache 含旧 seed，
+新声明会改变其缓存身份，需要重新生成 metadata/base 包装，不编译
+镜像；旧公开缓存或 IPK 不得直接改写冒充新输入。

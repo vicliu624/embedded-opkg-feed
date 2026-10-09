@@ -35,12 +35,12 @@ grep -Fqx "VERSION='10.9.8-2'" "$repo_root/packages/npm-runtime/package.env"
 grep -Fqx "VERSION='10.9.8-2'" "$repo_root/packages/npm/package.env"
 grep -Fq "PACKAGE_DEPENDS='node (= 22.23.2-2), npm-runtime (= 10.9.8-2), ca-certificates (= 2025.02.1-1)'" "$repo_root/packages/npm/package.env"
 grep -Fq "SOURCE_LOCK_EXEMPT_REASON='Installation profile contains only repository-owned documentation and exact dependency metadata; it imports no third-party source.'" "$repo_root/packages/tdvp-nodejs-tools/package.env"
-grep -Fqx 'libnode.so.127|libnode|22.23.2-1' <<<"$owner_map"
+grep -Fqx 'libnode.so.127|libnode|22.23.2-2' <<<"$owner_map"
 
 for owner in \
-  'libcares.so.2|libcares|1.34.2-1' \
+  'libcares.so.2|libcares|1.34.8-1' \
   'libuv.so.1|libuv|1.51.0-1' \
-  'libnghttp2.so.14|libnghttp2|1.64.0-1' \
+  'libnghttp2.so.14|libnghttp2|1.70.0-1' \
   'libicudata.so.73|libicudata|73.2-1' \
   'libicuuc.so.73|libicuuc|73.2-1' \
   'libicui18n.so.73|libicui18n|73.2-1' \

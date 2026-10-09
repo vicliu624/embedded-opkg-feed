@@ -4,6 +4,7 @@
 *.lock text eol=lf
 *.yml text eol=lf
 *.md text eol=lf
+*.tsv text eol=lf
 
 # Signed repository artifacts must retain their exact published bytes on every
 # host; checkout and archive conversion would invalidate detached signatures.

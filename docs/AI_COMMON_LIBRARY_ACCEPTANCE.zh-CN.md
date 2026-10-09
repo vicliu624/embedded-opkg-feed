@@ -1482,3 +1482,19 @@ common-seven-portable.eLnAOlFT/portable-ci.log。AI/common 正式清单
 扩展为 88 项，实际 workflow 选包片段和完整候选覆盖检查通过。
 正式签名、发布和实机验证尚未完成；未推广 stable。上述七库
 补齐本轮发现的缺口，不代表全部常用 Linux 库覆盖审查已经结束。
+
+复查发现 libidn2/libpsl 的 pkg-config Libs.private 残留 SDK/临时
+sysroot 的 -L/-R。新增 normalize-pkgconfig-build-paths.py，在
+Autotools 安装导出前仅处理明确传入的 sysroot 前缀，移除对应 -R。
+保留目标路径及库名；未解决前缀和符号链接拒绝，重复处理幂等。
+回归接入共享入口。真实两库重建通过，迁移后的 SDK+staging 使用
+pkg-config --static 的依赖参数完成消费者编译、链接和 QEMU 运行。
+记录目录 common-idna-portable-development.1ZvSOTbb，首次迁移
+验证副本缺测试源码，补齐后 relocated-smoke-complete.log 通过。
+
+重建 runtime payload 与旧 raw IPK 逐字节一致，包括许可证和链接，
+common-pkgconfig-runtime-unchanged.json 记录两库；此修复只改变
+开发导出。修复后的完整快速 CI 本地通过，记录为
+common-pkgconfig-portable.g56bQJg0/portable-ci.log。d811250 的两条
+GitHub 快速检查 37998329055、37998362756 通过；开发路径修复的
+新提交仍需独立远端 CI。正式发布和实机验收状态未改变。

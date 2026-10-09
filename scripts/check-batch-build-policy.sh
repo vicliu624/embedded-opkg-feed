@@ -3,6 +3,7 @@
 set -Eeuo pipefail
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 python3 "$repo_root/tests/common-seven-library-policy.py"
+python3 "$repo_root/tests/pkgconfig-build-prefix-normalization.py"
 python3 "$repo_root/tests/extra-runtime-owner-version-policy.py"
 python3 "$repo_root/tests/node-provider-version-policy.py"
 python3 "$repo_root/tests/source-recipe-exact-dependencies.py"

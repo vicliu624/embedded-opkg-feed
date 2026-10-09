@@ -276,6 +276,8 @@ tdvp_build_direct_archive_library() {
     echo "direct source install omitted $library_glob: $package_dir" >&2
     return 80
   }
+  python3 "$package_dir/../../support/normalize-pkgconfig-build-paths.py" "$install_root" \
+    --sysroot "$TDVP_K230_SYSROOT" --sysroot "$sysroot"
   stage_root=$TDVP_FEED_STAGING_ROOT
   mkdir -p -- "$stage_root/usr"
   cp -a -- "$install_root/usr/." "$stage_root/usr/"

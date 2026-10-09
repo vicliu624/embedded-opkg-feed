@@ -1121,3 +1121,26 @@ tool-notices-repack.7yy8wi_n/ipk-notice-verification.json。
 共享 Ubuntu 24.04 前置检查再次通过，日志 copying-txt-shared-policy.log。
 该组尚未合并到最终候选或通过 opkg 安装；Make .tar.lz notice、
 profile、Node/ICU 及其它包的完整 notice/许可审查仍继续。
+
+Make 的锁定 .tar.lz 经锁定 host lzip 1.25 解压，COPYING 原文摘要
+e79e9c8a0c85d735ff98185918ec94ed7d175efc377012787aebcf3b80f0d90b；
+加入已构建 Make payload 后重新打包，原成员类型/mode/link/data
+保持一致，未重编目标程序，日志 make-notices.UsEvFFr4/harvest.log。
+三个纯文档 profile 已打包：tdvp-dev-tools 1.0-3、tdvp-source-tools
+1.6-1、tdvp-diagnostics 1.1-1，位于 tool-profiles.GVS8a6mD/ipks。
+
+合并原 317 个 raw input、新工具 notices 包、gh notices 包、Vim
+runtime/五插件和三个 profile，common-expanded-raw.q5q4h2yt 为
+346 个唯一包名。input-provenance.json 记录所选输入版本/来源/摘要，
+索引验证与实际 image status 的声明依赖闭包检查均通过。Node/ICU
+八运行包与 Node profile 共九项仍待原任务完成，未把此中间池定义
+为完整交付。四个 tpope 插件无独立 LICENSE 文件，README 与 Vim
+许可引用及随依赖交付的条款还需审查，未默认为许可审查完成。
+
+完整 finalize 先拒绝旧本地 signed 299 候选作为 predecessor：其
+摘要不符合 feed-predecessor.json 的发布锁。保留该拒绝，不改锁。
+通过生产 fetch-feed-predecessor.py 从锁定 r10 公共快照取得正确
+历史输入，index 摘要为 1d52128e...，两份索引签名与所有 IPK
+完整性通过；目录 locked-feed-predecessor-common-346。随后再次
+执行生产 finalize，日志 common-expanded-finalization-locked.log，
+尚未宣称成功、签名或发布。

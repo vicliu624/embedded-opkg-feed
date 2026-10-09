@@ -820,3 +820,13 @@ staged-explicit-lf-rc2.8MF5YxPL，日志 portable-ci.log。无手工改测试、
 临时删除依赖或改源码避过检查。第二份 Windows 公共 SDK 独立下载也
 完成 SHA256 校验，与构建机公共 SDK 摘要相同。验证快照工具问题已
 关闭；完整 AI source workflow、生产签名及板卡验收仍需继续完成。
+
+27d24e5 已推送草稿 PR #4；GitHub run 37956541493 两项 job 全部成功。
+完整构建前检查发现增量 workflow 的 TDVP_SDK_CACHE_KEY 仍写死旧 r11
+SDK 摘要，虽 platform hash 避免直接命中旧 runtime 缓存，产物身份
+仍会标错。移除手写摘要，共享 published-sdk action 在输入验证成功
+后从当前平台 lock 导出 SDK cache identity；三个增量模式均调用此
+action。新增 published-sdk-cache-identity.py 执行真实 action shell，
+验证两种 SDK 摘要、非法值拒绝及三个模式的共同入口。回归通过，完整
+Ubuntu24 portable CI 再次通过，目录 sdk-cache-identity-portable.F1thOsvL。
+没有取消 CI、重复编译镜像或推广 stable。

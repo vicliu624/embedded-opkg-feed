@@ -34,3 +34,10 @@ runs:
           echo "TDVP_READELF=$sdk/bin/riscv64-unknown-linux-gnu-readelf"
           echo "TDVP_K230_WAYLAND_SDK_OVERLAY=$overlay"
         } >> "$GITHUB_ENV"
+    - name: Export verified SDK cache identity
+      shell: bash
+      run: |
+        set -Eeuo pipefail
+        source platforms/tdvp-k230-r1/platform.env
+        [[ "$SDK_ARCHIVE_SHA256" =~ ^[0-9a-f]{64}$ ]]
+        printf 'TDVP_SDK_CACHE_KEY=tdvp-published-sdk-%s\n' "$SDK_ARCHIVE_SHA256" >> "$GITHUB_ENV"

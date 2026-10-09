@@ -79,6 +79,7 @@ jobs:
           bash ./tests/tdvp-wayland-sdk-overlay-protocols.sh
           python3 ./tests/buildroot-image-ownership.py
           python3 ./tests/published-sdk-contract.py
+          python3 ./tests/published-sdk-cache-identity.py
           bash ./tests/reuse-published-ipk-payload-policy.sh
           bash ./tests/feed-overlay-composition-policy.sh
           bash ./tests/vim-package-policy.sh

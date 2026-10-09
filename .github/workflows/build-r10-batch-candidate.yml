@@ -36,7 +36,6 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  TDVP_SDK_CACHE_KEY: tdvp-published-sdk-43145ab90e678abb459e9cb618ec93fcd82aaa644b0633ddded91184c40941e9
   TDVP_RUNTIME_BASE_CACHE_SCHEMA: published-r11-v1
 
 jobs:

@@ -1391,3 +1391,11 @@ portable-ci.log。355包生产finalization以已锁定公共predecessor启动，
 清理已结束CI repo副本372MiB及两个宿主实验root副本848/849MiB，
 精确realpath/非链接/无.git核对后删除；日志/IPK/工具源码与编译/
 SDK/缓存保留，生成副本可重建，不把逻辑大小当作df精确回收量。
+
+355包生产finalization终态成功，输出paired-common-node-licensed-355；
+全部predecessor锁/镜像引用/声明及ELF闭包/覆盖/CPU0策略通过。
+本组源码c7018c4已推送，GitHub快速CI37992025376成功。使用
+隔离fixture key签署355包验收索引，fresh image root的真实opkg
+逐包求解与整批安装/配置已启动，日志common-node-licensed-opkg.log，
+尚待结束。正式发布密钥与stable未改动；完整AI源码批次的两个
+fixture SDK/base-root隔离修正仍等待明确授权，未改那两个测试。

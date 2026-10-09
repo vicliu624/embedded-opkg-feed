@@ -1286,3 +1286,20 @@ remaining-notice-actual-ipk-consumer-plan.json。Node profile尚无旧IPK，
 索引、哈希和声明依赖闭包通过。历史库／TFLite策略、189条owner与
 135条source-provider edge再次通过。生产finalization已针对锁定公共
 predecessor启动，日志common-final-notices-finalization.log，尚待结束。
+
+生产finalization结束并成功，输出paired-common-final-notices-346，
+全部签名predecessor锁、镜像引用、声明/ELF闭包、覆盖及SDK CPU0
+策略通过。最终IPK另对16个补声明包逐项检查license member/type/mode
+与原始文本SHA256，全部通过；报告common-final-notices-ipk-proof.json。
+新候选仍未正式签名，277个image-reference包的完整许可交付另需审计。
+
+完整25配方修订的78行portable CI block再次通过，日志
+remaining-notices-portable.N47Hj4/portable-ci-full25.log。清理该已结束
+验证repo副本372MiB及中间打包remaining-notices-repack.ol4ybzy_/repo
+77MiB逻辑大小，先核对精确realpath、非链接和无.git；所有日志/
+IPK/源码缓存/当前验证repo/SDK保留。生成副本可重建，不将并行
+Node增长期间df变化等同于精确回收量。
+
+新候选使用隔离fixture key签署验收索引，启动fresh image root的
+真实target opkg逐包求解与全包安装/配置，日志
+common-final-notices-opkg.log；该任务尚待结束。未使用正式发布私钥。

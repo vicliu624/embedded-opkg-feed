@@ -1333,3 +1333,34 @@ pkg_breaks_reverse_dep会在消费者尚未处理时排除新provider。
 删除这两个已结束实验的root副本（各849MiB逻辑大小），精确路径
 位于common-final-notices-upgrade/root与common-final-notices-ordered-upgrade/root；
 日志、签名、index、排序JSON与摘要报告保留，可由旧安装根重建。
+
+通用升级准备实验位于opkg-combined-upgrade-experiment.PPZJeo，
+只改独立opkg源码副本，未修改镜像仓库或设备opkg。实验在批次
+候选选择前临时标记非held/replaced旧包deinstall，恢复不升级的
+旧约束后，对全部所选新包再次检查reverse dependencies；失败
+恢复状态并返回。宿主对照旧版失败、实验版字母序预演通过，
+单provider及held profile负例保持保护。首次宿主fixture的GPG
+选项不兼容，不纳入有效证据；native-case-clean-config专测求解，
+不含GPGME，不代替签名验收。
+
+RISC-V实验工具由Buildroot固定SHA256 d973fd0f...的opkg-0.7.0
+归档、镜像现有四个保护补丁及实验补丁构建，使用当前发布SDK
+和显式rv64gc/lp64d，SDK CPU0检查通过。签名开启的target-case
+再次确认旧工具失败、新工具字母序预演通过、单provider与held
+profile负例拒绝不兼容选择，预演status未变。harness恢复hold
+时最初用ok而原标记为user，diff确认唯一差异后恢复user，完整
+旧status字节一致；再实际字母序upgrade/configure全部346包成功，
+507 installed版本一致，基础libc/opkg/Labwc/image-base未变。
+日志target-case/*及工具编译日志保留。未据此宣称默认非combine
+升级、变更循环依赖、所有失败事务原子性或设备端修复完成。
+
+Node原任务57759终态exit0，容器正常移除；runtime-build-icu-license.log
+结束为raw build candidate ready，闭包与445个非ABI动态对象覆盖
+通过。四个ICU、libnode/node/npm-runtime/npm及development staging
+成功产出，未重启任务。node-final-ipk-smoke.3y4r3z39直接解包最终
+IPK并复用当前候选cares/uv/nghttp2，QEMU通过Node22.23.2/ICU73.2、
+中文locale、Unicode、SHA256、gzip及异步loopback HTTP，npm CLI
+10.9.8通过；该证据不代替K230实机或npm联网安装。最终notice
+路径扫描发现ICU四包、libnode/node未带独立声明，npm-runtime
+196个notice路径存在；许可完整性仍需核对，六包需复用程序载荷
+补声明并递增相应修订后，才合入正式配对候选。

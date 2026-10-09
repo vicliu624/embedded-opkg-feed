@@ -1574,3 +1574,51 @@ libssh2 真实网络验收补充：使用构建机当前用户启动独立的
 错误摘要被明确拒绝（退出码 7）。未进行用户认证或文件传输，
 未修改已有 SSH 服务，临时进程/密钥自动清理。记录
 libssh2-real-loopback-handshake.log。HTTP3 网络握手仍待验收。
+
+第三轮覆盖审查记录 common-library-family-coverage-374-third-pass.json。
+初次按 libNAME.so 扫描漏报带 -1/-2.0 后缀的 D-Bus、Pixman、
+GLib、GObject、GIO，已直接核对安装目录排除。仍缺 libev、libzip、
+LZO、Jansson、libmnl、libnftnl、libxslt；这些缺口继续处理。
+libev 4.33 官方 HTTPS 源码归档 SHA256 为
+507eb7b8d1015fbec5b935f34ebed15bf346bed04a11ab82b8eee848c4205aea，
+LICENSE 提供 BSD-2-Clause 或 GPL-2.0-or-later 选择。
+配套 SDK 构建及目标定时器回调/循环释放测试通过，记录
+libev-source-build.h79teqk4/build.log。第一次调用因 staging 环境
+变量错误在编译前被拒绝，未放宽入口检查。此库尚未加入整批
+交付池，后续仍需 IPK、依赖闭包和安装验收。
+
+第三轮另外六库配方及官方归档已锁定：Jansson 2.15.1、libzip 1.12、
+libmnl 1.0.5、libnftnl 1.3.2、LZO 2.10、libxslt 1.1.45。
+前五库 SDK 构建通过，记录 common-third-source-build.RDqdo9vA
+下各库 build.log；尚未完成 IPK/安装和组合运行验收。
+libxslt 配置失败：当前 SDK 实际 libxml2 是 2.13.6，上游
+configure.ac 要求 2.15.1。失败路径还检测到宿主 xml2-config
+2.9.14，后续必须解决目标检测隔离及上游兼容要求。当前未
+替换镜像 libxml2，也未降低依赖断言。1.1.44/45 上游记录包含
+CVE-2025-7424、CVE-2025-11731 修复，不能直接回退到 1.1.43
+并视作已通过安全验收。
+
+libxslt 新版依赖的解决结果：新增 libxml2-16 2.15.4-1 配方，
+官方归档摘要匹配上游 sha256sum。运行 payload 只包含
+libxml2.so.16 和 libxml2.so.16.1.4，不包含基础镜像的 libxml2.so.2。
+使用上游 CMake 构建及私有 staging 的 libxml2 CMake metadata，
+libxslt 1.1.45 构建通过，实际 ELF NEEDED 是 libxml2.so.16。
+新版无需调用宿主 xml2-config，也没有降低上游依赖要求。
+组合目标程序完成 Jansson 正常/重复键拒绝、Netlink 属性和
+nftnl 对象、LZO 压缩解压、ZIP 文件读回、XSLT 文本转换检查；
+记录 common-third-source-build.RDqdo9vA/runtime-smoke.log。
+新增组共八配方，清单 108 项；数量不构成全范围完成证明。
+IPK/安装的 ABI 并存和完整依赖闭包仍待验证。
+
+第三轮八个 IPK 已全部打包通过，记录各 package-pack.log；
+third-ipk-dependency-and-base-overlap-proof.json 确认交付路径与
+基础镜像无重叠。libxslt 控制文件精确依赖 libxml2-16 2.15.4-1
+及 libgcrypt-20，libnftnl 精确依赖 libmnl，libzip 复用 libz/libcrypto。
+新增独立第三轮前置策略并接入共享入口，完整快速 CI 本地通过，
+记录 common-third-policy-portable.MDTofHeS/portable-ci.log。
+直接复制 Windows owner 表的 CRLF 及旧测试目录防覆盖失败
+记录均保留，Linux 副本规范为 LF 后在全新目录完成检查。
+两个已结束 portable 测试的 repo 副本已按精确路径清理，日志
+保留；释放约 744 MiB，可从验证源副本重新生成。
+复用 374 个既有 IPK 加入新八包，形成 common-third-raw.6UfomWYu。
+382 包生产 finalizer 尚在运行，未把中间结果视作安装或发布完成。

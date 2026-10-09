@@ -1498,3 +1498,72 @@ common-pkgconfig-runtime-unchanged.json 记录两库；此修复只改变
 common-pkgconfig-portable.g56bQJg0/portable-ci.log。d811250 的两条
 GitHub 快速检查 37998329055、37998362756 通过；开发路径修复的
 新提交仍需独立远端 CI。正式发布和实机验收状态未改变。
+
+## 第二轮常用库扩展（2026-10-10）
+
+源码覆盖审查继续补齐十二库：libdeflate 1.26-1、libsnappy 1.3.1-1、
+libmpfr 4.2.2-1、libmpc 1.3.1-1、libcap-ng 0.9.6-1、libattr 2.6.0-1、
+libacl 2.4.0-1、liburing 2.15-1、libaio 0.3.113-1、libssh2 1.11.1-2、
+libnghttp3 1.18.0-1、libngtcp2 1.25.0-1。全部已有配套 SDK 的构建
+及 IPK 产物；新增十四个 SONAME，正式 AI/common 清单为 100 项。
+这个清单数量不构成全部常用 Linux 库覆盖完成的证明。
+
+压缩、定向舍入、复数运算、内存能力集合、临时文件扩展属性与
+ACL、SSH 会话/knownhost 匹配、HTTP3 对象及 GnuTLS TLS1.3 辅助
+配置的基本测试通过。Snappy 原自动检测误选 RVV，配方明确关闭
+两个 RVV 检测变量，标量构建及 CPU0 检查通过。已有 GMP、GnuTLS、
+OpenSSL、zlib 均复用 SDK/镜像。ACL 对 attr 是开发依赖，实际 ELF
+未链接 libattr；MPC 明确依赖 MPFR。主机键测试使用合成字节，
+不证明真实密钥/网络握手；HTTP3 测试未进行网络握手。libaio 在
+QEMU 返回 ENOSYS，只完成请求准备及错误路径检查；liburing 只
+验证用户态准备接口，设备内核 AIO/io_uring 验收仍待完成。
+
+libcap-ng 官方 tag 需要执行上游 autogen.sh。Autotools 入口增加
+显式 bootstrap 开关与路径约束，已有入口默认不执行。真实 SDK
+回归的正常构建通过，穿越/绝对/缺失/含空格路径被拒绝。记录
+common-twelve-bootstrap-guard-control.log。旧 Ubuntu 容器缺宿主
+工具；临时容器用直接网络安装与 CI 同类的 Autotools，独立配方
+副本完成构建。记录 capng-ubuntu-bootstrap.euyNXAWt 下日志；
+早期代理及生成 payload 链接冲突失败记录保留，检查未放宽。
+
+旧 374 包配对 paired-common-twelve-374 通过生产 finalizer，其
+libssh2 仍为 -1。开发元数据审查在 libssh2 的 .pc 中发现临时目录，
+CMake 导出接入同一规范化工具；真实迁移编译/链接/运行通过。
+重建 runtime 字节比较失败，进一步确认 __FILE__ 嵌入随机源码
+目录。使用显式 SOURCE 路径映射并递增到 -2，两个独立构建的
+运行库、.pc 及 IPK 字节一致，无主机/临时前缀；会话测试通过。
+记录 libssh2-reproducible.3qzNo3vv/reproducibility-proof.json 和
+两次 pack.log；IPK SHA256 为
+12cf443f9bb279104532041f90c4a78c9ec75afbfc3c7227d80083e00623613b。
+
+新的原始池 common-twelve-repro-raw.XRj8Hat7 只把 libssh2 -1 换成
+-2，其他已验证字节复用，旧候选保持原样。新生产配对及完整
+快速 CI 当前在运行，尚未完成新候选安装/实机/发布。
+
+新配对 paired-common-twelve-repro-374 已通过生产 finalizer，日志
+common-twelve-repro-374-finalization.log；完整快速检查也通过，日志
+common-twelve-repro-portable.YOJFYHzU/portable-ci.log。临时测试密钥
+签名验证通过，374 包的实际 opkg 求解/安装回归已启动，尚未终结。
+
+远端只读核对为内核 6.6.36、CONFIG_AIO=y、CONFIG_IO_URING=y，
+镜像身份仍是 a8a53102d7ab54c75999e5e08d8802ffbe563c31ae2c9acc9ab38bcbd7babc31，
+与候选绑定的 13cab 摘要不同，未在其系统中安装候选 feed。
+仅在 /tmp/tdvp-kernel-io-WsAlu8SI 复制测试程序和两库，验证归档
+SHA256 后，真实 kernel AIO 和 io_uring 临时文件读回都通过。
+设备 BusyBox tar 不支持 -z，改 gzip 管道；timeout 命令缺失，
+改 Python subprocess 的 15 秒超时。两次早期尝试未启动测试。
+队列及临时文件由程序释放，任务目录已校验准确路径后清理；
+原始归档保留在构建机 kernel-async-io-fixture.WsAlu8SI。
+镜像摘要测试后不变。此结果仅覆盖旧镜像上的两库/内核链路，
+不代替配对新镜像安装、SSH/HTTP3 真握手或正式软件源发布。
+
+最新完整候选安装验收已完成：374 包整体求解及 374 次逐包求解
+全部通过，签名校验保持开启；实际安装/configure 验证 374 个
+候选版本，共 535 个已安装包，受保护基础文件保持不变。
+记录 common-twelve-repro-374-opkg-plan.log 和对应 opkg-install.log。
+安装后的根文件系统通过十二库精确版本、十四 SONAME 和十个
+RISC-V 测试程序检查。QEMU 的内核调用限制仍按上述独立设备
+测试处理。最终索引覆盖全部 100 项配方；十二个交付 IPK 的
+许可证/来源文件共 32 份，记录 common-twelve-repro-final-notice-inventory.json。
+文件存在与摘要检查不代表完整法律或安全审查。正式签名、发布
+及匹配镜像上的整批实机安装尚未完成。

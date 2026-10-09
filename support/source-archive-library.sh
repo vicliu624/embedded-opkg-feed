@@ -215,6 +215,18 @@ tdvp_build_direct_archive_library() {
   fi
   tar -xf "$archive" -C "$work_root"
   source_root="$work_root/$source_directory"
+  if [[ ${PACKAGE_AUTORECONF:-0} == 1 ]]; then
+    [[ -d "$source_root" && ! -L "$source_root" && -f "$source_root/configure.ac" ]] || return 79
+    for tool in autoreconf autoconf automake libtoolize; do
+      command -v "$tool" >/dev/null || { echo "source bootstrap missing host tool: $tool" >&2; return 79; }
+    done
+    if [[ -n ${PACKAGE_BOOTSTRAP_SCRIPT:-} ]]; then
+      [[ "$PACKAGE_BOOTSTRAP_SCRIPT" =~ ^[A-Za-z0-9._-]+$ && -f "$source_root/$PACKAGE_BOOTSTRAP_SCRIPT" && ! -L "$source_root/$PACKAGE_BOOTSTRAP_SCRIPT" ]] || return 79
+      (cd "$source_root" && bash "./$PACKAGE_BOOTSTRAP_SCRIPT")
+    else
+      (cd "$source_root" && autoreconf --force --install)
+    fi
+  fi
   [[ -d "$source_root" && ! -L "$source_root" && -x "$source_root/configure" ]] || {
     echo "locked source archive has no expected autoconf source root: $source_root" >&2
     return 79

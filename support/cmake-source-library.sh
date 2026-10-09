@@ -49,6 +49,11 @@ tdvp_build_cmake_source_library() (
   # environment-setup exports the application toolchain file, which fixes
   # its sysroot to the immutable SDK and hides feed-only development inputs.
   unset CMAKE_TOOLCHAIN_FILE
+  local source_path_flags=''
+  if [[ ${PACKAGE_REPRODUCIBLE_SOURCE_PATHS:-0} == 1 ]]; then
+    [[ "$PACKAGE" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || exit 69
+    source_path_flags="-ffile-prefix-map=$work=/usr/src/tdvp/$PACKAGE"
+  fi
   cmake -S "$cmake_source_root" -B "$work/build" -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE= -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config \
     -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=riscv64 \
@@ -59,8 +64,8 @@ tdvp_build_cmake_source_library() (
     -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
     -DCMAKE_C_COMPILER="$sdk_root/bin/riscv64-unknown-linux-gnu-gcc" \
     -DCMAKE_CXX_COMPILER="$sdk_root/bin/riscv64-unknown-linux-gnu-g++" \
-    -DCMAKE_C_FLAGS="$CFLAGS -fPIC -O1" \
-    -DCMAKE_CXX_FLAGS="$CXXFLAGS -fPIC -O1" \
+    -DCMAKE_C_FLAGS="$CFLAGS -fPIC -O1 $source_path_flags" \
+    -DCMAKE_CXX_FLAGS="$CXXFLAGS -fPIC -O1 $source_path_flags" \
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath-link,$sysroot/usr/lib" \
     -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-rpath-link,$sysroot/usr/lib" \
     -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib \
@@ -75,6 +80,8 @@ tdvp_build_cmake_source_library() (
   fi
   cmake --build "$work/build" --parallel "${TDVP_JOBS:-4}"
   DESTDIR="$install_root" cmake --install "$work/build"
+  python3 "$package_dir/../../support/normalize-pkgconfig-build-paths.py" "$install_root" \
+    --sysroot "$sdk_root/sysroot" --sysroot "$sysroot"
   payload_dir=$(tdvp_prepare_generated_payload_root "$package_dir")
   if [[ "$library_glob" == '@development' ]]; then
     [[ -d "$install_root/usr/include" ]] || exit 66

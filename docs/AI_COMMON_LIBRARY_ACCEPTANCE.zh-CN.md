@@ -1209,3 +1209,16 @@ solver/noaction 证明，不将其表述为每个包的单独实际安装或运�
 日志 common-346-individual-plan.log 与
 common-346-individual-plan/individual-plans/*.log。Node 原任务到
 2217/3570仍运行，未重启或取消；正式源、硬件和完整安全审查未完成。
+
+在已安装的隔离 root 补充 source profile / which 生命周期样本：
+直接 remove which 被已安装 profile 的依赖保护拒绝，status 不变。
+随后先移除 tdvp-source-tools，再移除 which，重新 install profile
+自动拉入 which，offline configure 成功；恢复507个 installed 条目，
+四个基础保护文件摘要保持不变。日志 common-346-lifecycle-sequential.log，
+结果 common-346-opkg-plan/lifecycle-summary.json。
+
+尝试同一次 --combine remove profile which 时，profile 已移除，
+which 的移除被依赖检查拒绝；该操作具有部分执行结果，不能视为
+原子卸载事务。测试先恢复 profile，再按上述顺序验证，不使用
+force-depends。此证据只覆盖一个 profile/leaf 样本，未覆盖全部包
+的升级、卸载与恢复。Node 原任务到2606/3570仍在运行。

@@ -9,7 +9,7 @@ for name in numpy scipy pillow opencv tdvp-ai; do
   }
 done
 source "$repo_root/packages/python3/package.env"
-[[ "$VERSION" == 3.13.3-2 && "$PACKAGE_DEPENDS" == 'python3-runtime (= 3.13.3-2)' ]]
+[[ "$VERSION" == 3.13.3-3 && "$PACKAGE_DEPENDS" == 'python3-runtime (= 3.13.3-3)' ]]
 source "$repo_root/packages/python3-runtime/package.env"
-[[ "$VERSION" == 3.13.3-2 ]]
+[[ "$VERSION" == 3.13.3-3 ]]
 echo 'scientific Python minimum runtime version policy: PASS'

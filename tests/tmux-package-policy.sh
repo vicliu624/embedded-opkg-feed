@@ -6,7 +6,7 @@ for package in libevent tmux; do test -f "$repo_root/packages/$package/source.lo
 grep -Fqx "PACKAGE='libevent'" "$repo_root/packages/libevent/package.env"
 grep -Fqx "PACKAGE_KIND='shared-library'" "$repo_root/packages/libevent/package.env"
 grep -Fqx "PACKAGE='tmux'" "$repo_root/packages/tmux/package.env"
-grep -Fqx "PACKAGE_DEPENDS='libevent (= 2.1.12-1), libncursesw (= 6.4-20230603-1)'" "$repo_root/packages/tmux/package.env"
+grep -Fqx "PACKAGE_DEPENDS='libevent (= 2.1.12-2), libncursesw (= 6.4-20230603-1)'" "$repo_root/packages/tmux/package.env"
 grep -Fqx "PACKAGE_BUILD_DEPENDS='libevent'" "$repo_root/packages/tmux/package.env"
 grep -Fqx "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libncursesw'" "$repo_root/packages/tmux/package.env"
 grep -Fq "'libevent*.so.7*'" "$repo_root/packages/libevent/build.sh"
@@ -25,6 +25,6 @@ if grep -Fq 'TDVP_COMMAND_BUILDROOT_DISABLE_SYMBOLS=' "$repo_root/packages/tmux/
   exit 1
 fi
 grep -Fq "'tmux'" "$repo_root/packages/tmux/build.sh"
-grep -Fqx 'libevent-2.1.so.7|libevent|2.1.12-1' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
-grep -Fqx 'libevent_pthreads-2.1.so.7|libevent|2.1.12-1' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
+grep -Fqx 'libevent-2.1.so.7|libevent|2.1.12-2' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
+grep -Fqx 'libevent_pthreads-2.1.so.7|libevent|2.1.12-2' "$repo_root/platforms/tdvp-k230-r1/extra-runtime-owners.tsv"
 echo 'locked-source libevent/tmux policy: PASS'

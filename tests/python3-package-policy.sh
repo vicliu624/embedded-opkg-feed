@@ -51,11 +51,11 @@ expect_line "PACKAGE_BUILD_DEPENDS='libbz2 liblzma libmpdec-4 libsqlite3-0'" \
   "$repo_root/packages/libpython3.13/package.env"
 expect_line "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libz libexpat-1 libffi-8 libssl-3 libcrypto-3 libncursesw libreadline'" \
   "$repo_root/packages/libpython3.13/package.env"
-expect_line "PACKAGE_DEPENDS='libpython3.13 (= 3.13.3-1), libbz2 (= 1.0.8-1), liblzma (= 5.6.4-1), libz (= 1.3.1-1), libncursesw (= 6.4-20230603-1), libreadline (= 8.2-1), libexpat-1 (= 2.7.0-1), libffi-8 (= 3.4.6-1), libmpdec-4 (= 4.0.0-1), libsqlite3-0 (= 3.48.0-1), libssl-3 (= 3.4.1-1), libcrypto-3 (= 3.4.1-1), ca-certificates (= 2025.02.1-1)'" \
+expect_line "PACKAGE_DEPENDS='libpython3.13 (= 3.13.3-2), libbz2 (= 1.0.8-2), liblzma (= 5.6.4-2), libz (= 1.3.1-1), libncursesw (= 6.4-20230603-1), libreadline (= 8.2-1), libexpat-1 (= 2.7.0-1), libffi-8 (= 3.4.6-1), libmpdec-4 (= 4.0.0-2), libsqlite3-0 (= 3.48.0-1), libssl-3 (= 3.4.1-1), libcrypto-3 (= 3.4.1-1), ca-certificates (= 2025.02.1-1)'" \
   "$repo_root/packages/python3-runtime/package.env"
-expect_line "PACKAGE_DEPENDS='python3-runtime (= 3.13.3-2)'" \
+expect_line "PACKAGE_DEPENDS='python3-runtime (= 3.13.3-3)'" \
   "$repo_root/packages/python3/package.env"
-expect_line 'libpython3.13.so.1.0|libpython3.13|3.13.3-1' "$owner_map"
+expect_line 'libpython3.13.so.1.0|libpython3.13|3.13.3-2' "$owner_map"
 if grep -Fq 'libpanelw.so.6|' "$owner_map"; then
   echo 'CPython must not enable _curses_panel until libpanelw has an admitted provider' >&2
   exit 1

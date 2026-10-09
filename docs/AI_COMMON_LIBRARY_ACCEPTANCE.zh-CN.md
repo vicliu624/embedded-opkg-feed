@@ -1256,3 +1256,18 @@ preflight调用的 common-tool-notice-policy.sh。
 声明投影与载荷生命周期回归均通过，未重编目标程序。此处证明
 未来打包出口已修，当前346包中的历史IPK尚需修订和重新打包，
 不能将源码修改等同于已签名发布。Node 原任务到2791/3570仍运行。
+
+14个缺失声明包的新 data archive 在 remaining-notice-payloads.92g8vi2y
+准备完成，原有每个归档成员的 type/mode/uid/gid/uname/gname/linkname/
+mtime/size 与文件内容均与旧IPK一致，新增许可文本匹配锁定源码。
+报告 notice-payload-proof.json；这些是重打包输入，还不是新版本IPK。
+
+根据精确依赖传递图同步递增22个配方控制修订，更新消费者依赖及
+12条SONAME owner记录。Python上下界保留原先兼容限制，上游源码
+版本与二进制均未升级。189条owner、135条source-provider edge、
+12条Node edge及八项相关策略通过。Ubuntu24.04容器执行真实78行
+portable CI block通过，日志 remaining-notices-portable.N47Hj4/portable-ci-revised.log。
+首次运行遇到复制验证目录残留dist，清理独立副本dist后重跑；
+第二次捕获historical-library-migration旧修订断言，同步明确区分
+三包-3与未变化libubootenv-0的-2后全量通过。正式索引未改写，
+22包仍需按新控制元数据重打包及重新验收。

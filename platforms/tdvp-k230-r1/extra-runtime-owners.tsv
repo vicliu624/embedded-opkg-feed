@@ -16,12 +16,12 @@ libaudgui.so.7|audacious-core|4.6.1-1
 # exist in the immutable r9 firmware target. Each SONAME has one independently
 # installable IPK owner; archive applications depend on them instead of copying
 # a private library into a command package.
-libbz2.so.1.0|libbz2|1.0.8-1
-liblzma.so.5|liblzma|5.6.4-1
+libbz2.so.1.0|libbz2|1.0.8-2
+liblzma.so.5|liblzma|5.6.4-2
 libzstd.so.1|libzstd|1.5.7-1
 # Python's libpython is public ABI for native extension modules and therefore
 # is split from the standard library data and the interpreter executable.
-libpython3.13.so.1.0|libpython3.13|3.13.3-1
+libpython3.13.so.1.0|libpython3.13|3.13.3-2
 libcares.so.2|libcares|1.34.8-1
 libuv.so.1|libuv|1.51.0-1
 libnghttp2.so.14|libnghttp2|1.70.0-1
@@ -47,7 +47,7 @@ libffi.so.8|libffi-8|3.4.6-1
 libsqlite3.so.0|libsqlite3-0|3.48.0-1
 # CPython _decimal is configured to use the public mpdecimal ABI. It remains
 # a dedicated source-built provider instead of a private interpreter payload.
-libmpdec.so.4|libmpdec-4|4.0.0-1
+libmpdec.so.4|libmpdec-4|4.0.0-2
 # Split OpenSSL's two public SONAMEs into explicit providers before Git, curl,
 # Python, or Node may depend on TLS. They are built from one locked source tree.
 libcrypto.so.3|libcrypto-3|3.4.1-1
@@ -67,10 +67,10 @@ libncursesw.so.6|libncursesw|6.4-20230603-1
 libreadline.so.8|libreadline|8.2-1
 # tmux shares libevent's four public event-loop SONAMEs with future consumers.
 # The provider has OpenSSL support disabled; no TLS ABI is carried privately.
-libevent-2.1.so.7|libevent|2.1.12-1
-libevent_core-2.1.so.7|libevent|2.1.12-1
-libevent_extra-2.1.so.7|libevent|2.1.12-1
-libevent_pthreads-2.1.so.7|libevent|2.1.12-1
+libevent-2.1.so.7|libevent|2.1.12-2
+libevent_core-2.1.so.7|libevent|2.1.12-2
+libevent_extra-2.1.so.7|libevent|2.1.12-2
+libevent_pthreads-2.1.so.7|libevent|2.1.12-2
 # file-type inspection has one reusable compression/runtime layer. libmagic
 # is built from the file source package; its libz dependency is owned by the
 # reviewed libzlib provider rather than copied from the firmware image.
@@ -92,14 +92,14 @@ libspdlog.so.1.15|libspdlog|1.15.2-1
 libfmt.so.11|libfmt|11.0.2-1
 libportaudio.so.2|libportaudio|19.7.0-1
 libportaudiocpp.so.0|libportaudio|19.7.0-1
-libyaml-0.so.2|libyaml-0-2|2025.02.1-2
+libyaml-0.so.2|libyaml-0-2|2025.02.1-3
 libusb-1.0.so.0|libusb-1.0|1.0.27-1
 libpcap.so.1|libpcap|1.10.5-1
 libonnxruntime.so.1|libonnxruntime|1.21.0-1
 libonnxruntime_providers_shared.so|libonnxruntime|1.21.0-1
-libwebp.so.7|libwebp-7|1.5.0-1
-libwebpmux.so.3|libwebp-7|1.5.0-1
-libwebpdemux.so.2|libwebp-7|1.5.0-1
+libwebp.so.7|libwebp-7|1.5.0-2
+libwebpmux.so.3|libwebp-7|1.5.0-2
+libwebpdemux.so.2|libwebp-7|1.5.0-2
 libFLAC++.so.10|libflac|1.4.3-1
 libFLAC.so.12|libflac|1.4.3-1
 libabsl_bad_any_cast_impl.so.2501.0.0|libabseil-cpp|20250127.0-1

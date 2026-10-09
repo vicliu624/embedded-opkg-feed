@@ -1195,3 +1195,17 @@ vim-notices-portable.LcX9Zpj2/repo、vim-notices-final-portable.dlEUobAa/repo、
 go-notices-portable.qjE8Gmyo/repo。删除前核对精确路径与非Git属性，
 日志/源码锁/当前源码/SDK/全部IPK保留；副本可从已提交代码重建。
 Node 原容器仍在运行，达到2078/3570，未重启或取消。
+
+再次对照全部 r11 recipe 与新346包索引，无已交付版本漂移，剩余
+九项明确为 ICU 四包、libnode/node/npm/npm-runtime 与 Node profile。
+报告 revised-346-whole-recipe-coverage.json。81项 AI/common 清单
+与最终索引覆盖检查再次通过；该覆盖结果不代替功能/许可/发布验收。
+
+在新 image-only fixture root 逐个执行实际 target opkg --noaction
+install，共346次独立求解，候选没有预装；每次都使用 fixture
+签名验证与完整索引，全部返回成功，保护文件与 status 均不变。
+此前全346一起安装的结果保留，两者范围分别记录。该单包测试为
+solver/noaction 证明，不将其表述为每个包的单独实际安装或运行。
+日志 common-346-individual-plan.log 与
+common-346-individual-plan/individual-plans/*.log。Node 原任务到
+2217/3570仍运行，未重启或取消；正式源、硬件和完整安全审查未完成。

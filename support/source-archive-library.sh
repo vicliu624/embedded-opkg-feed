@@ -205,6 +205,14 @@ tdvp_build_direct_archive_library() {
     return "$rc"
   }
   trap cleanup_direct_archive_library RETURN
+  if [[ ${PACKAGE_USE_FEED_DEVELOPMENT:-0} == 1 ]]; then
+    mkdir -p "$work_root/sysroot"
+    cp -a --reflink=auto "$sysroot/." "$work_root/sysroot/"
+    if [[ -d "$TDVP_FEED_STAGING_ROOT/usr" ]]; then
+      cp -a --reflink=auto "$TDVP_FEED_STAGING_ROOT/usr/." "$work_root/sysroot/usr/"
+    fi
+    sysroot="$work_root/sysroot"
+  fi
   tar -xf "$archive" -C "$work_root"
   source_root="$work_root/$source_directory"
   [[ -d "$source_root" && ! -L "$source_root" && -x "$source_root/configure" ]] || {
@@ -223,6 +231,9 @@ tdvp_build_direct_archive_library() {
     export READELF="$readelf_tool"
     export STRIP="$strip_tool"
     export PKG_CONFIG="$sdk_root/bin/pkg-config"
+    if [[ ${PACKAGE_USE_FEED_DEVELOPMENT:-0} == 1 ]]; then
+      export PKG_CONFIG=/usr/bin/pkg-config
+    fi
     export PKG_CONFIG_SYSROOT_DIR="$sysroot"
     export PKG_CONFIG_LIBDIR="$sysroot/usr/lib/pkgconfig:$sysroot/usr/share/pkgconfig"
     export PKG_CONFIG_PATH=''

@@ -1437,3 +1437,48 @@ opkg-formal-regression.ljN0yZ/regression-complete.log及regression-old-binary.lo
 影响集中于新增测试流程，未修改桌面或硬件。镜像分支仅push，
 未创建PR；gh run list该分支为空，未触发长镜像Action。设备工具
 尚未替换；此结果不代替新镜像/SDK配对发布和真实设备验收。
+
+## 常用库扩展候选（2026-10-10）
+
+在 355 包候选上新增七个源码运行库：libbrotli 1.2.0-1、libcbor
+0.14.0-1、libedit 20260512-1、libidn2 2.3.8-1、libpsl 0.23.3-1、
+librhash 1.4.6-1、libunwind 1.8.3-1。全部使用 r12-rc2 配套 SDK
+交叉编译，完成 IPK 打包；提供者表按实际 ELF 登记 13 个 SONAME。
+已有 libunistring 和 ncurses 使用 SDK 开发文件与镜像运行库。
+
+RISC-V/QEMU 基本功能测试通过：CBOR 往返及截断拒绝、libedit
+引号分词、IDNA Unicode 域名转换、公共后缀及 Cookie 域边界、
+Brotli 往返及截断拒绝、RHash SHA256 已知值、本地栈回溯四帧。
+这些测试不证明全部算法、协议边界或实机行为。
+
+Autotools 私有依赖投影通过显式 PACKAGE_USE_FEED_DEVELOPMENT=1
+启用，原有入口默认保持原路径。真实 SDK 集成回归确认缺失
+libidn2 开发依赖会失败，提供后 libpsl 构建成功；整个 SDK sysroot
+文件摘要和符号链接在构建前后相同。记录为构建机
+common-seven-autotools-isolation.log。
+
+新增配方契约检查已接入共享批次入口；Ubuntu 24.04 网络隔离
+容器执行 Shared batch preflight: PASS。Windows 复制的额外提供者
+表曾因 CRLF 触发逐行检查失败，验证副本规范化 LF 后重跑通过，
+未放宽检查。记录为 common-seven-shared-preflight-lf.log。
+
+完整 362 包配对候选 paired-common-seven-362 已通过生产 finalizer：
+前序签名及发布锁、声明依赖、ELF 闭包、目标运行库覆盖、历史
+连续性及逐包 CPU0 策略均通过。原始输入 common-seven-raw.64PImUOd
+复用已验证 355 包并新增七库，未重编旧依赖。记录为
+common-seven-362-finalization.log。
+
+当前索引仅用临时测试密钥签名。镜像中的实际目标 opkg 在签名
+校验开启下完成全部 362 包求解、362 次单包求解和实际安装／配置；
+523 个 installed，候选版本一致，libc/opkg/Labwc/镜像身份文件未变。
+四组 RISC-V 测试从安装根目录加载新增库并全部通过。记录为
+common-seven-362-opkg-plan.log、common-seven-362-opkg-install.log 和
+common-seven-362-installed-smoke-final-index.log。首次安装后检查
+比较原始 libedit 配方版本，遗漏 +tdvpimg 交付后缀；测试改为与
+最终索引精确比较，重跑通过，没有改动包或安装结果。
+
+完整快速 CI 原始脚本在 Ubuntu 24.04 网络隔离容器中通过，日志
+common-seven-portable.eLnAOlFT/portable-ci.log。AI/common 正式清单
+扩展为 88 项，实际 workflow 选包片段和完整候选覆盖检查通过。
+正式签名、发布和实机验证尚未完成；未推广 stable。上述七库
+补齐本轮发现的缺口，不代表全部常用 Linux 库覆盖审查已经结束。

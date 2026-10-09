@@ -26,14 +26,14 @@ for package in \
     --package-dir "$repo_root/packages/$package" >/dev/null
 done
 
-grep -Fqx "VERSION='22.23.2-1'" "$repo_root/packages/libnode/package.env"
+grep -Fqx "VERSION='22.23.2-2'" "$repo_root/packages/libnode/package.env"
 grep -Fqx "SOURCE_REVISION='aa4c77582be995286fc6e00aaf530dc7ade102a9'" "$repo_root/packages/libnode/package.env"
 grep -Fqx "PACKAGE_KIND='shared-library'" "$repo_root/packages/libnode/package.env"
-grep -Fqx "PACKAGE_DEPENDS='libcares (= 1.34.2-1), libuv (= 1.51.0-1), libnghttp2 (= 1.64.0-1), libicui18n (= 73.2-1)'" "$repo_root/packages/libnode/package.env"
+python3 "$repo_root/tests/node-provider-version-policy.py"
 grep -Fqx "PACKAGE_KIND='runtime'" "$repo_root/packages/npm-runtime/package.env"
-grep -Fqx "VERSION='10.9.8-1'" "$repo_root/packages/npm-runtime/package.env"
-grep -Fqx "VERSION='10.9.8-1'" "$repo_root/packages/npm/package.env"
-grep -Fq "PACKAGE_DEPENDS='node (= 22.23.2-1), npm-runtime (= 10.9.8-1), ca-certificates (= 2025.02.1-1)'" "$repo_root/packages/npm/package.env"
+grep -Fqx "VERSION='10.9.8-2'" "$repo_root/packages/npm-runtime/package.env"
+grep -Fqx "VERSION='10.9.8-2'" "$repo_root/packages/npm/package.env"
+grep -Fq "PACKAGE_DEPENDS='node (= 22.23.2-2), npm-runtime (= 10.9.8-2), ca-certificates (= 2025.02.1-1)'" "$repo_root/packages/npm/package.env"
 grep -Fq "SOURCE_LOCK_EXEMPT_REASON='Installation profile contains only repository-owned documentation and exact dependency metadata; it imports no third-party source.'" "$repo_root/packages/tdvp-nodejs-tools/package.env"
 grep -Fqx 'libnode.so.127|libnode|22.23.2-1' <<<"$owner_map"
 

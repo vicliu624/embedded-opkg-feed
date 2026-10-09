@@ -81,6 +81,7 @@ jobs:
           python3 ./tests/published-sdk-contract.py
           python3 ./tests/published-sdk-cache-identity.py
           python3 ./tests/batch-policy-entrypoint.py
+          python3 ./tests/node-provider-version-policy.py
           bash scripts/check-batch-build-policy.sh
           bash ./tests/reuse-published-ipk-payload-policy.sh
           bash ./tests/feed-overlay-composition-policy.sh

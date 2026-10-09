@@ -866,3 +866,34 @@ batch-policy-entrypoint.py 验证入口覆盖、当前 release 接受、非法�
 shared-batch-policy.5wWYlFLB/shared-policy.log。完整快速 CI 再次通过，
 日志 shared-policy-portable.q19rvzYi/portable-ci.log；没有弱化失败断言
 为忽略错误，也没有重编镜像或关闭签名验证。
+
+runtime base run 37959050946 成功，耗时 6m57s，provider alternatives、
+缓存保存和 evidence artifact 均成功。新 SDK digest 对应缓存约
+93 MB，ref 为当前候选分支。完整 ai-common run 37960082985 随后启动，
+但在编译前 staging integration 失败；SDK 24111 paths/354 libraries、
+44 image dependencies、Fortran 与音频能力验收均先通过。
+真实日志为 NetworkManager 插件 no feed owner。用 Ubuntu24 容器模拟
+SDK/target 同父目录，build-staging-receipt-integration 和 split-provider
+integration 两个 fixture 均复现相同错误，日志目录
+ai-preflight-layout-reproduction.MqTx0AO6。删除 TDVP_FEED_BASE_ROOT 后
+生产 builder 会从 SDK 旁的 target/ 自动推导根目录，导致非 ELF 小
+fixture 意外核对整镜像 owner。拟明确使用空 fixture base，保留生产
+全镜像校验；修复确认已发出，尚未实现、重新派发或取消任务。
+
+等待 fixture 修复确认期间继续审查共享库消费者：当前 libcares recipe
+为 1.34.8-1、libnghttp2 为 1.70.0-1，libnode 仍声明精确依赖
+1.34.2-1/1.64.0-1。当前 317 候选含新两库但没有 libnode，因此现有
+候选闭包通过不证明整个配方集合版本一致。Node consumer 的 recipe、
+相关精确依赖链和 node22 policy 需在其批次发布前修正、验证，不能
+把缺失消费者从验收范围中遗忘。尚未修改 Node 配方或重编 Node。
+
+后续人工核对五包链，已修正 Node recipe 元数据：libnode/node 修订为
+22.23.2-2，npm-runtime/npm 为 10.9.8-2，安装 profile 为 1.0-2；
+libnode 精确匹配 c-ares 1.34.8-1 与 nghttp2 1.70.0-1，五包内部引用
+同步更新。新增 node-provider-version-policy.py，读取实际 provider
+recipe 逐项核对十二条精确边，并接入快速 CI 与 Node policy。两个
+策略均通过，完整 Ubuntu24 快速 CI 通过，日志目录
+node-provider-portable.MHAOOaqc。Node 源码/编译脚本未改，旧 IPK 未
+覆盖，尚未重建、实机验证或发布新 Node 五包，不能据此声称 Node
+交付已经完成。静态 extra-runtime-owners 表的历史镜像 attestation
+未改写为未经镜像证明的新 Node runtime 版本。

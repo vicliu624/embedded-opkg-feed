@@ -973,3 +973,45 @@ whole-recipe-candidate-coverage-317.json 和 missing-38-source-input-audit.json
 exempt profile；27 份唯一锁定归档中 2 份已有校验通过的缓存，
 25 份尚缺。已启动逐配方抓取与摘要校验，日志目录
 common-tool-source-inputs.UbAxW2R4；未将输入缓存视为已交付 IPK。
+
+快速 CI run 37970142935（29a7803）成功。34 项输入抓取结束，
+其中 make 的 host lzip 原站 TLS EOF，改从 Buildroot 源码镜像
+获取同一 lzip-1.25.tar.gz；现有 SHA-256 09418a6d... 校验通过，
+make 的严格 offline source-cache 检查通过。没有修改锁定摘要，
+也未关闭 HTTPS 校验。日志 make-mirror-offline.log 和
+lzip-mirror.oe0ftGgS/download.log 保留原站失败及镜像成功证据。
+
+新本地批次 common-tools-build.cEEnrzc2 选择 25 个缺项工具配方，
+复用已验证的基础层 IPK 和新 owner evidence。完整依赖闭包在编译
+前捕获 openssh-client 输入缺失（Git transport 依赖），补齐官方
+锁定归档后进入实际编译。日志 build-with-ssh-input.log；file 等
+开始产出经 CPU0 ELF 策略检查的 IPK，完整批次验收仍进行中。
+Node 批次已完成 ICU native 与 target 构建，进入 Node/V8 编译。
+独立运行 prepare-go-module-vendor-cache.sh 为 gh 生成锁定
+vendor 输入，日志 gh-vendor-input-preparation.log；尚未宣称成功。
+
+gh vendor 准备随后成功：Go 报告 all modules verified，派生归档
+SHA-256 与锁定 1f9e4f6a... 一致，保存到 derived/go-module-vendor/
+sha256 缓存。开始独立的无网络 Ubuntu 24.04 gh 构建，固定
+GOMAXPROCS=2 限制 host 并行度；不将 host Go 工具链打入目标包。
+
+gh 的真实离线编译结束，发布 SDK ISA 校验拒绝 Go 内部链接产物：
+ELF 缺少 RISC-V ISA attributes。未改写或绕过 SDK 校验。
+小型 Go 外部链接验证 go-external-link-proof.fn3Pt0py 使用锁定
+Go 1.26.7、GORISCV64=rva20u64 和配对 SDK GCC；实际 ELF 通过原有
+verify-published-sdk-payload.py，QEMU 正常运行。gh 配方迁移仍未
+实施，该小型验证不证明完整 gh 已通过。
+
+工具批次在 make 的 .tar.lz 解包发现 ambient host lzip 缺失。
+published-sdk-build.sh 已增加限定 .tar.lz 输入分支，从该配方锁定
+lzip-1.25 源码构建临时 host helper，安装路径位于事务工作目录，
+不进入目标 sysroot。make-locked-lzip-build.log 证明实际 make
+源码构建和 IPK 打包成功；纯命令批次 export-staging 随后仍失败，
+原因是没有 usr development projection，未将批次视为全部成功。
+
+在 runtime-smoke/payload 解包实际 13 IPK（上述 12 项加 make），
+核对 Package/Architecture 并记录每包摘要；21 个新 ELF 通过
+配对 SDK ISA 校验。QEMU --version 运行 diff、dos2unix、file、
+find、gawk、git、grep、jq、less、make 全部成功，报告保存在
+common-tools-build.cEEnrzc2/runtime-smoke/results.json。该验证是
+载入/启动 smoke，不替代 opkg 安装、命令功能或 SSH transport 验收。

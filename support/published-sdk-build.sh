@@ -17,6 +17,22 @@ tdvp_sdk_install() (
   local source_name
   source_name=${TDVP_SDK_SOURCE_ARCHIVE:-$(bash "$repo_root/scripts/verify-source-lock.sh" --package-dir "$package_dir" --emit-artifacts | sed -n '1p' | cut -f2)}
   archive=$(tdvp_source_archive_locked_file "$package_dir" "$source_name")
+  if [[ "$source_name" == *.tar.lz ]]; then
+    # GNU Make's locked .tar.lz requires the separately locked host lzip.
+    # Build it outside the target sysroot; never depend on an ambient binary.
+    local lzip_archive
+    lzip_archive=$(tdvp_source_archive_locked_file "$package_dir" lzip-1.25.tar.gz)
+    mkdir -p "$work/host-source" "$work/host-tools"
+    tar -xzf "$lzip_archive" -C "$work/host-source"
+    (
+      cd "$work/host-source/lzip-1.25"
+      env -u CC -u CXX -u AR -u RANLIB -u CFLAGS -u CXXFLAGS -u CPPFLAGS -u LDFLAGS \
+        ./configure --prefix="$work/host-tools"
+      make -j"${TDVP_JOBS:-$(nproc)}"
+      make install
+    )
+    export PATH="$work/host-tools/bin:$PATH"
+  fi
   tar -xf "$archive" -C "$work/source"
   local -a source_roots=()
   mapfile -t source_roots < <(find "$work/source" -mindepth 1 -maxdepth 1 -type d -print)

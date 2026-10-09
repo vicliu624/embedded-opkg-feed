@@ -85,6 +85,7 @@ jobs:
           python3 ./tests/extra-runtime-owner-version-policy.py
           python3 ./tests/source-recipe-exact-dependencies.py
           python3 ./tests/icu-native-source-layout.py
+          bash ./tests/published-sdk-lzip-policy.sh
           bash ./tests/dev-tools-package-policy.sh
           bash scripts/check-batch-build-policy.sh
           bash ./tests/reuse-published-ipk-payload-policy.sh

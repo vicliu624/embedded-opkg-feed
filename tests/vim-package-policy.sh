@@ -24,7 +24,7 @@ expect_line "^SOURCE_REVISION='062141b1a70cf5364e6983ec901282e0111745c1'$" "$rep
 test -f "$repo_root/packages/vim-runtime/source.lock"
 expect_line "^PACKAGE='vim'$" "$repo_root/packages/vim/package.env"
 test -f "$repo_root/packages/vim/source.lock"
-expect_line "^PACKAGE_DEPENDS='vim-runtime \\(= 9\\.1\\.0145-1\\), vim-plugin-repeat \\(= 1\\.2-1\\), vim-plugin-surround \\(= 2\\.2-1\\), vim-plugin-commentary \\(= 1\\.3-1\\), vim-plugin-sleuth \\(= 2\\.0-1\\)'$" "$repo_root/packages/vim/package.env"
+expect_line "^PACKAGE_DEPENDS='vim-runtime \\(= 9\\.1\\.0145-1\\), vim-plugin-repeat \\(= 1\\.2-2\\), vim-plugin-surround \\(= 2\\.2-2\\), vim-plugin-commentary \\(= 1\\.3-2\\), vim-plugin-sleuth \\(= 2\\.0-2\\)'$" "$repo_root/packages/vim/package.env"
 expect_line "^set number$" "$repo_root/packages/vim/vimrc"
 expect_line "^set cursorline$" "$repo_root/packages/vim/vimrc"
 expect_line "^set laststatus=2$" "$repo_root/packages/vim/vimrc"

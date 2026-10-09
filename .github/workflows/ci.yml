@@ -90,6 +90,7 @@ jobs:
           python3 ./tests/go-package-notices.py
           bash ./tests/common-tool-notice-policy.sh
           python3 ./tests/notice-projection-lifetime.py
+          bash ./tests/vim-plugin-notice-policy.sh
           bash ./tests/dev-tools-package-policy.sh
           bash scripts/check-batch-build-policy.sh
           bash ./tests/reuse-published-ipk-payload-policy.sh

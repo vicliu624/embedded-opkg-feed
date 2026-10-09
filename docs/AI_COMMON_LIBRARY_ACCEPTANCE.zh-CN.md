@@ -1144,3 +1144,24 @@ runtime/五插件和三个 profile，common-expanded-raw.q5q4h2yt 为
 完整性通过；目录 locked-feed-predecessor-common-346。随后再次
 执行生产 finalize，日志 common-expanded-finalization-locked.log，
 尚未宣称成功、签名或发布。
+
+346 包的生产 finalize 随后成功：正确 r10 predecessor 锁与签名、
+镜像引用、runtime coverage/closure、CPU0 policy 全部通过，输出
+paired-common-expanded-346，仍未签名。该证据对应旧插件修订的
+中间池，新许可修订需要重新合并和验收，不能直接替代。
+
+四个 tpope 插件的上游许可信息补齐：repeat/commentary/surround
+README 已含引用，sleuth 说明位于原 doc/sleuth.txt，先前未复制。
+四个 source.lock 增加已锁定 Vim 9.1.0145 归档作为 license text
+输入，Vim-LICENSE 随包交付，sleuth 额外保留 UPSTREAM-NOTICE.txt。
+没有改写许可原文或把它们归为 MIT，也未增加原生编译依赖。
+四插件修订为 -2，Vim leaf 为 9.1.0145-2，开发/Node profiles 为
+1.0-4，精确依赖同步；已有程序字节可复用，新控制修订仍需打包。
+
+真实四插件 IPK 在 vim-plugin-notices.Lo1l7tuk/ipks 构建成功，
+全部原始文件内容与前一 IPK 一致，新增 Vim terms 与锁定 source
+LICENSE 字节一致，sleuth 原说明存在；验证报告为同目录
+ipk-notice-verification.json。本地完整 portable 检查捕获旧 Vim
+依赖断言，更新后重跑通过，日志
+vim-notices-final-portable.dlEUobAa/portable-ci.log。许可原文交付
+不替代条款审查；新修订尚未正式签名/发布/设备安装。

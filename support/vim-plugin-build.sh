@@ -59,6 +59,22 @@ for licence in LICENSE LICENCE; do
   install -Dm 0644 "$source_root/$licence" "$payload_dir/usr/share/licenses/$PACKAGE/$licence"
 done
 
+# Plugins that reference Vim's terms carry the exact licensed Vim source text.
+# This is a locked text input, not a native build dependency.
+if [[ -n "${VIM_PLUGIN_SHARED_LICENSE_ARCHIVE:-}" ]]; then
+  source "$package_dir/../../support/source-archive-library.sh"
+  vim_archive=$(tdvp_source_archive_locked_file "$package_dir" "$VIM_PLUGIN_SHARED_LICENSE_ARCHIVE")
+  mkdir -p "$work_root/vim-notices"
+  tar -xzf "$vim_archive" -C "$work_root/vim-notices" vim-9.1.0145/LICENSE
+  install -Dm0644 "$work_root/vim-notices/vim-9.1.0145/LICENSE" \
+    "$payload_dir/usr/share/licenses/$PACKAGE/Vim-LICENSE"
+fi
+if [[ -n "${VIM_PLUGIN_LICENSE_DOCUMENT:-}" ]]; then
+  [[ "$VIM_PLUGIN_LICENSE_DOCUMENT" != /* && "$VIM_PLUGIN_LICENSE_DOCUMENT" != *'..'* ]] || exit 66
+  install -Dm0644 "$source_root/$VIM_PLUGIN_LICENSE_DOCUMENT" \
+    "$payload_dir/usr/share/licenses/$PACKAGE/UPSTREAM-NOTICE.txt"
+fi
+
 # The installed tree is intentionally a text-only Vim package.  Check the
 # payload's actual content and allowed filenames, rather than execute bits:
 # a Windows worktree mounted into WSL can report every ordinary text file as

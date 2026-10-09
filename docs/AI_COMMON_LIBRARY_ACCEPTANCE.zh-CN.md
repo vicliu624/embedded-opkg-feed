@@ -1661,3 +1661,12 @@ gnutls-certificate-loopback.log。未替换系统证书，临时服务/证书
 自动清理。首次测试在接收记录时 E_AGAIN 被直接当失败，补上
 有限重试及外部超时后通过，证书检查未放宽。本检查覆盖 TLS
 传输，HTTP3 的证书与帧验收仍需单独完成。
+
+nghttp3 1.18.0 上游内部协议 suite 已交叉编译并经 QEMU 运行：
+61/61 全部通过，无跳过测试，覆盖 QPACK、连接/流状态、HTTP
+处理和设置/回调转换。可重复命令为 tests/nghttp3-upstream-protocol-suite.sh
+--sdk-root <matched-sdk>；脚本验证锁定归档、CPU0 产物并设置
+60 秒运行超时，保存配置/编译/测试日志。记录
+tdvp-nghttp3-protocol.7XHITD1v/protocol-suite.log。
+此套件链接上游内部静态库，不替换既有共享库/IPK；不能将其
+与独立 QUIC 互通、TLS 证书测试拼接成完整 HTTP3 端到端证明。

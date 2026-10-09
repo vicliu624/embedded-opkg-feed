@@ -851,6 +851,10 @@ if [[ -n "$staging_export_dir" ]]; then
   # reconstructed from the immutable download base by the next layer.
   if [[ -d "$staging_root/usr" ]]; then
     cp -a -- "$staging_root/usr" "$staging_export_dir/usr"
+  else
+    # Command/profile producers may offer no development files. Keep an
+    # explicit empty projection so their full input receipt remains verifiable.
+    mkdir -p -- "$staging_export_dir/usr"
   fi
   printf 'format\t1\nplatform\t%s\nrelease\t%s\n' "$platform_slug" "$release" \
     >"$staging_export_dir/tdvp-build-staging-manifest.tsv"

@@ -86,6 +86,7 @@ jobs:
           python3 ./tests/source-recipe-exact-dependencies.py
           python3 ./tests/icu-native-source-layout.py
           bash ./tests/published-sdk-lzip-policy.sh
+          python3 ./tests/command-staging-export-integration.py
           bash ./tests/dev-tools-package-policy.sh
           bash scripts/check-batch-build-policy.sh
           bash ./tests/reuse-published-ipk-payload-policy.sh

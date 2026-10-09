@@ -1015,3 +1015,19 @@ lzip-1.25 源码构建临时 host helper，安装路径位于事务工作目录�
 find、gawk、git、grep、jq、less、make 全部成功，报告保存在
 common-tools-build.cEEnrzc2/runtime-smoke/results.json。该验证是
 载入/启动 smoke，不替代 opkg 安装、命令功能或 SSH transport 验收。
+
+纯命令 staging 导出修复：build-all.sh 在事务没有开发文件时创建
+明确的空 usr/，保留 build-staging-receipt.py 的全部 SDK/input/byte
+校验与原断言。新 command-staging-export-integration.py 调用真实
+builder export/import，验证空 development_files、producer 只构建
+一次、consumer 复用成功、加入未记录文件后拒绝。portable 模式的
+测试 SDK 明确拒绝所有 ELF；另以实际配对 SDK 的 manifest/verifier
+做隔离 receipt-only 投影运行相同测试，两种模式均通过。没有修改
+原先等待批准的两个 AI fixture，生产完整 runtime coverage 保留。
+Ubuntu 24.04 全共享前置检查通过，日志 command-staging-integration.log。
+
+8cb144b 快速 CI run 37971696818 成功。启动本地剩余工具批次
+common-tools-remaining.FRKolnAQ，包含 make、openssh-client、patch、
+sed、strace、tree、Vim runtime/plugins 和 which 共 14 个 root。
+Make 重新作为真实 producer 验证完整导出修复；此前已成功的 12 个
+工具/IPK 保留用于候选合并，不在此批次重复构建。新批次尚未完成。

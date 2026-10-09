@@ -8,6 +8,7 @@ python3 "$repo_root/tests/source-recipe-exact-dependencies.py"
 python3 "$repo_root/tests/icu-native-source-layout.py"
 bash "$repo_root/tests/dev-tools-package-policy.sh"
 bash "$repo_root/tests/published-sdk-lzip-policy.sh"
+python3 "$repo_root/tests/command-staging-export-integration.py"
 for script in "$repo_root"/scripts/*.sh "$repo_root"/tests/*.sh "$repo_root"/packages/*/build.sh; do
   bash -n "$script"
 done

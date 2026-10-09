@@ -233,5 +233,7 @@ done < <(find "$payload_dir" -type f -print0 | LC_ALL=C sort -z)
 
 mkdir -p -- "$TDVP_FEED_STAGING_ROOT/usr/bin"
 install -m 0755 -- "$install_root/usr/bin/git" "$TDVP_FEED_STAGING_ROOT/usr/bin/git"
+install -Dm 0644 -- "$source_dir/COPYING" "$payload_dir/usr/share/licenses/git-runtime/COPYING"
+install -Dm 0644 -- "$source_dir/COPYING" "$TDVP_FEED_STAGING_ROOT/usr/share/licenses/git/COPYING"
 payload_ready=1
 echo "git-runtime payload ready: $payload_dir"

@@ -84,6 +84,7 @@ tdvp_build_archive_library() {
   source "$package_dir/../../support/buildroot-feed-session.sh"
   # shellcheck source=elf-runtime-policy.sh
   source "$package_dir/../../support/elf-runtime-policy.sh"
+  source "$package_dir/../../support/package-notice-library.sh"
   # Do not fall back to the build host's readelf: payload sanitisation must
   # inspect the exact target ELF format emitted by the matched SDK.
   readelf_tool=${TDVP_READELF:-"$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"}
@@ -203,6 +204,7 @@ tdvp_build_archive_library() {
   while IFS= read -r -d '' elf; do
     tdvp_remove_elf_runtime_search_paths "$readelf_tool" "$elf"
   done < <(find "$payload_dir/usr/lib" -maxdepth 1 -type f -print0 | LC_ALL=C sort -z)
+  tdvp_copy_installed_notices "$install_root" "$buildroot_package" "$payload_dir" "$(basename "$package_dir")"
   payload_ready=1
   echo "$(basename "$package_dir") payload ready: $payload_dir"
 }

@@ -111,6 +111,10 @@ source_dir="$work_root/openssh-${VERSION%-*}"
   exit 75
 }
 
+# Reuse the immutable base before entering the source compiler. The locked
+# archive is still verified and unpacked to provide its upstream notices.
+base_root=${TDVP_FEED_BASE_ROOT:-}
+if [[ -z "$base_root" ]]; then
 # These are the relevant reviewed Buildroot options, intentionally with no
 # PAM, server, SELinux, setuid helper, or /etc/ssh installation path.  The
 # output remains a normal client/file-transfer/agent tool set.
@@ -127,22 +131,24 @@ source_dir="$work_root/openssh-${VERSION%-*}"
       --with-sandbox=no --without-ssl-engine \
       --disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx \
       --disable-strip
-  make -j"$(nproc)"
+  make -j"${TDVP_JOBS:-$(nproc)}"
 )
+fi
 
 required_paths=(ssh scp sftp ssh-agent ssh-add)
+if [[ -z "$base_root" ]]; then
 for program in "${required_paths[@]}"; do
   [[ -x "$source_dir/$program" ]] || {
     echo "OpenSSH client build omitted executable: $program" >&2
     exit 76
   }
 done
+fi
 
 # r10 already ships the reviewed OpenSSH client from the immutable image.
 # Reuse those exact target bytes when the matching base root is available;
 # rebuilding the same source would create a second owner for every /usr/bin
 # OpenSSH path and would be rejected by the overlay policy.
-base_root=${TDVP_FEED_BASE_ROOT:-}
 if [[ -n "$base_root" ]]; then
   for program in "${required_paths[@]}"; do
     base_program="$base_root/usr/bin/$program"
@@ -175,6 +181,7 @@ mkdir -p -- "$payload_dir/usr/bin"
 for program in "${required_paths[@]}"; do
   cp -a -- "$source_dir/$program" "$payload_dir/usr/bin/$program"
 done
+install -Dm 0644 -- "$source_dir/LICENCE" "$payload_dir/usr/share/licenses/openssh-client/LICENCE"
 while IFS= read -r elf; do
   tdvp_remove_elf_runtime_search_paths "$readelf_tool" "$elf"
 done < <(find "$payload_dir/usr/bin" -type f -perm -u+x -print | LC_ALL=C sort)

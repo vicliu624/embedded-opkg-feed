@@ -19,6 +19,7 @@ tdvp_buildroot_command_package() {
   source "$package_dir/../../support/buildroot-feed-session.sh"
   # shellcheck source=elf-runtime-policy.sh
   source "$package_dir/../../support/elf-runtime-policy.sh"
+  source "$package_dir/../../support/package-notice-library.sh"
   readelf_tool="$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"
   [[ -x "$readelf_tool" ]] || { echo "matching SDK has no target readelf: $readelf_tool" >&2; return 79; }
   if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
@@ -205,6 +206,7 @@ EOF
       install -Dm 0644 "$source_asset" "$destination_asset"
     done
   fi
+  tdvp_copy_installed_notices "$install_root" "$buildroot_package" "$payload_dir" "$(basename "$package_dir")"
   payload_ready=1
   echo "$(basename "$package_dir") payload ready: $payload_dir"
 }

@@ -1077,3 +1077,29 @@ SHA-256 为 87c92d593125306c12a05f892c3b8365fd93ecde5f933c78f05e9c83bc447f77。
 gh-offline-build.7ogNBYXk/notice-ipk-verification.json。
 8dde9f2 的快速 CI run 37973968555 成功；此包尚未正式签名、
 公开发布或完成设备安装，法律与安全审查范围不因 notices 齐备缩减。
+
+扩展 IPK notice 审计到已构建常用工具，发现命令包和 archive-library
+投影只保留程序/库与运行数据，遗漏 SDK install root 的 notices；
+多数 IPK 没有许可证文件，vim-runtime 例外。审计报告保存在
+common-tool-notice-payload-audit.json。修复共享 notice 投影到最终
+IPK 所属 package 命名空间，保留字节并拒绝符号链接；扩充 SDK
+采集文件名，包含 LICENCE、COPYING.LESSER、COPYRIGHT 等。
+Git runtime 从锁定 source_dir/COPYING 交付并 stage 给 Git leaf，
+OpenSSH client 从锁定 source_dir/LICENCE 交付。
+
+真实 which 验证发现 late source 会触发 RETURN trap 提前清理安装
+目录，静态检查未捕获；在推送前将 notice helper 加载移到 trap
+设置之前。notice-projection-lifetime.py 调用命令/库共享入口的
+non-ELF 事务 fixture，验证运行数据存活和 notice 字节保留；另以
+真实配对 SDK 构建 which，COPYING 传递与 ELF 校验均成功，日志
+which-notice-projection.RlBMc7H5/build-fixed.log。该 fixture 不证明
+原生编译或 ELF ABI，真实 SDK 验证单独保留。完整 portable CI
+通过，日志 common-notices-final-portable.LIhhmTQq/portable-ci.log。
+
+OpenSSH 路径原先先编译源码，再用 image 中已存在的五个程序覆盖。
+移到编译前判定 image reuse，并保留源码 hash/解包与 SDK 检查；
+无 base 时仍保留 source build，遵守 TDVP_JOBS。实际 /image 为
+配对 rc2，PATH 中 make shim 永远返回失败；reuse 仍成功，五个
+程序与 image cmp 全部一致，LICENCE 存在，SDK 识别 0 新 ELF。
+日志 common-tools-remaining.FRKolnAQ/openssh-reuse-notices.log。
+尚未完成全部已构建工具的 notices 重包、法律审查或 opkg 验收。

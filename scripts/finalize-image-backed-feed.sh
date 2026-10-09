@@ -51,6 +51,7 @@ python3 "$script_dir/compose_image_backed_feed.py" \
   --source "$source_dir" --image-root "$base_root" \
   --image-manifest-sha256 "$IMAGE_OWNERSHIP_MANIFEST_SHA256" --output "$candidate" "${history_args[@]}"
 bash "$script_dir/verify-feed.sh" --platform "$platform" "$candidate"
+python3 "$script_dir/verify-declared-dependencies.py" "$candidate/Packages" "$base_root/var/lib/opkg/status"
 bash "$script_dir/verify-runtime-closure.sh" --platform "$platform" --base-root "$base_root" "$candidate"
 bash "$script_dir/verify-target-runtime-coverage.sh" --platform "$platform" --base-root "$base_root" "$candidate"
 python3 "$script_dir/verify-historical-package-continuity.py" --repo-root "$repo_root" --candidate "$candidate"

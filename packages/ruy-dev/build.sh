@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+[[ $# -eq 4 && "$1" == --platform && "$2" == tdvp-k230-r1 && "$3" == --sdk-root ]] || exit 64
+package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$package_dir/package.env"
+source "$package_dir/../../support/cmake-source-library.sh"
+tdvp_build_cmake_source_library "$package_dir" "$4" '@development' \
+  -DRUY_MINIMAL_BUILD=ON -DRUY_ENABLE_INSTALL=ON -DRUY_FIND_CPUINFO=ON \
+  -DRUY_PROFILER=OFF -DBUILD_SHARED_LIBS=OFF

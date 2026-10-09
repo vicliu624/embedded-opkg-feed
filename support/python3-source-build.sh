@@ -140,12 +140,15 @@ tdvp_python3_assert_runtime_exclusions() {
     return 79
   }
   if find "$stdlib" -type f \( \
-    -name 'pydoc.py' -o -name 'pydoc.cpython-313*.pyc' -o \
     -name 'turtle.py' -o -name 'turtle.cpython-313*.pyc' \
   \) -print -quit | grep -q .; then
-    echo 'CPython runtime retained a deliberately excluded pydoc or turtle module' >&2
+    echo 'CPython runtime retained a deliberately excluded turtle module' >&2
     return 80
   fi
+  [[ -f "$stdlib/pydoc.py" && -f "$stdlib/pydoc_data/topics.py" ]] || {
+    echo 'CPython runtime omitted pydoc, required by scientific Python consumers' >&2
+    return 105
+  }
 }
 
 tdvp_build_python3_source_stage() {
@@ -211,6 +214,24 @@ tdvp_build_python3_source_stage() {
       return 85
     }
     tdvp_python3_assert_stage_marker "$stage_dir"
+    # Restore pure standard-library files from the same verified source when
+    # reusing a stage built before the scientific-Python runtime contract.
+    # This does not rebuild or replace the interpreter or native extensions.
+    if [[ ! -f "$stage_dir/usr/lib/python3.13/pydoc.py" ||
+          ! -f "$stage_dir/usr/lib/python3.13/pydoc_data/topics.py" ]]; then
+      archive=$(tdvp_python3_locked_archive "$package_dir")
+      tar -xJf "$archive" --strip-components=2 -C "$stage_dir/usr/lib/python3.13" \
+        "Python-$TDVP_PYTHON3_VERSION/Lib/pydoc.py" \
+        "Python-$TDVP_PYTHON3_VERSION/Lib/pydoc_data"
+    fi
+    tdvp_python3_assert_runtime_exclusions "$stage_dir"
+    [[ -f "$stage_dir/development/usr/include/python3.13/Python.h" &&
+       -d "$stage_dir/development/usr/lib/pkgconfig" ]] || {
+      echo 'cached CPython build predates development export; regenerate its source stage before building Python extensions' >&2
+      return 104
+    }
+    mkdir -p "$TDVP_FEED_STAGING_ROOT/usr"
+    cp -a "$stage_dir/development/usr/." "$TDVP_FEED_STAGING_ROOT/usr/"
     return 0
   fi
 
@@ -288,14 +309,28 @@ tdvp_build_python3_source_stage() {
     echo 'direct CPython source install omitted the CLI, public library, or standard library' >&2
     return 90
   }
+  # Keep development inputs separately from the three runtime payloads.
+  # Removing these before saving the source stage prevents every downstream
+  # Python C extension from consuming this already-built interpreter.
+  [[ -f "$install_root/usr/include/python3.13/Python.h" &&
+     -f "$install_root/usr/include/python3.13/pyconfig.h" &&
+     -d "$install_root/usr/lib/pkgconfig" ]] || return 104
+  mkdir -p "$work_root/development/usr/lib/python3.13"
+  cp -a "$install_root/usr/include" "$work_root/development/usr/"
+  cp -a "$install_root/usr/lib/pkgconfig" "$work_root/development/usr/lib/"
+  cp -a "$install_root/usr/lib/"libpython3.13.so* "$work_root/development/usr/lib/"
+  local development_config
+  while IFS= read -r -d '' development_config; do
+    cp -a "$development_config" "$work_root/development/usr/lib/python3.13/"
+  done < <(find "$install_root/usr/lib/python3.13" -maxdepth 1 \
+    \( -name 'config-3.13-*' -o -name '_sysconfigdata*.py' \) -print0)
   rm -rf -- "$install_root/usr/include" "$install_root/usr/lib/pkgconfig" "$install_root/usr/share/man"
   rm -rf -- "$install_root/usr/lib/python3.13/ensurepip" \
     "$install_root/usr/lib/python3.13/idlelib" "$install_root/usr/lib/python3.13/tkinter" \
-    "$install_root/usr/lib/python3.13/turtledemo" "$install_root/usr/lib/python3.13/pydoc_data" \
+    "$install_root/usr/lib/python3.13/turtledemo" \
     "$install_root/usr/lib/python3.13/config-3.13-riscv64-linux-gnu"
-  rm -f -- "$install_root/usr/lib/python3.13/pydoc.py" "$install_root/usr/lib/python3.13/turtle.py"
-  rm -f -- "$install_root/usr/lib/python3.13/__pycache__"/pydoc.cpython-313*.pyc \
-    "$install_root/usr/lib/python3.13/__pycache__"/turtle.cpython-313*.pyc
+  rm -f -- "$install_root/usr/lib/python3.13/turtle.py"
+  rm -f -- "$install_root/usr/lib/python3.13/__pycache__"/turtle.cpython-313*.pyc
   rm -f -- "$install_root/usr/bin"/idle* "$install_root/usr/bin"/pydoc* \
     "$install_root/usr/bin"/python*-config "$install_root/usr/lib/libpython3.so"
   [[ ! -e "$install_root/usr/bin/python" ]] || rm -f -- "$install_root/usr/bin/python"
@@ -329,6 +364,9 @@ tdvp_build_python3_source_stage() {
   fi
 
   mkdir -p -- "$stage_dir"
+  cp -a "$work_root/development" "$stage_dir/development"
+  mkdir -p "$TDVP_FEED_STAGING_ROOT/usr"
+  cp -a "$stage_dir/development/usr/." "$TDVP_FEED_STAGING_ROOT/usr/"
   cp -a -- "$install_root/usr" "$stage_dir/usr"
   cat >"$stage_dir/.tdvp-python3-source-build" <<EOF
 format=1

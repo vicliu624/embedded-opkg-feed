@@ -1,0 +1,28 @@
+From: TDVP Device Team
+Subject: [PATCH] Reuse declared Eigen and FlatBuffers development providers
+
+The public FlatBuffers provider is verified through compilation and model
+tests, with matching native flatc. Do not download a second Eigen tree when
+the target SDK extension already exports Eigen3::Eigen.
+
+--- a/cmake/external/eigen.cmake
++++ b/cmake/external/eigen.cmake
+@@ -1,3 +1,7 @@
++if(TARGET Eigen3::Eigen)
++  return()
++endif()
++
+ set(EIGEN_BUILD_DOC OFF CACHE BOOL "" FORCE)
+ set(EIGEN_BUILD_BLAS OFF CACHE BOOL "" FORCE)
+ set(EIGEN_BUILD_LAPACK OFF CACHE BOOL "" FORCE)
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -465,7 +465,7 @@
+     URL_HASH SHA1=${DEP_SHA1_flatbuffers}
+     PATCH_COMMAND ${ONNXRUNTIME_FLATBUFFERS_PATCH_COMMAND}
+     EXCLUDE_FROM_ALL
+-    FIND_PACKAGE_ARGS 23.5.9 NAMES Flatbuffers flatbuffers
++    FIND_PACKAGE_ARGS NAMES FlatBuffers flatbuffers
+ )
+ 
+ onnxruntime_fetchcontent_makeavailable(flatbuffers)

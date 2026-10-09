@@ -8,4 +8,4 @@ source "$package_dir/package.env"
 # shellcheck source=../../support/source-archive-library.sh
 source "$package_dir/../../support/source-archive-library.sh"
 tdvp_build_direct_archive_library "$package_dir" "$4" "${TDVP_LIBNGHTTP2_BUILDROOT_OUTPUT:-}" \
-  'nghttp2-1.64.0' 'libnghttp2.so*' -- --enable-lib-only
+  'nghttp2-1.70.0' 'libnghttp2.so*' -- --enable-lib-only

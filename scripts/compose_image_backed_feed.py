@@ -100,9 +100,14 @@ def rewrite_dependencies(value, packages, versions, image_packages):
         for alternative in group.split("|"):
             name, operator, version = ATOM.fullmatch(alternative).groups()
             if name in versions and operator:
-                if operator != "=" or version != packages[name]["fields"]["Version"]:
+                original = packages[name]["fields"]["Version"]
+                if operator == "=" and version != original:
                     raise ValueError("cannot rewrite non-matching dependency: " + alternative)
-                version = versions[name]
+                # A boundary naming this exact input revision follows that
+                # revision's projected version. Other range boundaries retain
+                # their original meaning; never drop or convert the operator.
+                if version == original:
+                    version = versions[name]
             if name.startswith("tdvp-image-"):
                 if name not in image_packages:
                     raise ValueError("unknown image dependency: " + name)

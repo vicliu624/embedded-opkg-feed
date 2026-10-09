@@ -1,0 +1,30 @@
+From: TDVP Device Team
+Subject: [PATCH] Initialize shared ONNX schemas once before registering ORT extensions
+
+The public ONNX provider retains its lazy automatic schema registration,
+which standalone model-checking consumers require. Trigger that path before
+adding ORT schemas, and avoid registering standard ONNX schemas twice.
+The source-specific define is supplied only for this public-provider build.
+
+--- a/onnxruntime/core/session/environment.cc
++++ b/onnxruntime/core/session/environment.cc
+@@ -214,2 +214,5 @@
+     std::call_once(schemaRegistrationOnceFlag, []() {
++#if defined(TDVP_ONNX_PUBLIC_AUTO_SCHEMA_REGISTRY)
++      (void)ONNX_NAMESPACE::OpSchemaRegistry::Schema("Identity");
++#endif
+       auto& domainToVersionRangeInstance = ONNX_NAMESPACE::OpSchemaRegistry::DomainToVersionRange::Instance();
+@@ -247,11 +250,13 @@
++#if !defined(TDVP_ONNX_PUBLIC_AUTO_SCHEMA_REGISTRY)
+       RegisterOnnxOperatorSetSchema();
+ 
+ #ifndef DISABLE_ML_OPS
+       RegisterOnnxMLOperatorSetSchema();
+ #endif
+ 
+ #if defined(ENABLE_TRAINING_OPS)
+       RegisterOnnxTrainingOperatorSetSchema();
+ #endif
++#endif
+ 
+ #if defined(ENABLE_TRAINING_OPS)

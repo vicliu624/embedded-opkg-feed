@@ -39,6 +39,32 @@ jobs:
           python3 ./tests/runtime-closure-search-path.py
           python3 ./tests/runtime-owner-registration-policy.py
           bash ./tests/package-host-dependencies-policy.sh
+          bash ./tests/common-data-library-policy.sh
+          bash ./tests/common-security-library-policy.sh
+          bash ./tests/python3-ai-runtime-version-policy.sh
+          bash ./tests/python3-native-abi-policy.sh
+          bash ./tests/python-tflite-package-policy.sh
+          python3 ./tests/python-wheel-install-policy.py
+          python3 ./tests/python-meson-runtime-metadata.py
+          python3 ./tests/declared-dependency-closure.py
+          python3 ./tests/ipk-dependency-range-preservation.py
+          python3 ./scripts/verify-ai-common-library-cohort.py
+          python3 ./tests/ai-python-host-preflight-policy.py
+          python3 ./tests/ai-python-host-entrypoint-policy.py
+          python3 ./tests/ai-common-workflow-selection.py
+          python3 ./tests/build-staging-receipt.py
+          python3 ./tests/source-license-projection.py
+          python3 ./tests/provider-license-projection.py
+          python3 ./tests/split-provider-extraction.py
+          python3 ./tests/onnxruntime-native-input-order.py
+          python3 ./tests/native-cmake-cache-identity.py
+          python3 ./tests/onnxruntime-development-projection.py
+          python3 ./tests/onnxruntime-binding-core-reuse.py
+          python3 ./tests/serialization-native-provider-policy.py
+          python3 ./tests/onnx-security-package-revisions.py
+          python3 ./tests/first-party-ai-license-policy.py
+          python3 ./tests/runtime-owner-crlf-policy.py
+          python3 ./tests/image-backed-dependency-ranges.py
           bash ./tests/historical-library-migration-policy.sh
           python3 ./tests/historical-runtime-reference-policy.py
           python3 ./tests/historical-catalogue-continuity.py

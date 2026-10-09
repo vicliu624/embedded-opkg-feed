@@ -1,0 +1,21 @@
+From: TDVP Device Team
+Subject: [PATCH] ONNX: preserve the exported target Protobuf dependency graph
+
+The public Protobuf provider is consumed via its config package. Avoid
+resetting include paths or falling back to module-mode native searches
+when importing ONNX in a downstream cross-compiled application.
+
+--- a/cmake/ONNXConfig.cmake.in
++++ b/cmake/ONNXConfig.cmake.in
+@@ -6,9 +6,8 @@
+ # library version information
+ set(ONNX_VERSION "@ONNX_VERSION@")
+ 
+-list(APPEND CMAKE_PREFIX_PATH "@PROTOBUF_DIR@")
+-set(Protobuf_INCLUDE_DIR "@PROTOBUF_INCLUDE_DIR@")
+-find_package(Protobuf REQUIRED)
++include(CMakeFindDependencyMacro)
++find_dependency(Protobuf CONFIG)
+ 
+ # import targets
+ include ("${CMAKE_CURRENT_LIST_DIR}/ONNXTargets.cmake")

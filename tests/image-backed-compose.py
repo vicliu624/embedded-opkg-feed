@@ -102,8 +102,10 @@ class Compose(unittest.TestCase):
         self.assertFalse((self.work / "candidate").exists())
 
     def test_unsupported_version_range_is_rejected(self):
-        self.make_package("range", "usr/bin/range", b"range", "libbase (>= 1-1)")
-        with self.assertRaisesRegex(ValueError, "non-matching dependency"):
+        # Ordinary package ranges are supported. Firmware owner references
+        # must still name one exact immutable version, never a range.
+        self.make_package("range", "usr/bin/range", b"range", "tdvp-image-base-lib (>= 1+locked)")
+        with self.assertRaisesRegex(ValueError, "locked version"):
             compose_image_backed_feed(self.source, self.image, self.digest, self.work / "candidate")
 
     def test_image_alternatives_are_version_bound(self):

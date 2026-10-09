@@ -15,9 +15,9 @@ on:
         required: true
         default: archive
         type: choice
-        options: [archive, audacious-foundation, audacious-core, audacious-plugins, audacious-app, audacious, network-tools, netsurf, media, games, desktop-tools, development-tools, nodejs]
+        options: [archive, audacious-foundation, audacious-core, audacious-plugins, audacious-app, audacious, network-tools, netsurf, media, games, desktop-tools, development-tools, nodejs, ai-common]
       dependency_run_id:
-        description: Successful prior Audacious layer run ID; required by audacious-plugins and audacious-app
+        description: Successful prior layer run ID; required by Audacious layers, optional prior ai-common reuse
         required: false
         default: ''
         type: string
@@ -136,6 +136,47 @@ jobs:
           path: ${{ runner.temp }}/tdvp-r11-source-cache
           key: tdvp-k230-r11-source-${{ hashFiles('packages/**/source.lock') }}
 
+      - name: Reject incomplete AI platform inputs before compilation
+        if: inputs.batch == 'ai-common'
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/verify-ai-common-library-cohort.py
+          python3 scripts/verify-ai-package-sdk.py "$TDVP_SDK_ROOT"
+          python3 tests/build-staging-receipt-integration.py "$TDVP_SDK_ROOT"
+          python3 tests/split-provider-builder-integration.py "$TDVP_SDK_ROOT"
+
+      - name: Identify the native AI host cache
+        if: inputs.batch == 'ai-common'
+        run: |
+          set -Eeuo pipefail
+          identity=$({ cat /etc/os-release; cc --version; sha256sum packages/python3/source.lock support/published-native-inputs.sh scripts/prepare-ai-python-host.sh; } | sha256sum | cut -d' ' -f1)
+          echo "TDVP_AI_HOST_IDENTITY=$identity" >> "$GITHUB_ENV"
+
+      - name: Cache source-locked native Python and reviewed wheels
+        if: inputs.batch == 'ai-common'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.temp }}/tdvp-ai-native-python
+            ${{ runner.temp }}/tdvp-ai-host-wheels
+          key: tdvp-ai-host-${{ runner.os }}-${{ runner.arch }}-${{ env.TDVP_AI_HOST_IDENTITY }}-${{ hashFiles('support/python-wheel-host-requirements.txt') }}
+
+      - name: Prepare the pinned native AI Python host
+        if: inputs.batch == 'ai-common'
+        env:
+          TDVP_SOURCE_CACHE: ${{ runner.temp }}/tdvp-r11-source-cache
+        run: |
+          set -Eeuo pipefail
+          wheels="$RUNNER_TEMP/tdvp-ai-host-wheels"
+          mkdir -p "$wheels"
+          python3 -m pip download --only-binary=:all: --require-hashes \
+            --implementation cp --abi cp313 --python-version 3.13 \
+            --platform manylinux_2_17_x86_64 --dest "$wheels" \
+            -r support/python-wheel-host-requirements.txt
+          bash scripts/prepare-ai-python-host.sh \
+            "$RUNNER_TEMP/tdvp-ai-native-python" "$RUNNER_TEMP/tdvp-ai-host-venv" "$wheels"
+          echo "$RUNNER_TEMP/tdvp-ai-host-venv/bin" >> "$GITHUB_PATH"
+
       - name: Restore the required target-runtime IPK base
         uses: actions/cache/restore@v4
         with:
@@ -150,8 +191,8 @@ jobs:
           mkdir -p candidate-dist
           cp -a "${RUNNER_TEMP}/tdvp-r11-runtime-base/." candidate-dist/
 
-      - name: Retrieve the attested prior Audacious layer
-        if: inputs.batch == 'audacious-plugins' || inputs.batch == 'audacious-app'
+      - name: Retrieve the attested prior dependency layer
+        if: inputs.batch == 'audacious-plugins' || inputs.batch == 'audacious-app' || (inputs.batch == 'ai-common' && inputs.dependency_run_id != '')
         env:
           GH_TOKEN: ${{ github.token }}
           TDVP_DEPENDENCY_RUN_ID: ${{ inputs.dependency_run_id }}
@@ -166,8 +207,13 @@ jobs:
           case "$TDVP_REQUESTED_BATCH" in
             audacious-plugins) expected_batch=audacious-core ;;
             audacious-app) expected_batch=audacious-plugins ;;
+            ai-common) expected_batch=ai-common ;;
             *) exit 64 ;;
           esac
+          IFS=$'\t' read -r dependency_status dependency_conclusion dependency_repository dependency_workflow <<< "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$TDVP_DEPENDENCY_RUN_ID" --jq '[.status,.conclusion,.head_repository.full_name,.path] | @tsv')"
+          [[ "$dependency_status" == completed && "$dependency_conclusion" == success && "$dependency_repository" == "$GITHUB_REPOSITORY" && "$dependency_workflow" == .github/workflows/build-r10-batch-candidate.yml ]] || {
+            echo 'dependency run must be successful in this repository and workflow' >&2; exit 65;
+          }
           mapfile -t artifacts < <(
             gh api --paginate \
               "repos/$GITHUB_REPOSITORY/actions/runs/$TDVP_DEPENDENCY_RUN_ID/artifacts" \
@@ -189,6 +235,10 @@ jobs:
           [[ "$(value "$manifest" batch)" == "$expected_batch" ]] || { echo 'prior layer batch identity is invalid' >&2; exit 67; }
           staging=$(find "$incoming_root" -type f -name tdvp-build-staging-manifest.tsv -printf '%h\n' -quit)
           [[ -n "$staging" && -d "$staging/usr" ]] || { echo 'prior Audacious layer has no usable private staging state' >&2; exit 68; }
+          if [[ "$TDVP_REQUESTED_BATCH" == ai-common ]]; then
+            test -f "$staging/tdvp-build-staging-receipt.json"
+            python3 scripts/build-staging-receipt.py verify --repo . --sdk "$TDVP_SDK_ROOT" --staging "$staging"
+          fi
           mkdir -p "$RUNNER_TEMP/tdvp-audacious-import"
           cp -a -- "$staging/." "$RUNNER_TEMP/tdvp-audacious-import/"
           feed_dir=$(find "$incoming_root" -type d -path '*/tdvp-k230-br2025.02.1-glibc2.33-rv64-lp64d-k6.6.36-r1/r11/riscv64' -print -quit)
@@ -333,6 +383,18 @@ jobs:
               package_args=(--package tdvp-nodejs-tools)
               expected_packages=(libnode node npm-runtime npm tdvp-nodejs-tools)
               ;;
+            ai-common)
+              mapfile -t expected_packages < <(python3 -c 'import json; c=json.load(open("support/ai-common-library-cohort.json")); [print(p) for group in c["groups"].values() for p in group]')
+              [[ ${#expected_packages[@]} -gt 0 ]] || exit 64
+              package_args=(--export-staging candidate-staging)
+              if [[ -d "$RUNNER_TEMP/tdvp-audacious-import" ]]; then
+                export TDVP_REQUIRE_STAGING_RECEIPT=1
+                package_args+=(--import-staging "$RUNNER_TEMP/tdvp-audacious-import")
+                mapfile -t prior_packages < <(python3 -c 'import json,os; c=json.load(open(os.environ["RUNNER_TEMP"]+"/tdvp-audacious-import/tdvp-build-staging-receipt.json")); [print(p) for p in c["packages"]]')
+                for package in "${prior_packages[@]}"; do package_args+=(--provided-package "$package"); done
+              fi
+              for package in "${expected_packages[@]}"; do package_args+=(--package "$package"); done
+              ;;
             *) echo 'unreviewed batch input' >&2; exit 64 ;;
           esac
 
@@ -344,7 +406,7 @@ jobs:
             --require-source-locks --reuse-runtime-catalog "${package_args[@]}"
 
           case "${{ inputs.batch }}" in
-            audacious-core|audacious-plugins|audacious-app)
+            audacious-core|audacious-plugins|audacious-app|ai-common)
               test -s candidate-staging/tdvp-build-staging-manifest.tsv
               ;;
           esac

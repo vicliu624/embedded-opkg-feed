@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "release": "r11",
+  "description": "Required AI, vision and common-library delivery inventory; groups do not define separate releases.",
+  "groups": {
+    "common": ["libcjson", "libjsoncpp", "libpugixml", "libtinyxml2", "libxxhash", "libyaml-cpp", "libfmt", "libspdlog", "libdate-tz", "libdouble-conversion", "liblz4", "libusb-1.0", "libpcap", "libseccomp", "libsodium", "libuv", "libcares", "libnghttp2", "libelf-1", "libdw-1", "libzmq-5", "libpaho-mqtt"],
+    "scientific": ["libopenblas", "eigen-dev", "python3-numpy", "python3-scipy", "python3-sympy", "python3-mpmath"],
+    "vision": ["libopencv4", "libtiff-6", "python3-opencv", "python3-pillow"],
+    "inference": ["libabseil-cpp", "libprotobuf", "libflatbuffers", "libre2", "libcpuinfo", "libfarmhash", "libfft2d", "libncnn", "libonnx", "libonnxruntime", "libtensorflow-lite", "python3-onnx", "python3-onnxruntime", "python3-tflite-runtime", "python3-protobuf", "python3-flatbuffers", "python3-tdvp-ai", "libtdvp-ai-client", "tdvp-ai-tools", "pybind11-dev", "nlohmann-json-dev", "boost-mp11-dev", "microsoft-gsl-dev", "safeint-dev", "gemmlowp-dev", "ruy-dev", "ml-dtypes-dev"],
+    "audio": ["libfftw3-3", "libflac", "libopus-0", "libsamplerate-0", "libspeexdsp-1", "libportaudio", "python3-sounddevice", "python3-soundfile"],
+    "python-support": ["python3-cffi", "python3-pycparser", "python3-requests", "python3-urllib3", "python3-certifi", "python3-charset-normalizer", "python3-idna", "python3-pysocks", "python3-pyyaml", "python3-packaging", "python3-coloredlogs", "python3-humanfriendly", "python3-six", "python3-typing-extensions"]
+  }
+}

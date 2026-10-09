@@ -268,6 +268,16 @@ if [[ -n "$staging_import_dir" ]]; then
   # by a package hook or leak into the next batch.
   staging_import_dir=$(cd -- "$staging_import_dir" && pwd)
   assert_staging_links_are_internal "$staging_import_dir"
+  if [[ -f "$staging_import_dir/tdvp-build-staging-receipt.json" ]]; then
+    receipt_provider_args=()
+    for package in "${provided_packages[@]}"; do receipt_provider_args+=(--package "$package"); done
+    python3 "$script_dir/build-staging-receipt.py" verify --repo "$repo_root" \
+      --sdk "${TDVP_SDK_ROOT:?staging receipt verification requires TDVP_SDK_ROOT}" \
+      --staging "$staging_import_dir" "${receipt_provider_args[@]}"
+  elif [[ ${TDVP_REQUIRE_STAGING_RECEIPT:-0} == 1 ]]; then
+    echo 'required imported staging receipt is missing' >&2
+    exit 79
+  fi
   cp -a -- "$staging_import_dir/." "$staging_root/"
 fi
 
@@ -792,6 +802,7 @@ build_package() {
     TDVP_FEED_IMPORTED_STAGING="$imported_staging" \
     TDVP_FEED_BASE_ROOT="$base_root" \
     TDVP_SOURCE_CACHE_ROOT="$source_cache_root" \
+    TDVP_FEED_OUTPUT_DIR="$feed_dir" \
     TDVP_SOURCE_CACHE_OFFLINE="$offline_source_cache" \
     TDVP_BUILDROOT_BASE_DOWNLOAD_DIR="$buildroot_base_download_dir" \
     TDVP_REUSE_PUBLISHED_PAYLOADS="$reuse_published_payloads" \
@@ -856,6 +867,20 @@ if [[ -n "$staging_export_dir" ]]; then
   assert_staging_links_are_internal "$staging_export_dir"
   if [[ -n "$runtime_owner_map" ]]; then
     cp -- "$runtime_owner_map" "$staging_export_dir/tdvp-runtime-owners.tsv"
+  fi
+  if [[ -n "${TDVP_SDK_ROOT:-}" && -f "$TDVP_SDK_ROOT/tdvp-sdk-manifest.json" ]]; then
+    receipt_package_args=()
+    mapfile -t receipt_packages < <(
+      {
+        printf '%s\n' "${selected_packages[@]}" "${provided_packages[@]}"
+        for package in "${!build_state[@]}"; do
+          [[ ${build_state[$package]} == done ]] && printf '%s\n' "$package"
+        done
+      } | sed '/^$/d' | LC_ALL=C sort -u
+    )
+    for package in "${receipt_packages[@]}"; do receipt_package_args+=(--package "$package"); done
+    python3 "$script_dir/build-staging-receipt.py" write --repo "$repo_root" \
+      --sdk "$TDVP_SDK_ROOT" --staging "$staging_export_dir" "${receipt_package_args[@]}"
   fi
 fi
 

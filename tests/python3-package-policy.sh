@@ -53,7 +53,7 @@ expect_line "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libz libexpat-1 libffi-8 libssl-3 
   "$repo_root/packages/libpython3.13/package.env"
 expect_line "PACKAGE_DEPENDS='libpython3.13 (= 3.13.3-1), libbz2 (= 1.0.8-1), liblzma (= 5.6.4-1), libz (= 1.3.1-1), libncursesw (= 6.4-20230603-1), libreadline (= 8.2-1), libexpat-1 (= 2.7.0-1), libffi-8 (= 3.4.6-1), libmpdec-4 (= 4.0.0-1), libsqlite3-0 (= 3.48.0-1), libssl-3 (= 3.4.1-1), libcrypto-3 (= 3.4.1-1), ca-certificates (= 2025.02.1-1)'" \
   "$repo_root/packages/python3-runtime/package.env"
-expect_line "PACKAGE_DEPENDS='python3-runtime (= 3.13.3-1)'" \
+expect_line "PACKAGE_DEPENDS='python3-runtime (= 3.13.3-2)'" \
   "$repo_root/packages/python3/package.env"
 expect_line 'libpython3.13.so.1.0|libpython3.13|3.13.3-1' "$owner_map"
 if grep -Fq 'libpanelw.so.6|' "$owner_map"; then
@@ -69,7 +69,8 @@ expect_line '      --with-openssl-rpath=no \' "$helper"
 expect_line '    export py_cv_module__curses_panel=n/a' "$helper"
 expect_line "    _ssl _hashlib _ctypes _decimal _sqlite3 _bz2 _lzma _curses readline" "$helper"
 expect_line "    pyexpat _elementtree zlib binascii" "$helper"
-expect_line '  rm -f -- "$install_root/usr/lib/python3.13/__pycache__"/pydoc.cpython-313*.pyc \' "$helper"
+expect_line '  rm -f -- "$install_root/usr/lib/python3.13/__pycache__"/turtle.cpython-313*.pyc' "$helper"
+expect_line '    echo '\''CPython runtime omitted pydoc, required by scientific Python consumers'\'' >&2' "$helper"
 expect_line "    grep -Fqx 'system-expat=libexpat.so.1' \"\$marker\" &&" "$helper"
 expect_line "    grep -Fqx 'curses-panel=disabled' \"\$marker\" || {" "$helper"
 expect_line "    echo 'CPython pyexpat did not dynamically use the admitted libexpat.so.1 provider' >&2" "$helper"

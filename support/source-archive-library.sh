@@ -226,6 +226,7 @@ tdvp_build_direct_archive_library() {
     export PKG_CONFIG_SYSROOT_DIR="$sysroot"
     export PKG_CONFIG_LIBDIR="$sysroot/usr/lib/pkgconfig:$sysroot/usr/share/pkgconfig"
     export PKG_CONFIG_PATH=''
+    export lt_cv_sys_lib_dlsearch_path_spec="/lib /usr/lib $sysroot/lib $sysroot/usr/lib"
     export CPPFLAGS="-I$sysroot/usr/include"
     export CFLAGS='-O2 -pipe -fPIC'
     export CXXFLAGS='-O2 -pipe -fPIC'
@@ -233,11 +234,30 @@ tdvp_build_direct_archive_library() {
     ./configure \
       --build="$build_triplet" \
       --host="$target_triplet" \
+      --with-sysroot="$sysroot" \
       --prefix=/usr \
       --enable-shared \
       --disable-static \
       "${configure_options[@]}"
+    # Shared libraries use the target loader's standard /usr/lib directory.
+    # Libtool's install-time relink otherwise injects the build host /usr/lib
+    # when one freshly built library links another (for example FFTW threads).
+    # Match the published SDK builder's no-hardcoding policy; final ELF checks
+    # still remove and reject runtime search paths in the emitted payload.
+    if [[ -f libtool ]]; then
+      sed -i -e 's/^hardcode_into_libs=yes$/hardcode_into_libs=no/' \
+        -e 's/^hardcode_action=relink$/hardcode_action=immediate/' \
+        -e 's/^hardcode_automatic=no$/hardcode_automatic=yes/' libtool
+    fi
     make -j"$jobs"
+    # Recursive projects can generate independent libtool scripts while
+    # building subdirectories. Apply the same no-host-relink policy before
+    # installation; only this extracted source tree is inspected.
+    while IFS= read -r -d '' nested_libtool; do
+      sed -i -e 's/^hardcode_into_libs=yes$/hardcode_into_libs=no/' \
+        -e 's/^hardcode_action=relink$/hardcode_action=immediate/' \
+        -e 's/^hardcode_automatic=no$/hardcode_automatic=yes/' "$nested_libtool"
+    done < <(find "$source_root" -type f -name libtool -print0)
     make DESTDIR="$install_root" install
   )
 
@@ -259,6 +279,11 @@ EOF
   payload_dir=$(tdvp_prepare_generated_payload_root "$package_dir")
   mkdir -p -- "$payload_dir/usr/lib"
   cp -a -- "$install_root/usr/lib/"$library_glob "$payload_dir/usr/lib/"
+  local -a license_args=() license_files=()
+  local license_file
+  IFS=' ' read -r -a license_files <<< "${PACKAGE_LICENSE_FILES:-}"
+  for license_file in "${license_files[@]}"; do license_args+=(--license-file "$license_file"); done
+  python3 "$package_dir/../../support/install-source-licenses.py" "$source_root" "$package_dir" "$payload_dir" "${license_args[@]}"
   tdvp_assert_direct_archive_elfs "$readelf_tool" "$strip_tool" "$payload_dir"
   echo "$(basename -- "$package_dir") direct-source payload ready: $payload_dir"
 }

@@ -61,7 +61,7 @@ if [[ " $SUPPORTED_PLATFORMS " != *" $PLATFORM_SLUG "* ]]; then
   exit 70
 fi
 case "$PACKAGE_KIND" in
-  application|shared-library|runtime) ;;
+  application|shared-library|runtime|development) ;;
   *)
     echo "invalid PACKAGE_KIND for $PACKAGE: $PACKAGE_KIND" >&2
     exit 71
@@ -154,6 +154,28 @@ assert_application_payload_paths() {
   done
 }
 
+assert_development_payload_paths() {
+  local payload_path relative
+  while IFS= read -r -d '' payload_path; do
+    relative=${payload_path#"$payload_dir"}
+    case "$relative" in
+      /usr/include/*|/usr/lib/lib*.a|/usr/lib/cmake/*.cmake|/usr/share/cmake/*.cmake|/usr/share/eigen3/cmake/*.cmake|/usr/lib/pkgconfig/*.pc|/usr/share/pkgconfig/*.pc|/usr/share/doc/"$PACKAGE"/*|/usr/share/licenses/"$PACKAGE"/*) ;;
+      *)
+        echo "development payload escapes its permitted paths: $relative" >&2
+        exit 84
+        ;;
+    esac
+    [[ ! -L "$payload_path" ]] || {
+      echo "development payload may not introduce symlinks: $relative" >&2
+      exit 84
+    }
+    [[ "$(head -c 4 "$payload_path")" != $'\177ELF' ]] || {
+      echo "development payload contains a runtime ELF: $relative" >&2
+      exit 84
+    }
+  done < <(find "$payload_dir" -mindepth 1 \( -type f -o -type l \) -print0)
+}
+
 assert_shared_library_payload_paths() {
   local payload_path relative basename
   while IFS= read -r -d '' payload_path; do
@@ -241,6 +263,7 @@ case "$PACKAGE_KIND" in
   shared-library) assert_shared_library_payload_paths ;;
   runtime) assert_runtime_payload_paths ;;
   application) assert_application_payload_paths ;;
+  development) assert_development_payload_paths ;;
 esac
 assert_base_overlay_policy
 
@@ -252,6 +275,7 @@ data_dir="$work_dir/data"
 mkdir -p -- "$control_dir" "$data_dir"
 
 declare -A declared_dependencies=()
+declare -A declared_dependency_names=()
 declare -a dependency_records=()
 
 # A full TDVP desktop image already owns a reviewed, byte-identical copy of
@@ -288,8 +312,11 @@ append_dependency() {
   local name
   name=$(printf '%s' "$record" | sed -E 's/^[[:space:]]*([^[:space:]<(=]+).*/\1/')
   [[ -n "$name" ]] || { echo "invalid dependency record for $PACKAGE: $record" >&2; exit 86; }
-  if [[ -z "${declared_dependencies[$name]:-}" ]]; then
-    declared_dependencies[$name]=1
+  declared_dependency_names[$name]=1
+  # A package can have simultaneous lower and upper bounds. Deduplicate the
+  # complete clause, never only its provider name.
+  if [[ -z "${declared_dependencies[$record]:-}" ]]; then
+    declared_dependencies[$record]=1
     dependency_records+=("$record")
   fi
 }
@@ -376,7 +403,9 @@ if [[ "$PACKAGE_AUTO_RUNTIME_DEPENDS" == 1 ]]; then
       fi
       owner=${owner_record%%|*}
       owner_version=${owner_record#*|}
-      [[ "$owner" == "$PACKAGE" ]] || append_dependency_with_image_alternatives "$owner (= $owner_version)"
+      if [[ "$owner" != "$PACKAGE" && -z "${declared_dependency_names[$owner]:-}" ]]; then
+        append_dependency_with_image_alternatives "$owner (= $owner_version)"
+      fi
     done < <("$readelf_tool" -d "$elf" 2>/dev/null | sed -n 's/.*Shared library: \[\(.*\)\]/\1/p')
   done < <(find "$payload_dir" -type f \( -perm -u+x -o -name '*.so*' \) -print | LC_ALL=C sort)
 elif [[ "$PACKAGE_AUTO_RUNTIME_DEPENDS" != 0 ]]; then

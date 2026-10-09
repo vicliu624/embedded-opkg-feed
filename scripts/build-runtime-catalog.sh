@@ -321,8 +321,9 @@ extra_owner_supports_release() {
 # source-built providers.
 while IFS='|' read -r soname package version; do
   soname=${soname%$'\r'}
+  version=${version%$'\r'}
   [[ -n "$soname" && "$soname" != \#* ]] || continue
-  [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ && -n "$version" ]] || {
+  [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ && "$version" =~ ^[A-Za-z0-9.+:~_-]+$ ]] || {
     echo "invalid extra runtime owner record: $soname" >&2
     exit 74
   }

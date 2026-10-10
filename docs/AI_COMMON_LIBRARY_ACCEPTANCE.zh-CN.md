@@ -2286,3 +2286,9 @@ DbEnv(0) 夹具构造歧义修正为显式 u_int32_t 后通过，无上游修改
 2f00ab1f5e4a3f539bc5ca077a20f7e84038bb99fe632d466da17d2400cccbe5。
 运行依赖为精确平台 ABI、OpenSSL SSL/Crypto；复制功能、IPK 安装后的
 消费者及来源/许可证/安全完整审查仍待完成，尚未签名发布。
+
+Berkeley DB C API AES 加密消费者在 CPU0 无 RVV 环境通过：写入、
+同步并关闭、正确口令重新打开读取、错误口令拒绝。负向测试的
+BDB0210 metadata page checksum error 为预期拒绝输出。测试口令仅
+为公开夹具值，没有使用设备或发布凭据，目录
+berkeleydb-encryption-consumer.9S7fmw。此项不构成密码学安全审查通过。

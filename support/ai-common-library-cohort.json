@@ -22,6 +22,7 @@
     "common-numa-compatibility": ["libnuma"],
     "common-allocation-profiling": ["libgperftools"],
     "common-portable-vector-infrastructure": ["libhwy"],
+    "common-boost": ["libboost"],
     "vision-color-management": ["liblcms2"],
     "vision-jpeg-xl": ["libjxl"],
     "vision-jpeg2000": ["libopenjp2"],

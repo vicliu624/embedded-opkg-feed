@@ -2133,3 +2133,89 @@ JPEG XL 消费者也在 rv64,v=false 配置下通过无损 RGBA/alpha 与
 原始池加入 dav1d、gperftools 和本组三个 IPK，启动 420 包配对组合
 检查。原始 IPK 使用硬链接避免重复存储，索引和最终目录均独立生成。
 最终组合、安装后新消费者、正式签名发布和板上验收仍待完成。
+
+随后 420 包配对组合检查通过；已启动隔离测试密钥签名后的 opkg
+整批/逐包规划和实际安装。JPEG XL 配方提交 d3df408 的快速 CI
+已成功，完整源码批次仍受待批准的 Eigen 修复影响。
+
+完整 Boost 的缺口已确认：当前 MP11 提供者不包含 filesystem、
+thread、regex、serialization 等运行库。官方 Boost 1.82.0 归档
+已下载并匹配官方 SHA256
+a6e1ab9b0860e6a2881dd7b21fe9f737a095e5f33a3a874afc6a345228597ee6。
+完整归档中 31 个 MP11 头文件与现有 boost-mp11-dev IPK 字节相同。
+这只证明对应头文件身份，完整 Boost 构建、Python/ICU 等依赖兼容、
+正式 provider/开发投影、安装和安全审查仍待完成。
+
+Boost 全库交叉构建探测已在 Ubuntu 24.04 离线容器启动，目标
+architecture=riscv/address-model=64，显式 rv64imafdc/lp64d，所有目标
+编译器来自配对 SDK。Python 开发路径指定到目标 staging，ICU 指向
+SDK 目标目录，未关闭对应库。当前两处开发头文件缺失，探测输出
+不代表完整功能可交付；结束后记录实际库清单与失败项，再补输入。
+
+首轮全库探测退出 1，主要失败项为目标 Python 的 pyconfig.h 缺失。
+已有 CPython 3.13.3 缓存运行库正常 strip 后与候选 libpython3.13
+3.13.3-2 IPK 字节相同，恢复对应开发头文件后，Boost.Python 3.13
+针对性构建通过。完整 Boost 尚未重新验收，不以该子项替代全库门禁。
+
+旧 ICU 开发缓存运行库 strip 后与当前候选 libicuuc 不同，未视作
+匹配运行产物。另从官方锁定 ICU 73.2 源码验证了 195 个缓存公共
+头文件字节一致；后续仅复用已验证的公共头文件，并使用当前 IPK
+运行库验证消费者。正式开发收据与旧运行库差异解释仍待完成。
+
+随后从当前候选四个 ICU IPK 提取真实运行库与 SOURCE.json/许可证，
+建立局部测试开发投影，没有使用不同字节的旧 ICU 运行库。补齐
+输入后全库 Boost 探测退出 0，38 个版本化运行库路径生成，ICU
+探测为 yes。CPU0 门禁验证 38 个新 ELF 和 21 个静态对象成员通过。
+
+Boost 实际消费者在 rv64,v=false 的 RISC-V QEMU 下完成 filesystem
+目录/文件、thread join、普通正则、ICU 大小写正则、序列化往返和
+Unicode locale NFC normalization 测试。该结果证明所测功能，完整
+Boost 正式配方、运行包/开发文件分离、Python 扩展运行、安装后测试
+和完整法律/安全审查仍待完成。
+
+### 2026-10-10 420 包安装后消费者与 Boost.Python
+
+420 包候选整批/逐包规划及实际 install/configure 已完成，候选版本
+一致、基础受保护文件未变，共安装 581 包。安装后的 JPEG XL、
+Highway、Little CMS、dav1d、gperftools 消费者在 rv64,v=false 配置下
+通过；gperftools CPU profiler 本次取得 25 个样本。正式签名发布
+和板上验收仍待完成。
+
+Boost.Python 扩展在上述安装根的目标 CPython 3.13 中完成导入、函数、
+类状态、C++ 异常转换与错误参数拒绝测试。夹具最初预期 RuntimeError，
+实际 std::invalid_argument 对应 ValueError，修正该断言后通过；
+没有修改库实现。Boost 运行库仍来自交叉构建探测目录，尚未由正式
+IPK 安装，不能将这项测试记为完整 Boost 包管理交付通过。
+
+### Boost 完整压缩后端与正式配方
+
+Iostreams 初次产物只有 zlib/zstd，进一步确认 bzip2/LZMA 开发输入
+缺失。锁定源码与缓存 bzlib.h、lzma.h 及 14 个 LZMA 子头文件字节
+一致。两个旧 IPK 有许可证文本但缺 SOURCE.json，现有 split 提取器
+正确拒绝；未放宽该生产提取门禁。局部消费者验证采用已签名安装
+验收的 420 测试根运行库，开发收据/来源元数据缺口仍待解决。
+
+补齐测试输入后 Iostreams gzip、bzip2、LZMA、zstd 四个后端完成
+逐字节压缩/解压往返。新增 libboost 正式配方明确声明 Python、ICU、
+压缩和 SDK zlib 开发依赖，宿主机 B2 bootstrap 清除目标编译环境，
+目标编译显式 rv64imafdc/lp64d。运行 payload 仅投影版本化共享库，
+头文件、链接名和 CMake 开发文件进入 staging。已启动干净源码的
+正式离线配方构建，尚未证明该最终构建、IPK 或安装验收通过。
+
+正式配方随后完成，38 个共享运行库通过 CPU0 ISA 门禁。使用新
+开发投影和新运行库复测 C++/ICU 与四种压缩后端全部通过，MP11
+31 个头文件仍与已有包字节一致。CMake 消费者通过 Boost CONFIG
+目标接口以及显式 ICU 依赖完成构建和目标运行；测试适配层在原 SDK
+工具链后追加 feed staging 查找/链接根，没有改动已发布 SDK。
+
+初次打包自动依赖没有捕获 Boost.Python 所需解释器 ABI（其 Python
+符号由宿主解释器提供），现显式声明 libpython3.13 3.13.3-2 并补
+policy 回归，仅重新打包元数据，没有重编运行库。最终未发布原始
+IPK SHA256 为 5179eaa02dfac65c2611e037bcc546d150734358c990778adf5fd5602de0a905。
+运行依赖另包含 ICU、zlib、bzip2、LZMA、zstd，38 个 SONAME 已登记。
+正式 IPK 安装后的消费者与完整开发收据/法律安全审查仍待完成。
+
+包含 Boost 配方与新回归的全量共享前置检查在 Ubuntu 24.04 下通过。
+已将最终 Boost IPK 加入已验收 420 包原始池，启动 421 包镜像配对
+组合检查。原始库文件通过硬链接复用；未编译镜像、未签名发布或
+推广 stable。完整源码批次的 Eigen 阻断仍待用户批准修复。

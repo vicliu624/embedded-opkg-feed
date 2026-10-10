@@ -1741,3 +1741,13 @@ cjson-index-fixed-portable.2SXOKcj2/portable-ci.log。
 后再执行完整 CI；包元数据和实际依赖未放宽。
 包 README 记录原子包装约定及输入深度限制，避免把原 API
 失败时的修改行为当作事务保证。其他安全审查未完成。
+
+修补 -2 生产配对已通过，候选 paired-common-cjson-index-fixed-382；
+652ff80 的快速 CI 38006887433 通过。测试签名开启的实际 opkg
+升级在旧候选根副本上通过：1.7.18-1 到 1.7.19-2，旧实体库
+文件被移除，公共链接指向正确新实体，基础保护文件保持不变，
+边界和原子包装回归通过。记录 cjson-index-fixed-upgrade-configured.log。
+首次验收停在 offline-root unpacked 状态检查；确认库包没有
+维护脚本后添加受控 configure，按 installed 状态检查通过。
+未使用 force-depends 或 force-overwrite。新的整批 382 包
+求解和 install/configure 复验已启动，尚未结束。

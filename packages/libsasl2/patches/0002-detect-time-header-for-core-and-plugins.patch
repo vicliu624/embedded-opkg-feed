@@ -1,0 +1,12 @@
+From: TDVP Device Team <devices@example.invalid>
+Subject: [PATCH] configure: detect time.h used by core and plugins
+
+HAVE_TIME_H guards declarations in several compilation units, but the
+released configure.ac checks sys/time.h only. Detect both headers so
+modern compilers receive the standard time and clock declarations.
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -1230,1 +1230,1 @@
+-AC_CHECK_HEADERS_ONCE([sys/time.h])
++AC_CHECK_HEADERS_ONCE([time.h sys/time.h])

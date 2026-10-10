@@ -113,7 +113,7 @@ tdvp_unpack_locked_source_archive() {
     return 71
   }
   archive=$(tdvp_source_archive_locked_file "$package_dir")
-  mapfile -t top_levels < <(tar -tf "$archive" | awk -F/ 'NF > 1 && $1 != "." && $1 != ".." { print $1 }' | LC_ALL=C sort -u)
+  mapfile -t top_levels < <(tar -tf "$archive" | awk -F/ '{ sub(/^(\.\/)+/, "") } NF > 1 && $1 != "." && $1 != ".." { print $1 }' | LC_ALL=C sort -u)
   [[ ${#top_levels[@]} -eq 1 ]] || {
     echo "locked source archive must contain exactly one top-level tree: $archive" >&2
     return 72

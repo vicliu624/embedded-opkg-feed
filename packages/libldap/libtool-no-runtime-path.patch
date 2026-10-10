@@ -1,0 +1,15 @@
+From: TDVP Device Team <devices@example.invalid>
+Subject: [PATCH] generated libtool: do not inject runtime library directories
+
+The package delivers target libraries to the standard loader directories.
+Compile-time paths remain in linker arguments; they must not be embedded
+as runtime paths when referencing the uninstalled sibling liblber.
+
+--- a/libtool
++++ b/libtool
+@@ -247,1 +247,1 @@
+-runpath_var=LD_RUN_PATH
++runpath_var=
+@@ -382,1 +382,1 @@
+-hardcode_libdir_flag_spec="\$wl-rpath \$wl\$libdir"
++hardcode_libdir_flag_spec=""

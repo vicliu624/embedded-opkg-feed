@@ -13,7 +13,21 @@
 - 392 包候选已通过离线根安装及 talloc/tevent 回归；393 包现代 NIS 候选和 394 包 GDBM 候选均已通过整体/逐包求解、安装配置与新增库安装后回归。
 - 395 包 TDB 候选已通过正式合并门禁，以及签名开启的整体求解、395 次单包求解和安装配置；离线根总计 556 个已安装包，受保护基础文件保持不变，安装后的 TDB 事务消费者通过。
 - keyutils `1.6.3-2` 已完成源码构建、不可变 IPK、版权投影及统一批次前置检查；它与此前实机测试的 `-1` stripped runtime 字节一致。包含 `-2` 的独立 396 包候选已通过正式整源门禁、整体求解、396 次单包求解和实际安装配置，总计 557 个已安装包；基础保护文件保持不变。安装后许可哈希、runtime 分离和固定版本标识检查通过，QEMU 的 keyring ENOSYS 不计为功能通过。
-- SELinux `libsepol`、`libselinux` `3.11-2` 已完成正式配方构建和 IPK，保留 CIL、PCRE2，并显式声明 libselinux 动态加载的精确 libsepol 依赖。两者 runtime 与 `-1` 字节一致；内存上下文、策略对象与动态 provider 消费者通过。编译前投影记录 libsepol 153 个源文件／74 个许可块、libselinux 85 个源文件／4 个许可块；负向投影回归与完整批次前置检查通过。独立 `-2` 398 包候选仍在校验，安装验收及完整组件许可审查未完成。
+- SELinux `libsepol`、`libselinux` `3.11-2` 已完成正式配方构建和 IPK，保留 CIL、PCRE2，并显式声明 libselinux 动态加载的精确 libsepol 依赖。两者 runtime 与 `-1` 字节一致；内存上下文、策略对象与动态 provider 消费者通过。编译前投影记录 libsepol 153 个源文件／74 个许可块、libselinux 85 个源文件／4 个许可块；负向投影回归与完整批次前置检查通过。独立 `-2` 398 包候选已完成整体／逐包求解与实际安装配置，总计 559 个已安装包；安装后消费者和许可哈希检查通过，完整组件许可审查仍未完成。
+- 399 包 PCI、400 包 NUMA、401 包 OpenJPEG 候选均已完成签名开启的整体／逐包求解与离线根安装配置，受保护基础文件保持不变。安装后分别验证 PCI 离线配置和压缩 ID 数据库、NUMA 位掩码、JPEG 2000 无损编解码及截断输入拒绝。NUMA 能力探测返回不可用，该结果不代表设备具备 NUMA 硬件能力。
+- 403 包 HDF5/AEC 候选已完成整体求解、403 次单包求解与实际安装配置，总计 564 个已安装包，基础保护文件保持不变。2026-10-10 使用该安装根的库运行 RISC-V 消费者：HDF5 C/C++/HL 的 deflate、SZIP 数据集关闭后重开读取，高层 C++ packet table，AEC 128 字节无损往返，以及 SZIP 无损往返和非法位宽拒绝均通过。当前提供 serial C/C++/HL，不声明 MPI、Fortran 或线程安全支持。
+- GIF `6.1.3-1` 已完成正式配方构建、独立 IPK、CPU0 ELF 检查和像素往返／截断输入拒绝测试；404 包候选完整整源门禁、整体求解、404 次单包求解及实际安装配置通过，总计 565 个已安装包，基础保护文件保持不变。安装后 GIF 像素／调色板往返、截断输入拒绝、许可逐字节比较与 runtime/development 分离检查均通过。
+- Imath `3.2.3-1` 已完成正式配方构建、开发 staging 和版本化 runtime；使用该 runtime 的半精度编码／向量／矩阵消费者通过。OpenJPH `0.32.0-1` 已完成正式配方构建和 scalar HTJ2K 64 像素无损往返、截断输入拒绝。首次 codec 工具缺少 pthread 链接，在 glibc 2.33 上返回 `Unknown error -1`；工具显式链接 pthread 后测试通过，回归脚本检查两个工具的 DT_NEEDED。这些工具仅用于验收，不交付到 runtime 包。两项仍待 IPK、整源安装、完整法律与安全审查。
+- Imath/OpenJPH 的独立 IPK 已生成并通过 CPU0 检查，406 包候选完整整源门禁通过，安装与正式签名仍未完成。OpenEXR `3.5.2-1` 正式配方构建、独立 IPK 和五个 ELF 检查通过；正式 runtime 的 ZIP/ZSTD/HTJ2K RGBA 往返与截断输入拒绝通过。DT_NEEDED 证明使用外部 Imath、OpenJPH、libdeflate、zstd，五个库无 RPATH/RUNPATH；407 包候选整源门禁正在运行。zstd 开发文件在隔离验证中由锁定 1.5.7 源码的 `install-includes install-pc` 生成，并复用已有候选运行库；正式批次的开发缓存／receipt 流程尚需验证，不能将手工 staging 视为完整批次通过。
+- zstd provider 身份核查：404 包候选 `image-backed-report.json` 中 `libzstd` 的 `image_files` 为空，`new_files` 包含三个库路径，runtime 文件 SHA256 为 `827ca078e6f82b7080083394f8401542a0b2f8b9279c2a61bd9e36ba3a44d5c4`。其 `1.5.7-1+tdvpimg.1.97c14e594963a20ec38d` 是镜像配对组合版本，文件属于 feed 新增 provider，不能依据版本后缀判定为基础镜像已有库。当前安装根未发现 zstd 随包许可证目录，旧 runtime 的许可交付需补查；未将其标记为法律审查通过。
+- 网络认证库预验证：官方 Cyrus SASL `2.1.28` archive SHA256 为 `7ccfc6abd01ed67c1a0924b353e526f1b766b21f42d4562ee635a8ebfc5bb38c`，隔离目标构建通过；SPNEGO 目标探针通过，SCRAM-SHA-256/GSSAPI/PLAIN 插件加载及 Base64 往返通过。该结果不证明服务端认证、凭据交换或网络 TLS 成功。原生 makemd5 需隔离 CPPFLAGS；已保留时间头文件检测与包含补丁，正式配方和安全补丁审查未完成。
+- HDR 安装验收：407 包候选已通过签名开启的整体求解、407 次单包求解与实际安装配置，总计 568 个已安装包，基础保护文件保持不变。安装根中的 OpenEXR ZIP/ZSTD/HTJ2K RGBA 往返及截断拒绝、Imath 半精度与几何、OpenJPH HTJ2K 精确像素往返及截断拒绝均通过；三项许可证文件与正式配方 payload 逐字节一致。OpenJPH 测试仅用临时 root-view 将安装根适配为 QEMU sysroot，未修改 SDK，也未将其声明为新 SDK。
+- SASL 正式配方已从干净源码构建通过，自动执行 SPNEGO 探针、补丁与原生生成器隔离；正式产物插件加载／Base64 回归通过，十个 runtime ELF 无 RPATH/RUNPATH，开发目录单独投影。`libsasl2_2.1.28-1_riscv64.ipk` SHA256 为 `d44bb9622bb1176e66890f3935cf732192a74355f5cdc5db8d4dc0e39bcb6f64`，十个 ELF 的 CPU0 检查与配方静态回归通过；408 包候选整源门禁运行中，安全补丁与完整组件许可审查仍未完成。
+- 认证 provider 修订：`-1` SASL/LDAP 曾在移除 RPATH 标签后保留随机构建目录字符串，不能声称 runtime 可重复。SASL `2.1.28-2` 关闭配置自动 runpath 并从一次性 sysroot 去除继承的 `.la`，LDAP `2.6.15-2` 在包内生成 libtool 上关闭直接 rpath 和 `LD_RUN_PATH` 注入。两者分别经两次不同工作目录构建，十个 SASL／两个 LDAP runtime ELF 字节一致，私有路径字符串检查、插件／LDAP BER 消费者通过。探针和生成 libtool 补丁均有配方内 build-input 哈希；没有修改全局 SDK。
+- 修订 IPK：SASL `-2` SHA256 `69cc8d3da612c8fd7ea321e95d1d011468d4269523f4d90078393473e796e138`；LDAP `-2` SHA256 `e5706282c287f3a64c21b0d16e7333c91752816c00b6e51577b46519d330b0b8`。各十个／两个 ELF 的 CPU0 检查通过，旧 IPK 与旧候选保留。409 包 `paired-common-ldap-409`（含 `-1`）整源门禁通过；独立 `paired-common-auth-revision2-409`（两项 `-2`）整源门禁运行中，尚无其安装结论，也未正式签名发布。
+- 图像 codec 扩展：AOM `3.13.3-1`、libyuv `1924-1`、libavif `1.4.2-1` 正式配方构建和独立 IPK 完成，各一个 runtime ELF 的 CPU0 检查通过。AOM 无损 AV1 YUV 往返／截断拒绝、libyuv 黑白转换／box 缩放／90° 旋转、AVIF YUV/alpha 无损往返／RGBA 转换／截断容器拒绝均用正式 runtime 验证通过。AVIF DT_NEEDED 确认独立 `libaom.so.3`／`libyuv.so`；libyuv 上游 runtime SONAME 本身为无版本 `libyuv.so`，按显式 runtime provider 管理，未改造上游 ABI 名称。
+- libyuv 镜像来源核对：AVIF 官方脚本锁定提交 `644251f252a84bf8ce91ff0aca86a9b16b069ab8`，版本头为 1924；下载归档 SHA256 `ccc11fbb02077b9385a37606d9edce34eb5e588b5626c894eb1e883c9c2da114`，所有 187 个 blob 与从官方 Chromium Git 仓库获取的提交逐个一致。AVIF 归档 SHA256 `2b645287340ba5a631d268b551dc2d72bd73ac33335962dd36dcdb6d8366921d`，其根 LICENSE 已包含第三方 libyuv 许可；不存在单独 `third_party/libyuv/LICENSE`，配方按真实 bundle 投影。412 包图像扩展候选整源门禁已启动，尚无安装／正式签名／完整法律安全审查结论。
+- 官方 OpenLDAP `2.6.15` LTS archive SHA256 为 `bc91225dbfc50354033b1303bc91d1a7f6ddd1dc32fac950d79c28fe66d6bca8`，含 OpenLDAP Public License 2.8 与版权文件。目标 select/pthread、memcmp 探针通过后，客户端源码编译成功。安装阶段旧 libtool 的 `-L/usr/lib` 被 SDK 安全检查拦截，未绕过；单独投影已构建目标库并清除 RPATH 后，LDAPS URL、DN、BER 往返和非法 URL 拒绝通过。正式安装／配方／IPK／依赖闭包与真实 TLS/SASL 网络互操作仍未完成，未启动 slapd/lloadd。
 - 独立实机 keyutils 测试通过私有进程 key 的创建、读取、更新、搜索、撤销和解除链接。测试归档 SHA256 为 `21fbdfc237341c064b5087ec9c9c37128c97b5219ddcbf5c6297e4fcd9376215`；仅使用 `/tmp` 测试库与程序，结束后已清理。QEMU 不实现 keyring 系统调用，其返回值不计为功能通过。
 - 完整源码批次 Actions `38016770685` 失败于 `eigen-dev` 的可选 BLAS 构建：宿主 Fortran 对象为 x86-64，RISC-V 链接器拒绝。前置夹具隔离回归已通过；具体 CI 修复仍待确认，不能将批次记为构建通过。
 - 旧设备上 `a8a531…` 镜像的测试仅支持对应历史身份，不能用于证明上述当前配对设备安装。
@@ -1988,3 +2002,87 @@ build-staging-receipt-integration 与 split-provider-builder-integration
 新增 non-elf-sdk-layout-integration 自动覆盖两种布局和调用者传入
 base-root 的隔离；导出/导入、字节篡改拒绝、split 临时 payload
 清理与 IPK 消费检查保留。生产构建器、运行闭包和覆盖校验器未改动。
+
+### 2026-10-10 HEVC/HEIF 正式配方验证进展
+
+libde265 1.1.3、x265 4.3 和 libheif 1.23.6 的正式配方已在
+Ubuntu 24.04 离线容器中完成交叉构建。x265 按上游 multilib 流程
+合并 8/10/12 位静态库，静态链接消费者在 RISC-V QEMU 中完成三种
+位深的 API、编码器初始化和头生成测试。版权收集覆盖 222 个源码文件。
+
+HEIF 正式产物完成 HEVC（x265/libde265）和 AV1（AOM）无损平面
+图像往返测试，逐像素核对 Y/Cb/Cr，并拒绝截断容器。正式 ELF
+链接依赖包含 x265、libde265、AOM、JPEG、OpenJPEG 和 OpenJPH，
+没有 RPATH/RUNPATH。配置确认 JPEG 2000 与 HT-J2K 后端为内置。
+这些证据来自构建机 QEMU，正式 IPK 安装和板上验收仍待完成。
+
+初次配置的 libsharpyuv 缺失提示来自验证 staging 的开发投影缺口。
+现有 libwebp-7 1.5.0-2 IPK 已包含 libsharpyuv.so.0.1.1，不能据此
+认定运行库缺失或新增重复 provider。HEIF 配方已声明 libwebp-7
+构建依赖。随后从已有 SciPy 私有 sysroot 找回开发头文件，SharpYUV
+运行库与候选 libwebp-7 IPK 字节一致。修正 include/webp/sharpyuv
+路径后，HEIF 正式配方重新构建通过，ELF 依赖含 libsharpyuv.so.0；
+两条图像往返及截断容器测试再次通过。正式开发收据复用仍待验证，
+本地恢复过程没有生成或伪造已验证的 imported receipt。
+
+412 包候选的整批与 412 个单包 opkg 规划通过；实际 install/configure
+完成，候选版本一致，基础受保护文件未变，测试根共安装 573 包。
+安装后的 AOM、libyuv、AVIF 消费者测试通过。完整共享前置检查在
+Ubuntu 24.04 下通过，新增 HEIF/HEVC policy 已接入同一入口。
+
+三项正式原始 IPK 的 SHA256：
+
+- libde265 1.1.3-1：286cd9cd26b6c9e6a1d367b6fffa431f423f78dde79aeffa36b97e35ab82574c
+- libx265 4.3-1：0802c971e24d0aceb4a97dfed853250f9918cdd8e612add6ed424e142b21729d
+- libheif 1.23.6-1：320cc166fea0fef4d73f9047438f4f371799d7277e1279b28a6a71c2048553e1
+
+415 包配对组合检查已通过，包含 CPU0 ELF/静态对象策略、镜像引用、
+覆盖与历史连续性检查。隔离测试密钥签名后的完整 opkg 规划与安装
+验收已启动，正式签名发布和板上验收仍待完成。
+
+### 2026-10-10 dav1d 独立 AV1 解码器
+
+新增官方 dav1d 1.5.3 锁定归档，SHA256 为
+732010aa5ef461fa93355ed2c6c5fedb48ddc4b74e697eaabe8907eaeb943011。
+正式 Meson 配方在 Ubuntu 24.04 容器中离线构建通过；该验证容器
+缺少 Meson，使用只读挂载的构建机 Meson 1.7.0 纯 Python 工具。
+目标编译器始终来自配对 SDK，关闭汇编、CLI、在线测试数据及示例。
+产物为 libdav1d.so.7.0.0，许可证投影完成。
+
+AOM 编码已知 16×16 I420 图像，dav1d 解码后尺寸、位深、布局和
+Y/U/V 每个像素均匹配；截断 AV1 序列头被拒绝。独立配方 policy
+及源码锁验证通过并接入共享前置入口。正式 IPK、安装后的消费者、
+高位深/多帧测试及完整组件版权/安全检查仍待完成。
+
+dav1d 正式 IPK 已生成并通过 CPU0 ELF 策略，SHA256 为
+e13c69db926545a49a62e8a39119156036826152eb4af9cd5e59f16f2d22f653。
+
+### x265 静态开发依赖闭包补充
+
+此前静态 API 测试手动添加 pthread，不能证明 pkg-config 声明完整。
+进一步仅使用 x265.pc 私有链接参数时，glibc 2.33 下出现 pthread_join
+缺失。上游生成 .pc 时主动移除 pthread，配方现对开发投影补入
+-pthread。独立 x265-pkgconfig-static-integration 回归仅从 pkg-config
+获取依赖，8/10/12 位静态消费者已通过，无需重编运行库 IPK。
+已构建验证 staging 的 .pc 同步修正；完整配方重跑和新开发收据仍待完成。
+
+随后完整 x265 配方复跑通过，新生成开发文件直接通过 pkg-config
+静态消费者回归，运行库未添加新的功能变更。正式开发收据仍待验证。
+
+### 2026-10-10 gperftools 常用分配器/分析基础设施
+
+新增 gperftools 2.18.1 官方发布归档，SHA256 与发布资产一致：
+d18d919175f9e4d740ace6b52f0f4f91284160c454e91b36ffd6456282a02206。
+正式配方在 Ubuntu 24.04 离线容器中完成全量共享库构建，包括
+tcmalloc、debug allocator、CPU/heap profiler，显式启用 libunwind。
+本地复用已有 libunwind 开发投影；按正常打包 strip 后，其运行库
+与候选 libunwind IPK 字节一致，没有重编该依赖或伪造开发收据。
+
+目标消费者在 RISC-V QEMU 中完成 malloc/realloc 数据保持、heap
+profile 生成和 CPU profiler 测试，取得 24 个采样。独立分析报告
+解释、异常/多线程测试、正式 IPK 安装及完整版权/安全审查仍待完成。
+
+gperftools 原始正式 IPK 已生成，6 个运行 ELF 均通过 CPU0 策略。
+SHA256 为 2b84e42aa6895c1fba69c067eb072b572bf871c2489ae19e578b9c8cacb91094，
+自动运行依赖明确为 libunwind 1.8.3-1。新增 policy 及全量共享
+前置检查在 Ubuntu 24.04 下通过；上述未完成验收项仍然保留。

@@ -274,3 +274,14 @@ liblmdb.so|liblmdb|0.9.36-2
 libmd.so.0|libmd|1.2.0-2
 libbsd.so.0|libbsd|0.12.2-2
 libmaxminddb.so.0|libmaxminddb|1.14.1-1
+libgssapi_krb5.so.2|libkrb5|1.22.2-1
+libgssrpc.so.4|libkrb5|1.22.2-1
+libk5crypto.so.3|libkrb5|1.22.2-1
+libkadm5clnt_mit.so.12|libkrb5|1.22.2-1
+libkadm5srv_mit.so.12|libkrb5|1.22.2-1
+libkdb5.so.10|libkrb5|1.22.2-1
+libkrad.so.0|libkrb5|1.22.2-1
+libkrb5.so.3|libkrb5|1.22.2-1
+libkrb5support.so.0|libkrb5|1.22.2-1
+libverto.so.0|libkrb5|1.22.2-1
+libtirpc.so.3|libtirpc|1.3.7-1

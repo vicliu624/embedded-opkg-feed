@@ -11,7 +11,7 @@ runs:
           build-essential python3 python3-pip cmake ninja-build meson pkg-config \
           autoconf automake libtool autopoint gettext intltool gperf bison flex \
           libssl-dev zlib1g-dev libffi-dev libbz2-dev liblzma-dev \
-          libglib2.0-dev-bin libwayland-bin \
+          libglib2.0-dev-bin libwayland-bin comerr-dev \
           qemu-user e2fsprogs patchelf curl xz-utils bzip2 unzip rsync xxd
     - name: Cache immutable release downloads
       uses: actions/cache@v4

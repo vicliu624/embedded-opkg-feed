@@ -1883,3 +1883,26 @@ Depends: libmd (= 1.2.0-2)。两个 -2 修订组成新 388 包候选，原始池
 common-bsd-revision2-raw.miUmxlpO，配对仍在执行，日志
 common-bsd-revision2-388-finalization.log。完整共享前置检查通过，
 日志 common-bsd-revision2-preflight.log。旧候选和失败日志保留作对照。
+
+修正后 388 包整源、388 次逐包求解、安装和配置通过（549 个已安装
+记录），受保护基础文件不变。BSD 安装后版本/依赖/notice/无开发
+链接及目标消费者回归通过，记录 common-bsd-revision2-388-opkg-plan。
+
+新增 libkrb5 1.22.2-1 与 libtirpc 1.3.7-1。Kerberos 官方归档 SHA256
+3243ffbc8ea4d4ac22ddc7dd2a1dc54c57874c40648b60ff97009763554eaf13，
+TI-RPC 官方归档 b47d3ac19d3549e54a05d0019a6c400674da716123858cfdb6d3bdd70a66c702。
+构建记录 kerberos-sdk-build.e4DcOg3T 与真实配方运行
+kerberos-recipe-build.npWVe4wl。构造/析构和 positional printf 配置
+缓存值先通过当前 SDK 目标运行测试；复用 SDK com_err，关闭上游
+RPATH 后重建，保持 GSSAPI 功能。Kerberos principal/GSSAPI 名称生命
+周期、XDR 整数/字符串往返及 Kerberos GSS 机制枚举通过，没有联系
+KDC 或启动服务。TI-RPC 配置明确 GSS-API support: yes。
+Kerberos 库及插件使用已有 runtime 包类型（16 个新 ELF），TI-RPC
+共享库单独包；开发导出含 krb5-config，系统认证配置和守护服务均
+未随运行包安装。完整 NOTICE/README 与 TI-RPC COPYING 保留，完整
+法律、安全和网络认证审查仍待完成。Ubuntu 24.04 验证容器确认
+compile_et/comerr-dev/bison 存在，CI host tools 同步补入 comerr-dev。
+两个 IPK 的 CPU0/基础覆盖校验及完整共享前置检查通过。116 项必需
+清单加入 authentication-rpc 组，390 包配对仍在执行，原始池
+common-kerberos-rpc-indexed-raw.hdsvtCE3，日志
+common-kerberos-rpc-390-finalization.log，不计为正式签名/设备安装通过。

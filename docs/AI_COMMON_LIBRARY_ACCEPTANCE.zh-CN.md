@@ -2358,3 +2358,31 @@ SHA256 944c79ba1130c73989137ee13430eb81aaa9bd81e6b6307ccef440c7e861452a。
 自动依赖包括精确 ABI、zlib、OpenSSL、Kerberos、curl、zstd，覆盖
 remote_io、GSSAPI 和 zstd 插件所需依赖；主库和模块无 RPATH/RUNPATH。
 公共头文件补丁、插件/依赖归属静态回归已加入完整共享前置检查。
+
+424 包真实镜像 opkg 的整批/全部单包规划和 install/configure 全部
+通过，424 候选版本一致，共安装 585 包，基础受保护文件未变化，
+六个已审计离线维护钩子完成。仅加载该安装根运行库复测 libpq
+URI/TLS 参数、非法选项、SQL 二进制转义、独立 hex 解码及拒绝
+连接处理通过。尚未覆盖实际数据库认证/查询或板上验收。
+
+Berkeley DB 收据与 b1f198b Git 生产者快照核对：106 输入中 59 字节
+一致，47 仅有 CRLF/LF 差异，其他内容差异为零。隔离快照规范化 LF
+后，原 build-staging-receipt.py 严格 verify 通过 libdb 一个包、11 个
+开发路径；未修改收据、SDK 或开发字节，未重编库。快照目录
+receipt-producer-b1f198b.oe2ael。未证明当前新共享检查脚本版本下可
+直接导入，完整消费/缓存流程验收仍待完成。
+
+新增 libpq 真实数据库消费者，使用目标 rv64,v=false 与 424 安装根
+运行库连接本地原生 PostgreSQL 18.6 测试服务端。sslmode=verify-full
+校验夹具证书和 localhost 名称，host SCRAM-SHA-256 认证启用；二进制
+参数化查询逐字节往返、事务回滚后行数为零、错误口令拒绝全部通过。
+测试只使用公开夹具口令，目录 libpq-real-database-consumer.PeZKPt。
+初次服务启动因 Unix socket 路径过长失败，改短临时 socket 路径后
+通过；服务绑定回环地址并在结束时关闭，不进入 feed/SDK/设备镜像。
+此项未覆盖 Kerberos/LDAP 实际认证、板上网络或完整安全审查。
+
+2026-10-10 只读 SSH 核对设备 image-base.json 摘要为
+a8a53102d7ab54c75999e5e08d8802ffbe563c31ae2c9acc9ab38bcbd7babc31，
+与当前候选锁定 13cab0042c6268976cbf795443559e30eacc671ed7670e5b2568b332b4589794
+不同。因此未在该设备安装候选包或修改源配置，不能记录为当前
+r12-rc2 配对镜像的板上验收通过。

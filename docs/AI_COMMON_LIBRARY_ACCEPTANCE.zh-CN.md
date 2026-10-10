@@ -2310,3 +2310,28 @@ paired-common-berkeleydb-423。该结果覆盖索引/依赖闭包、镜像引用
 审计离线维护钩子完成。仅加载该安装根运行库复测 libssh 密钥/API
 消费者与 loopback SSH 握手全部通过，主机指纹仍与本机公钥一致。
 该结果未覆盖用户认证、SFTP 文件传输或板上验收。
+
+Berkeley DB 已通过统一 build-all 正式构建与开发导出，事务目录为
+berkeleydb-production-receipt.wQMcSa。正式收据 verify 通过，记录
+libdb 一个包、11 个开发路径和 SDK manifest
+cea9099600fe14fffefb0dae12dc3f81f9593d0e5affaaa603360747c9e45e6f。
+同轮 runtime closure 与 445 个非 ABI 动态对象覆盖检查通过。
+开发导出与收据由真实统一构建流程生成，手工 staging 保持无收据。
+后续导入/消费者及缓存重复构建避免验证仍待完成；其他 provider 的
+手工开发输入缺口没有因此关闭。
+
+PostgreSQL libpq 18.6 官方归档 SHA256 校验通过，配方保留 TLS、GSSAPI、
+LDAP。客户端子目录首次安装遗漏 postgres_ext.h，补上游 src/include
+安装目标后干净构建通过。CPU0 无 RVV 消费者验证 URI/TLS 参数、
+非法选项拒绝、SQL 字面量二进制转义、独立 bytea 十六进制解码和
+拒绝连接处理通过，目录 libpq-consumer.ZoZ5Z0。首次夹具把 SQL 转义
+输出直接当作数据库 bytea 文本解码，已按官方 API 语义分离；没有
+修改库实现。libpq.so.5 链接 OpenSSL、GSSAPI、LDAP，无 RPATH/RUNPATH。
+真实数据库认证/查询、IPK 安装、正式开发收据与完整审查仍待完成。
+
+libpq.so.5 已登记统一 provider，正式 IPK CPU0 门禁通过，SHA256 为
+92110bb27e516e4fedcf767fe8bde7d6e5acdb657705b021d7b88dcf9216ef85。
+自动依赖包含平台 ABI、OpenSSL SSL/Crypto、Kerberos、LDAP 精确版本。
+Berkeley DB 正式开发收据生成时对应的共享脚本版本需要保留；后续
+前置检查脚本新增 libpq 回归改变其构建输入摘要，旧收据导入不能
+直接假定通过。应使用匹配生产者输入的隔离快照验证，不补写收据。

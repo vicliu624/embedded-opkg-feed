@@ -60,4 +60,5 @@ done
 bash "$repo_root/scripts/verify-source-lock.sh" --repo-root "$repo_root" --all
 python3 "$repo_root/tests/libssh-library-policy.py"
 python3 "$repo_root/tests/berkeleydb-library-policy.py"
+python3 "$repo_root/tests/libpq-library-policy.py"
 echo 'Shared batch preflight: PASS'

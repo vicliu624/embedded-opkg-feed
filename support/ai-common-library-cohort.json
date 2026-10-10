@@ -18,6 +18,7 @@
     "common-dbm": ["libgdbm"],
     "common-transactional-database": ["libtdb"],
     "common-berkeley-database": ["libdb"],
+    "common-sql-database-clients": ["libpq"],
     "common-kernel-key-management": ["libkeyutils"],
     "common-security-policy": ["libsepol", "libselinux"],
     "common-pci-access": ["libpci"],

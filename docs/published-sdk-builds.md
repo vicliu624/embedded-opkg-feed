@@ -1,7 +1,10 @@
 # Published SDK builds
 
-The r11 feed consumes the CPU0 package-build SDK from firmware Release
-`v2026.09.23-r11`. The SDK archive, its manifest and the paired compressed
+The current r11 feed candidate consumes the CPU0 package-build SDK from firmware
+prerelease `v2026.10.09-r12-rc2`, as locked in
+`platforms/tdvp-k230-r1/platform.env`. The `r11` feed channel name remains the
+existing platform ABI identifier; it does not identify the paired image's release.
+The SDK archive, its manifest and the paired compressed
 image are content-addressed build inputs. A firmware checkout, completed
 Buildroot output, download stamps and GitHub Actions SDK caches are not
 evidence of the published image's identity.
@@ -20,7 +23,9 @@ Application recipes build their locked upstream sources with the SDK. They
 must not require firmware `.config`, package installation stamps or a mutable
 firmware `target/`. Existing immutable feed releases remain unchanged.
 
-The active r11 candidate workflow consumes the published r11 inputs. Historical recipe paths remain
+The active r11 candidate workflow consumes the locked r12-rc2 inputs. Published
+stable feed releases remain unchanged until candidate promotion is approved.
+Historical recipe paths remain
 available for historical Buildroot inputs, but neither active workflow invokes
 them. Source-bearing historical IPKs are not reused in published-SDK builds:
 the CPU0 scalar policy must be checked on newly built artifacts. Read-only,

@@ -2304,3 +2304,9 @@ base-archive-crypto-consumer.PLL9aJ。这只证明所测两个库的开发/运�
 423 包 Berkeley DB 配对组合检查完成并通过，产物为
 paired-common-berkeleydb-423。该结果覆盖索引/依赖闭包、镜像引用、
 覆盖与 CPU0 门禁；尚未证明 423 包实际安装或板上验收通过。
+
+422 包整批及全部单包 opkg 规划、实际 install/configure 完成并通过，
+422 候选版本一致，共安装 583 包，基础受保护文件未变化，六个已
+审计离线维护钩子完成。仅加载该安装根运行库复测 libssh 密钥/API
+消费者与 loopback SSH 握手全部通过，主机指纹仍与本机公钥一致。
+该结果未覆盖用户认证、SFTP 文件传输或板上验收。

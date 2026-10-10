@@ -2246,3 +2246,43 @@ libssh 正式 IPK 的 CPU0 检查通过，SHA256 为
 SHA256 指纹与本机 /etc/ssh/ssh_host_ed25519_key.pub 完全一致。
 测试未发送凭据，不构成用户认证或 SFTP 传输通过；消费者产物位于
 libssh-handshake-consumer.SjnoAc。422 包组合检查正在运行，尚未发布。
+
+422 包组合检查随后通过，生成 paired-common-libssh-422 未发布候选。
+已用隔离测试密钥启动真实镜像 opkg 的整批/逐包规划及安装配置验收；
+common-libssh-422-opkg-plan 尚未完成，不能记为安装通过。正式发布
+密钥未使用，设备和 stable 信任配置未改动。
+
+421 包候选的真实镜像 opkg 整批规划与全部 421 个单包规划通过，
+签名验证保持启用，受保护基础文件及状态文件未变化；安装/配置仍
+在运行，尚不能记为完整安装验收通过。
+
+Berkeley DB 官方 HTTPS 源码 db-18.1.40.tar.gz 已下载，计算 SHA256
+0cecb2ef0c67b166de93732769abdeba0555086d51de1090df325e18ee8da9c8。
+归档 README 确认 18.1.40，LICENSE 为 AGPLv3，另有 EXAMPLES-LICENSE。
+构建机审查目录 berkeleydb-source-review.tPVPZX；尚未获得独立官方
+摘要/签名核验，不构成完整来源审查通过。C/C++ API、事务与持久化、
+复制及兼容 API 的交叉构建/运行验收仍待实现。
+
+421 包安装/配置随后通过：全部候选版本一致，共安装 582 包，
+基础受保护文件未变；Audacious、NetSurf、Vim 的六个已审计离线
+维护钩子完成。该结果属于构建机隔离根验收，板上匹配镜像验证与
+正式签名发布仍待完成。
+
+安装后的 421 根使用仅含 ROOT/usr/lib、ROOT/usr/lib64、ROOT/lib 的
+LD_LIBRARY_PATH 复测 Boost 正式消费者，未使用 staging 或探测运行库。
+C++ filesystem/thread/regex/ICU/serialization/locale、四种 Iostreams
+压缩往返、CMake 消费者、Boost.Python 目标 CPython 3.13 扩展全部通过。
+产物目录 boost-installed-consumers.Vporxp。首次调用遗漏 filesystem
+夹具所需的新目录参数，补齐后通过，无库实现修改。此项证明已安装
+Boost 运行文件的所测功能；开发收据及板上验收仍未完成。
+
+Berkeley DB 正式构建通过。全量 install 的上游文档目录缺失导致首次
+安装失败，配方改用 install_include/install_lib 后干净重跑成功，
+未修改运行库功能。C++ 事务消费者在 rv64,v=false 下完成 B-tree
+put/get、commit/abort 与关闭后持久化重开，目录 berkeleydb-consumer.kCTpeH。
+DbEnv(0) 夹具构造歧义修正为显式 u_int32_t 后通过，无上游修改。
+两个运行 SONAME libdb-18.1.so/libdb_cxx-18.1.so 已登记，无 RPATH/RUNPATH，
+正式 IPK CPU0 门禁验证两个 ELF 通过，SHA256 为
+2f00ab1f5e4a3f539bc5ca077a20f7e84038bb99fe632d466da17d2400cccbe5。
+运行依赖为精确平台 ABI、OpenSSL SSL/Crypto；复制功能、IPK 安装后的
+消费者及来源/许可证/安全完整审查仍待完成，尚未签名发布。

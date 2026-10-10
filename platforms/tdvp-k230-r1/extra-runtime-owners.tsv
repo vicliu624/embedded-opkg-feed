@@ -382,3 +382,5 @@ libboost_url.so.1.82.0|libboost|1.82.0-1
 libboost_wave.so.1.82.0|libboost|1.82.0-1
 libboost_wserialization.so.1.82.0|libboost|1.82.0-1
 libssh.so.4|libssh|0.12.2-1
+libdb-18.1.so|libdb|18.1.40-1
+libdb_cxx-18.1.so|libdb|18.1.40-1

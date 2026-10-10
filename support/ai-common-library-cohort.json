@@ -17,6 +17,7 @@
     "common-nis-compatibility": ["libnsl-3"],
     "common-dbm": ["libgdbm"],
     "common-transactional-database": ["libtdb"],
+    "common-berkeley-database": ["libdb"],
     "common-kernel-key-management": ["libkeyutils"],
     "common-security-policy": ["libsepol", "libselinux"],
     "common-pci-access": ["libpci"],

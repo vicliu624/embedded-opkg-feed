@@ -1779,3 +1779,17 @@ CPU0 产物检查通过（24 ELF），用最终候选安装库重跑下载，
 使用 --quiet 禁止示例输出 TLS secrets；临时服务/证书/目录
 清理。上游客户端未启用对端证书验证，本结果只覆盖真实
 HTTP3/QUIC 和下载内容，严格证书验证仍需接入同一链路。
+
+严格证书验证已接入测试用独立上游示例副本：上下文通过
+gnutls_certificate_set_x509_trust_file 加载显式临时 CA，会话调用
+gnutls_session_set_verify_cert 校验显式主机名，缺任一输入拒绝
+初始化。生产库配方/SDK/设备证书未修改。改动的两上游方法
+未被 GitNexus 索引，人工限制在 gtlsclient 测试初始化链路；
+修正 fixture diff 上下文后仍以 fuzz=0 应用。
+严格示例构建与 CPU0 检查通过（24 ELF），拒绝运行搜索路径。
+最终交付安装库上正确 CA/localhost 下载 16,000 字节一致；
+错误主机名、无关 CA 均出现证书/crypto 拒绝且没有下载内容；
+缺少显式信任参数时进程失败关闭。记录 http3-strict-trust.AROVXwYf/
+strict-http3-download-final.log。通过 quiet 抑制 secrets，临时
+服务、证书及目录清理。此结果关闭本地 HTTP3 严格 TLS 链路
+验收缺口，未替代设备生产源验收或全包安全/许可证审查。

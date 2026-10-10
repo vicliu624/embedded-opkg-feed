@@ -2292,3 +2292,15 @@ Berkeley DB C API AES 加密消费者在 CPU0 无 RVV 环境通过：写入、
 BDB0210 metadata page checksum error 为预期拒绝输出。测试口令仅
 为公开夹具值，没有使用设备或发布凭据，目录
 berkeleydb-encryption-consumer.9S7fmw。此项不构成密码学安全审查通过。
+
+常用基础库覆盖核对确认 libarchive-13、libgcrypt-20、libgpg-error-0、
+libassuan-0、GnuTLS、Nettle/Hogweed、libtasn1-6、libcap-2 和 libudev-1
+已有镜像运行 provider，不因缺少独立源码配方重新编译。新消费者
+仅用不可变 SDK 编译，在 421 安装根、rv64,v=false 下通过 libgcrypt
+SHA256 已知向量与 libarchive ZIP 内存归档逐字节往返，目录
+base-archive-crypto-consumer.PLL9aJ。这只证明所测两个库的开发/运行
+链路，不构成上述全部基础库功能、安全或许可证审查通过。
+
+423 包 Berkeley DB 配对组合检查完成并通过，产物为
+paired-common-berkeleydb-423。该结果覆盖索引/依赖闭包、镜像引用、
+覆盖与 CPU0 门禁；尚未证明 423 包实际安装或板上验收通过。

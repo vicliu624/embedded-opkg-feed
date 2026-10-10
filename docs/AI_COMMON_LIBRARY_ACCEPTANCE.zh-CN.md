@@ -1876,3 +1876,10 @@ staging 仍保留链接文件。新前置策略包含这一约束并通过，日
 common-libmd-runtime-only-preflight.log。修正后的 388 包候选正在
 配对，记录 common-mmdb-libmd-fixed-388-finalization.log，不将旧候选
 的安装成功用于证明此次修订完成。6320865 快速 CI 38012407820 成功。
+
+修正候选的声明闭包拦截旧 libbsd (= libmd 1.2.0-1) 控制信息；为此
+libbsd 递增 0.12.2-2，复用已有运行库重新打包，实际控制归档确认
+Depends: libmd (= 1.2.0-2)。两个 -2 修订组成新 388 包候选，原始池
+common-bsd-revision2-raw.miUmxlpO，配对仍在执行，日志
+common-bsd-revision2-388-finalization.log。完整共享前置检查通过，
+日志 common-bsd-revision2-preflight.log。旧候选和失败日志保留作对照。

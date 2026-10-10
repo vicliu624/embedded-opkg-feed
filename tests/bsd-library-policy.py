@@ -7,7 +7,7 @@ repo = Path(__file__).resolve().parents[1]
 contract = json.loads((repo / 'support/ai-common-library-cohort.json').read_text())
 assert contract['groups']['common-portability'] == ['libmd', 'libbsd']
 owners = (repo / 'platforms/tdvp-k230-r1/extra-runtime-owners.tsv').read_text().splitlines()
-for name, version in (('libmd', '1.2.0-2'), ('libbsd', '0.12.2-1')):
+for name, version in (('libmd', '1.2.0-2'), ('libbsd', '0.12.2-2')):
     directory = repo / 'packages' / name
     metadata = (directory / 'package.env').read_text()
     assert f"VERSION='{version}'" in metadata

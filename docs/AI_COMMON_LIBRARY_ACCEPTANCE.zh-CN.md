@@ -1751,3 +1751,31 @@ cjson-index-fixed-portable.2SXOKcj2/portable-ci.log。
 维护脚本后添加受控 configure，按 installed 状态检查通过。
 未使用 force-depends 或 force-overwrite。新的整批 382 包
 求解和 install/configure 复验已启动，尚未结束。
+
+本地补丁来源记录审查保存 local-patch-provenance-audit.json。
+安装许可 SOURCE.json 的当前 schema 记录上游归档/源码锁摘要，
+没有展开本地补丁摘要。不能据此认定补丁构建没有记录：
+build-staging-receipt.py 的 build_inputs 已包含所选配方 patches
+的文件摘要，SOURCE_PATCH_* 锁也有校验机制。需要继续核对
+这些回执如何随候选交付、能否与实际 IPK 一一绑定。部分包
+使用其他来源记录格式，单独缺 SOURCE.json 不代表缺全部来源。
+当前不为审查方便修改既有 IPK 字节或重编全部库。
+
+修补 cJSON 的新 382 候选求解/安装已全部通过：整体和逐包
+382 次检查保持签名开启，install/configure 验证 382 版本，共
+543 个 installed 包，基础保护文件未变。记录
+common-cjson-index-fixed-382-opkg-plan.log、对应 opkg-install.log。
+最终根下第一轮七库、第二轮十二库、第三轮八库、新旧 XML ABI
+两种加载顺序及 cJSON 边界/包装回归全部通过；108 项清单覆盖
+仍通过。a5eb3d0 快速 CI 38007200996 通过。
+
+完整上游 GnuTLS HTTP3 示例实际可用当前 SDK 编译，不需要先
+升级编译器。构建只选择 gtlsclient/gtlsserver，复用 nghttp3、
+libev 开发文件。首次示例携带构建目录 RPATH，下载虽通过，
+不能据此认定使用交付库。设 CMAKE_SKIP_RPATH=ON 重链接后，
+CPU0 产物检查通过（24 ELF），用最终候选安装库重跑下载，
+20,800 字节逐字节一致。脚本加入 RPATH/RUNPATH 拒绝检查，
+记录 http3-full-examples.8PjufrUg/http3-installed-libraries-download-guarded.log。
+使用 --quiet 禁止示例输出 TLS secrets；临时服务/证书/目录
+清理。上游客户端未启用对端证书验证，本结果只覆盖真实
+HTTP3/QUIC 和下载内容，严格证书验证仍需接入同一链路。

@@ -58,4 +58,5 @@ for policy in build-all-source-lock-policy audacious-foundation-policy audacious
   bash "$repo_root/tests/$policy.sh"
 done
 bash "$repo_root/scripts/verify-source-lock.sh" --repo-root "$repo_root" --all
+python3 "$repo_root/tests/libssh-library-policy.py"
 echo 'Shared batch preflight: PASS'

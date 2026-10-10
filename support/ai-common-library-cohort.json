@@ -12,6 +12,7 @@
     "common-authentication-rpc": ["libkrb5", "libtirpc"],
     "common-sasl-authentication": ["libsasl2"],
     "common-directory-client": ["libldap"],
+    "common-ssh-client-server": ["libssh"],
     "common-memory-events": ["libtalloc", "libtevent"],
     "common-nis-compatibility": ["libnsl-3"],
     "common-dbm": ["libgdbm"],

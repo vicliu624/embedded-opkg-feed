@@ -381,3 +381,4 @@ libboost_unit_test_framework.so.1.82.0|libboost|1.82.0-1
 libboost_url.so.1.82.0|libboost|1.82.0-1
 libboost_wave.so.1.82.0|libboost|1.82.0-1
 libboost_wserialization.so.1.82.0|libboost|1.82.0-1
+libssh.so.4|libssh|0.12.2-1

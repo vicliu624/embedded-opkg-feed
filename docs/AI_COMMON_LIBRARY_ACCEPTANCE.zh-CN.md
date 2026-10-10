@@ -2219,3 +2219,22 @@ IPK SHA256 为 5179eaa02dfac65c2611e037bcc546d150734358c990778adf5fd5602de0a905�
 已将最终 Boost IPK 加入已验收 420 包原始池，启动 421 包镜像配对
 组合检查。原始库文件通过硬链接复用；未编译镜像、未签名发布或
 推广 stable。完整源码批次的 Eigen 阻断仍待用户批准修复。
+
+正式配方的 Boost.Python 开发投影再次完成扩展交叉编译；使用已安装
+420 包测试根的 CPython 3.13、正式 staging 的 Boost 运行库，在
+rv64,v=false 下通过导入、函数、类状态、异常转换及错误参数拒绝。
+产物位于构建机 boost-formal-python-consumer.igBrbK。该结果补齐正式
+配方消费者证据；Boost IPK 安装后验证和完整开发收据检查仍未完成。
+
+### libssh 0.12.2 正式源码构建
+
+官方源码签名与发布密钥指纹 88A228D89B07C2C77D0C780903D5DF8CFDD3E8E7
+一致，SHA256 为 49560f677d96e3706a904ac2de1116e25f3680937d51e5c92198fcba4a1c1e9f。
+Ubuntu 24.04 离线正式配方构建通过，生成 libssh.so.4.12.0，投影
+COPYING、BSD、AUTHORS。客户端、服务端、SFTP、GSSAPI、zlib、PCAP
+构建开关保留启用；动态依赖包含 OpenSSL、zlib、Kerberos，未发现
+RPATH/RUNPATH。独立 CPU0 无 RVV 消费者完成 Ed25519 密钥生成、
+公钥导入导出比对、SHA256 指纹及 session/server 对象生命周期测试。
+消费者位于构建机 libssh-consumer.iw0jPV，完整共享前置检查通过。
+首次前置检查因验证副本 CRLF 精确匹配失败，规范化后原断言通过。
+网络认证、SFTP 传输、正式 IPK 安装、完整来源/许可证/安全审查仍待完成。

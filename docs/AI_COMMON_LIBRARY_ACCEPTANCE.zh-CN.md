@@ -1793,3 +1793,47 @@ gnutls_session_set_verify_cert 校验显式主机名，缺任一输入拒绝
 strict-http3-download-final.log。通过 quiet 抑制 secrets，临时
 服务、证书及目录清理。此结果关闭本地 HTTP3 严格 TLS 链路
 验收缺口，未替代设备生产源验收或全包安全/许可证审查。
+
+嵌入式常用库补充审查：embedded-system-library-coverage-382.json
+确认 GPIO/kmod/udev/systemd/ffi 等运行及开发输入已存在，不重编。
+serialport、fdt、LMDB 等仍有缺口，继续补齐。libserialport 0.1.2
+官方归档摘要已锁定，LGPL-3.0-or-later COPYING 已检查；匹配 SDK
+构建和目标配置对象读写通过，记录 serialport-source-build.0c9KFmxK。
+未打开串口或修改硬件。新增 libserialport.so.0 owner；该库仍需
+IPK 和完整候选安装验收，未计入已有 382 包通过结果。
+DTC 1.8.1 官方归档 SHA256 为
+23526015a6f1550e0541a53fe7acea1b5a11e3697cdf3a3bdc076abc38f6045d，
+LMDB_0.9.36 官方 tag 归档 SHA256 为
+90a595ea500074af61b213464452d8d212405261094667a686357467ae7b57b9。
+来源文件保留 embedded-extra-sources.zaiRbkoO，尚未称为构建完成。
+
+libfdt 1.8.1、LMDB 0.9.36 配方已完成目标构建；fdt-lmdb-source-build.uXDv9K4E
+保留两库日志。libfdt 仅构建/安装库和开发头，不修改启动树；
+LMDB 保留默认共享 robust mutex，不关闭锁。QEMU 上环境初始化
+返回 ENOTSUP，strace 确认 set_robust_list 返回 ENOSYS；没有将
+该失败当作运行验收成功或改锁配置绕过。
+在真实 K230 上任务 /tmp/tdvp-fdt-lmdb-uXDv9K4E 临时加载两库，
+libfdt 树/坏头检查、LMDB 回滚/提交/关闭后重新打开读取通过。
+归档 SHA256 为
+8c7bb1fcfc13a2a1a82e11f9afb6de89914a3a8e37df47f2703ba37dc7b082cf，
+上传后先验摘要，测试设置 15 秒超时；目录已按精确路径清理，
+构建机原始归档保留。镜像摘要测试前后仍为 a8a531，因此只
+证明临时库硬件链路，不代替配对镜像安装。未打开硬件串口、
+申请 GPIO 或干预桌面。新增 libfdt.so.1/liblmdb.so owner 和三库
+必需组（111 项）；仍需新 IPK、闭包和安装验收。
+
+三库 IPK 已打包，发现 libfdt 通用 BSD 文本使用版权占位符、
+LMDB 实现含独立作者声明后，为两库新增从编译组件头注释
+提取的实际 copyright/SPDX notice，并纳入 SOURCE.json notice
+摘要。提取工具拒绝越界、符号链接及覆盖已有输出，回归通过。
+两库修订号递增为 libfdt 1.8.1-2 / liblmdb 0.9.36-2；与此前 -1
+IPK 比较运行库字节完全相同，不把 notice 改动称为代码修复。
+开发 staging 同时保留 notice，LMDB 增加 pkg-config 开发元数据。
+新增嵌入式三库前置策略，完整快速检查本地通过（较早记录
+common-embedded-portable.bTCJdqRd），新增策略后的运行记录为
+common-embedded-policy-portable.Y32pu8ev。新原始池
+common-embedded-raw.Ho2VMvy2 共 385 包，复用原 382 个 IPK，
+生产配对已通过，日志 common-embedded-385-finalization.log；新增
+策略后的完整快速检查亦通过，记录上述 Y32pu8ev/portable-ci.log。
+测试签名开启的 385 包实际求解、逐包和安装任务已启动，尚未结束。
+当前不宣称完整法律审查或新增三库安装已经完成。

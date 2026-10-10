@@ -268,3 +268,6 @@ liblzo2.so.2|liblzo2|2.10-1
 libxml2.so.16|libxml2-16|2.15.4-1
 libxslt.so.1|libxslt|1.1.45-1
 libexslt.so.0|libxslt|1.1.45-1
+libserialport.so.0|libserialport|0.1.2-1
+libfdt.so.1|libfdt|1.8.1-2
+liblmdb.so|liblmdb|0.9.36-2

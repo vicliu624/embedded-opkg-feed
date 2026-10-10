@@ -19,3 +19,4 @@ site/feed/**/*.ipk -text
 # bytes as source-code indentation during the repository whitespace gate.
 packages/**/patches/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
 support/**/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
+tests/fixtures/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab

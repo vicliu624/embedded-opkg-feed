@@ -18,7 +18,7 @@ assert 'make -C src/include DESTDIR="$work/install" install' in build
 assert '-march=rv64imafdc -mabi=lp64d' in build
 assert 'libpq.so.[0-9]*' in build
 assert 'libpq.so.5|libpq|18.6-1' in (repo / 'platforms/tdvp-k230-r1/extra-runtime-owners.tsv').read_text()
-assert json.loads((repo / 'support/ai-common-library-cohort.json').read_text())['groups']['common-sql-database-clients'] == ['libpq']
+assert 'libpq' in json.loads((repo / 'support/ai-common-library-cohort.json').read_text())['groups']['common-sql-database-clients']
 fixture = (repo / 'tests/libpq-runtime-smoke.c').read_text()
 for operation in ('PQconninfoParse', 'PQescapeBytea', 'PQunescapeBytea', 'CONNECTION_BAD'):
     assert operation in fixture

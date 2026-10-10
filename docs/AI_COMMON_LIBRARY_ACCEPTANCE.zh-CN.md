@@ -2335,3 +2335,26 @@ libpq.so.5 已登记统一 provider，正式 IPK CPU0 门禁通过，SHA256 为
 Berkeley DB 正式开发收据生成时对应的共享脚本版本需要保留；后续
 前置检查脚本新增 libpq 回归改变其构建输入摘要，旧收据导入不能
 直接假定通过。应使用匹配生产者输入的隔离快照验证，不补写收据。
+
+423 包整批/全部单包规划、实际 install/configure 全部通过，423 个
+候选版本一致，共安装 584 包，基础受保护文件未变，六个已审计
+离线维护钩子完成。仅加载安装根运行库复测 Berkeley DB C++ 事务
+提交/回滚/持久化与 C API AES 加密/重开/错误口令拒绝全部通过，
+产物目录 berkeleydb-installed-consumers.bxpIda。未使用 staging 运行库。
+复制功能、板上验收、来源/许可证/安全审查及正式发布仍待完成。
+
+MariaDB Connector/C 3.4.11 配方与源码锁已建立，官方 tag 指向提交
+be67a4fc1e0493913732df90e562f122bff9dfe3。主库及九个动态插件生成，
+保留 OpenSSL、zlib、curl、GSSAPI 与 zstd。公共 client_plugin.h 的
+ma_compress.h 未被上游安装，且引用私有 ma_sys.h；开发导出补入锁定
+源码头文件，并以锁定 patch 改为标准 limits.h，运行库实现未修改。
+补丁 SHA256 1b33569cc4252deff6f6566a857975436af053ab9f6dda96daca9f2f30c73e9d。
+正式重跑通过，CPU0 无 RVV 消费者完成初始化、UTF8 选项、六种认证
+插件加载与拒绝连接处理，目录 mariadb-consumer.RqyRCz。实际数据库
+认证/查询、IPK 安装、完整来源/许可证/安全与开发收据仍待完成。
+
+MariaDB 主库与九个插件的正式 IPK CPU0 门禁验证 10 个新 ELF 通过，
+SHA256 944c79ba1130c73989137ee13430eb81aaa9bd81e6b6307ccef440c7e861452a。
+自动依赖包括精确 ABI、zlib、OpenSSL、Kerberos、curl、zstd，覆盖
+remote_io、GSSAPI 和 zstd 插件所需依赖；主库和模块无 RPATH/RUNPATH。
+公共头文件补丁、插件/依赖归属静态回归已加入完整共享前置检查。

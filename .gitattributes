@@ -22,3 +22,4 @@ site/feed/**/*.ipk -text
 packages/**/patches/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
 support/**/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
 tests/fixtures/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
+packages/libmariadb/public-compression-header.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab

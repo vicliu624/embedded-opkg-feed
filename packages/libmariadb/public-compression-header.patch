@@ -1,0 +1,9 @@
+--- a/ma_compress.h
++++ b/ma_compress.h
+@@ -20,5 +20,5 @@
+ #ifndef __ma_compress_h__
+ 
+-#include <ma_sys.h>
++#include <limits.h>
+ 
+ #define COMPRESSION_LEVEL_DEFAULT INT_MAX

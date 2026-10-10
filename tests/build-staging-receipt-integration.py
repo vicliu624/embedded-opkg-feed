@@ -20,7 +20,7 @@ with tempfile.TemporaryDirectory(prefix="tdvp-staging-integration-") as director
         shutil.copytree(source / name, repo / name, ignore=shutil.ignore_patterns("__pycache__"))
     # This r2 fixture has no platform runtime libraries. The real SDK is used
     # solely for payload/receipt validation; runtime catalogue coverage is a
-    # separate full-platform gate exercised on the actual 317-package feed.
+    # separate full-platform gate exercised on the matched complete feed.
     (repo / "platforms/tdvp-k230-r1/sdk-development-providers.tsv").write_text("# No runtime providers in the non-ELF fixture\n")
     for name, dependency in (("fixture-dep", ""), ("fixture-consumer", "fixture-dep")):
         package = repo / "packages" / name
@@ -43,7 +43,11 @@ with tempfile.TemporaryDirectory(prefix="tdvp-staging-integration-") as director
             'cp "$payload/usr/include/' + name + '.h" "$TDVP_FEED_STAGING_ROOT/usr/include/"\n'
             'printf "' + name + '\\n" >> "$TDVP_FIXTURE_BUILD_LOG"\n')
     log = root / "build.log"
-    env = dict(os.environ, TDVP_SDK_ROOT=str(sdk), TDVP_FIXTURE_BUILD_LOG=str(log),
+    # Keep the real SDK bytes/receipt identity, but isolate its parent's target
+    # discovery from this non-ELF fixture. No production coverage gate is skipped.
+    view = root / "sdk"
+    view.symlink_to(sdk, target_is_directory=True)
+    env = dict(os.environ, TDVP_SDK_ROOT=str(view), TDVP_FIXTURE_BUILD_LOG=str(log),
                TDVP_REQUIRE_STAGING_RECEIPT="1")
     env.pop("TDVP_FEED_BASE_ROOT", None)
     command = ["bash", str(repo / "scripts/build-all.sh"), "--platform", "tdvp-k230-r1", "--release", "r2"]

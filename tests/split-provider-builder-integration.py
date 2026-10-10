@@ -49,7 +49,11 @@ with tempfile.TemporaryDirectory(prefix="tdvp-split-integration-") as directory:
         if not dependency:
             hook += 'printf "%s\\n" "$payload" > "$TDVP_FIXTURE_PAYLOAD_PATH"\n'
         (package / "build.sh").write_text(hook)
-    env = dict(os.environ, TDVP_SDK_ROOT=str(sdk), TDVP_FIXTURE_PAYLOAD_PATH=str(root / "payload-path"))
+    # SDK manifest/payload checks still use the original SDK. Only incidental
+    # sibling-target discovery is isolated from the non-ELF fixture.
+    view = root / "sdk"
+    view.symlink_to(sdk, target_is_directory=True)
+    env = dict(os.environ, TDVP_SDK_ROOT=str(view), TDVP_FIXTURE_PAYLOAD_PATH=str(root / "payload-path"))
     env.pop("TDVP_FEED_BASE_ROOT", None)
     result = subprocess.run([
         "bash", str(repo / "scripts/build-all.sh"), "--platform", "tdvp-k230-r1",

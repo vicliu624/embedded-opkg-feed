@@ -134,6 +134,7 @@ jobs:
           python3 scripts/verify-ai-package-sdk.py "$TDVP_SDK_ROOT"
           python3 tests/build-staging-receipt-integration.py "$TDVP_SDK_ROOT"
           python3 tests/split-provider-builder-integration.py "$TDVP_SDK_ROOT"
+          python3 tests/non-elf-sdk-layout-integration.py "$TDVP_SDK_ROOT"
 
       - name: Identify the native AI host cache
         if: inputs.batch == 'ai-common'

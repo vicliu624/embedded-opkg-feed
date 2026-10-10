@@ -1965,3 +1965,21 @@ COPYING/README 保留，完整源版权与安全审查仍待完成。119 项清�
 common-nsl-raw.rNMlqYWR，日志 common-nsl-393-finalization.log。安装后
 测试会核对版本、最终 TI-RPC 精确依赖、旧库字节/链接和目标消费者；
 当前新增安装验收尚未完成。
+
+新增 libgdbm 1.26-1，锁定 GNU 官方归档摘要
+6a24504a14de4a744103dcb936be976df6fbe88ccff26065e54c1c47946f4a5e。
+配方启用传统 DBM 兼容接口，记录 gdbm-recipe-build.JtQ3Y18n，
+libgdbm.so.6/libgdbm_compat.so.4 构建、持久化重开及兼容读写/删除
+目标测试通过，测试临时文件清理通过。COPYING/AUTHORS 保留；两个
+ELF 的 CPU0/基础覆盖与完整共享前置检查通过。120 项必需清单加入
+common-dbm，394 包配对正在执行，原始池 common-gdbm-raw.HJOtH8Fx，
+日志 common-gdbm-394-finalization.log，安装与完整审查仍待完成。
+
+用户批准两项非 ELF 夹具隔离修复后，显式空基础根方案被生产覆盖
+检查正确拒绝（没有动态对象）。最终使用独立临时父目录下的真实
+SDK 链接视图，保留 SDK 字节/摘要校验，避免自动发现外部 target。
+build-staging-receipt-integration 与 split-provider-builder-integration
+在 Ubuntu 24.04 下、真实 SDK 无/有相邻 target 布局全部通过。
+新增 non-elf-sdk-layout-integration 自动覆盖两种布局和调用者传入
+base-root 的隔离；导出/导入、字节篡改拒绝、split 临时 payload
+清理与 IPK 消费检查保留。生产构建器、运行闭包和覆盖校验器未改动。

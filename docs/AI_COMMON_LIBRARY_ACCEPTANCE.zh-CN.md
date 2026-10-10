@@ -1835,5 +1835,20 @@ common-embedded-policy-portable.Y32pu8ev。新原始池
 common-embedded-raw.Ho2VMvy2 共 385 包，复用原 382 个 IPK，
 生产配对已通过，日志 common-embedded-385-finalization.log；新增
 策略后的完整快速检查亦通过，记录上述 Y32pu8ev/portable-ci.log。
-测试签名开启的 385 包实际求解、逐包和安装任务已启动，尚未结束。
-当前不宣称完整法律审查或新增三库安装已经完成。
+测试签名开启的 385 包实际求解、逐包和安装已通过，日志
+common-embedded-385-opkg-plan.log / common-embedded-385-opkg-install.log；
+546 个已安装记录，受保护基础文件保持不变。111 项必需清单在
+最终索引中齐全。已安装根上的前三组接口回归通过；ACL 回归需
+在拥有安装根写权限的原容器中执行，普通宿主用户无法创建临时文件。
+当前不宣称完整法律审查或配对设备安装已经完成。
+
+新增 libmd 1.2.0-1 和 libbsd 0.12.2-1，官方 release 归档摘要已锁定，
+完整 COPYING 作者与多许可证清单随包投影。构建记录
+common-bsd-source-build.tmL3O2Zq。libbsd 明确依赖 libmd，启用
+feed development 合并；上游无版本 libbsd.so 为链接脚本，仅留于
+开发 sysroot，运行包使用版本化 ELF。两库交叉编译、SHA256 已知值、
+strlcpy/strlcat 截断及 strtonum 正常/越界测试通过。使用合并开发
+sysroot 的正常 -lbsd/-lmd 消费者编译、链接和目标运行通过。
+两个 IPK 已通过 CPU0 ELF 与基础镜像路径覆盖校验。113 项必需配方
+加入 common-portability 组；387 包完整配对仍在执行，日志
+common-bsd-387-finalization.log，不将其计为已完成安装。

@@ -1852,3 +1852,18 @@ sysroot 的正常 -lbsd/-lmd 消费者编译、链接和目标运行通过。
 两个 IPK 已通过 CPU0 ELF 与基础镜像路径覆盖校验。113 项必需配方
 加入 common-portability 组；387 包完整配对仍在执行，日志
 common-bsd-387-finalization.log，不将其计为已完成安装。
+
+后续 387 包配对已通过，113 项清单最终索引齐全；隔离测试签名开启
+的整源/逐包求解和实际安装仍在执行，记录 common-bsd-387-opkg-plan。
+新提交 368900f 的快速 CI 38012013593 已成功。
+
+新增 libmaxminddb 1.14.1-1，官方 release SHA256 锁定为
+ca5c87d41339f8bc4daabb53e8a9356b3c995f2d2419b85d7bff823b2ecc252d。
+上游 1.14.0 已加入解码资源限制，1.14.1 为当前补库选择，完整安全
+审查仍未完成。构建记录 mmdb-source-build.VIozAiZu，Apache-2.0
+LICENSE 投影、CPU0 ELF 和基础镜像路径覆盖校验通过。使用同一
+锁定归档中的 GeoIP2-City-Test.mmdb，目标消费者 IP 查询、GB 国家
+字段读取和无效地址错误检查通过，不附带或宣称生产地理数据库。
+新配方与归属表加入清单（114 项），完整共享前置检查通过。复用
+387 个原始 IPK 形成 388 包候选，配对正在执行，日志
+common-mmdb-388-finalization.log；尚未称为正式签名发布或实机安装。

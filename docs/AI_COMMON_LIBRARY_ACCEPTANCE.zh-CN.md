@@ -1906,3 +1906,33 @@ compile_et/comerr-dev/bison 存在，CI host tools 同步补入 comerr-dev。
 清单加入 authentication-rpc 组，390 包配对仍在执行，原始池
 common-kerberos-rpc-indexed-raw.hdsvtCE3，日志
 common-kerberos-rpc-390-finalization.log，不计为正式签名/设备安装通过。
+
+390 包配对与 116 项最终索引覆盖随后通过。隔离测试签名开启的整源
+求解、390 次逐包求解、安装和配置通过（551 个已安装记录），受保护
+基础文件保持不变。Kerberos/RPC 安装后回归最初误将原始版本与配对
+版本直接比较；实际最终版本含 +tdvpimg，并且索引/已安装记录相同。
+测试修正为同时验证 X-TDVP-Source-Version、最终安装版本一致，以及
+消费者精确依赖最终 provider。修正后 11 个无 RUNPATH 库、插件、notice
+及两个目标消费者全部通过。记录 common-kerberos-rpc-390-opkg-plan。
+这是离线根安装结果，仍不代替正式签名或配对设备验收。
+
+talloc 2.5.0 和 tevent 0.17.2 官方归档摘要分别为
+912afa237510ae542a7733998eb18a12bcda35ab6729c8e2ddb43e8d0ebab007 与
+e53b1ac288d017d66dde0471cd429a806168ecf07179d7f019572d7a7e05f0d6。
+源码审查/构建记录 talloc-tevent-source-review.9UOGojQa；两库匹配 SDK
+构建安装及层级内存析构/定时器派发通过。Waf iconv 默认宿主搜索目录
+改为目标 sysroot；PKGCONFIG 明确使用限定合并 sysroot 的宿主工具，
+tevent 禁止捆绑另一份 talloc。新增配方构建同时补全锁定的 GNU GPL-3.0
+文本与实际 copyright 声明；配方直接重跑仍在执行，尚未计为 IPK/
+完整候选/实机验收完成。
+
+后续真实配方运行 talloc-tevent-recipe-build.cejuU4dp 已通过：talloc
+提取 9 个源文件作者声明，tevent 提取 22 个，均投影 LICENSE、锁定
+GPL-3.0.txt 与 TDVP-COPYRIGHT-NOTICE 三份材料，SOURCE.json 记录摘要。
+配方目标消费者内存析构/定时器回归通过；两个 IPK 的 CPU0 ELF 和
+基础路径覆盖检查通过，完整共享前置检查日志 talloc-tevent-preflight.log
+通过。当前是 standalone C 库，Python 模块未包含在此包中。新增
+common-memory-events 必需组（118 项），392 包配对正在执行，原始池
+common-talloc-tevent-raw.IlkzByee，日志 common-talloc-tevent-392-finalization.log。
+新增安装后回归检查最终/source 版本、精确依赖、无开发链接以及三份
+notice 的实际 SHA256，再运行目标消费者；该新增安装回归尚未完成。

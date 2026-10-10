@@ -11,6 +11,7 @@
     "common-network-database": ["libmaxminddb"],
     "common-authentication-rpc": ["libkrb5", "libtirpc"],
     "common-memory-events": ["libtalloc", "libtevent"],
+    "common-nis-compatibility": ["libnsl-3"],
     "scientific": ["libopenblas", "eigen-dev", "python3-numpy", "python3-scipy", "python3-sympy", "python3-mpmath"],
     "vision": ["libopencv4", "libtiff-6", "python3-opencv", "python3-pillow"],
     "inference": ["libabseil-cpp", "libprotobuf", "libflatbuffers", "libre2", "libcpuinfo", "libfarmhash", "libfft2d", "libncnn", "libonnx", "libonnxruntime", "libtensorflow-lite", "python3-onnx", "python3-onnxruntime", "python3-tflite-runtime", "python3-protobuf", "python3-flatbuffers", "python3-tdvp-ai", "libtdvp-ai-client", "tdvp-ai-tools", "pybind11-dev", "nlohmann-json-dev", "boost-mp11-dev", "microsoft-gsl-dev", "safeint-dev", "gemmlowp-dev", "ruy-dev", "ml-dtypes-dev"],

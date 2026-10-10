@@ -10,7 +10,7 @@
 - 当前 SDK archive SHA256：`c1f8190acff53034b921fbe9de4043917b42603afc70b2dfa1ab9879f6e3e961`。
 - 当前 SDK manifest SHA256：`cea9099600fe14fffefb0dae12dc3f81f9593d0e5affaaa603360747c9e45e6f`。
 - 390 包候选已完成离线根的签名开启求解/安装/配置，以及 Kerberos/RPC 安装后回归。
-- 新增 talloc/tevent 后的 392 包候选正在完整配对；118 项清单的最终覆盖与安装仍待验证。
+- 392 包候选已通过离线根安装及 talloc/tevent 回归；加入现代 NIS 后的 393 包候选正在配对，119 项清单的新增覆盖与安装仍待验证。
 - 旧设备上 `a8a531…` 镜像的测试仅支持对应历史身份，不能用于证明上述当前配对设备安装。
 - 正式发布签名、配对设备安装、完整法律与安全审查仍未完成；详见后续时间顺序记录。
 
@@ -1947,3 +1947,21 @@ common-memory-events 必需组（118 项），392 包配对正在执行，原始
 common-talloc-tevent-raw.IlkzByee，日志 common-talloc-tevent-392-finalization.log。
 新增安装后回归检查最终/source 版本、精确依赖、无开发链接以及三份
 notice 的实际 SHA256，再运行目标消费者；该新增安装回归尚未完成。
+
+392 包的签名开启整源、392 次逐包求解、安装和配置随后通过（553 个
+已安装记录），受保护基础文件保持不变。talloc/tevent 安装后回归
+最终/source 版本、精确依赖、三份 notice 摘要、无开发链接及目标
+析构/定时器全部通过，记录 common-talloc-tevent-392-opkg-plan。
+
+新增 libnsl-3 2.0.1-1，官方归档摘要
+5c9e470b232a7acd3433491ac5221b4832f0c71318618dc6aa04dd05ffcd8fd9，
+记录 nsl-source-review.LPAjuECv 和 kerberos-recipe-build.npWVe4wl/libnsl-build.log。
+配方使用声明的 TI-RPC 开发文件，交叉构建、CPU0 ELF/基础路径覆盖、
+完整共享前置检查通过。SONAME 为 libnsl.so.3，不覆盖 glibc libnsl.so.1。
+目标共存测试同时加载两库，旧 yperr_string 按实际 GLIBC_2.27 兼容
+版本使用 dlvsym，新旧接口地址分离，协议错误映射和字符串调用通过。
+COPYING/README 保留，完整源版权与安全审查仍待完成。119 项清单
+加入 common-nis-compatibility，393 包配对正在执行，原始池
+common-nsl-raw.rNMlqYWR，日志 common-nsl-393-finalization.log。安装后
+测试会核对版本、最终 TI-RPC 精确依赖、旧库字节/链接和目标消费者；
+当前新增安装验收尚未完成。

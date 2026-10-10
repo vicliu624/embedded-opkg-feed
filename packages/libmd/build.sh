@@ -5,4 +5,4 @@ IFS=$'\n\t'
 package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$package_dir/package.env"
 source "$package_dir/../../support/source-archive-library.sh"
-tdvp_build_direct_archive_library "$package_dir" "$4" '' 'libmd-1.2.0' 'libmd.so*' -- --disable-static
+tdvp_build_direct_archive_library "$package_dir" "$4" '' 'libmd-1.2.0' 'libmd.so.[0-9]*' -- --disable-static

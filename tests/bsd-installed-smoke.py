@@ -20,13 +20,13 @@ for path in (feed / 'Packages', root / 'var/lib/opkg/status'):
             records[fields['Package']] = fields
     catalogues.append(records)
 candidate, installed = catalogues
-for name, version in (('libmd', '1.2.0-1'), ('libbsd', '0.12.2-1')):
+for name, version in (('libmd', '1.2.0-2'), ('libbsd', '0.12.2-1')):
     assert candidate[name]['Version'] == installed[name]['Version'] == version
     assert installed[name]['Status'].endswith(' installed')
     assert (root / 'usr/lib' / (name + '.so.0')).is_file()
     assert not (root / 'usr/lib' / (name + '.so')).exists(), 'development linker file leaked into runtime'
     assert (root / 'usr/share/licenses' / name / 'COPYING').is_file()
-assert 'libmd (= 1.2.0-1)' in candidate['libbsd']['Depends']
+assert 'libmd (= 1.2.0-2)' in candidate['libbsd']['Depends']
 environment = dict(os.environ)
 environment.pop('LD_LIBRARY_PATH', None)
 environment.pop('QEMU_LD_PREFIX', None)

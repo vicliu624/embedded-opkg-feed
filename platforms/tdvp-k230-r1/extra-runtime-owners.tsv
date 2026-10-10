@@ -337,3 +337,9 @@ libtcmalloc_minimal.so.4|libgperftools|2.18.1-1
 libtcmalloc_minimal_debug.so.4|libgperftools|2.18.1-1
 libtcmalloc_and_profiler.so.4|libgperftools|2.18.1-1
 libprofiler.so.0|libgperftools|2.18.1-1
+libhwy.so.1|libhwy|1.2.0-1
+libhwy_contrib.so.1|libhwy|1.2.0-1
+liblcms2.so.2|liblcms2|2.19.1-1
+libjxl.so.0.12|libjxl|0.12.0-1
+libjxl_cms.so.0.12|libjxl|0.12.0-1
+libjxl_threads.so.0.12|libjxl|0.12.0-1

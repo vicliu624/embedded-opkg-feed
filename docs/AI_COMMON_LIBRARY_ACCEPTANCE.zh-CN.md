@@ -2086,3 +2086,50 @@ gperftools 原始正式 IPK 已生成，6 个运行 ELF 均通过 CPU0 策略。
 SHA256 为 2b84e42aa6895c1fba69c067eb072b572bf871c2489ae19e578b9c8cacb91094，
 自动运行依赖明确为 libunwind 1.8.3-1。新增 policy 及全量共享
 前置检查在 Ubuntu 24.04 下通过；上述未完成验收项仍然保留。
+
+### 2026-10-10 415 包安装与 JPEG XL 依赖进展
+
+415 包候选已完成整批/逐包规划和实际 install/configure，版本一致、
+基础受保护文件未变，共安装 576 包。安装后的 HEVC/AV1 HEIF 平面
+图像往返、截断容器拒绝及 x265 8/10/12 位 API 均通过，许可证
+证据和静态开发文件分离检查通过。这些结果来自构建机隔离根/QEMU。
+
+Little CMS 2.19.1 正式配方及 ICC 序列化、RGB/Lab 转换、截断 profile
+拒绝测试通过。Highway 1.2.0 初次纯 scalar 后端的 contrib 排序
+触发上游断言，改用无 RVV 的软件仿真 128 位向量后，aligned allocation、
+向量 API 算术及 contrib 排序通过。锁定的 CMake 输入保留通用 ABI
+和路径规范化参数；随机源路径修正后重构建通过。
+
+JPEG XL 0.12.0 正式配方和源码锁已添加，声明独立 Highway、Little CMS、
+Brotli 开发依赖，关闭在线获取。正式离线构建已完成，许可证投影
+成功。目标消费者完成 16×16 无损 RGBA 编解码，包含 alpha，输入
+输出逐字节一致；截断码流被拒绝。正式 IPK、安装后验收及两个新
+依赖的完整审查仍待完成。
+
+### CPU0 ISA 打包门禁补充
+
+Highway 软件仿真消费者在默认 QEMU 下通过后，正式 IPK 的 CPU0
+ISA 门禁发现 libhwy_contrib 仍带 RVV 属性并正确拒绝。初次只加入
+rv64imafdc/lp64d 参数仍失败，进一步定位到上游 HWY_CMAKE_RVV
+默认 ON 会追加 rv64gcv1p0。配方已显式设为 OFF，并在锁定 CMake
+输入中保留 CPU0 编译/链接 ISA。Highway 与 JPEG XL 重新构建和
+ISA 验证正在进行；此前 QEMU 结果不构成 CPU0 兼容验收。
+不兼容的 Highway IPK 没有生成或进入候选源，ISA 校验器未放宽。
+
+关闭上游 RVV 开关后，Highway 两个运行库和 JPEG XL 三个运行库
+均通过 CPU0 ISA 校验。Highway 消费者在 qemu-riscv64 的 rv64,v=false
+配置下通过分配、算术和 contrib 排序测试。Little CMS 正式 IPK
+通过 CPU0 检查，SHA256 为
+df59531b1c770b11e760cef2435d203be3d8901849f78ca280ecb8b61f4ec6d0。
+
+JPEG XL 消费者也在 rv64,v=false 配置下通过无损 RGBA/alpha 与
+截断码流测试。三个正式原始 IPK 均已生成，CPU0 策略检查通过：
+
+- libhwy 1.2.0-1：78472cd206a1d9bac4ae199c1640a2c1ea0ac821de7ed896cc0e3630f985ed78
+- liblcms2 2.19.1-1：df59531b1c770b11e760cef2435d203be3d8901849f78ca280ecb8b61f4ec6d0
+- libjxl 0.12.0-1：0117f84bddf1726a6b6545da212de5ddfb46cd7399c3ef0334a0ce155e637fd3
+
+完整共享前置检查在 Ubuntu 24.04 容器中通过。以已验收的 415 包
+原始池加入 dav1d、gperftools 和本组三个 IPK，启动 420 包配对组合
+检查。原始 IPK 使用硬链接避免重复存储，索引和最终目录均独立生成。
+最终组合、安装后新消费者、正式签名发布和板上验收仍待完成。

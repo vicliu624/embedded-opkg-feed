@@ -12,3 +12,9 @@ libvorbisenc-2|libvorbisenc.so.2|usr/include/vorbis/vorbisenc.h usr/lib/pkgconfi
 libopus-0|libopus.so.0|usr/include/opus/opus.h usr/lib/pkgconfig/opus.pc usr/lib/libopus.so
 libpango-1.0-0|libpango-1.0.so.0|usr/include/pango-1.0/pango/pango.h usr/lib/pkgconfig/pango.pc usr/lib/libpango-1.0.so
 libpangocairo-1.0-0|libpangocairo-1.0.so.0|usr/include/pango-1.0/pango/pangocairo.h usr/lib/pkgconfig/pangocairo.pc usr/lib/libpangocairo-1.0.so
+libjpeg-9|libjpeg.so.9|usr/include/jpeglib.h usr/lib/pkgconfig/libjpeg.pc usr/lib/libjpeg.so
+libpng16-16|libpng16.so.16|usr/include/libpng16/png.h usr/lib/pkgconfig/libpng.pc usr/lib/libpng16.so
+libflac|libFLAC.so.12|usr/include/FLAC/all.h usr/lib/pkgconfig/flac.pc usr/lib/libFLAC.so
+libcairo-2|libcairo.so.2|usr/include/cairo/cairo.h usr/lib/pkgconfig/cairo.pc usr/lib/libcairo.so
+libgdk-pixbuf-2.0-0|libgdk_pixbuf-2.0.so.0|usr/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h usr/lib/pkgconfig/gdk-pixbuf-2.0.pc usr/lib/libgdk_pixbuf-2.0.so
+libpulse-0|libpulse.so.0|usr/include/pulse/pulseaudio.h usr/lib/pkgconfig/libpulse.pc usr/lib/libpulse.so

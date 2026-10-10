@@ -2584,3 +2584,32 @@ paired-common-theora-429；已启动整批、逐包和实际 opkg 安装任务�
 completed-installed-status；父目录规划、安装日志、缓存与输入
 保留，最新 428 根保留，清理后可用约 5.9 GB。旧安装根可由
 保留镜像/候选输入重建，不用于后续最新版验收。
+
+61f0b18 的快速 CI 38048482729 成功。多媒体范围继续核对后，
+开始补 gst-plugins-good 1.28.7：官方摘要
+87256969c82cf3bc8574301f3e7044a90de0ac500a5a27d8ba38c4dde894dd8b
+校验通过，配方声明通用 RTP/UDP/RTSP、MP4/Matroska/AVI、WAV、
+图像及音频处理插件，复用 SDK JPEG/PNG/FLAC/Cairo/GdkPixbuf/
+PulseAudio 开发文件，独立离线构建已启动。V4L2 采集不启用，
+保留 CPU1 摄像头所有权；不改变桌面 renderer。当前 libvpx、
+libsoup、mpg123、lame、speex、wavpack、taglib、twolame 的开发
+输入未找到，仍属待评估补齐范围，不能把已启用插件当作完整
+多媒体能力。新包尚未通过构建、管线、安装或正式发布验收。
+
+429 实际 opkg 验收随后通过：整批、429 单包规划与 install/
+configure 全部完成，590 已安装包，基础文件未变化。安装根
+独立运行四条基础管线、Theora C 编解码/负头包及 fatal-criticals
+文件 seek 回归通过，目录 gstreamer-installed-theora-429.bY4w1A，
+无 staging 运行路径。Good 插件首轮独立离线构建通过，产物
+tdvp-command-payload.ohXXkV；检查安装清单后进一步补入上游
+usr/share/gstreamer-1.0/presets 的交付，需按更新配方重建后
+继续管线/安装验收，不能只计插件 ELF 而漏运行数据。
+
+Good 完整 payload 重建通过，产物 tdvp-command-payload.wZ05uy，
+presets 数据已纳入。fatal-criticals 下 JPEG/PNG/FLAC、WAV、
+Matroska/Theora、QuickTime/JPEG、RTP PCMA/JPEG 八条管线通过；
+QuickTime 测试不扩大为所有 MP4 编码格式已验收。独立原生 UDP
+接收器收到目标插件发送的 4 个回环 RTP 包，PCMA 静音负载逐字节
+一致，序列号和时间戳推进正确。IPK 53 ELF CPU0 检查通过，摘要
+a3ae19e3f5d90bef0bb9c42999639ca88c6201d706acf01ac9a03de41dbe86c9。
+430 候选已启动组合，仍需安装根复测及完整依赖/开发收据验收。

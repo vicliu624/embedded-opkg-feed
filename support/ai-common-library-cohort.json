@@ -46,6 +46,7 @@
     "audio": ["libfftw3-3", "libflac", "libopus-0", "libsamplerate-0", "libspeexdsp-1", "libportaudio", "python3-sounddevice", "python3-soundfile"],
     "multimedia-pipeline-core": ["libgstreamer", "gstreamer-tools"],
     "multimedia-pipeline-base": ["gstreamer-plugins-base"],
+    "multimedia-pipeline-network-containers": ["gstreamer-plugins-good"],
     "python-support": ["python3-cffi", "python3-pycparser", "python3-requests", "python3-urllib3", "python3-certifi", "python3-charset-normalizer", "python3-idna", "python3-pysocks", "python3-pyyaml", "python3-packaging", "python3-coloredlogs", "python3-humanfriendly", "python3-six", "python3-typing-extensions"]
   }
 }

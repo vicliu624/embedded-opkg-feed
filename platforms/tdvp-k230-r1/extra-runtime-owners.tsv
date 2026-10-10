@@ -290,3 +290,7 @@ libtevent.so.0|libtevent|0.17.2-1
 libnsl.so.3|libnsl-3|2.0.1-1
 libgdbm.so.6|libgdbm|1.26-1
 libgdbm_compat.so.4|libgdbm|1.26-1
+libtdb.so.1|libtdb|1.4.15-1
+libkeyutils.so.1|libkeyutils|1.6.3-2
+libsepol.so.2|libsepol|3.11-2
+libselinux.so.1|libselinux|3.11-2

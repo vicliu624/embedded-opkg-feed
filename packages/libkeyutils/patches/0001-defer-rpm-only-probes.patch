@@ -1,0 +1,29 @@
+From: TDVP Device Team <devices@example.invalid>
+Subject: [PATCH] Defer RPM-only metadata until an RPM target needs it
+
+The library build does not need rpmspec. Keep the upstream RPM targets,
+but expand their metadata lazily so normal builds have no RPM host dependency.
+
+--- a/Makefile
++++ b/Makefile
+@@ -285,13 +285,13 @@
+ ZSRCBALL := rpmbuild/SOURCES/$(ZTARBALL)
+ 
+ BUILDID	:= .local
+-rpmver0	:= $(shell rpmspec -q ./keyutils.spec --define "buildid $(BUILDID)")
+-rpmver1	:= $(word 1,$(rpmver0))
+-rpmver2	:= $(subst ., ,$(rpmver1))
+-rpmver3	:= $(lastword $(rpmver2))
+-rpmver4	:= $(patsubst %.$(rpmver3),%,$(rpmver1))
+-rpmver	:= $(patsubst keyutils-%,%,$(rpmver4))
+-SRPM	:= rpmbuild/SRPMS/keyutils-$(rpmver).src.rpm
++rpmver0	= $(shell rpmspec -q ./keyutils.spec --define "buildid $(BUILDID)")
++rpmver1	= $(word 1,$(rpmver0))
++rpmver2	= $(subst ., ,$(rpmver1))
++rpmver3	= $(lastword $(rpmver2))
++rpmver4	= $(patsubst %.$(rpmver3),%,$(rpmver1))
++rpmver	= $(patsubst keyutils-%,%,$(rpmver4))
++SRPM	= rpmbuild/SRPMS/keyutils-$(rpmver).src.rpm
+ 
+ RPMBUILDDIRS := \
+ 	--define "_srcrpmdir $(CURDIR)/rpmbuild/SRPMS" \

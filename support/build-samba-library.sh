@@ -13,7 +13,7 @@ source "$package_dir/../../scripts/tdvp-k230-sdk.sh"
 source "$package_dir/../../support/elf-runtime-policy.sh"
 tdvp_require_k230_sdk "$sdk_root"
 [[ -d ${TDVP_FEED_STAGING_ROOT:-} && ! -L $TDVP_FEED_STAGING_ROOT ]] || exit 65
-case "$PACKAGE" in libtalloc) component=talloc;; libtevent) component=tevent;; *) exit 66;; esac
+case "$PACKAGE" in libtalloc) component=talloc;; libtevent) component=tevent;; libtdb) component=tdb;; *) exit 66;; esac
 work=$(mktemp -d "${TMPDIR:-/tmp}/tdvp-samba-library.XXXXXX")
 trap 'rm -rf -- "$work"' EXIT
 mkdir "$work/source" "$work/sysroot"
@@ -51,9 +51,13 @@ tdvp_assert_direct_archive_elfs "$TDVP_K230_READELF" "$TDVP_K230_STRIP" "$payloa
 gpl=$(tdvp_source_archive_locked_file "$package_dir" GPL-3.0.txt)
 cp "$gpl" "$source_root/GPL-3.0.txt"
 notice_args=()
-for file in "$source_root/"*.c "$source_root/"*.h; do
+notice_files=("$source_root/"*.c "$source_root/"*.h)
+if [[ "$PACKAGE" == libtdb ]]; then
+  notice_files+=("$source_root/common/"*.c "$source_root/include/"*.h "$source_root/lib/replace/"*.c "$source_root/lib/replace/"*.h)
+fi
+for file in "${notice_files[@]}"; do
   [[ -f "$file" ]] || continue
-  if grep -qi copyright "$file"; then notice_args+=(--file "${file##*/}"); fi
+  if grep -qi copyright "$file"; then notice_args+=(--file "${file#"$source_root/"}"); fi
 done
 python3 "$package_dir/../../support/extract-source-copyright-notices.py" "$source_root" "$source_root/TDVP-COPYRIGHT-NOTICE" "${notice_args[@]}"
 python3 "$package_dir/../../support/install-source-licenses.py" "$source_root" "$package_dir" "$payload_dir" \

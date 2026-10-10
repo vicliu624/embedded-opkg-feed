@@ -2238,3 +2238,11 @@ RPATH/RUNPATH。独立 CPU0 无 RVV 消费者完成 Ed25519 密钥生成、
 消费者位于构建机 libssh-consumer.iw0jPV，完整共享前置检查通过。
 首次前置检查因验证副本 CRLF 精确匹配失败，规范化后原断言通过。
 网络认证、SFTP 传输、正式 IPK 安装、完整来源/许可证/安全审查仍待完成。
+
+libssh 正式 IPK 的 CPU0 检查通过，SHA256 为
+1ff08c54e569d721aad089171f0b5d05c95bcde955725c17d51f42481fd9cd58。
+自动依赖包含平台 ABI、libcrypto-3、libz、libkrb5、libcom-err-2。
+新增目标消费者通过构建机 loopback SSH 握手，取得的 Ed25519 主机
+SHA256 指纹与本机 /etc/ssh/ssh_host_ed25519_key.pub 完全一致。
+测试未发送凭据，不构成用户认证或 SFTP 传输通过；消费者产物位于
+libssh-handshake-consumer.SjnoAc。422 包组合检查正在运行，尚未发布。

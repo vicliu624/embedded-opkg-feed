@@ -5,3 +5,10 @@ libglib-2.0-0|libglib-2.0.so.0|usr/include/glib-2.0/glib.h usr/lib/pkgconfig/gli
 libgtk-3-0|libgtk-3.so.0|usr/include/gtk-3.0/gtk/gtk.h usr/lib/pkgconfig/gtk+-3.0.pc usr/lib/libgtk-3.so
 libavcodec-58|libavcodec.so.58|usr/include/libavcodec/avcodec.h usr/lib/pkgconfig/libavcodec.pc usr/lib/libavcodec.so
 libavformat-58|libavformat.so.58|usr/include/libavformat/avformat.h usr/lib/pkgconfig/libavformat.pc usr/lib/libavformat.so
+libasound-2|libasound.so.2|usr/include/alsa/asoundlib.h usr/lib/pkgconfig/alsa.pc usr/lib/libasound.so
+libogg-0|libogg.so.0|usr/include/ogg/ogg.h usr/lib/pkgconfig/ogg.pc usr/lib/libogg.so
+libvorbis-0|libvorbis.so.0|usr/include/vorbis/codec.h usr/lib/pkgconfig/vorbis.pc usr/lib/libvorbis.so
+libvorbisenc-2|libvorbisenc.so.2|usr/include/vorbis/vorbisenc.h usr/lib/pkgconfig/vorbisenc.pc usr/lib/libvorbisenc.so
+libopus-0|libopus.so.0|usr/include/opus/opus.h usr/lib/pkgconfig/opus.pc usr/lib/libopus.so
+libpango-1.0-0|libpango-1.0.so.0|usr/include/pango-1.0/pango/pango.h usr/lib/pkgconfig/pango.pc usr/lib/libpango-1.0.so
+libpangocairo-1.0-0|libpangocairo-1.0.so.0|usr/include/pango-1.0/pango/pangocairo.h usr/lib/pkgconfig/pangocairo.pc usr/lib/libpangocairo-1.0.so

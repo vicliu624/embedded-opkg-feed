@@ -2395,3 +2395,124 @@ MariaDB 真实数据库消费者通过：目标 rv64,v=false 客户端连接独�
 服务使用短 socket 并在退出时关闭；客户端运行库当前来自正式
 staging，425 IPK 安装后的复测尚未完成。此项未覆盖 GSSAPI/Ed25519
 实际认证、设备网络或完整安全审查。
+
+425 包告知材料清单审计生成 common-425-notice-inventory.json。文件
+存在性扫描显示 219 个 IPK 无独立 notice 文件，296 个无 SOURCE.json；
+不能据此作法律结论。219 项中 192 的组合计划引用镜像字节，另 27
+需要继续核对，含 alias/元包/复用包及 libfft2d、libzstd 等。当前
+镜像 package_sources 记录 buildroot_name、licenses、source_version，
+这些元数据不能替代逐项告知文本核验。新 Boost、libssh、libdb、
+libpq、libmariadb 包各有告知文件及来源记录；旧 libbz2/liblzma 有
+许可证文本、缺来源记录。完整材料审查仍未完成。
+
+425 包整批与全部单包 opkg 规划、实际 install/configure 全部通过，
+425 候选版本一致，共安装 586 包，受保护基础文件未变化，六个
+已审计离线维护钩子完成。仅加载安装根主库/插件复测六种认证插件
+加载通过；真实数据库 TLS/密码/预处理二进制查询/回滚/错误口令/
+不受信任 CA 拒绝也通过，没有 staging 运行库路径。原生测试服务
+退出后关闭。板上配对验收、完整源码批次、开发收据/缓存以及材料
+审查和正式签名发布仍未完成。
+
+Berkeley DB 正式 development 导出消费者复测通过：使用匹配
+b1f198b 的生产者快照执行严格收据校验，确认 1 包、11 路径；
+编译时仅使用发布 SDK 和导出 development 的头文件/链接库。
+rv64,v=false 执行时仅加载 425 包安装根运行库，C++ B-tree
+put/get、事务提交/回滚与持久化重开全部通过，目录
+berkeleydb-exported-development-consumer.IxOAda。该证据覆盖单包
+正式导出消费，不代表全部软件包开发收据、跨生产者缓存复用或
+板上验收已经完成。
+
+425 包材料抽样复核：直接读取候选 IPK，libfft2d 实际携带
+usr/share/licenses/libfft2d/SOURCE.json、readme.txt、readme2d.txt。
+两份 readme 含上游版权及使用/复制/修改/分发条款；现有扫描器只按
+文件名识别 notice，因此将这个包误列为缺少 notice。219 的原始
+扫描计数不能直接作为实际缺少告知文本的数量。libzstd IPK 在
+usr/share/licenses/ 和 usr/share/doc/ 下没有随包材料，仍需追溯
+复用产物的来源记录和许可证交付；本次未改扫描器或生产包。
+
+随后对全部 219 个文件名扫描阴性 IPK 检查上述目录的文件内容，
+产物 common-425-notice-content-triage.json：1 包（libfft2d）的
+README 存在版权与许可语句；4 包（tdvp-dev-tools、tdvp-diagnostics、
+tdvp-nodejs-tools、tdvp-source-tools）有 README，但该内容启发式
+未找到许可证据；214 包在这两个目录没有非 SOURCE.json 材料。
+此范围不包含其他安装位置或发行版集中交付材料，也未判定元包
+是否需要独立许可证。仍须按来源、镜像复用与包类型逐项核对，
+不能以目录不存在直接判定侵权或完整告知缺失。
+
+425 包范围核对：当前 cohort 的 151 个明确要求包均出现在候选
+清单中；此结论只证明名称覆盖，不扩大为所有功能验收通过。
+候选还包含镜像运行库 provider：PNG/JPEG、GMP/GMPXX、Gcrypt、
+GnuTLS、p11-kit、cap、D-Bus、udev、mount、UUID、PAM、六个
+libnl provider、libsndfile 和四个 V4L provider，因此这些类别
+无需仅因 recipes 目录缺少同名条目就再次源码构建。GStreamer
+在当前配方清单与候选包名中未发现，是多媒体/视觉应用扩展范围
+尚需评估和补齐的类别；不能据 151 个 cohort 名称齐全宣告
+“Linux 常用库全部补完”。
+
+GStreamer 补齐准备：官方 1.28.7 核心与 gst-plugins-base 源码
+已在 gstreamer-source-review.8ztCQ5 下载并通过官方 sha256sum
+校验，摘要分别为
+787329b2c5758e228a71d926a6dcf960bceaacca3cadd63874ba665dfcda013e、
+ed6e5410f496d171818763af2265e7977154bc7f9b827e98acf8c5bed21dd5a7。
+两个项目要求 Meson >= 1.4、GLib >= 2.64；匹配 SDK 提供
+GLib/GObject/GModule/GIO 2.82.5。当前 Ubuntu 24.04 验证容器
+没有 meson 命令，Ninja 1.11.1、Bison 3.8.2、Flex 2.6.4
+存在，因此尚不能宣告这两个新增组件完成构建。Meson 应作为
+可复现的主机工具输入补齐，保持目标 SDK 和运行库来源独立。
+
+进一步追踪正式主机环境后确认，python-wheel-host-requirements.txt
+已经按 SHA256 锁定 Meson 1.7.2；现有已准备 venv 中也包含 meson。
+上段“没有 meson”仅适用于容器默认 PATH，不适用于正式 AI 主机
+环境，不能据此重复安装主机工具或修改已锁定版本。新增 GStreamer
+构建应激活并复用这个已验证环境。
+
+GStreamer 核心 1.28.7 本地离线配方构建通过，产物目录
+tdvp-command-payload.52jFvF，日志 libgstreamer-formal-build.log。
+libunwind/libdw 诊断依赖保留启用；elfutils 独立恢复输出经过
+相同 strip 后，libelf-0.196.so 与 libdw-0.196.so 均与 425
+安装根字节一致。GLib 两个生成器使用 SDK 自带 Python 脚本，
+通过 Meson machine file 显式交给主机 Python，不修改 SDK
+旧 shebang、不运行目标 ELF。源许可证投影和 pkg-config
+构建路径规范化通过。当前开发依赖恢复仍属本地 staging，未形成
+完整导出收据；核心管线/插件扫描、IPK 安装和基础插件尚未验收。
+
+后续核心验证：进程内插件发现、registry 生成、16 缓冲区
+fakesrc/identity/fakesink EOS 与无效元素拒绝通过，回归
+gstreamer-core-runtime-smoke.py。独立扫描器协议验证通过，回归
+gstreamer-scanner-process-smoke.py；gst-inspect 启动单独目标
+scanner，IPC 和 registry 正常，scanner exit=0。此项使用主机
+QEMU 启动包装器，不代表板上原生启动已验收。核心与工具拆成
+libgstreamer/gstreamer-tools，复用一次编译；IPK 摘要分别为
+99af96e9abec83801cf8cd4979b227028a13eee9265129d59a3b8f15d27a1157、
+cfc4dbde43147c7794d45b62dc95ee4ccfe29925605988eff3d8ffebc4b6527e。
+核心 8 ELF、工具 3 ELF CPU0 检查通过。427 包组合正在进行，
+实际安装、基础插件和完整开发收据仍未完成。
+
+427 核心/工具候选组合校验随后通过，目录 paired-common-gstreamer-427，
+保持未正式签名。已用隔离 fixture 密钥启动整批及逐包 opkg 规划/
+实际安装任务 common-gstreamer-427-opkg-plan，结果仍待完成。
+GStreamer 基础插件独立离线构建通过，产物
+tdvp-command-payload.SBm41K，日志 gstreamer-plugins-base-formal-build.log；
+复用 SDK 的 ALSA 1.2.13、Ogg 1.3.5、Vorbis 1.3.7、Opus 1.4、
+Pango 1.54.0，没有重编这些基础库。相应开发 provider 声明已补。
+当前 Theora 开发输入未提供，基础插件暂未启用它；ORC/GL 等
+可选路径未验收，不计入已交付能力。基础插件的运行及 IPK 安装
+尚未验收，仍需继续补齐和验证。
+
+基础插件运行复测通过：C appsrc/identity/appsink 消费者验证二进制
+缓冲区逐字节往返、EOS 与 EOS 后送数据拒绝，目录
+gstreamer-app-consumer.PMF09d；视频 RGB 转换/缩放、Vorbis/Ogg
+编码封装解封装解码、Opus 编解码管线均到达正常结束，回归
+gstreamer-base-runtime-smoke.py。以上使用本地 staging 运行库，
+仍需安装根独立复测；没有访问摄像头、显示或声卡硬件。基础包
+实际生成 11 个媒体共享库和 28 个插件模块，SONAME 归属已补。
+
+427 核心/工具候选实际 opkg 验收完成：整批与 427 单包规划
+通过，427 候选版本均安装/配置，共 588 已安装包，受保护基础
+文件未变化，六个已审计离线维护钩子完成。安装根
+common-gstreamer-427-opkg-plan/root 独立复测核心管线和独立
+scanner IPC 通过，运行库/插件/工具全部来自安装根，不包含
+staging 路径。完整快速前置检查 common-gstreamer-full-preflight.log
+通过，包含新增核心/基础插件策略回归。基础插件尚未进入这个
+427 候选，须在后续候选重新完成安装和运行验证；全源码批次
+仍有此前 Eigen 失败，未据快速检查通过推广 stable。

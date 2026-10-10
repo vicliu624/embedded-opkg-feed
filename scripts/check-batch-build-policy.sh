@@ -64,4 +64,5 @@ python3 "$repo_root/tests/libpq-library-policy.py"
 python3 "$repo_root/tests/mariadb-library-policy.py"
 python3 "$repo_root/tests/gstreamer-library-policy.py"
 python3 "$repo_root/tests/gstreamer-base-library-policy.py"
+python3 "$repo_root/tests/theora-library-policy.py"
 echo 'Shared batch preflight: PASS'

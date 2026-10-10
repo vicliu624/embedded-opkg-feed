@@ -38,6 +38,7 @@
     "vision-avif": ["libavif"],
     "vision-hevc": ["libde265", "libx265"],
     "vision-heif": ["libheif"],
+    "vision-theora": ["libtheora"],
     "scientific-dataset-storage": ["libaec", "libhdf5"],
     "scientific": ["libopenblas", "eigen-dev", "python3-numpy", "python3-scipy", "python3-sympy", "python3-mpmath"],
     "vision": ["libopencv4", "libtiff-6", "python3-opencv", "python3-pillow"],

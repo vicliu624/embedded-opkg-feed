@@ -23,3 +23,4 @@ packages/**/patches/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-t
 support/**/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
 tests/fixtures/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
 packages/libmariadb/public-compression-header.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
+packages/gstreamer-plugins-base/ogg-push-segment-seqnum.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab

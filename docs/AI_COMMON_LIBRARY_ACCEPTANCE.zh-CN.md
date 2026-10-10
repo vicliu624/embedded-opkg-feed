@@ -2516,3 +2516,71 @@ staging 路径。完整快速前置检查 common-gstreamer-full-preflight.log
 通过，包含新增核心/基础插件策略回归。基础插件尚未进入这个
 427 候选，须在后续候选重新完成安装和运行验证；全源码批次
 仍有此前 Eigen 失败，未据快速检查通过推广 stable。
+
+eb9a998 的快速 GitHub CI 38047158803 成功。包含基础插件的
+428 包原始候选 common-gstreamer-base-original-raw.UPzxJS 已
+启动组合校验，未提前记录为通过。磁盘回收已删除完成验收的
+common-mariadb-425-opkg-plan/root（约 1.1 GB），只终止其
+已完成任务的公开 fixture-keyring dirmngr；安装状态保存在
+completed-installed-status/common-mariadb-425-opkg-plan.status，
+日志、签名与 IPK 保留，旧根可重新生成。后续复测应使用最新
+427/428 安装根，不能继续引用已删除的 425 根。
+
+Theora 缺项补齐进展：官方 libtheora 1.2.0 的 SHA256SUMS
+校验通过，摘要 ebdf77a8f5c0a8f7a9e42323844fa09502b34eb1d1fece7b5f54da41fe2122ec。
+离线配方构建与 COPYING 投影通过，产物 tdvp-command-payload.cJvFA4。
+复用 SDK Ogg 开发文件，没有重编 Ogg；编码器/解码器/兼容库及
+开发文件已导出。基础插件修订为 1.28.7-2，新增 libtheora 构建
+依赖并启用 Theora 插件，保持 1.28.7-1 旧候选身份。当前新版
+基础插件重建进行中，Theora 编解码运行、负输入和安装尚未验收。
+
+启用 Theora 的基础插件重建通过，产物 tdvp-command-payload.LFzjgg。
+直接 C 消费者 theora-codec-consumer.BsWR1w 的头包、YUV 帧
+编码/解码和无效头包拒绝通过。但是 Theora/Ogg 完整管线退出 0
+同时产生两条 gst_event_set_seqnum 的 GStreamer-CRITICAL，不能
+记为干净验收通过。四种管线隔离定位为 oggdemux 路径：编码器、
+直接编解码、编码/封装均无 critical；加解封装后出现两条，日志
+theora-pipeline-warning-isolation.IweUDy。回归已要求 stderr 无
+GStreamer-CRITICAL，保留此失败，后续须定位并修复。
+
+序号问题追踪：调试日志 theora-segment-debug.aCTmNe 确认上游
+发送 TIME segment，oggdemux 仅在 BYTES 分支初始化 seqnum，
+随后下游事件使用 INVALID。已添加源锁定补丁
+ogg-push-segment-seqnum.patch（fd6959a7ecf26ee40488f2af00bfb398965d614512c6abc7b140943254a59ac7），
+在非 BYTES 分支且尚无序号时采用上游事件序号，保留原 BYTES/
+seek 分支。GitNexus 对第三方函数未找到目标，人工影响核对范围
+为 Ogg 推送 segment/EOS；完整 seek 场景仍需补验。补丁构建
+通过，产物 tdvp-command-payload.7g6iOt。428 旧基础候选已用
+fixture 签名启动 opkg 安装验收，不包含 Theora 或该补丁。
+
+修复后四条基础管线全部通过，stderr 无 GStreamer-CRITICAL。
+Ogg 文件生成、duration 查询、带 FLUSH 的 accurate TIME seek
+及最终 EOS 也在 G_DEBUG=fatal-criticals 下通过，目录
+gstreamer-ogg-seek-consumer.lVocVT。libtheora 1.2.0 的实际 SONAME
+为 libtheora.so.1/libtheoradec.so.2/libtheoraenc.so.2，归属声明
+已据 ELF 修正。新版两个 IPK 已打包：libtheora 摘要
+146fcdb2424dbce584a3e450f957795523aa029926cd44c3ab23bc303a5b71a1，
+基础插件 1.28.7-2 摘要
+25f616fbf526c5c7d82af51442e3dd9d91497b22144d0b11a1f4bce136ce87bb。
+CPU0 检查分别为 3/40 ELF。429 候选已启动组合，尚未提前
+记录为完成配对安装、完整开发收据或设备验收。
+
+旧 428 基础插件候选的整批、428 单包规划及实际 install/configure
+通过，共 589 已安装包，受保护基础文件未变化。安装根独立复测
+视频转换、Vorbis/Ogg、Opus 及 C appsrc/appsink 缓冲区通过，目录
+gstreamer-installed-base-428.oQ3Ixs；该证据使用 eb9a998 回归版本，
+没有误计尚未包含的 Theora。当前 Theora 快速前置回归已接入；
+首次镜像工作副本检查因 scp 更新 TSV 保留 CRLF 导致严格整行
+匹配失败。首次规范化尝试又因磁盘耗尽失败；回收已完成的 427
+安装根后规范化副本并启动重跑，未放宽生产断言。427 状态已
+下载保存为本地 .tmp/common-gstreamer-427-installed.status，
+其日志、签名和 IPK 保留；后续安装根测试应使用 428 或更新根。
+
+本地完整 Theora 前置检查最终通过。429 包组合校验通过，目录
+paired-common-theora-429；已启动整批、逐包和实际 opkg 安装任务，
+日志 common-theora-429-opkg-acceptance.log，暂未计为完成。
+磁盘清理另移除已无进程使用的四份早期安装根：374 twelve-repro、
+382 cjson-index-fixed、385 embedded、382 third，各状态保存在
+completed-installed-status；父目录规划、安装日志、缓存与输入
+保留，最新 428 根保留，清理后可用约 5.9 GB。旧安装根可由
+保留镜像/候选输入重建，不用于后续最新版验收。

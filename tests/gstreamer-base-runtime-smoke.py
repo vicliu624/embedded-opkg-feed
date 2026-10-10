@@ -15,6 +15,7 @@ pipelines = {
     'video conversion/scale': 'videotestsrc num-buffers=3 ! videoconvertscale ! video/x-raw,format=RGB,width=64,height=32 ! fakesink sync=false',
     'Vorbis/Ogg roundtrip': 'audiotestsrc num-buffers=20 ! audioconvert ! audioresample ! vorbisenc ! oggmux ! oggdemux ! vorbisdec ! fakesink sync=false',
     'Opus roundtrip': 'audiotestsrc num-buffers=8 ! audioconvert ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=2 ! opusenc ! opusdec ! fakesink sync=false',
+    'Theora/Ogg roundtrip': 'videotestsrc num-buffers=3 ! video/x-raw,format=I420,width=64,height=64 ! theoraenc ! oggmux ! oggdemux ! theoradec ! fakesink sync=false',
 }
 with tempfile.TemporaryDirectory(prefix='tdvp-gst-base-') as directory:
     env = {name: value for name, value in os.environ.items() if not name.startswith(('GST_', 'LD_'))}
@@ -28,4 +29,5 @@ with tempfile.TemporaryDirectory(prefix='tdvp-gst-base-') as directory:
         result = subprocess.run(command + pipeline.split(), env=env,
                                 capture_output=True, text=True, timeout=60)
         assert result.returncode == 0, f'{name}: {result.stderr}'
+        assert 'GStreamer-CRITICAL' not in result.stderr, f'{name}: {result.stderr}'
         print('GStreamer base: PASS ' + name)

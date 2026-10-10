@@ -16,6 +16,7 @@ mkdir "$work/source" "$work/sysroot"
 cp -a "$sdk_root/sysroot/." "$work/sysroot/"
 cp -a "$TDVP_FEED_STAGING_ROOT/." "$work/sysroot/"
 source_root=$(tdvp_unpack_locked_source_archive "$package_dir" "$work/source")
+patch --batch --forward -d "$source_root" -p1 < "$package_dir/ogg-push-segment-seqnum.patch"
 python3 - "$sdk_root" "$work/sysroot" "$work/cross.ini" "$work/native.ini" <<'PY'
 import json, shutil, sys
 from pathlib import Path
@@ -44,7 +45,7 @@ meson setup "$work/build" "$source_root" --cross-file "$work/cross.ini" --native
  "-Dc_link_args=--sysroot=$work/sysroot -Wl,-rpath-link,$work/sysroot/usr/lib" \
  -Dalsa=enabled -Dogg=enabled -Dvorbis=enabled -Dopus=enabled -Dpango=enabled \
  -Dgl=disabled -Ddrm=disabled -Dx11=disabled -Dxshm=disabled -Dxvideo=disabled -Dxi=disabled \
- -Dorc=disabled -Dorc-compiler=disabled -Dtheora=disabled -Dtremor=disabled \
+ -Dorc=disabled -Dorc-compiler=disabled -Dtheora=enabled -Dtremor=disabled \
  -Dcdparanoia=disabled -Dlibvisual=disabled -Diso-codes=disabled -Dqt5=disabled \
  -Dtests=disabled -Dexamples=disabled -Dtools=disabled -Dintrospection=disabled -Ddoc=disabled -Dnls=disabled
 meson compile -C "$work/build" -j "${TDVP_JOBS:-4}"

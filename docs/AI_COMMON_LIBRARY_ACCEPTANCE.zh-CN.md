@@ -3085,3 +3085,16 @@ netcdf-installed-442.5i2k1a 仅使用安装根运行库复验 CDF5、压缩 HDF5
 local NCZarr 创建/重开/精确值/metadata，HTTP byte-range 读取及
 服务端实际 Range 观察均通过；GSL 数值测试同时通过，未引用开发
 staging。DAP2/DAP4、严格开发闭包、完整源码批次和实机验收仍待完成。
+
+旧 development 缓存审查：Node/ICU 2576 路径与 Berkeley DB 11 路径的
+文件摘要、mode、内部 symlink 均无漂移。Berkeley DB 按保存的
+b1f198b producer 再次严格 verify 通过；当前输入验证仍因共享脚本
+更新失败，未修改旧 receipt。Node/ICU 在候选历史快照中有 41 个
+CRLF/LF 差异、7 个实际共享文件版本差异。按 receipt 摘要定位 Git
+历史 blob：build-all/python3-source-build 为 27d24e5，vim-plugin-build
+为 9506e56，buildroot-command/archive-library 为 cc7c508，
+published-sdk-build 为 6d273a3，check-batch-build-policy 为 779b39c。
+在 node-producer-input-audit.SVbAcz 中重建仅包含 recorded inputs 的
+输入集合并规范化 LF，131 个摘要全部匹配，原严格 verifier 通过
+11 包、2576 路径。该集合不声明来自某个完整 Git 提交。未重编库，
+未重写 receipt；当前 builder 的跨 producer 导入仍未实现。

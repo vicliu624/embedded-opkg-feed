@@ -3256,3 +3256,19 @@ native ELF 均通过。完整 Ubuntu 24.04 shared batch preflight 通过。
 首次清单调用因误用 --index 参数停止；改用 --feed 后复用既有索引
 继续正式 finalize，没有重建或覆盖索引。最终合并流程仍在运行，
 签名开启的完整求解、安装和安装后回归尚未通过，不提前计为完成。
+
+445 包 finalize 已完成，paired-common-python-http2-445 通过正式
+镜像配对/依赖/ELF/历史连续性门禁。隔离测试密钥签署索引后，真实
+目标 opkg 整体、逐包求解与安装配置已启动；正式发布密钥未使用。
+442 包安装根仍保留作为回归基准，445 包安装尚待结果。
+
+新增 libsoup-http2-smoke.c 和 libsoup-http2-loopback-smoke.py：使用
+source-built h2/hpack/hyperframe 构造独立 HTTP/2 TLS 服务，强制 ALPN
+h2，目标 libsoup 明确检查 SOUP_HTTP_2_0、200 状态和精确正文，保持
+证书校验开启。原生构建机和 Ubuntu 24.04 均通过，并拒绝无关 CA
+与错误 hostname。测试服务将 TLS 握手完成前的预期 reset 与握手后
+真实服务错误分开，后者仍导致失败，不把 HTTP/1.1 回退当作通过。
+消费者头文件来自 libsoup 原构建 staging，链接 442 包安装根 runtime；
+通用开发 staging 缺少 libsoup 头文件，仍是完整开发闭包待汇集项。
+此次为旧安装根的新增功能回归，不代替 445 包整源安装后复核；未
+修改 runtime、设备配置或正式软件源。

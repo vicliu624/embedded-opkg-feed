@@ -3154,3 +3154,15 @@ reviewed-staging-sdk-normalized-builder.log 的完整导入/消费者/来源
 导出/普通复用回归通过；sdk-normalized-import-full-preflight.log
 完整前置检查通过，固定审查的正反测试通过。Node/ICU 多包 reviewed
 import 和完整开发闭包仍未完成。
+
+Node/npm 数据复用核对：node 命令 1 文件、npm 启动 3 链接和
+npm-runtime 2018 运行文件与当前 IPK 一致。新增显式
+--include-runtime-data 模式，检查 usr 命令/数据/内部链接，legal
+notices/documents 保持独立材料 gate；数据文件必须精确匹配，
+仅 ELF 可使用配对 SDK strip 临时副本。真实 npm 反向测试修改
+package.json 或启动链接后被拒绝，原缓存未变。离线 Ubuntu 24.04
+数据/链接及可执行节反向测试通过，普通 staging 回归及完整
+runtime-data-match-full-preflight.log 前置检查通过。
+node-icu-multi-package.draft.json 记录 11 包版本映射、21 输入差异
+和 unchanged source locks；状态 draft-not-importable，现有 schema-1
+工具实际拒绝该草稿。共享差异审查、多包导入仍未完成。

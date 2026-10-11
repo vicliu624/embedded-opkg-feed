@@ -14,6 +14,7 @@ parser.add_argument('--ipk', type=Path, required=True)
 parser.add_argument('--package', required=True)
 parser.add_argument('--version', required=True)
 parser.add_argument('--sdk', type=Path, help='Matched SDK for strip-only normalization of a temporary development copy')
+parser.add_argument('--include-runtime-data', action='store_true', help='Also verify usr command/data files and links; legal notices are a separate gate')
 args = parser.parse_args()
 staging = args.staging.resolve(strict=True)
 strip_tool = None
@@ -40,17 +41,29 @@ with tarfile.open(fileobj=io.BytesIO(data_bytes), mode='r:gz') as archive:
         name = member.name.removeprefix('./')
         relative = PurePosixPath(name)
         assert not relative.is_absolute() and '..' not in relative.parts, 'unsafe runtime path'
-        if not member.isfile() or not name.startswith('usr/lib/') or '.so' not in relative.name:
+        if args.include_runtime_data:
+            if not name.startswith('usr/') or name.startswith(('usr/share/licenses/', 'usr/share/doc/')) or member.isdir():
+                continue
+            assert member.isfile() or member.issym(), 'unsupported runtime object'
+            if member.issym():
+                path = staging / name
+                assert name not in verified and path.is_symlink() and path.readlink().as_posix() == member.linkname, 'runtime link mismatch: ' + name
+                assert path.resolve(strict=True).is_relative_to(staging), 'runtime link escapes staging'
+                verified.append(name)
+                continue
+        elif not member.isfile() or not name.startswith('usr/lib/') or '.so' not in relative.name:
             continue
-        assert name not in verified and 0 < member.size < 1000000000
+        assert name not in verified and 0 <= member.size < 1000000000
         runtime = archive.extractfile(member).read()
-        assert runtime[:6] == b'\x7fELF\x02\x01' and int.from_bytes(runtime[18:20], 'little') == 243, 'runtime not RISC-V ELF64'
+        is_elf = runtime.startswith(b'\x7fELF')
+        if is_elf or not args.include_runtime_data:
+            assert runtime[:6] == b'\x7fELF\x02\x01' and int.from_bytes(runtime[18:20], 'little') == 243, 'runtime not RISC-V ELF64'
         path = staging / name
         assert path.is_file() and path.resolve(strict=True).is_relative_to(staging), 'runtime absent from development staging'
         development = path.read_bytes()
         target_digest = hashlib.sha256(runtime).digest()
         if hashlib.sha256(development).digest() != target_digest:
-            assert strip_tool is not None, 'development/runtime bytes mismatch: ' + name
+            assert is_elf and strip_tool is not None, 'development/runtime bytes mismatch: ' + name
             with tempfile.TemporaryDirectory(prefix='tdvp-runtime-strip-check.') as temporary:
                 copy = Path(temporary) / 'library.so'
                 copy.write_bytes(development)
@@ -58,5 +71,5 @@ with tarfile.open(fileobj=io.BytesIO(data_bytes), mode='r:gz') as archive:
                 assert hashlib.sha256(copy.read_bytes()).digest() == target_digest, 'normalized development/runtime bytes mismatch: ' + name
             normalized += 1
         verified.append(name)
-assert verified, 'reviewed runtime provider has no shared libraries'
-print('Development/runtime byte match: PASS ' + args.package + ' ' + str(len(verified)) + ' libraries; SDK strip normalization=' + str(normalized))
+assert verified, 'reviewed runtime provider has no matching payload objects'
+print('Development/runtime byte match: PASS ' + args.package + ' ' + str(len(verified)) + ' objects; SDK strip normalization=' + str(normalized))

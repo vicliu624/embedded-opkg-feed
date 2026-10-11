@@ -2957,3 +2957,23 @@ rv64,v=false 下编码 20 帧 MP2，再用已构建 mpg123 独立解码，
 a1117bbff2f0fd7b332aeb46c0a10c30beca8f53a1a82f64ff6800db2a2d097e，
 CPU0 ELF 策略及完整前置检查通过。候选整合、完整安装与
 设备验收仍未完成。
+
+2026-10-11：438 包候选 paired-common-twolame-438 完成开启签名校验的
+整批求解、438 次逐包求解及实际安装/configure，包含基础包共 599 包，
+受保护基础文件保持不变。日志 common-twolame-438-opkg-acceptance.log。
+TwoLAME 消费者仅使用该安装根的运行库，在 rv64,v=false 下复验通过。
+这是构建机隔离根验收，设备验收仍待进行。
+
+新增 libmp3lame 4.0-1，来源官方 LAME/SourceForge release archive。
+SHA256 3df5124d5ad3a98312ffd7ba6a9b36230e4f8a3e66d3ce0f425e336c32d216eb
+是 HTTPS 下载后的本地计算值，尚未核验独立上游摘要或签名。
+关闭 frontend、decoder、NASM、mp3x、mp3rtp；离线 Ubuntu 24.04
+CPU0 构建及 COPYING 许可证投影通过，生成 libmp3lame.so.0。
+消费者 lame-codec-consumer.AdV0Vz 编码 40 帧双声道信号，用已有 mpg123
+独立解码，验证 Layer III、48 kHz、stereo、完整 EOF、样本数量和
+双声道能量，rv64,v=false 通过。未重编 mpg123；这是开发 staging
+运行测试，尚未声称安装后的运行复验通过。
+IPK 位于 lame-ipk.CAuZAf，摘要
+bc96f0782e1f09a0a9c4e2e7ff21aa3cf4b8363bee414387eb85b51a53ea69cd。
+新增库策略及完整 shared batch preflight 通过。439 包候选整合仍在运行，
+正式发布、严格开发闭包和设备验收未完成。

@@ -52,6 +52,7 @@
     "multimedia-bitstream-parsers-processing": ["gstreamer-plugins-bad"],
     "multimedia-metadata": ["libtag"],
     "audio-mpeg-layer2": ["libtwolame"],
+    "audio-mpeg-layer3": ["libmp3lame"],
     "python-support": ["python3-cffi", "python3-pycparser", "python3-requests", "python3-urllib3", "python3-certifi", "python3-charset-normalizer", "python3-idna", "python3-pysocks", "python3-pyyaml", "python3-packaging", "python3-coloredlogs", "python3-humanfriendly", "python3-six", "python3-typing-extensions"]
   }
 }

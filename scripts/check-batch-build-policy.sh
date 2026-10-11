@@ -74,4 +74,5 @@ python3 "$repo_root/tests/taglib-library-policy.py"
 python3 "$repo_root/tests/sqlite-development-recovery-policy.py"
 python3 "$repo_root/tests/libsoup-library-policy.py"
 python3 "$repo_root/tests/twolame-library-policy.py"
+python3 "$repo_root/tests/lame-library-policy.py"
 echo 'Shared batch preflight: PASS'

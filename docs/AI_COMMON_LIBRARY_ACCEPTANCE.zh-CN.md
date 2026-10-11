@@ -2918,3 +2918,14 @@ IPK 位于 libsoup-ipk.BLliUe，摘要
 第一次打包误只传 extra owners，缺 SDK GLib provider 被拒绝；
 合并已验证的完整 owner map 后打包通过，不放宽 owner 检查。
 新候选完整安装、严格开发缓存闭包和设备验收仍待完成。
+
+libsoup 提交 31f7a0a 快速 CI 38112484072 成功。437 production
+finalization 完成，开启测试签名的目标 opkg 求解/安装已启动，
+尚未记录安装完成。
+TLS 消费者 libsoup-tls-consumer.wsZ26b 使用镜像 glib-networking/
+GnuTLS 模块，显式 test CA database，localhost HTTPS 返回准确
+body；无关 CA 与主机名不符均返回 G_TLS_ERROR_BAD_CERTIFICATE，
+服务端只收到正确证书场景的一次 HTTP 请求。证书校验没有关闭。
+此测试验证 HTTPS HTTP/1.1 和本地 trust database，不扩大为
+HTTP/2、WebSocket 或公共系统 CA 全链路验收。新 TLS 回归源
+纳入静态检查，安装根独立复测仍需完成。

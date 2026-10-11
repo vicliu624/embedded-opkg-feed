@@ -18,4 +18,10 @@ for option in ('--wrap-mode=nodownload', '-march=rv64imafdc -mabi=lp64d',
 assert 'support/elf-runtime-policy.sh' in build
 assert 'libsoup-3.0.so.0|libsoup3|3.6.6-1' in (repo / 'platforms/tdvp-k230-r1/extra-runtime-owners.tsv').read_text()
 assert json.loads((repo / 'support/ai-common-library-cohort.json').read_text())['groups']['common-glib-http'] == ['libsoup3']
+tls_client = (repo / 'tests/libsoup-tls-client-smoke.c').read_text()
+assert 'g_tls_file_database_new' in tls_client and 'G_TLS_ERROR_BAD_CERTIFICATE' in tls_client
+tls_test = (repo / 'tests/libsoup-tls-loopback-smoke.py').read_text()
+assert "GIO_USE_TLS='gnutls'" in tls_test
+assert 'rejected.returncode == 3' in tls_test and 'mismatched.returncode == 3' in tls_test
+compile(tls_test, 'libsoup-tls-loopback-smoke.py', 'exec')
 print('libsoup policy: PASS source lock, TLS runtime provider, build closure and CPU0 ABI')

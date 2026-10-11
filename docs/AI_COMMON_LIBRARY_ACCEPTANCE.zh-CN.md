@@ -2895,3 +2895,26 @@ sqlite-r11-real-consumer.j2cN4T。rv64,v=false 与 436 安装根库
 交付。清理已完成且无进程引用的 432/434 安装根，保留状态、
 包和日志、最新 436 根；可用空间恢复 4.6 GB，删除的测试根
 可由镜像和包重建。
+
+libsoup3 3.6.6-1 配方新增，声明 nghttp2/PSL/SQLite/Brotli/Kerberos
+构建依赖、SDK GLib/zlib 开发依赖和 glib-networking TLS 运行依赖。
+本地开发验证目录 libsoup-local-development-build.uTcblL：复用
+已检查 runtime 字节相同的 PSL/nghttp2 开发产物，恢复 SQLite，
+保留 libidn2 的传递开发依赖；这是显式本地聚合验证输入，不称为
+完整 production development receipt。旧 PSL pc 引用了已删除
+work prefix，新增显式 --allow-missing-sysroot 规范化选项，默认
+仍要求目录存在。绝对前缀、默认缺失拒绝、显式恢复、库名保留、
+幂等与 symlink 拒绝回归通过；GitNexus 未索引此脚本，人工
+中等风险评估已告知，默认行为保持。
+libsoup 首次配置缺传递 libidn2.pc，补齐已有开发产物后编译通过；
+新脚本漏加载 ELF helper 在打包前正确失败，补加载后离线
+Ubuntu 24.04 构建和许可证投影完成，未重编已有依赖。
+产物 tdvp-command-payload.QahFQz，ABI libsoup-3.0.so.0。
+消费者 libsoup-client-consumer.RBsDCe 在 rv64,v=false 下请求
+原生 loopback 服务，HTTP 200、准确 body/path/user-agent、公共
+后缀 API 通过。HTTPS/HTTP2/WebSocket 尚未验收，未扩大结论。
+IPK 位于 libsoup-ipk.BLliUe，摘要
+29674cf979a42e99ad740ed57da7418146da21390537e81c876da844840f135b。
+第一次打包误只传 extra owners，缺 SDK GLib provider 被拒绝；
+合并已验证的完整 owner map 后打包通过，不放宽 owner 检查。
+新候选完整安装、严格开发缓存闭包和设备验收仍待完成。

@@ -6,6 +6,7 @@
     "common": ["libcjson", "libjsoncpp", "libpugixml", "libtinyxml2", "libxxhash", "libyaml-cpp", "libfmt", "libspdlog", "libdate-tz", "libdouble-conversion", "liblz4", "libusb-1.0", "libpcap", "libseccomp", "libsodium", "libuv", "libcares", "libnghttp2", "libelf-1", "libdw-1", "libzmq-5", "libpaho-mqtt", "libbrotli", "libcbor", "libedit", "libidn2", "libpsl", "librhash", "libunwind", "libdeflate", "libsnappy", "libmpfr", "libmpc"],
     "common-system-network": ["libcap-ng", "libattr", "libacl", "liburing", "libaio", "libssh2", "libnghttp3", "libngtcp2"],
     "common-event-data-network": ["libev", "libjansson", "libzip", "libmnl", "libnftnl", "liblzo2", "libxml2-16", "libxslt"],
+    "common-glib-http": ["libsoup3"],
     "common-embedded-system": ["libserialport", "libfdt", "liblmdb"],
     "common-portability": ["libmd", "libbsd"],
     "common-network-database": ["libmaxminddb"],

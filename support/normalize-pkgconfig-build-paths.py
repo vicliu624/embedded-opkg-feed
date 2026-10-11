@@ -6,9 +6,13 @@ import re
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("install_root", type=Path)
 parser.add_argument("--sysroot", type=Path, action="append", required=True)
+parser.add_argument("--allow-missing-sysroot", action="store_true",
+                    help="Normalize an explicitly declared absolute prefix from a removed producer work directory")
 args = parser.parse_args()
 root = args.install_root.resolve(strict=True)
-prefixes = sorted({str(path.resolve(strict=True)).rstrip("/") for path in args.sysroot}, key=len, reverse=True)
+if args.allow_missing_sysroot:
+    assert all(path.is_absolute() for path in args.sysroot), "missing producer prefixes must be absolute"
+prefixes = sorted({str(path.resolve(strict=not args.allow_missing_sysroot)).rstrip("/") for path in args.sysroot}, key=len, reverse=True)
 assert all(prefix not in ("", "/", "/usr", "/lib") for prefix in prefixes)
 changes = []
 for path in sorted(root.rglob("*.pc")):

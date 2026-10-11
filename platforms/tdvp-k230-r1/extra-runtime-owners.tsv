@@ -424,3 +424,4 @@ libgsturidownloader-1.0.so.0|gstreamer-plugins-bad|1.28.7-1
 libgstwebrtc-1.0.so.0|gstreamer-plugins-bad|1.28.7-1
 libspeex.so.1|libspeex|1.2.1-1
 libwavpack.so.1|libwavpack|5.9.0-1
+libmpg123.so.0|libmpg123|1.33.7-1

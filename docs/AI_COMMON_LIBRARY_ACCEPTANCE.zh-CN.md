@@ -2751,3 +2751,25 @@ finalization。432 安装验收保持独立运行，不取消、不用新候选
 八条 Good 管线、UDP 四个实包、libvpx 的 VP8 8-bit 及 VP9
 8/10/12-bit API、VP9 parser 截断/合法短头 API，全通过。
 此处是构建机上的目标架构隔离安装验收，未替代 K230 实机验收。
+
+提交 2e81046 已推送，快速 CI 38108720174 成功。434 production
+finalization 完成，启动 common-speech-lossless-434-opkg-plan 下
+测试签名目标 opkg 求解/安装，尚未记录安装完成。
+
+新增 libmpg123 1.33.7-1：从官方站点取得源码、签名和公布的公钥，
+公钥指纹 D021FF8ECF4BE09719D61A27231C4CBC60D5CAFE 与官网下载页
+一致，源码签名验证通过；隔离公钥环没有个人信任认证，身份依据
+为官方 HTTPS 页的指纹匹配。源码摘要
+31d0e35a4ca567ec9b5ebda6c3062bb4435d6d3eacd6ef0d95cadd7854dc03ee，
+目录 mpg123-source-review.Vvv7jL。库采用 generic C decoder，关闭
+播放器、硬件输出模块及其他独立组件。离线构建通过，实际 ABI
+libmpg123.so.0，产物 tdvp-command-payload.Qirh65。
+消费者 mpg123-decode-consumer.UhjB1k 在 rv64,v=false 下解码上游
+sweep.mp3 得到 176400 字节 PCM、44100 Hz 双声道；seek 到开头
+后第一段 PCM 逐字节相同。该回归尚未覆盖 MPEG layer I/II、
+流式喂入、所有格式转换或设备音频输出。
+IPK 位于 mpg123-ipk.miEZSS，摘要
+50cd53c199b1148866268a3742d76161ea0698315542ce616c9c2b3042b4c670，
+许可证 COPYING/AUTHORS 投影和 CPU0 ELF 策略通过，新增配方
+静态检查已接入共享前置检查，完整前置检查通过。mpg123 尚未
+纳入 434 候选或安装根验收，未正式发布。

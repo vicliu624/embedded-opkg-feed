@@ -69,4 +69,5 @@ python3 "$repo_root/tests/gstreamer-good-library-policy.py"
 python3 "$repo_root/tests/gstreamer-vpx-library-policy.py"
 python3 "$repo_root/tests/speex-library-policy.py"
 python3 "$repo_root/tests/wavpack-library-policy.py"
+python3 "$repo_root/tests/mpg123-library-policy.py"
 echo 'Shared batch preflight: PASS'

@@ -3215,3 +3215,22 @@ Ubuntu 24.04 完整构建与新增版本映射篡改测试也已通过；容器�
 通过首次导入、消费者构建、来源原文保留、映射篡改拒绝、导出 receipt
 校验、普通缓存再次复用及 QEMU 执行，11 个 provider 未重编。
 草稿文件仍保留不可导入状态，新记录不授权正式发布或 stable 推广。
+
+NetCDF DAP 专门回归：新增 netcdf-dap-smoke.c 和
+netcdf-dap-http-smoke.py，以锁定 4.10.1 源码的官方 test.01
+DDS/DAS/DODS 和 test_atomic_types DMR/DAP 数据为输入，五个数据文件
+各自固定 SHA256。消费者直接链接 442 包安装根的 libnetcdf.so.22，
+头文件来自既有开发 staging；不把该组合记为完整 SDK 开发闭包。
+原生构建机与 Ubuntu 24.04 默认安全配置下均通过 DAP2/DAP4 整数、
+双精度、字符串读取，以及 DAP4 uint64、opaque 和 enum 验证；日志
+观察到实际 .dds/.das/.dods、.dmr.xml/.dap 请求。截断两种数据响应
+均以 NetCDF API 错误退出，没有把信号崩溃或超时当作拒绝通过。
+容器首次失败源于预置代理变量未排除 loopback，目标子进程清除
+代理并显式 NO_PROXY 后通过；设备和生产网络配置未更改。
+HTTP fixture 返回完整固定数据，不验证服务端约束求解；DAP4 按官方
+raw fixture 设置 checksum=false，checksum、TLS、认证和真实远程服务
+仍未覆盖。此结果补充协议数据读取，不能替代这些单独的验收项。
+参考 [Unidata DAP4 指南](https://docs.unidata.ucar.edu/nug/current/dap4.html)
+和 [OPeNDAP DAP2 数据服务](https://docs.opendap.org/index.php/DAP2%3A_Data_Service)。
+本轮未重编 runtime、未修改设备、未签名发布；验证文件位于构建机
+netcdf-dap-validation，原始数据仍来自 source-locked archive。

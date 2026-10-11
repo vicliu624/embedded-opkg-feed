@@ -3344,3 +3344,20 @@ app/Node notice、空文件/代码文件排除及镜像/新 payload/元包/链�
 构建机 application-notice-inventory-445.json 保留实际完整结果。
 随包材料来源、对应源码和完整许可证/安全审查仍需继续核对，本次
 没有添加或修改 runtime payload，也未签名发布。
+
+15 项进一步分类：四个 tdvp-* profile 只交付自研说明和依赖清单，
+仓库根没有 LICENSE，文档许可选择待人类确认；另外 11 项为第三方
+软件或聚合工具。核对历史缓存后复用已锁定 SQLite/zstd archive，
+下载并校验 libubootenv 0.3.5，source-notice-three-review.XaVOMA 保留
+原始归档及材料。没有重新编译已有 runtime。
+source-notice-three-projection.py 固定三个 archive 摘要，投影 zstd
+LICENSE/COPYING、libubootenv LICENSES 的 CC0/LGPL/MIT 三份文件及
+SQLite sqlite3.h 的首段原始 comment，六份材料分别记录原 member、
+摘要和提取方式；不把 Tcl 扩展的 license.terms 当作核心条款。
+先验证全部输入再创建新目录，拒绝覆盖已有材料，直接用经过 hash
+核对的 archive 内存快照解包。输出明确 runtime_rebuilt=false、
+historical_build_receipt=false、release_authorized=false。
+精确输出摘要、旧输出覆盖拒绝和源归档篡改不产生部分输出的回归，
+在原生构建机与 Ubuntu 24.04 通过。此时仅生成 review 材料，尚未
+修改这三个 IPK 或对其作许可证充分性判断；后续材料打包需要保持
+runtime 字节并遵守 package revision 与依赖一致性门禁。

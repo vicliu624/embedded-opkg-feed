@@ -3141,3 +3141,16 @@ reviewed-staging-runtime-bound-builder.log 验证完整 consumer、来源
 runtime-bound-import-full-preflight.log 的完整 Ubuntu 24.04 前置检查
 通过，旧普通 staging 集成回归也通过。当前共享输入快照包含 107
 路径，审查记录已按实际源码更新；仍未完成所有包的开发闭包。
+
+Node/ICU runtime 核对：四个 ICU 库及 libnode 与当前 IPK 直接字节
+一致；libcares/libuv/libnghttp2 的开发 ELF 保留未 strip 内容，在
+临时副本使用配对 SDK 的 --strip-unneeded 后与 IPK 完全一致。
+verify-staging-runtime-match.py 新增可选 --sdk，要求 SDK manifest
+身份匹配 staging receipt，仅对临时副本归一化，并继续要求完整
+字节匹配。八个共享 provider 全部通过，原缓存/receipt 未改。
+真实 libuv 反向测试修改 ELF executable section 后被拒绝，错误
+SDK 被拒绝；原生与离线 Ubuntu 24.04 测试均通过。
+reviewed-staging-sdk-normalized-builder.log 的完整导入/消费者/来源
+导出/普通复用回归通过；sdk-normalized-import-full-preflight.log
+完整前置检查通过，固定审查的正反测试通过。Node/ICU 多包 reviewed
+import 和完整开发闭包仍未完成。

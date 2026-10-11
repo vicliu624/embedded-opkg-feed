@@ -7,12 +7,12 @@
   "reviewed_at": "2026-10-11",
   "status": "diff-reviewed-not-import-authorization",
   "consumer_shared_inputs_count": 107,
-  "consumer_shared_inputs_sha256": "a90966dc74249f67c2a21004e59d82f69d5f55f90aceb786d55f0c9d051d6c32",
+  "consumer_shared_inputs_sha256": "83735fedb50526da058986f923509a973d7c0923cd1a087f22b93eb6cd474b89",
   "changed_inputs": [
     {
       "path": "scripts/build-all.sh",
       "producer_sha256": "a08214a05c30ed345eb30bd8304910baf7c1a34c1077c69ab9042a64ac290e7b",
-      "consumer_sha256": "671275df348e82f2ff9ee85b2c472eb0508c59840d95a6aefc30bd025859d7d3",
+      "consumer_sha256": "1f43b3cff6ba27888cc50d35bdcd008ddef73c1964250bb1f13ce53878aff4fe",
       "rationale": "Adds explicit recovery and reviewed historical import with provenance preservation and exact development/runtime matching; ordinary receipt equality and the libdb source-build path remain unchanged."
     },
     {

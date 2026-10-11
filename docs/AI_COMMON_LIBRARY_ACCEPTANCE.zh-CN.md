@@ -3078,3 +3078,10 @@ openblas-recovered-consumer.0pPtQ7。真实输入集成测试拒绝已有输出�
 header/provenance 篡改、额外文件、越界链接、错误 source digest、
 错误 SDK 和错误运行包，均通过。442 包整批及逐包求解已通过，
 实际安装仍在运行。
+
+442 包验收完成：签名开启的整批求解、442 次逐包求解、实际安装/
+configure 均通过，含基础包共 603 包，受保护基础文件未变。
+netcdf-installed-442.5i2k1a 仅使用安装根运行库复验 CDF5、压缩 HDF5、
+local NCZarr 创建/重开/精确值/metadata，HTTP byte-range 读取及
+服务端实际 Range 观察均通过；GSL 数值测试同时通过，未引用开发
+staging。DAP2/DAP4、严格开发闭包、完整源码批次和实机验收仍待完成。

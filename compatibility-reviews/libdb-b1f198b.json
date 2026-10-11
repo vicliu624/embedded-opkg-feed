@@ -7,19 +7,19 @@
   "reviewed_at": "2026-10-11",
   "status": "diff-reviewed-not-import-authorization",
   "consumer_shared_inputs_count": 106,
-  "consumer_shared_inputs_sha256": "e11bfb64c6d67d415dcd7cd159873cd5f98e1660862199edf2bfc6df73ecfd08",
+  "consumer_shared_inputs_sha256": "acc41d07e58f94965e5416bd0e60caa319abce70462c0c7db1dbe2d546a12e59",
   "changed_inputs": [
     {
       "path": "scripts/build-all.sh",
       "producer_sha256": "a08214a05c30ed345eb30bd8304910baf7c1a34c1077c69ab9042a64ac290e7b",
-      "consumer_sha256": "7b77406f3b0cbb392019c91aeab9fb7359b51e21b14987d80b70c4d34b888185",
-      "rationale": "Adds opt-in SQLite recovery; ordinary receipt import and libdb build path remain unchanged."
+      "consumer_sha256": "a7be341bb3c3173d2d89b9149acbc776c64163949204087714ba93b147704e09",
+      "rationale": "Adds explicit SQLite recovery and reviewed historical import with provenance preservation; ordinary import remains strict and the libdb source-build path is unchanged."
     },
     {
       "path": "scripts/build-staging-receipt.py",
       "producer_sha256": "6c88f151a5b9a01526a27e189552014a460aa487b3eb2a4b18daa4470577aad3",
-      "consumer_sha256": "648a7162d894ce7325d46ad4dfefa982ed96f719e63609f3e7425c5d9dcfc356",
-      "rationale": "Adds SQLite recovery provenance validation when that file exists; this libdb export has no recovery file."
+      "consumer_sha256": "544168d67e239b241112db41b0134e8051f64828c6e23ea286742539305701d0",
+      "rationale": "Adds SQLite and historical provenance validation when present; historical development bytes must stay unchanged and ordinary receipt equality remains required."
     },
     {
       "path": "scripts/check-batch-build-policy.sh",

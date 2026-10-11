@@ -3114,3 +3114,19 @@ current-development-audit-consumer.fV6y4g 核验通过；错误/缺失集合
 摘要以及实际新增的共享脚本均被拒绝。原生 Python 与离线 Ubuntu
 24.04/Python 3.12 集成测试均通过。该记录仍是 diff audit，生产
 导入器未接通，import_authorized 保持 false，旧 receipt 未改写。
+
+显式 reviewed staging 路径已加入 build-all：必须同时提供
+--import-reviewed-staging、--staging-producer-repo、--staging-input-review
+和恰好一个 --provided-package。普通 --import-staging 仍执行当前
+receipt 精确验证；不能将 producer/review 参数混入普通模式。
+临时导入根保存 tdvp-historical-development.json，包含原 receipt
+文本、审查文本及 audit 摘要。导出 receipt 记录历史来源，并逐路径
+要求历史开发文件、mode 和链接保持不变，不把旧来源描述为新编译。
+真实 Berkeley DB 的离线 consumer fixture 已验证显式导入、编译、
+IPK、运行、来源导出、receipt 复核、来源篡改拒绝，以及再经普通
+receipt 导入复用。空源码缓存下 libdb 未重编。日志
+reviewed-staging-builder-normal-reuse.log。普通 staging 集成回归及
+完整 Ubuntu 24.04 shared batch preflight 同时通过。
+这项覆盖单包历史复用；Node/ICU 配方差异、多 producer 合并及全部
+开发闭包尚未完成。生产审查仍锁定具体输入摘要，后续源码变化会
+拒绝复用，必须重新核对差异；原 receipt 不允许就地改写。

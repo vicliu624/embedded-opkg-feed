@@ -86,6 +86,24 @@ if recovery_path.exists():
         assert files.get(relative) == {"type": "symlink", "target": target}, "recovered development links changed"
     receipt["recovered_development"] = recovery
 path = receipt_path
+historical_path = staging / "tdvp-historical-development.json"
+if historical_path.exists():
+    assert historical_path.is_file() and not historical_path.is_symlink(), "unsafe historical provenance"
+    historical = json.loads(historical_path.read_text())
+    assert historical.get("schema") == 1 and historical.get("kind") == "tdvp-reviewed-historical-development"
+    assert historical.get("import_mode") == "explicit-reviewed-staging"
+    audit = historical["audit"]
+    assert audit["import_authorized"] is False
+    producer_text = historical["producer_receipt_text"]
+    assert hashlib.sha256(producer_text.encode()).hexdigest() == audit["producer_receipt_sha256"]
+    review_text = historical["input_review_text"]
+    assert hashlib.sha256(review_text.encode()).hexdigest() == audit["review_sha256"]
+    producer_receipt = json.loads(producer_text)
+    assert producer_receipt["sdk_manifest_sha256"] == sdk_identity, "historical SDK differs"
+    assert producer_receipt["packages"] == [audit["package"]] and audit["package"] in packages
+    for relative, record in producer_receipt["development_files"].items():
+        assert files.get(relative) == record, "historical development bytes or links changed"
+    receipt["historical_development"] = historical
 if args.mode == "write":
     with path.open("x", encoding="utf-8") as stream:
         json.dump(receipt, stream, sort_keys=True, indent=2)

@@ -17,6 +17,9 @@ reuse_runtime_catalog=0
 staging_import_dir=
 recovered_sqlite_import=0
 verified_recovery_provider=
+reviewed_staging_import=0
+staging_producer_repo=
+staging_input_review=
 staging_export_dir=
 provided_packages=()
 requested_packages=()
@@ -70,6 +73,22 @@ while [[ $# -gt 0 ]]; do
       recovered_sqlite_import=1
       shift 2
       ;;
+    --import-reviewed-staging)
+      [[ $# -ge 2 && -z "$staging_import_dir" ]] || { echo 'choose one reviewed staging import directory' >&2; exit 64; }
+      staging_import_dir=$2
+      reviewed_staging_import=1
+      shift 2
+      ;;
+    --staging-producer-repo)
+      [[ $# -ge 2 && -z "$staging_producer_repo" ]] || exit 64
+      staging_producer_repo=$2
+      shift 2
+      ;;
+    --staging-input-review)
+      [[ $# -ge 2 && -z "$staging_input_review" ]] || exit 64
+      staging_input_review=$2
+      shift 2
+      ;;
     --export-staging)
       [[ $# -ge 2 ]] || { echo '--export-staging needs a new directory path' >&2; exit 64; }
       staging_export_dir=$2
@@ -101,6 +120,21 @@ done
   echo '--runtime-catalog-only and --reuse-runtime-catalog cannot be combined' >&2
   exit 64
 }
+if [[ "$reviewed_staging_import" -eq 1 ]]; then
+  [[ -n "$staging_producer_repo" && -n "$staging_input_review" && ${#provided_packages[@]} -eq 1 ]] || {
+    echo 'reviewed import requires producer inputs, pinned review and exactly one provided package' >&2
+    exit 64
+  }
+  [[ "$runtime_catalog_only" -eq 0 ]] || {
+    echo 'reviewed import requires a consumer transaction' >&2
+    exit 64
+  }
+else
+  [[ -z "$staging_producer_repo" && -z "$staging_input_review" ]] || {
+    echo 'producer/review inputs require explicit reviewed staging import' >&2
+    exit 64
+  }
+fi
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd -- "$script_dir/.." && pwd)
@@ -278,7 +312,17 @@ if [[ -n "$staging_import_dir" ]]; then
   # by a package hook or leak into the next batch.
   staging_import_dir=$(cd -- "$staging_import_dir" && pwd)
   assert_staging_links_are_internal "$staging_import_dir"
-  if [[ "$recovered_sqlite_import" -eq 1 ]]; then
+  if [[ "$reviewed_staging_import" -eq 1 ]]; then
+    reviewed_audit=$(python3 "$script_dir/audit-reviewed-development.py" --repo "$repo_root" \
+      --producer-repo "$staging_producer_repo" --sdk "${TDVP_SDK_ROOT:?reviewed import requires matched SDK}" \
+      --staging "$staging_import_dir" --review "$staging_input_review")
+    python3 - "$reviewed_audit" "${provided_packages[0]}" <<'PY'
+import json, sys
+audit = json.loads(sys.argv[1])
+assert audit['package'] == sys.argv[2], 'provided package differs from audited closure'
+assert audit['import_authorized'] is False, 'unexpected audit authority'
+PY
+  elif [[ "$recovered_sqlite_import" -eq 1 ]]; then
     [[ "$platform_slug" == tdvp-k230-r1 && ${#provided_packages[@]} -eq 1 && "${provided_packages[0]}" == libsqlite3-0 ]] || {
       echo 'SQLite recovery import requires exactly its declared runtime provider' >&2
       exit 79
@@ -302,6 +346,24 @@ if [[ -n "$staging_import_dir" ]]; then
     exit 79
   fi
   cp -a -- "$staging_import_dir/." "$staging_root/"
+  if [[ "$reviewed_staging_import" -eq 1 ]]; then
+    python3 - "$staging_root" "$reviewed_audit" "$staging_input_review" <<'PY'
+import hashlib, json, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+audit = json.loads(sys.argv[2])
+producer_text = (root / 'tdvp-build-staging-receipt.json').read_bytes().decode('utf-8')
+assert hashlib.sha256(producer_text.encode()).hexdigest() == audit['producer_receipt_sha256']
+review = Path(sys.argv[3]).read_bytes()
+assert hashlib.sha256(review).hexdigest() == audit['review_sha256']
+origin = {'schema': 1, 'kind': 'tdvp-reviewed-historical-development',
+          'import_mode': 'explicit-reviewed-staging', 'audit': audit,
+          'producer_receipt_text': producer_text, 'input_review_text': review.decode('utf-8')}
+path = root / 'tdvp-historical-development.json'
+assert not path.exists() and not path.is_symlink(), 'nested historical import requires separate validation'
+path.write_text(json.dumps(origin, sort_keys=True, indent=2) + '\n')
+PY
+  fi
 fi
 
 declare -A recipe_dir=()
@@ -894,6 +956,9 @@ if [[ -n "$staging_export_dir" ]]; then
   assert_staging_links_are_internal "$staging_export_dir"
   if [[ -f "$staging_root/tdvp-development-recovery.json" ]]; then
     cp -- "$staging_root/tdvp-development-recovery.json" "$staging_export_dir/tdvp-development-recovery.json"
+  fi
+  if [[ -f "$staging_root/tdvp-historical-development.json" ]]; then
+    cp -- "$staging_root/tdvp-historical-development.json" "$staging_export_dir/tdvp-historical-development.json"
   fi
   if [[ -n "$runtime_owner_map" ]]; then
     cp -- "$runtime_owner_map" "$staging_export_dir/tdvp-runtime-owners.tsv"

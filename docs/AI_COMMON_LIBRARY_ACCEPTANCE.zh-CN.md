@@ -3361,3 +3361,15 @@ historical_build_receipt=false、release_authorized=false。
 在原生构建机与 Ubuntu 24.04 通过。此时仅生成 review 材料，尚未
 修改这三个 IPK 或对其作许可证充分性判断；后续材料打包需要保持
 runtime 字节并遵守 package revision 与依赖一致性门禁。
+
+dialog/htop/ncdu 的原始归档已按现有 source.lock 下载并匹配摘要，
+source-notice-terminal-review.cWgllM 保留三个输入和新 projected 目录。
+材料生成器增加显式 --terminal 模式：原样保留 dialog COPYING 与
+随源 Debian copyright、htop/ncdu COPYING 四份文件，并记录每份
+原路径与摘要。未改 IPK，未编译程序，未对材料充分性作结论。
+默认 core 模式仍投影原先六份材料；两种模式的精确摘要、拒绝旧
+输出覆盖和损坏 archive 不产生部分输出的测试，均在原生构建机
+与 Ubuntu 24.04 通过。归档读取为已验证的内存快照，支持 gzip/xz。
+截至这里，六个第三方包已有 review 材料，其余聚合工具、nano、
+rsync、tmux、wget、libfft2d 及镜像材料仍需继续核对；随包打包和
+修订一致性尚未实施，不能据此减少 445 包候选 IPK 的缺口计数。

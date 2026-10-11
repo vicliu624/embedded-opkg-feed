@@ -13,6 +13,7 @@ import tarfile
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--archives', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
+parser.add_argument('--terminal', action='store_true', help='Review dialog/htop/ncdu instead of the core three providers')
 args = parser.parse_args()
 output = args.output.resolve()
 assert not output.exists() and not output.is_symlink(), 'review output already exists'
@@ -24,6 +25,13 @@ providers = {
     'libsqlite3-0': ('sqlite-autoconf-3480000.tar.gz', 'ac992f7fca3989de7ed1fe99c16363f848794c8c32a158dafd4eb927a2e02fd5',
                     ('sqlite-autoconf-3480000/sqlite3.h',)),
 }
+if args.terminal:
+    providers = {
+        'dialog': ('dialog-1.3-20220117.tgz', '754cb6bf7dc6a9ac5c1f80c13caa4d976e30a5a6e8b46f17b3bb9b080c31041f',
+                   ('dialog-1.3-20220117/COPYING', 'dialog-1.3-20220117/package/debian/copyright')),
+        'htop': ('htop-3.3.0.tar.xz', 'a69acf9b42ff592c4861010fce7d8006805f0d6ef0e8ee647a6ee6e59b743d5c', ('htop-3.3.0/COPYING',)),
+        'ncdu': ('ncdu-1.21.tar.gz', 'a894d3a9b46bce578a6039bef48f54533ec402fb589b0769bfbb1d1edf9601a6', ('ncdu-1.21/COPYING',)),
+    }
 planned = {}
 records = {}
 for package, (filename, expected, members) in providers.items():
@@ -31,7 +39,7 @@ for package, (filename, expected, members) in providers.items():
     source_bytes = source.read_bytes()
     assert hashlib.sha256(source_bytes).hexdigest() == expected, 'source archive identity changed'
     files = []
-    with tarfile.open(fileobj=io.BytesIO(source_bytes), mode='r:gz') as archive:
+    with tarfile.open(fileobj=io.BytesIO(source_bytes), mode='r:*') as archive:
         for name in members:
             member = archive.getmember(name)
             assert member.isfile() and 0 < member.size < 1000000
@@ -58,4 +66,4 @@ for relative, data in planned.items():
 manifest = {'schema': 1, 'kind': 'tdvp-source-notice-review-material', 'providers': records,
             'runtime_rebuilt': False, 'historical_build_receipt': False, 'release_authorized': False}
 (output / 'notice-source-record.json').write_text(json.dumps(manifest, sort_keys=True, indent=2) + '\n')
-print('Source notice review: PASS three locked archives, six exact notice projections; runtime unchanged, release not authorized')
+print(f'Source notice review: PASS three locked archives, {len(planned)} exact notice projections; runtime unchanged, release not authorized')

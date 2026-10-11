@@ -24,4 +24,8 @@ tls_test = (repo / 'tests/libsoup-tls-loopback-smoke.py').read_text()
 assert "GIO_USE_TLS='gnutls'" in tls_test
 assert 'rejected.returncode == 3' in tls_test and 'mismatched.returncode == 3' in tls_test
 compile(tls_test, 'libsoup-tls-loopback-smoke.py', 'exec')
+websocket = (repo / 'tests/libsoup-websocket-smoke.c').read_text()
+assert 'soup_server_listen_local' in websocket and 'SOUP_SERVER_LISTEN_IPV4_ONLY' in websocket
+assert 'SOUP_WEBSOCKET_CLOSE_NORMAL' in websocket and 'state.sent_back == 2' in websocket
+assert 'server_connection = g_object_ref(connection)' in websocket
 print('libsoup policy: PASS source lock, TLS runtime provider, build closure and CPU0 ABI')

@@ -2929,3 +2929,16 @@ body；无关 CA 与主机名不符均返回 G_TLS_ERROR_BAD_CERTIFICATE，
 此测试验证 HTTPS HTTP/1.1 和本地 trust database，不扩大为
 HTTP/2、WebSocket 或公共系统 CA 全链路验收。新 TLS 回归源
 纳入静态检查，安装根独立复测仍需完成。
+
+437 安装验收完成：整批/437 单包求解与实际安装配置通过，测试
+签名开启，受保护基础文件不变。WebSocket 消费者
+libsoup-websocket-consumer.EliEpq 初次未保留服务器 connection
+引用，正常关闭断言失败。参考上游 websocket-test.c 的
+g_object_ref 生命周期处理后，保留该引用并在退出时释放，未改
+runtime 或降低关闭断言；GitNexus 未索引新测试函数，人工
+测试范围低风险评估及 main/server_connected/State impact 已执行。
+仅使用 437 安装根库路径，WebSocket 真实本地 TCP、子协议、
+准确文本/含零字节 binary 回显和 close 1000 通过；HTTP 响应/
+PSL、HTTPS 正确 CA、无关 CA/主机名不符拒绝复测通过。没有
+引用开发 staging。WebSocket 双端均为目标 libsoup，未将该
+结果扩大为独立浏览器兼容认证。HTTP/2 和严格开发闭包仍待完成。

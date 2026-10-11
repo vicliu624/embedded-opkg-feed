@@ -2613,3 +2613,141 @@ QuickTime 测试不扩大为所有 MP4 编码格式已验收。独立原生 UDP
 一致，序列号和时间戳推进正确。IPK 53 ELF CPU0 检查通过，摘要
 a3ae19e3f5d90bef0bb9c42999639ca88c6201d706acf01ac9a03de41dbe86c9。
 430 候选已启动组合，仍需安装根复测及完整依赖/开发收据验收。
+
+继续补 libvpx 1.16.0：Google 主仓库与官方 GitHub 镜像 tag
+均指向 1024874c5919305883187e2953de8fcb4c3d7fa6；下载归档摘要
+7a479a3c66b9f5d5542a4c6a1b7d3768a983b1e5c14c60a9396edc9b649e015c
+已锁定。tag 签名状态 unknown_key，未记为签名认证成功或独立
+发布摘要核验。generic-gnu CPU0 配方保留 VP8/VP9 编码与解码、
+VP9 高位深，禁用运行时 CPU 探测，不进入 RVV 汇编路径。
+离线构建已启动，实际编解码、负输入、SONAME、IPK 和安装仍
+需验证；不能只凭源码版本宣告对应 GStreamer 能力已补齐。
+
+libvpx 离线构建通过，产物 tdvp-command-payload.8XEg5c，
+实际 SONAME libvpx.so.12。目标 API 回归在 rv64,v=false 下
+验证 VP8 8 位、VP9 8/10/12 位编码解码和损坏输入拒绝；全部
+Y/U/V 平面逐样本检查（VP8 容差、VP9 lossless 精确一致），
+目录 vpx-complete-codec-consumer.6NWCJl。Good 修订到 1.28.7-2，
+新增 libvpx 构建依赖并启用 VPX，重建进行中。旧 430 候选安装
+任务仍运行，不能据此提前记录新版 VPX 插件安装验收。42975de
+快速 CI 38049177957 成功；全源码 Eigen 阻断仍未关闭。
+
+VPX 插件新回归暴露未闭合问题：VP9/MP4 在 qtdemux 报 corrupt。
+文件/fragmented/faststart/lag=0/长输入隔离均未解决；生成文件
+仅 595 字节，mdat 8 字节、stsd 16 字节，无 vp09/vpcC 编码条目，
+因此当前首先需要核实编码器实际帧输出，而不能凭 direct 管线
+退出 0 宣告解码帧成功。失败保留在 gstreamer-vpx-runtime-smoke.py，
+模式日志 vp9-mp4-mode-isolation.bP8GUp、
+vp9-mp4-lag-isolation.B4BXzq。直接 C libvpx 帧内容验收仍通过，
+不能替代插件帧输出验收。旧 430 opkg 整批、逐包及实际安装
+通过，共 591 已安装包，受保护基础未变化；它不包含 VPX。
+
+进一步隔离后，VP9 编码器接 identity 已实际输出 3 帧（698/
+204/203 字节），日志 vpx-encoder-empty-output-debug.V6aj0K。
+所以空 MP4 不等于编码器未输出；后续应追踪 mux 接收/配置路径，
+并增加端到端解码帧计数，避免只用 EOS/退出码支持帧往返结论。
+
+caps 跟踪进一步显示编码器输出缺少 MP4 所需 chroma-format/
+bit-depth 字段，mux 路径未收到可用缓冲区。官方 vp9parse 位于
+Bad videoparsers 插件，当前源尚未提供；将补入真实解析层再验证
+判断，不在测试中硬填编码元数据。gst-plugins-bad 1.28.7 归档
+已通过官方摘要校验：
+dc525383c18b2c265bbe6a43d498656cd918aaa130aa4e3abeabcdaa741c3ffe，
+目录 gstreamer-bad-source-review.hxZvRi。旧 430 安装根的八条
+Good 管线及 UDP 实包独立复测通过，与新版 VPX 失败保持区分。
+
+Bad 解析/便携处理包离线构建通过，产物 tdvp-command-payload.X5yXvN，
+生成 17 个共享库与 52 个插件模块。使用真实 vp9parse 后，VP8、
+VP9、WebM、VP9/MP4、VP8/VP9 RTP 六条管线全部解码出 3 帧，
+fatal-criticals 下无 critical，回归 gstreamer-vpx-runtime-smoke.py
+已统计实际帧数。Good 新版声明 Bad 解析包的运行与构建依赖，
+避免设备只安装 Good 后缺 vp9parse。Bad 未启用摄像头/GPU
+后端插件；上游生成的 CUDA 辅助接口库不代表 K230 可运行 CUDA，
+WebRTC 接口库也不代表完整 webrtcbin 连接已验收。仍需库 API/
+负输入、IPK 和新候选安装闭包验证，尚未正式发布。
+
+直接解析 API 新负测试未通过：gst_vp9_parser_parse_frame_header
+对真实 keyframe 指针但 size=1 的截断视图返回 OK，断言失败；
+目录 gstreamer-vp9-parser-consumer 的失败日志暂未固定完整摘要。
+源码确认 gst_vp9_read_bit/gst_vp9_read_bits 使用 unchecked reader，
+存在需要继续核对的输入边界问题。当前不能记录 parser 负输入
+通过，也不能把正常插件管线成功当作解析库安全审查完成。
+第一次 C 测试还误触发 QEMU 外部 scanner，需要隔离 registry/
+扫描配置再复现。尚未修改第三方解析实现，优先查上游修复与
+API 约定；新候选发布仍保持未完成。
+
+边界修复使用私有 checked bit reader/错误状态，公共 ABI 不变，
+补丁 vp9-checked-bit-reader.patch 摘要
+1b61960a09d2c1d11e364af5c559efcdc6a2af2e4237701340b01f8dc011c015。
+第三方两个 parser API 未被 GitNexus 索引，人工影响评估为高风险，
+覆盖帧头与 superframe 读取路径，先本地验证，不推广发布。补丁
+构建通过，产物 tdvp-command-payload.Z7yeST。隔离 registry 后
+C API 检查真实头信息、全部短于头长度的截断前缀、损坏输入、
+合法一字节 show-existing 头和 superframe 边界通过，目录
+gstreamer-vp9-checked-parser-consumer.3LReaJ。修复后的六条 VPX
+管线仍各解码 3 帧。物理内存边界/更广负输入、IPK 与安装根复测
+仍需完成，不将该回归扩大为整库安全认证。
+
+2026-10-11：核对物理边界测试的对照日志，未修复产物也报告通过，
+因此这一对照不能证明补丁前后差异；保持直接 API 截断视图测试的
+结果与该测试区分，不声称已完成整库安全审查。
+Good 消费者在现有 libvpx/Bad 开发文件上重新构建通过，未重编依赖，
+产物 tdvp-command-payload.gJZ4Ft。六条 VPX 管线复测各实际解码 3 帧。
+三个 IPK 已通过 CPU0 ELF 策略：libvpx 1 个、Bad 69 个、Good 54 个。
+Good 自动运行依赖含 libvpx，显式运行依赖含 Bad 解析包。
+产物目录 gstreamer-vpx-parser-ipk.ovM9pT，SHA256：
+
+- libvpx_1.16.0-1：9a4cd627b6c0f7b1fbdbb1afd8fa0796b08dcfa7e82775ff555332d1afcbdd95
+- gstreamer-plugins-bad_1.28.7-1：fd2892987ff105b9dfbefc8077615276ff5c078029a45ae33758369506464cdd
+- gstreamer-plugins-good_1.28.7-2：dc32a86a0b9e7d318dc574d8948128fb3cdfd2d9a49e820f8456d0947c155bc8
+
+432 包原始候选目录 common-vpx-parser-original-raw.tUKpK8，已启动
+production finalization；完整安装根和实机验收仍未完成，未正式发布。
+
+同日：新版 Good 的八条既有媒体管线与 UDP 实包回归通过，UDP
+收到 4 个 RTP 包，载荷、序号与时间戳正确。新增
+gstreamer-vpx-library-policy.py 已接入共享批次前置检查，Ubuntu
+24.04 容器中完整 check-batch-build-policy.sh 通过。
+清理完成且无活跃使用进程的 428/429 安装测试 root，保留对应
+completed-installed-status 下状态副本、日志、候选包及最新 430
+安装根；删除的是可由镜像与包重新生成的测试文件系统，磁盘
+可用空间恢复至 4.4 GB。432 finalization 仍在运行。
+
+432 production finalization 随后完成，通过镜像归属、ELF 和依赖
+校验。测试签名用于 common-vpx-parser-432-opkg-plan，已启动整批
+及逐包目标 opkg 求解和实际安装；尚未宣称安装完成。
+
+新增独立 Speex 语音编解码库 libspeex 1.2.1-1，与 SpeexDSP 分开。
+官方 SHA256SUMS.txt 核对源码摘要
+4b44d4f2b38a370a2d98a78329fefc56a0cf93d1c1be70029217baae6628feea，
+source review 目录 speex-source-review.U3CZKB。离线正式构建通过，
+产物 tdvp-command-payload.PjeP5S，实际 ABI libspeex.so.1。
+独立 C 消费者 speex-codec-consumer.xPiPq2 在 rv64,v=false 下通过
+8/16/32 kHz 三种模式，各实际编码并解码 20 帧、输出能量非零；
+该测试不构成音质、麦克风硬件或语音识别模型验收。
+IPK 位于 speex-ipk.t0ypb2，摘要
+9980cabdb4a156c9dd70d59ced2e5d138a24b899ee5294ad7fd5337990d8a1fd。
+许可证投影和 CPU0 ELF 检查通过；新增静态配方检查已接入共享
+前置检查。Speex 尚未加入已整理的 432 候选，也未安装到设备。
+
+WavPack 5.9.0-1 新增：上游 GitHub release 资产摘要与下载文件
+一致，b5291bc4e6d69ebbd3da3800c5bf4a70f19bb92679b23e09b3b612c1e648d1ff，
+source review 目录 wavpack-source-review.t0Dw2s。关闭汇编和命令行
+程序，保留线程、DSD、旧格式库支持。离线正式构建通过；独立
+C 消费者 wavpack-codec-consumer.yzJZfw 在 rv64,v=false 下验证
+4096 个立体声 PCM 样本无损往返逐值一致，元数据、EOF 和错误
+计数正确。该回归未覆盖 DSD、混合有损或多线程压力行为。
+实际 ABI libwavpack.so.1；IPK 位于 wavpack-ipk.4ZAii6，摘要
+6a8e9c022f031236539f93111176afc93696d914b501b5be8c944b79f51593b9。
+CPU0 ELF 与许可证投影通过，新增静态检查接入共享前置检查后
+完整前置检查通过。Speex/WavPack 已加入 434 原始候选
+common-speech-lossless-original-raw.wtFgaJ，启动 production
+finalization。432 安装验收保持独立运行，不取消、不用新候选
+替代旧任务完成证明；434/实机安装仍未完成，尚未正式发布。
+
+432 验收随后完成：整批求解、432 次单包求解、实际安装配置均
+通过，签名检查开启，受保护基础文件不变，593 个总安装包。
+安装后仅使用安装根库路径复测六条 VPX 视频管线（各解码 3 帧）、
+八条 Good 管线、UDP 四个实包、libvpx 的 VP8 8-bit 及 VP9
+8/10/12-bit API、VP9 parser 截断/合法短头 API，全通过。
+此处是构建机上的目标架构隔离安装验收，未替代 K230 实机验收。

@@ -24,3 +24,5 @@ support/**/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
 tests/fixtures/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
 packages/libmariadb/public-compression-header.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
 packages/gstreamer-plugins-base/ogg-push-segment-seqnum.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
+# The final context line is an upstream blank line, part of the unified hunk.
+packages/gstreamer-plugins-bad/vp9-checked-bit-reader.patch text eol=lf whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab

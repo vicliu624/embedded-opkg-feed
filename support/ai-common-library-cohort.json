@@ -39,14 +39,16 @@
     "vision-hevc": ["libde265", "libx265"],
     "vision-heif": ["libheif"],
     "vision-theora": ["libtheora"],
+    "vision-vp8-vp9": ["libvpx"],
     "scientific-dataset-storage": ["libaec", "libhdf5"],
     "scientific": ["libopenblas", "eigen-dev", "python3-numpy", "python3-scipy", "python3-sympy", "python3-mpmath"],
     "vision": ["libopencv4", "libtiff-6", "python3-opencv", "python3-pillow"],
     "inference": ["libabseil-cpp", "libprotobuf", "libflatbuffers", "libre2", "libcpuinfo", "libfarmhash", "libfft2d", "libncnn", "libonnx", "libonnxruntime", "libtensorflow-lite", "python3-onnx", "python3-onnxruntime", "python3-tflite-runtime", "python3-protobuf", "python3-flatbuffers", "python3-tdvp-ai", "libtdvp-ai-client", "tdvp-ai-tools", "pybind11-dev", "nlohmann-json-dev", "boost-mp11-dev", "microsoft-gsl-dev", "safeint-dev", "gemmlowp-dev", "ruy-dev", "ml-dtypes-dev"],
-    "audio": ["libfftw3-3", "libflac", "libopus-0", "libsamplerate-0", "libspeexdsp-1", "libportaudio", "python3-sounddevice", "python3-soundfile"],
+    "audio": ["libfftw3-3", "libflac", "libopus-0", "libsamplerate-0", "libspeexdsp-1", "libspeex", "libwavpack", "libportaudio", "python3-sounddevice", "python3-soundfile"],
     "multimedia-pipeline-core": ["libgstreamer", "gstreamer-tools"],
     "multimedia-pipeline-base": ["gstreamer-plugins-base"],
     "multimedia-pipeline-network-containers": ["gstreamer-plugins-good"],
+    "multimedia-bitstream-parsers-processing": ["gstreamer-plugins-bad"],
     "python-support": ["python3-cffi", "python3-pycparser", "python3-requests", "python3-urllib3", "python3-certifi", "python3-charset-normalizer", "python3-idna", "python3-pysocks", "python3-pyyaml", "python3-packaging", "python3-coloredlogs", "python3-humanfriendly", "python3-six", "python3-typing-extensions"]
   }
 }

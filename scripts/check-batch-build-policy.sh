@@ -77,4 +77,5 @@ python3 "$repo_root/tests/twolame-library-policy.py"
 python3 "$repo_root/tests/lame-library-policy.py"
 python3 "$repo_root/tests/gudev-library-policy.py"
 python3 "$repo_root/tests/gsl-library-policy.py"
+python3 "$repo_root/tests/netcdf-library-policy.py"
 echo 'Shared batch preflight: PASS'

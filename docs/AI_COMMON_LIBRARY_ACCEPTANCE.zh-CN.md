@@ -3023,3 +3023,26 @@ IPK gsl-ipk.Xsr2pH，摘要
 af4484bae8d17bd02574ae986047dc0961fb752bdea4171c6fd98ff63d007d9b。
 两个 ELF 策略及完整 shared batch preflight 通过，正式发布与设备
 验收未完成。未重编已有 OpenBLAS。
+
+440 包签名求解、440 次逐包求解及实际安装/configure 已通过，
+包含基础包共 601 包，受保护基础文件未变。libgudev 消费者在真正
+chroot、临时 sysfs/procfs 下仅使用安装根 /usr/lib 复验通过，没有
+引用开发 staging 或临时 runtime payload。441 包整合已通过，安装
+验收启动，尚无结果。
+
+新增 NetCDF 4.10.1-1，官方 tag archive SHA256
+33c27231c478c3b35da7c7758fbdd02da1fe407abcb16ddfe195f69d164f930d
+为本地计算值，未核验独立上游签名。离线 CPU0 构建、COPYRIGHT
+投影及 ELF 策略通过，ABI libnetcdf.so.22。使用既有 HDF5、curl、
+zlib、bzip2、zstd、SZIP 和 SDK libxml2 2.13.6 开发文件。最初声明
+libxml2-16 构建依赖，但实际链接 SDK libxml2.so.2，已删除未使用的
+新库依赖，保持基础 runtime byte-for-byte provider。
+消费者 netcdf-dataset-consumer.GGoaeP 在 rv64,v=false 下创建、关闭、
+重开 CDF5、deflate HDF5、local-file NCZarr，精确值和 metadata 均通过。
+测试引用开发 staging，安装后的复验、DAP 网络测试仍待完成。
+构建 settings 确认 DAP2/DAP4、byte-range、NCZarr、HDF5、CDF5、
+deflate/SZIP/zstd/bz2；S3、MPI、NCZarr ZIP 未启用，不能声明支持。
+IPK netcdf-ipk.4fFS30 摘要
+70c975694c56f7235abc935c28e8694b92f827ca1ca26df3e54553c042f122fe。
+自动 Depends 包含既有 libcurl-4/libhdf5/libz/libzstd/libbz2/libaec/
+libxml2-2；完整 shared batch preflight 通过。正式发布和设备验收未完成。

@@ -2977,3 +2977,11 @@ IPK 位于 lame-ipk.CAuZAf，摘要
 bc96f0782e1f09a0a9c4e2e7ff21aa3cf4b8363bee414387eb85b51a53ea69cd。
 新增库策略及完整 shared batch preflight 通过。439 包候选整合仍在运行，
 正式发布、严格开发闭包和设备验收未完成。
+
+SDK 基础开发消费者 sdk-common-development-consumer.HS4aPR：直接使用
+发布 SDK 编译链接 ncurses、curl、OpenSSL、zlib、PNG、sndfile，随后
+仅用 438 安装根运行库执行，rv64,v=false 通过。未引用开发 staging、
+未重编基础库；测试调用版本 API 及 curl 初始化/释放，不要求终端、
+网络或音频设备。此项覆盖六组库的头文件/链接/运行配对，不能替代
+所有库开发闭包或各协议功能验收。实际 SDK 中 sqlite3.h/sqlite3.pc
+仍缺失，继续使用已验证的显式恢复工具，不声称 SDK 已原生提供。

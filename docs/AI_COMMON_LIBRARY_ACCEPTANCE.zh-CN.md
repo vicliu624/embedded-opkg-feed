@@ -3066,3 +3066,15 @@ CDF5 dataset，目标消费者通过网络读取精确数值，服务端确认�
 带 Range 的 GET，rv64,v=false 通过。此时仍使用开发 staging，
 不能代替安装后的复验或 DAP2/DAP4 协议验收。
 442 包候选整合已完成，签名安装验收启动，尚无安装结果。
+
+OpenBLAS LAPACKE 显式恢复工具 restore-openblas-lapacke-development.py
+已通过 write/verify：绑定 SDK、source archive、原始 IPK、tool 和
+输出文件摘要，核验 RISC-V LP64D、版本及 RISCV64_GENERIC 配置。
+只恢复 public-lapacke-lp64 子集，未生成 producer receipt，未接入
+严格 builder import，不代表完整 OpenBLAS 开发配置。
+openblas-lapacke-recovery.Q8EIyH 的消费者使用恢复 include/linker 名称
+编译，仅加载 441 安装根运行库，数值复验通过，证据
+openblas-recovered-consumer.0pPtQ7。真实输入集成测试拒绝已有输出、
+header/provenance 篡改、额外文件、越界链接、错误 source digest、
+错误 SDK 和错误运行包，均通过。442 包整批及逐包求解已通过，
+实际安装仍在运行。

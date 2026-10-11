@@ -3046,3 +3046,16 @@ IPK netcdf-ipk.4fFS30 摘要
 70c975694c56f7235abc935c28e8694b92f827ca1ca26df3e54553c042f122fe。
 自动 Depends 包含既有 libcurl-4/libhdf5/libz/libzstd/libbz2/libaec/
 libxml2-2；完整 shared batch preflight 通过。正式发布和设备验收未完成。
+
+441 包签名整批/逐包求解与实际安装/configure 通过，包含基础包共
+602 包，受保护基础文件未变。GSL 数值消费者仅用 441 安装根的
+运行库复验 LU、积分、FFT 和统计通过，不再引用开发 staging。
+
+OpenBLAS 开发文件缺口：当前 SDK 与聚合 staging 均未找到 lapacke.h。
+重新取得锁定 0.3.29 archive 并验证摘要。安装规则直接复制 LAPACKE
+公开头文件；tests/openblas-lapacke-source-reuse.sh 仅提取这些公开
+头文件，编译 tests/openblas-lapacke-smoke.c 并调用已安装运行库。
+440/441 安装根中 LP64 整数、线性方程与对称特征值验证通过，
+rv64,v=false。错误 archive 在 SHA256 阶段被拒绝。未重编 OpenBLAS，
+没有生成开发构建凭据，也尚未声称完成完整开发恢复和配置闭包。
+独立消费者证据 openblas-lapacke-consumer.mFxaJb。

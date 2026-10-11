@@ -3007,3 +3007,19 @@ IPK gudev-ipk.o8Jz2p 摘要
 完整 shared batch preflight 通过；手工同步 owner 表的 CRLF 导致一次
 精确行断言失败，仅规范化 Linux 测试副本后重跑通过，检查未修改。
 440 包候选整合进行中，完整安装与设备验收待完成。
+
+440 包候选镜像映射整合已完成，签名安装验收已启动，尚无安装结果。
+新增 GNU GSL 2.8-1，与 microsoft-gsl-dev 的 C++ Guidelines Support
+Library 分开。官方 GNU archive SHA256
+6a99eeed15632c6354895b1dd542ed5a855c0f15d9ad1326c6fe2b2c9e423190
+匹配 Buildroot 记录；gpgv 使用 GNU 官方 gnu-keyring.gpg 验证上游
+detached signature，通过，签名者 Patrick Alken，RSA key
+245FB74BAE05B3E9。GPL-3.0-or-later，COPYING 随包投影。
+离线 CPU0 构建通过，ABI libgsl.so.28 和 libgslcblas.so.0。
+消费者 gsl-numerical-consumer.WCqCln 在 rv64,v=false 下验证 LU 解为
+(2,3)、自适应积分 1/3、FFT 正反变换和均值 2.5，均通过。
+此时加载开发 staging，完整安装后的数值复验待完成。
+IPK gsl-ipk.Xsr2pH，摘要
+af4484bae8d17bd02574ae986047dc0961fb752bdea4171c6fd98ff63d007d9b。
+两个 ELF 策略及完整 shared batch preflight 通过，正式发布与设备
+验收未完成。未重编已有 OpenBLAS。

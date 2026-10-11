@@ -113,7 +113,7 @@ tdvp_unpack_locked_source_archive() {
     return 71
   }
   archive=$(tdvp_source_archive_locked_file "$package_dir")
-  mapfile -t top_levels < <(tar -tf "$archive" | awk -F/ 'NF > 1 && $1 != "." && $1 != ".." { print $1 }' | LC_ALL=C sort -u)
+  mapfile -t top_levels < <(tar -tf "$archive" | awk -F/ '{ sub(/^(\.\/)+/, "") } NF > 1 && $1 != "." && $1 != ".." { print $1 }' | LC_ALL=C sort -u)
   [[ ${#top_levels[@]} -eq 1 ]] || {
     echo "locked source archive must contain exactly one top-level tree: $archive" >&2
     return 72
@@ -167,11 +167,9 @@ tdvp_build_direct_archive_library() {
   # shellcheck source=elf-runtime-policy.sh
   source "$package_dir/../../support/elf-runtime-policy.sh"
   tdvp_require_k230_sdk "$sdk_root"
-  output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
-  [[ -f "$output/.config" ]] || {
-    echo "matching Buildroot output has no configuration: $output" >&2
-    return 74
-  }
+  if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+    output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
+  fi
   sysroot=$TDVP_K230_SYSROOT
   readelf_tool=$TDVP_K230_READELF
   strip_tool=$TDVP_K230_STRIP
@@ -207,8 +205,28 @@ tdvp_build_direct_archive_library() {
     return "$rc"
   }
   trap cleanup_direct_archive_library RETURN
+  if [[ ${PACKAGE_USE_FEED_DEVELOPMENT:-0} == 1 ]]; then
+    mkdir -p "$work_root/sysroot"
+    cp -a --reflink=auto "$sysroot/." "$work_root/sysroot/"
+    if [[ -d "$TDVP_FEED_STAGING_ROOT/usr" ]]; then
+      cp -a --reflink=auto "$TDVP_FEED_STAGING_ROOT/usr/." "$work_root/sysroot/usr/"
+    fi
+    sysroot="$work_root/sysroot"
+  fi
   tar -xf "$archive" -C "$work_root"
   source_root="$work_root/$source_directory"
+  if [[ ${PACKAGE_AUTORECONF:-0} == 1 ]]; then
+    [[ -d "$source_root" && ! -L "$source_root" && -f "$source_root/configure.ac" ]] || return 79
+    for tool in autoreconf autoconf automake libtoolize; do
+      command -v "$tool" >/dev/null || { echo "source bootstrap missing host tool: $tool" >&2; return 79; }
+    done
+    if [[ -n ${PACKAGE_BOOTSTRAP_SCRIPT:-} ]]; then
+      [[ "$PACKAGE_BOOTSTRAP_SCRIPT" =~ ^[A-Za-z0-9._-]+$ && -f "$source_root/$PACKAGE_BOOTSTRAP_SCRIPT" && ! -L "$source_root/$PACKAGE_BOOTSTRAP_SCRIPT" ]] || return 79
+      (cd "$source_root" && bash "./$PACKAGE_BOOTSTRAP_SCRIPT")
+    else
+      (cd "$source_root" && autoreconf --force --install)
+    fi
+  fi
   [[ -d "$source_root" && ! -L "$source_root" && -x "$source_root/configure" ]] || {
     echo "locked source archive has no expected autoconf source root: $source_root" >&2
     return 79
@@ -225,9 +243,13 @@ tdvp_build_direct_archive_library() {
     export READELF="$readelf_tool"
     export STRIP="$strip_tool"
     export PKG_CONFIG="$sdk_root/bin/pkg-config"
+    if [[ ${PACKAGE_USE_FEED_DEVELOPMENT:-0} == 1 ]]; then
+      export PKG_CONFIG=/usr/bin/pkg-config
+    fi
     export PKG_CONFIG_SYSROOT_DIR="$sysroot"
     export PKG_CONFIG_LIBDIR="$sysroot/usr/lib/pkgconfig:$sysroot/usr/share/pkgconfig"
     export PKG_CONFIG_PATH=''
+    export lt_cv_sys_lib_dlsearch_path_spec="/lib /usr/lib $sysroot/lib $sysroot/usr/lib"
     export CPPFLAGS="-I$sysroot/usr/include"
     export CFLAGS='-O2 -pipe -fPIC'
     export CXXFLAGS='-O2 -pipe -fPIC'
@@ -235,11 +257,30 @@ tdvp_build_direct_archive_library() {
     ./configure \
       --build="$build_triplet" \
       --host="$target_triplet" \
+      --with-sysroot="$sysroot" \
       --prefix=/usr \
       --enable-shared \
       --disable-static \
       "${configure_options[@]}"
+    # Shared libraries use the target loader's standard /usr/lib directory.
+    # Libtool's install-time relink otherwise injects the build host /usr/lib
+    # when one freshly built library links another (for example FFTW threads).
+    # Match the published SDK builder's no-hardcoding policy; final ELF checks
+    # still remove and reject runtime search paths in the emitted payload.
+    if [[ -f libtool ]]; then
+      sed -i -e 's/^hardcode_into_libs=yes$/hardcode_into_libs=no/' \
+        -e 's/^hardcode_action=relink$/hardcode_action=immediate/' \
+        -e 's/^hardcode_automatic=no$/hardcode_automatic=yes/' libtool
+    fi
     make -j"$jobs"
+    # Recursive projects can generate independent libtool scripts while
+    # building subdirectories. Apply the same no-host-relink policy before
+    # installation; only this extracted source tree is inspected.
+    while IFS= read -r -d '' nested_libtool; do
+      sed -i -e 's/^hardcode_into_libs=yes$/hardcode_into_libs=no/' \
+        -e 's/^hardcode_action=relink$/hardcode_action=immediate/' \
+        -e 's/^hardcode_automatic=no$/hardcode_automatic=yes/' "$nested_libtool"
+    done < <(find "$source_root" -type f -name libtool -print0)
     make DESTDIR="$install_root" install
   )
 
@@ -247,6 +288,8 @@ tdvp_build_direct_archive_library() {
     echo "direct source install omitted $library_glob: $package_dir" >&2
     return 80
   }
+  python3 "$package_dir/../../support/normalize-pkgconfig-build-paths.py" "$install_root" \
+    --sysroot "$TDVP_K230_SYSROOT" --sysroot "$sysroot"
   stage_root=$TDVP_FEED_STAGING_ROOT
   mkdir -p -- "$stage_root/usr"
   cp -a -- "$install_root/usr/." "$stage_root/usr/"
@@ -261,6 +304,11 @@ EOF
   payload_dir=$(tdvp_prepare_generated_payload_root "$package_dir")
   mkdir -p -- "$payload_dir/usr/lib"
   cp -a -- "$install_root/usr/lib/"$library_glob "$payload_dir/usr/lib/"
+  local -a license_args=() license_files=()
+  local license_file
+  IFS=' ' read -r -a license_files <<< "${PACKAGE_LICENSE_FILES:-}"
+  for license_file in "${license_files[@]}"; do license_args+=(--license-file "$license_file"); done
+  python3 "$package_dir/../../support/install-source-licenses.py" "$source_root" "$package_dir" "$payload_dir" "${license_args[@]}"
   tdvp_assert_direct_archive_elfs "$readelf_tool" "$strip_tool" "$payload_dir"
   echo "$(basename -- "$package_dir") direct-source payload ready: $payload_dir"
 }

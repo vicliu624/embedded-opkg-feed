@@ -11,6 +11,19 @@ tdvp_require_k230_sdk() {
     return 64
   }
   TDVP_K230_SDK_ROOT=$(cd -- "$sdk_root" && pwd)
+  if [[ -f "$TDVP_K230_SDK_ROOT/tdvp-sdk-manifest.json" ]]; then
+    TDVP_K230_HOST_DIR=$TDVP_K230_SDK_ROOT
+    TDVP_K230_SYSROOT="$TDVP_K230_SDK_ROOT/sysroot"
+    TDVP_K230_TOOLCHAIN_FILE="$TDVP_K230_SDK_ROOT/toolchain.cmake"
+    TDVP_K230_CMAKE=$(command -v cmake)
+    TDVP_K230_NINJA=$(command -v ninja)
+    TDVP_K230_STRIP="$TDVP_K230_SDK_ROOT/bin/riscv64-unknown-linux-gnu-strip"
+    TDVP_K230_READELF="$TDVP_K230_SDK_ROOT/bin/riscv64-unknown-linux-gnu-readelf"
+    [[ -d "$TDVP_K230_SYSROOT/usr" && -f "$TDVP_K230_TOOLCHAIN_FILE" && -x "$TDVP_K230_READELF" ]] || return 66
+    export TDVP_K230_SDK_ROOT TDVP_K230_HOST_DIR TDVP_K230_SYSROOT \
+      TDVP_K230_TOOLCHAIN_FILE TDVP_K230_CMAKE TDVP_K230_NINJA TDVP_K230_STRIP TDVP_K230_READELF
+    return 0
+  fi
   TDVP_K230_TOOLCHAIN_FILE=${TDVP_K230_TOOLCHAIN_FILE:-}
   if [[ -z "$TDVP_K230_TOOLCHAIN_FILE" ]]; then
     for candidate in \

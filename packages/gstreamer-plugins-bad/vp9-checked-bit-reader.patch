@@ -1,0 +1,74 @@
+From: TDVP Device Team <devices@example.invalid>
+Subject: [PATCH] vp9parser: bound internal bit reads to the supplied buffer
+
+Keep public parser structures and signatures unchanged. Track failed reads
+in a private stack reader, reject incomplete frame headers before committing
+the parsed reference update, and retain legal short show-existing headers.
+
+--- a/gst-libs/gst/codecparsers/gstvp9parser.c
++++ b/gst-libs/gst/codecparsers/gstvp9parser.c
+@@ -59,2 +59,19 @@
+-#define gst_vp9_read_bit(br) gst_bit_reader_get_bits_uint8_unchecked(br, 1)
+-#define gst_vp9_read_bits(br, bits) gst_bit_reader_get_bits_uint32_unchecked(br, bits)
++typedef struct
++{
++  GstBitReader reader;
++  gboolean failed;
++} GstVp9BitReader;
++
++static guint32
++gst_vp9_read_bits_checked (GstBitReader * br, guint bits)
++{
++  GstVp9BitReader *checked = (GstVp9BitReader *) br;
++  guint32 value = 0;
++
++  if (checked->failed || !gst_bit_reader_get_bits_uint32 (br, &value, bits))
++    checked->failed = TRUE;
++  return value;
++}
++
++#define gst_vp9_read_bit(br) gst_vp9_read_bits_checked(br, 1)
++#define gst_vp9_read_bits(br, bits) gst_vp9_read_bits_checked(br, bits)
+@@ -689,5 +706,8 @@
+-  GstBitReader bit_reader;
+-  GstBitReader *br = &bit_reader;
++  GstVp9BitReader bit_reader = { .failed = FALSE };
++  GstBitReader *br = &bit_reader.reader;
++
++  if (size > G_MAXUINT)
++    return GST_VP9_PARSER_ERROR;
+ 
+   gst_bit_reader_init (br, data, size);
+   memset (frame_hdr, 0, sizeof (*frame_hdr));
+@@ -708,3 +728,5 @@
+     frame_hdr->frame_to_show = gst_vp9_read_bits (br, GST_VP9_REF_FRAMES_LOG2);
++    if (bit_reader.failed)
++      goto error;
+     return GST_VP9_PARSER_OK;
+   }
+@@ -814,3 +836,5 @@
+   frame_hdr->frame_header_length_in_bytes =
+       (gst_bit_reader_get_pos (br) + 7) / 8;
++  if (bit_reader.failed)
++    goto error;
+   return gst_vp9_parser_update (parser, frame_hdr);
+@@ -844,2 +868,3 @@
+-  GstBitReader header_bit_reader, index_bit_reader;
+-  GstBitReader *hbr = &header_bit_reader, *ibr = &index_bit_reader;
++  GstVp9BitReader header_bit_reader = { .failed = FALSE };
++  GstVp9BitReader index_bit_reader = { .failed = FALSE };
++  GstBitReader *hbr = &header_bit_reader.reader, *ibr = &index_bit_reader.reader;
+@@ -851,3 +876,5 @@
+   g_return_val_if_fail (size > 0, GST_VP9_PARSER_ERROR);
++  if (size > G_MAXUINT)
++    return GST_VP9_PARSER_ERROR;
+ 
+   gst_bit_reader_init (hbr, data + size - 1, 1);
+@@ -889,5 +916,7 @@
+       superframe_info->frame_sizes[i] |= gst_vp9_read_bits (ibr, 8) << (j * 8);
+   }
+ 
++  if (header_bit_reader.failed || index_bit_reader.failed)
++    goto error;
+   return GST_VP9_PARSER_OK;
+ 

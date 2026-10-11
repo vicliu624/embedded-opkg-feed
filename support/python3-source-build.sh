@@ -140,12 +140,15 @@ tdvp_python3_assert_runtime_exclusions() {
     return 79
   }
   if find "$stdlib" -type f \( \
-    -name 'pydoc.py' -o -name 'pydoc.cpython-313*.pyc' -o \
     -name 'turtle.py' -o -name 'turtle.cpython-313*.pyc' \
   \) -print -quit | grep -q .; then
-    echo 'CPython runtime retained a deliberately excluded pydoc or turtle module' >&2
+    echo 'CPython runtime retained a deliberately excluded turtle module' >&2
     return 80
   fi
+  [[ -f "$stdlib/pydoc.py" && -f "$stdlib/pydoc_data/topics.py" ]] || {
+    echo 'CPython runtime omitted pydoc, required by scientific Python consumers' >&2
+    return 105
+  }
 }
 
 tdvp_build_python3_source_stage() {
@@ -161,6 +164,7 @@ tdvp_build_python3_source_stage() {
   source "$package_dir/../../support/buildroot-feed-session.sh"
   # shellcheck source=elf-runtime-policy.sh
   source "$package_dir/../../support/elf-runtime-policy.sh"
+  if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
   output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
   tree=$(tdvp_buildroot_tree_from_output "$output")
   tdvp_assert_buildroot_2025_02_1 "$tree"
@@ -178,10 +182,17 @@ tdvp_build_python3_source_stage() {
     return 81
   }
 
+  fi
   sysroot="$sdk_root/riscv64-buildroot-linux-gnu/sysroot"
   readelf_tool="$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"
   strip_tool="$sdk_root/bin/riscv64-unknown-linux-gnu-strip"
   host_python="$sdk_root/bin/python3.13"
+  if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+    sysroot="$sdk_root/sysroot"
+    source "$package_dir/../../support/published-native-inputs.sh"
+    tdvp_sdk_host_python "$package_dir" "$TDVP_FEED_STAGING_ROOT/.tdvp-native/python"
+    host_python="$TDVP_FEED_STAGING_ROOT/.tdvp-native/python/bin/python3.13"
+  fi
   for tool in "$readelf_tool" "$strip_tool" "$host_python" \
     "$sdk_root/bin/riscv64-unknown-linux-gnu-gcc" \
     "$sdk_root/bin/riscv64-unknown-linux-gnu-g++" \
@@ -203,6 +214,24 @@ tdvp_build_python3_source_stage() {
       return 85
     }
     tdvp_python3_assert_stage_marker "$stage_dir"
+    # Restore pure standard-library files from the same verified source when
+    # reusing a stage built before the scientific-Python runtime contract.
+    # This does not rebuild or replace the interpreter or native extensions.
+    if [[ ! -f "$stage_dir/usr/lib/python3.13/pydoc.py" ||
+          ! -f "$stage_dir/usr/lib/python3.13/pydoc_data/topics.py" ]]; then
+      archive=$(tdvp_python3_locked_archive "$package_dir")
+      tar -xJf "$archive" --strip-components=2 -C "$stage_dir/usr/lib/python3.13" \
+        "Python-$TDVP_PYTHON3_VERSION/Lib/pydoc.py" \
+        "Python-$TDVP_PYTHON3_VERSION/Lib/pydoc_data"
+    fi
+    tdvp_python3_assert_runtime_exclusions "$stage_dir"
+    [[ -f "$stage_dir/development/usr/include/python3.13/Python.h" &&
+       -d "$stage_dir/development/usr/lib/pkgconfig" ]] || {
+      echo 'cached CPython build predates development export; regenerate its source stage before building Python extensions' >&2
+      return 104
+    }
+    mkdir -p "$TDVP_FEED_STAGING_ROOT/usr"
+    cp -a "$stage_dir/development/usr/." "$TDVP_FEED_STAGING_ROOT/usr/"
     return 0
   fi
 
@@ -223,6 +252,14 @@ tdvp_build_python3_source_stage() {
     return 89
   }
   install_root="$work_root/install-root"
+  if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+    mkdir -p "$work_root/sysroot"
+    cp -a --reflink=auto "$sysroot/." "$work_root/sysroot/"
+    if [[ -d "$TDVP_FEED_STAGING_ROOT/usr" ]]; then
+      cp -a "$TDVP_FEED_STAGING_ROOT/usr/." "$work_root/sysroot/usr/"
+    fi
+    sysroot="$work_root/sysroot"
+  fi
 
   (
     cd -- "$source_root"
@@ -234,6 +271,7 @@ tdvp_build_python3_source_stage() {
     export RANLIB="$sdk_root/bin/riscv64-unknown-linux-gnu-gcc-ranlib"
     export READELF="$readelf_tool"
     export PKG_CONFIG="$sdk_root/bin/pkg-config"
+    [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]] || export PKG_CONFIG=/usr/bin/pkg-config
     export PKG_CONFIG_SYSROOT_DIR="$sysroot"
     export PKG_CONFIG_LIBDIR="$sysroot/usr/lib/pkgconfig:$sysroot/usr/share/pkgconfig"
     export PKG_CONFIG_PATH=''
@@ -271,14 +309,28 @@ tdvp_build_python3_source_stage() {
     echo 'direct CPython source install omitted the CLI, public library, or standard library' >&2
     return 90
   }
+  # Keep development inputs separately from the three runtime payloads.
+  # Removing these before saving the source stage prevents every downstream
+  # Python C extension from consuming this already-built interpreter.
+  [[ -f "$install_root/usr/include/python3.13/Python.h" &&
+     -f "$install_root/usr/include/python3.13/pyconfig.h" &&
+     -d "$install_root/usr/lib/pkgconfig" ]] || return 104
+  mkdir -p "$work_root/development/usr/lib/python3.13"
+  cp -a "$install_root/usr/include" "$work_root/development/usr/"
+  cp -a "$install_root/usr/lib/pkgconfig" "$work_root/development/usr/lib/"
+  cp -a "$install_root/usr/lib/"libpython3.13.so* "$work_root/development/usr/lib/"
+  local development_config
+  while IFS= read -r -d '' development_config; do
+    cp -a "$development_config" "$work_root/development/usr/lib/python3.13/"
+  done < <(find "$install_root/usr/lib/python3.13" -maxdepth 1 \
+    \( -name 'config-3.13-*' -o -name '_sysconfigdata*.py' \) -print0)
   rm -rf -- "$install_root/usr/include" "$install_root/usr/lib/pkgconfig" "$install_root/usr/share/man"
   rm -rf -- "$install_root/usr/lib/python3.13/ensurepip" \
     "$install_root/usr/lib/python3.13/idlelib" "$install_root/usr/lib/python3.13/tkinter" \
-    "$install_root/usr/lib/python3.13/turtledemo" "$install_root/usr/lib/python3.13/pydoc_data" \
+    "$install_root/usr/lib/python3.13/turtledemo" \
     "$install_root/usr/lib/python3.13/config-3.13-riscv64-linux-gnu"
-  rm -f -- "$install_root/usr/lib/python3.13/pydoc.py" "$install_root/usr/lib/python3.13/turtle.py"
-  rm -f -- "$install_root/usr/lib/python3.13/__pycache__"/pydoc.cpython-313*.pyc \
-    "$install_root/usr/lib/python3.13/__pycache__"/turtle.cpython-313*.pyc
+  rm -f -- "$install_root/usr/lib/python3.13/turtle.py"
+  rm -f -- "$install_root/usr/lib/python3.13/__pycache__"/turtle.cpython-313*.pyc
   rm -f -- "$install_root/usr/bin"/idle* "$install_root/usr/bin"/pydoc* \
     "$install_root/usr/bin"/python*-config "$install_root/usr/lib/libpython3.so"
   [[ ! -e "$install_root/usr/bin/python" ]] || rm -f -- "$install_root/usr/bin/python"
@@ -312,6 +364,9 @@ tdvp_build_python3_source_stage() {
   fi
 
   mkdir -p -- "$stage_dir"
+  cp -a "$work_root/development" "$stage_dir/development"
+  mkdir -p "$TDVP_FEED_STAGING_ROOT/usr"
+  cp -a "$stage_dir/development/usr/." "$TDVP_FEED_STAGING_ROOT/usr/"
   cp -a -- "$install_root/usr" "$stage_dir/usr"
   cat >"$stage_dir/.tdvp-python3-source-build" <<EOF
 format=1
@@ -351,12 +406,15 @@ tdvp_python3_replace_payload_root() {
 
 tdvp_prepare_python_payload() {
   local package_dir=$1 split=$2 sdk_root=$3
-  local stage_dir source_root payload_dir root_link readelf_tool payload_ready=0
+  local stage_dir source_root payload_dir root_link readelf_tool license_archive payload_ready=0
   stage_dir=$(tdvp_python3_stage_dir)
   tdvp_python3_assert_stage_marker "$stage_dir"
   source_root="$stage_dir/usr"
   readelf_tool="$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"
   [[ -x "$readelf_tool" ]] || { echo "matching SDK has no target readelf: $readelf_tool" >&2; return 97; }
+  # Each independently distributable split carries the upstream terms, even
+  # when an existing development/runtime stage is reused without compiling.
+  license_archive=$(tdvp_python3_locked_archive "$package_dir")
   root_link="$package_dir/root"
   payload_dir=$(tdvp_python3_replace_payload_root "$package_dir")
   cleanup_python3_payload() {
@@ -404,6 +462,13 @@ tdvp_prepare_python_payload() {
       return 101
       ;;
   esac
+  mkdir -p -- "$payload_dir/usr/share/licenses/$(basename -- "$package_dir")"
+  tar -xOf "$license_archive" "Python-$TDVP_PYTHON3_VERSION/LICENSE" \
+    >"$payload_dir/usr/share/licenses/$(basename -- "$package_dir")/LICENSE"
+  [[ -s "$payload_dir/usr/share/licenses/$(basename -- "$package_dir")/LICENSE" ]] || {
+    echo 'locked CPython archive omitted its license text' >&2
+    return 104
+  }
   tdvp_python3_assert_payload_elfs "$readelf_tool" "$payload_dir"
   if [[ "$split" == runtime ]]; then
     local dynload pyexpat

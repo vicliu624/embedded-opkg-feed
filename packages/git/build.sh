@@ -67,6 +67,7 @@ chmod 0755 -- "$payload_dir"
 ln -s -- "$payload_dir" "$payload_link"
 install -d -m 0755 -- "$payload_dir/usr/bin"
 install -m 0755 -- "$stage_root/usr/bin/git" "$payload_dir/usr/bin/git"
+install -Dm 0644 -- "$stage_root/usr/share/licenses/git/COPYING" "$payload_dir/usr/share/licenses/git/COPYING"
 tdvp_remove_elf_runtime_search_paths "$readelf_tool" "$payload_dir/usr/bin/git"
 payload_ready=1
 echo "git payload ready: $payload_dir"

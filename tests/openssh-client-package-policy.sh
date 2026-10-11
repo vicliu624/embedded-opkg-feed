@@ -20,7 +20,7 @@ expect_line() {
 expect_line "^PACKAGE='openssh-client'$" "$package_dir/package.env"
 expect_line "^VERSION='9[.]9p2-1'$" "$package_dir/package.env"
 expect_line "^PACKAGE_KIND='application'$" "$package_dir/package.env"
-expect_line "^PACKAGE_BASE_OVERLAY='deny'$" "$package_dir/package.env"
+expect_line "^PACKAGE_BASE_OVERLAY='identical'$" "$package_dir/package.env"
 expect_line "^PACKAGE_DEPENDS='libssl-3 \\(= 3[.]4[.]1-1\\), libcrypto-3 \\(= 3[.]4[.]1-1\\), libz \\(= 1[.]3[.]1-1\\)'$" "$package_dir/package.env"
 test -f "$package_dir/source.lock"
 expect_line "^UPSTREAM_NAME='OpenSSH portable'$" "$package_dir/source.lock"

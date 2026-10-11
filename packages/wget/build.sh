@@ -15,6 +15,7 @@ sdk_root=$4
 configured_output=$(printenv TDVP_DEVEL_BUILDROOT_OUTPUT || true)
 # shellcheck source=../../support/buildroot-feed-session.sh
 source "$package_dir/../../support/buildroot-feed-session.sh"
+if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
 output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
 for required_config in BR2_PACKAGE_OPENSSL=y BR2_PACKAGE_LIBOPENSSL=y BR2_PACKAGE_ZLIB=y; do
   grep -Fqx "$required_config" "$output/.config" || {
@@ -24,6 +25,7 @@ for required_config in BR2_PACKAGE_OPENSSL=y BR2_PACKAGE_LIBOPENSSL=y BR2_PACKAG
 done
 
 # shellcheck source=../../support/buildroot-command-package.sh
+fi
 source "$package_dir/../../support/buildroot-command-package.sh"
 # Keep one auditable TLS path: OpenSSL and zlib are separately owned feed
 # providers.  Do not inherit optional PSL, GnuTLS, IDN/IRI, c-ares, PCRE, or

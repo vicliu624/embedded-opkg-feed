@@ -1,0 +1,28 @@
+From: ONNX upstream
+Subject: Backport version converter bounds checks to ONNX 1.17.0
+Upstream: https://github.com/onnx/onnx/pull/7880
+Commit: e9c74f596eaa0250f89e52a54160a25bbcb25b66
+Backport: Preserve 1.17 signatures and assertion terminators; softmax_13_12 absent.
+
+--- a/onnx/version_converter/adapters/gemm_6_7.h
++++ b/onnx/version_converter/adapters/gemm_6_7.h
+@@ -27,6 +27,8 @@
+     const auto& B_shape = inputs[1]->sizes();
+     // Determine if C is broadcastable
+     const auto& C_shape = inputs[2]->sizes();
++    ONNX_ASSERTM(A_shape.size() == 2, "Gemm input A must have exactly 2 dimensions");
++    ONNX_ASSERTM(B_shape.size() == 2, "Gemm input B must have exactly 2 dimensions");
+     // Create (M, N) to input to numpy_unibroadcastable
+     std::vector<Dimension> MN;
+     if (node->hasAttribute(ktransA) && node->i(ktransA) == 1) {
+--- a/onnx/version_converter/adapters/gemm_7_6.h
++++ b/onnx/version_converter/adapters/gemm_7_6.h
+@@ -27,6 +27,8 @@
+     const auto& B_shape = inputs[1]->sizes();
+     // Determine if C is broadcastable
+     const auto& C_shape = inputs[2]->sizes();
++    ONNX_ASSERTM(A_shape.size() == 2, "Gemm input A must have exactly 2 dimensions");
++    ONNX_ASSERTM(B_shape.size() == 2, "Gemm input B must have exactly 2 dimensions");
+     // Create (M, N) to input to numpy_unibroadcastable
+     // TODO: Reconcile fact that shapes aren't determined for 1st 2 inputs
+     std::vector<Dimension> MN;

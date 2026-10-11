@@ -15,6 +15,7 @@ sdk_root=$4
 configured_output=$(printenv TDVP_DEVEL_BUILDROOT_OUTPUT || true)
 # shellcheck source=../../support/buildroot-feed-session.sh
 source "$package_dir/../../support/buildroot-feed-session.sh"
+if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
 output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
 grep -Fqx 'BR2_USE_MMU=y' "$output/.config" || {
   echo 'matching Buildroot output lacks required lsof toolchain feature: BR2_USE_MMU=y' >&2
@@ -22,6 +23,7 @@ grep -Fqx 'BR2_USE_MMU=y' "$output/.config" || {
 }
 
 # shellcheck source=../../support/buildroot-command-package.sh
+fi
 source "$package_dir/../../support/buildroot-command-package.sh"
 # Buildroot only links libtirpc when the baseline happens to select it. lsof's
 # Linux /proc inspection works without RPC support, so keep that optional

@@ -1,8 +1,7 @@
-# This leaf contains only /usr/bin/curl. libcurl-4 performs the one locked
-# Buildroot source build first and stages that exact frontend in the private
-# release staging root; this recipe then performs target-ELF and dependency
-# closure auditing before packaging it. No Debian binary or firmware file is
-# introduced.
+# This leaf contains only /usr/bin/curl from the locked r10 image. The matching
+# SDK provides libcurl development files for source-built consumers; this
+# package transfers the reviewed command byte-for-byte and validates its target
+# ELF identity and libcurl runtime dependency.
 FORMAT_VERSION='1'
 SOURCE_TYPE='buildroot-derived'
 UPSTREAM_NAME='curl'
@@ -10,7 +9,7 @@ UPSTREAM_LICENSE='curl'
 UPSTREAM_VERSION='8.12.1'
 UPSTREAM_REVISION='3815d578c5759fa824322ea3d95ad51b55ab888e'
 SOURCE_SNAPSHOT='https://gitlab.com/buildroot.org/buildroot/-/blob/3815d578c5759fa824322ea3d95ad51b55ab888e/package/libcurl/libcurl.mk'
-SOURCE_SELECTION_REASON='The curl command is separated from libcurl.so.4, whose unique shared-library owner is libcurl-4. It copies only /usr/bin/curl staged by libcurl-4’s immediately preceding locked Buildroot source build in the same private release staging root.'
+SOURCE_SELECTION_REASON='The curl command is separated from libcurl.so.4, whose unique shared-library owner is libcurl-4. This package copies only the reviewed /usr/bin/curl from the locked r10 image; its matching SDK supplies the libcurl development projection for source-built consumers.'
 NON_PLATFORM_BUILD_INPUTS='Buildroot 2025.02.1 libcurl.mk/libcurl.hash; the separately owned OpenSSL, zlib, and host-pkgconf inputs listed below; no TDVP-specific patches.'
 SECURITY_STATUS='Every source archive is SHA-256 verified before the offline candidate build; curl, TLS, and certificate freshness remain release-candidate gates.'
 VERIFIED_BY='TDVP source-lock verifier plus Buildroot 2025.02.1 package hashes'

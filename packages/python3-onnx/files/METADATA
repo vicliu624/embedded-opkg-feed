@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: onnx
+Version: 1.17.0
+Requires-Python: >=3.13
+Requires-Dist: numpy>=1.20
+Requires-Dist: protobuf==5.29.3
+Requires-Dist: typing-extensions>=4.7.1

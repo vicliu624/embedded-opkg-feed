@@ -26,8 +26,10 @@ bzip2, xz, zlib, ncursesw, readline, and Expat. `pyexpat` must dynamically need
 so it does not need to carry a second direct Expat link.
 
 The recipe excludes private Expat copies, static/development metadata, generic
-`libpython3.so`, IDLE, pydoc, tkinter, turtle demos, ensurepip, manuals, and
-the Python build configuration directory. It also forces `_curses_panel` off:
+`libpython3.so`, IDLE, tkinter, turtle demos, ensurepip, manuals, and
+the Python build configuration directory. It retains `pydoc` and `pydoc_data`
+because scientific Python consumers, including SciPy, import them at runtime.
+It also forces `_curses_panel` off:
 that extension would require `libpanelw.so.6`, for which this feed has no
 admitted runtime provider. Every published target ELF is checked as RISC-V
 ELF64 and rejected if it retains an RPATH/RUNPATH.

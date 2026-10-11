@@ -18,9 +18,10 @@ expect_line() {
 expect_line "^PACKAGE='rsync'$" "$package_dir/package.env"
 expect_line "^VERSION='3[.]4[.]1-1'$" "$package_dir/package.env"
 expect_line "^PACKAGE_KIND='application'$" "$package_dir/package.env"
-expect_line "^PACKAGE_RELEASES='r10'$" "$package_dir/package.env"
+expect_line "^PACKAGE_RELEASES='r10 r11'$" "$package_dir/package.env"
 expect_line "^PACKAGE_DEPENDS='libpopt \\(= 1[.]19-1\\), libz \\(= 1[.]3[.]1-1\\), openssh-client \\(= 9[.]9p2-1\\)'$" "$package_dir/package.env"
-expect_line "^PACKAGE_BUILD_DEPENDS='libpopt libz openssh-client'$" "$package_dir/package.env"
+expect_line "^PACKAGE_BUILD_DEPENDS='openssh-client'$" "$package_dir/package.env"
+expect_line "^PACKAGE_SDK_DEVELOPMENT_DEPENDS='libpopt libz'$" "$package_dir/package.env"
 expect_line '^PACKAGE_AUTO_RUNTIME_DEPENDS=1$' "$package_dir/package.env"
 
 test -f "$package_dir/source.lock"

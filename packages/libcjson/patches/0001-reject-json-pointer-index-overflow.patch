@@ -1,0 +1,27 @@
+From: TDVP Device Team
+Subject: [PATCH] Reject empty or overflowing JSON Pointer array indices
+
+Upstream-Status: Not submitted (local boundary hardening)
+Keep normal index parsing and public API unchanged. Check size_t arithmetic
+before multiplication so an oversized decimal index cannot wrap to zero.
+
+--- a/cJSON_Utils.c
++++ b/cJSON_Utils.c
+@@ -285,10 +285,15 @@
+     for (position = 0; (pointer[position] >= '0') && (pointer[position] <= '9'); position++)
+     {
+-        parsed_index = (10 * parsed_index) + (size_t)(pointer[position] - '0');
++        size_t digit = (size_t)(pointer[position] - '0');
++        if (parsed_index > (((size_t)-1) - digit) / 10)
++        {
++            return 0;
++        }
++        parsed_index = (10 * parsed_index) + digit;
+ 
+     }
+ 
+-    if ((pointer[position] != '\0') && (pointer[position] != '/'))
++    if ((position == 0) || ((pointer[position] != '\0') && (pointer[position] != '/')))
+     {
+         return 0;
+     }

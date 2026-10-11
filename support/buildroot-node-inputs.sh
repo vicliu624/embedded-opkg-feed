@@ -17,6 +17,12 @@ tdvp_prepare_node22_icu_inputs() {
   }
   # shellcheck source=buildroot-feed-session.sh
   source "$package_dir/../../support/buildroot-feed-session.sh"
+  if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+    source "$package_dir/../../support/published-native-inputs.sh"
+    tdvp_sdk_icu_inputs "$package_dir" "$sdk_root"
+    export TDVP_NODE22_ICU_READELF="$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"
+    return 0
+  fi
   output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
   tree=$(tdvp_buildroot_tree_from_output "$output")
   tdvp_assert_buildroot_2025_02_1 "$tree"
@@ -97,4 +103,6 @@ tdvp_copy_node22_icu_input_library() {
   while IFS= read -r -d '' elf; do
     tdvp_remove_elf_runtime_search_paths "$TDVP_NODE22_ICU_READELF" "$elf"
   done < <(find "$payload_dir/usr/lib" -maxdepth 1 -type f -print0 | LC_ALL=C sort -z)
+  python3 "$package_dir/../../support/install-archive-source-license.py" \
+    "$(tdvp_source_archive_locked_file "$package_dir")" "$package_dir" "$payload_dir" 'icu/LICENSE'
 }

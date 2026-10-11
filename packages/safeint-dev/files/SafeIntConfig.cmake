@@ -1,0 +1,7 @@
+get_filename_component(_tdvp_safeint_prefix "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+if(NOT TARGET SafeInt::SafeInt)
+  add_library(SafeInt::SafeInt INTERFACE IMPORTED GLOBAL)
+  set_target_properties(SafeInt::SafeInt PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${_tdvp_safeint_prefix}/include/safeint")
+endif()
+set(SafeInt_FOUND TRUE)
+unset(_tdvp_safeint_prefix)

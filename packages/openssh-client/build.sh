@@ -25,6 +25,7 @@ source "$package_dir/../../support/buildroot-feed-session.sh"
 # shellcheck source=../../support/elf-runtime-policy.sh
 source "$package_dir/../../support/elf-runtime-policy.sh"
 
+if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
 output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
 tree=$(tdvp_buildroot_tree_from_output "$output")
 tdvp_assert_buildroot_2025_02_1 "$tree"
@@ -48,6 +49,7 @@ for required_config in BR2_PACKAGE_LIBOPENSSL=y BR2_PACKAGE_ZLIB=y; do
   }
 done
 
+fi
 : "${TDVP_SOURCE_CACHE_ROOT:?openssh-client requires the verified TDVP source cache}"
 cache_archive="$TDVP_SOURCE_CACHE_ROOT/sha256/$SOURCE_ARCHIVE_SHA256/$SOURCE_ARCHIVE"
 [[ -f "$cache_archive" && ! -L "$cache_archive" ]] || {
@@ -68,6 +70,10 @@ for tool in "$compiler" "$archiver" "$ranlib" "$pkgconf" "$readelf_tool"; do
   [[ -x "$tool" ]] || { echo "matching SDK tool is absent: $tool" >&2; exit 72; }
 done
 sysroot="$sdk_root/riscv64-buildroot-linux-gnu/sysroot"
+if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  sysroot="$sdk_root/sysroot"
+  pkgconf=$(command -v pkg-config)
+fi
 [[ -d "$sysroot/usr/include" && -d "$sysroot/usr/lib" ]] || {
   echo "matching SDK sysroot is incomplete: $sysroot" >&2
   exit 73
@@ -105,6 +111,10 @@ source_dir="$work_root/openssh-${VERSION%-*}"
   exit 75
 }
 
+# Reuse the immutable base before entering the source compiler. The locked
+# archive is still verified and unpacked to provide its upstream notices.
+base_root=${TDVP_FEED_BASE_ROOT:-}
+if [[ -z "$base_root" ]]; then
 # These are the relevant reviewed Buildroot options, intentionally with no
 # PAM, server, SELinux, setuid helper, or /etc/ssh installation path.  The
 # output remains a normal client/file-transfer/agent tool set.
@@ -121,22 +131,24 @@ source_dir="$work_root/openssh-${VERSION%-*}"
       --with-sandbox=no --without-ssl-engine \
       --disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx \
       --disable-strip
-  make -j"$(nproc)"
+  make -j"${TDVP_JOBS:-$(nproc)}"
 )
+fi
 
 required_paths=(ssh scp sftp ssh-agent ssh-add)
+if [[ -z "$base_root" ]]; then
 for program in "${required_paths[@]}"; do
   [[ -x "$source_dir/$program" ]] || {
     echo "OpenSSH client build omitted executable: $program" >&2
     exit 76
   }
 done
+fi
 
 # r10 already ships the reviewed OpenSSH client from the immutable image.
 # Reuse those exact target bytes when the matching base root is available;
 # rebuilding the same source would create a second owner for every /usr/bin
 # OpenSSH path and would be rejected by the overlay policy.
-base_root=${TDVP_FEED_BASE_ROOT:-}
 if [[ -n "$base_root" ]]; then
   for program in "${required_paths[@]}"; do
     base_program="$base_root/usr/bin/$program"
@@ -169,6 +181,7 @@ mkdir -p -- "$payload_dir/usr/bin"
 for program in "${required_paths[@]}"; do
   cp -a -- "$source_dir/$program" "$payload_dir/usr/bin/$program"
 done
+install -Dm 0644 -- "$source_dir/LICENCE" "$payload_dir/usr/share/licenses/openssh-client/LICENCE"
 while IFS= read -r elf; do
   tdvp_remove_elf_runtime_search_paths "$readelf_tool" "$elf"
 done < <(find "$payload_dir/usr/bin" -type f -perm -u+x -print | LC_ALL=C sort)

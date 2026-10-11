@@ -98,6 +98,7 @@ jobs:
           bash ./tests/dev-tools-package-policy.sh
           python3 ./tests/profile-readme-mit.py
           python3 ./tests/eigen-header-only-policy.py
+          python3 ./tests/sdk-provider-registration-integration.py
           bash scripts/check-batch-build-policy.sh
           bash ./tests/reuse-published-ipk-payload-policy.sh
           bash ./tests/feed-overlay-composition-policy.sh

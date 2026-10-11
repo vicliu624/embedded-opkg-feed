@@ -556,11 +556,13 @@ while IFS= read -r package_env; do
   # Keep this declaration even when the target-runtime catalogue defers the
   # recipe itself. Consumers still need a reviewed record of the exact SDK
   # files offered by that immutable runtime provider.
-  [[ -z "${sdk_development_provider_files[$package]:-}" ]] || {
-    echo "recipe SDK development provider duplicates a platform provider: $package" >&2
-    exit 67
-  }
-  sdk_development_provider_files[$package]=$package_sdk_development_files
+  if [[ -n "$package_sdk_development_files" ]]; then
+    [[ -z "${sdk_development_provider_files[$package]:-}" ]] || {
+      echo "recipe SDK development provider duplicates a platform provider: $package" >&2
+      exit 67
+    }
+    sdk_development_provider_files[$package]=$package_sdk_development_files
+  fi
   if [[ -n "${target_runtime_provider[$package]:-}" ]]; then
     target_version=${target_runtime_provider[$package]}
     target_sonames=${target_runtime_provider_sonames[$package]% }

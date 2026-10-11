@@ -2,6 +2,7 @@
 # Run the same pre-compilation gates in portable CI and every source batch.
 set -Eeuo pipefail
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+python3 "$repo_root/tests/sdk-provider-registration-integration.py"
 python3 "$repo_root/tests/common-seven-library-policy.py"
 python3 "$repo_root/tests/common-system-network-library-policy.py"
 python3 "$repo_root/tests/common-event-data-network-policy.py"

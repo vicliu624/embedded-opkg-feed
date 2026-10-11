@@ -3407,3 +3407,13 @@ fft2d-source-notice-review.7amESr。readme.txt/readme2d.txt 原样保留，
 均通过精确源字节、拒绝旧输出覆盖、损坏归档不产生输出和悬空输出
 符号链接拒绝回归。历史 IPK 未改写；这项材料追溯不证明历史构建
 来源，不代替许可证充分性判断，也尚未关闭正式随包材料缺口。
+
+后续直接检查 445 包候选纠正了 libfft2d 的材料缺失判断：
+libfft2d_1.0-1_riscv64.ipk（SHA256
+6e954c4d94b75c8f2a1b167b6516b702e5a3d4573e5fcb567615cb277b70e44a）
+已包含 usr/share/licenses/libfft2d/SOURCE.json、readme.txt 和
+readme2d.txt。两个 README 均与上述锁定源码材料逐字节一致，包含
+上游版权及使用条款。旧文件名扫描未识别 README，导致此项分类
+不充分；应将该包归类为“已找到原始材料”，无需为补同样材料重发
+运行库。该证据只关闭“未找到随包材料”判断，不证明完整许可审查
+或历史构建来源；其他包的扫描结论仍须分别检查。

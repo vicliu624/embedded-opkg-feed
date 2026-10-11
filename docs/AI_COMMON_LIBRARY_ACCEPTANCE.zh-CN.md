@@ -3398,3 +3398,12 @@ bd5ed81 对应任务 38129533976 成功。
 审查、历史构建凭据或发布授权。p7zip 附带组件及 unRAR 限制仍需
 针对实际交付范围评估；旧 libfft2d、镜像来源、正式材料打包和包修订
 一致性门禁仍未完成，445 包候选的已发布材料缺口不能据此下调。
+
+同日补齐 libfft2d 的原始材料收集：OouraFFT v1.0 归档 SHA256
+5f4dabc2ae21e1f537425d58a49cdca1c49ea11db0d6271e2a4b27e9697548eb
+与现有 source.lock 一致，输入及 projected 输出保存在
+fft2d-source-notice-review.7amESr。readme.txt/readme2d.txt 原样保留，
+记录源 member 和文件摘要；原生构建机和 Ubuntu 24.04 无网络容器
+均通过精确源字节、拒绝旧输出覆盖、损坏归档不产生输出和悬空输出
+符号链接拒绝回归。历史 IPK 未改写；这项材料追溯不证明历史构建
+来源，不代替许可证充分性判断，也尚未关闭正式随包材料缺口。

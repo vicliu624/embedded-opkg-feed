@@ -3313,3 +3313,17 @@ import_authorized=false、historical_build_receipt=false；不伪造旧
 libsoup-development-source-audit-integration.py 的源码头、版本头、
 enum 头、入口头、额外头和 runtime 字节篡改拒绝，在原生构建机
 与 Ubuntu 24.04 均通过。runtime 未重编，已有 staging 未改写。
+
+libsoup pkg-config 消费者验证新增独立集成测试：以同文件系统的
+disposable SDK hard-link view 保留全部基础开发文件，只在不存在的
+路径加入已审查 libsoup 头、链接入口与缺失的 dependency pc 文件。
+不覆盖任何 SDK inode，目标目录和 -I/-L 均必须位于临时 view。
+pkg-config 在该 view 解析 3.6.6、输出编译链接参数，RISC-V 消费者
+在 445 安装根验证 major/minor/micro 与生成 enum API，通过原生
+构建机和 Ubuntu 24.04。首次临时目录在 /tmp 时跨文件系统硬链接
+失败，尚未编译；同 SDK 文件系统分配临时目录并提前检查 st_dev 后
+通过，失败/成功临时 view 均已自动清理，没有复制大份 SDK。
+错误 pc 版本、library/include 名和 producer prefix 的拒绝在两种
+环境均通过。此结果支持公共动态链接消费者；不声明 static link、
+CMake 元数据或全部 private development provider 的来源已完成，
+也不创建历史 receipt 或放宽普通 staging 导入。

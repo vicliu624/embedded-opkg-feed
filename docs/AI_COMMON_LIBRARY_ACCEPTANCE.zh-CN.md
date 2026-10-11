@@ -2863,3 +2863,35 @@ Ubuntu 24.04 容器的独立 integration 回归通过 write/verify、
 版本拒绝检查，Ubuntu 24.04 离线容器回归通过；完整共享批次
 前置检查通过。此项没有修改 development IPK 的链接限制，也
 没有放宽旧 build-staging receipt 的身份校验。
+
+显式 --import-recovered-sqlite 入口已实现，限匹配 SDK、锁定源码、
+原始 SQLite IPK 和唯一 declared SQLite provider。恢复工具增加
+release 绑定及 recovered-package manifest；普通导入保持原有
+receipt 验证。producer 导出保留恢复来源，receipt 绑定该来源
+及对应 usr 文件/链接内容，后续普通导入可以验证并复用。
+GitNexus 未索引 assert_provided_package，人工评估此共享入口为
+高风险，修改前已告知；尚未推送新入口。
+Ubuntu 24.04 容器中旧 staging integration、旧 split-provider
+integration、新 recovered-sqlite-builder integration 与完整
+共享前置检查通过。新 fixture 用真实 SDK、源码和 IPK，采用
+r2 隔离布局，不替代 production r11 的全镜像覆盖检查；SQLite
+runtime builder 若被调用即失败，测试确认没有调用。恢复导出
+后普通 receipt 复用通过，修改来源记录被拒绝。夹具初次漏了
+ABI 目录层级，已改用实际平台 release path 函数，重跑通过。
+production r11 消费者验证及 libsoup 构建仍需继续，当前改动
+保持未提交。
+
+真实 r11 布局回归完成，使用配对 image-root 与完整私有 runtime
+catalogue，未清空 SDK provider 表或关闭生产镜像路径检查。
+显式恢复导入、来源保留的导出、普通 receipt 复用和来源变化
+拒绝均通过。第一轮复用夹具未保留私有 catalogue 映射文件，
+生产检查正确拒绝；每轮重新带入私有映射后重跑通过，不改校验。
+进一步启用真实 application 消费者：通过导入后的头文件和
+linker name 编译、自动依赖推导并打包，取出 IPK ELF 到
+sqlite-r11-real-consumer.j2cN4T。rv64,v=false 与 436 安装根库
+运行验证版本 3.48.0、binary BLOB/预处理 SQL/rollback 通过。
+测试 SQLite runtime builder 若被调用即失败，确认没有重编。
+这仍是带测试消费者的构建机验证，未记作设备验收或 libsoup
+交付。清理已完成且无进程引用的 432/434 安装根，保留状态、
+包和日志、最新 436 根；可用空间恢复 4.6 GB，删除的测试根
+可由镜像和包重建。

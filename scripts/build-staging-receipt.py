@@ -72,6 +72,19 @@ with (sdk / "tdvp-sdk-manifest.json").open("rb") as stream:
     sdk_identity = hashlib.file_digest(stream, "sha256").hexdigest()
 receipt = {"schema": 1, "sdk_manifest_sha256": sdk_identity, "packages": packages,
            "build_inputs": inputs, "development_files": files}
+recovery_path = staging / "tdvp-development-recovery.json"
+if recovery_path.exists():
+    assert recovery_path.is_file() and not recovery_path.is_symlink(), "unsafe recovery provenance"
+    recovery = json.loads(recovery_path.read_text())
+    assert recovery.get("kind") == "tdvp-recovered-sqlite-development"
+    assert recovery.get("package") in packages and recovery.get("sdk_manifest_sha256") == sdk_identity
+    assert recovery.get("runtime_rebuilt") is False
+    for relative, digest in recovery.get("files", {}).items():
+        if relative.startswith("usr/"):
+            assert files.get(relative, {}).get("sha256") == digest, "recovered development bytes changed"
+    for relative, target in recovery.get("links", {}).items():
+        assert files.get(relative) == {"type": "symlink", "target": target}, "recovered development links changed"
+    receipt["recovered_development"] = recovery
 path = receipt_path
 if args.mode == "write":
     with path.open("x", encoding="utf-8") as stream:

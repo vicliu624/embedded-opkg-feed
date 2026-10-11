@@ -14,6 +14,7 @@ import tarfile
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--mode', choices=('write', 'verify'), default='write')
+parser.add_argument('--release', default='r11')
 parser.add_argument('--repo', type=Path, required=True)
 parser.add_argument('--sdk', type=Path, required=True)
 parser.add_argument('--source-archive', type=Path, required=True)
@@ -23,6 +24,7 @@ args = parser.parse_args()
 repo, sdk, archive, ipk = (p.resolve(strict=True) for p in
     (args.repo, args.sdk, args.source_archive, args.runtime_ipk))
 output = args.output.absolute()
+assert re.fullmatch(r'r[1-9][0-9]*', args.release), 'invalid release identity'
 if args.mode == 'write':
     assert not output.exists() and not output.is_symlink(), 'output already exists'
 else:
@@ -66,10 +68,14 @@ files['usr/lib/pkgconfig/sqlite3.pc'] = (
     'prefix=/usr\nexec_prefix=${prefix}\nlibdir=${exec_prefix}/lib\nincludedir=${prefix}/include\n\n'
     'Name: SQLite\nDescription: SQL database engine\nVersion: 3.48.0\n'
     'Libs: -L${libdir} -lsqlite3\nCflags: -I${includedir}\n').encode()
+files['tdvp-build-staging-manifest.tsv'] = (
+    'format\t1\nplatform\ttdvp-k230-r1\nrelease\t' + args.release +
+    '\nrecovered-package\tlibsqlite3-0\t3.48.0-1\n').encode()
 links = {name: runtime_name for name in ('libsqlite3.so', 'libsqlite3.so.0') if name != runtime_name}
 provenance = {
     'schema': 1, 'kind': 'tdvp-recovered-sqlite-development',
     'package': 'libsqlite3-0', 'version': '3.48.0-1',
+    'platform': 'tdvp-k230-r1', 'release': args.release,
     'sdk_manifest_sha256': expected_sdk,
     'recovery_tool_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
     'source_archive_sha256': expected,

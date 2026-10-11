@@ -15,6 +15,8 @@ require_source_locks=${TDVP_REQUIRE_SOURCE_LOCKS:-0}
 runtime_catalog_only=0
 reuse_runtime_catalog=0
 staging_import_dir=
+recovered_sqlite_import=0
+verified_recovery_provider=
 staging_export_dir=
 provided_packages=()
 requested_packages=()
@@ -58,7 +60,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --import-staging)
       [[ $# -ge 2 ]] || { echo '--import-staging needs a directory' >&2; exit 64; }
+      [[ -z "$staging_import_dir" ]] || { echo 'choose one staging import' >&2; exit 64; }
       staging_import_dir=$2
+      shift 2
+      ;;
+    --import-recovered-sqlite)
+      [[ $# -ge 2 && -z "$staging_import_dir" ]] || { echo 'choose one SQLite recovery import directory' >&2; exit 64; }
+      staging_import_dir=$2
+      recovered_sqlite_import=1
       shift 2
       ;;
     --export-staging)
@@ -85,6 +94,7 @@ done
 
 [[ -n "$platform_slug" && -n "$output_root" ]] || {
   echo "usage: $0 --platform <platform-slug> [--release <rN>] --output <output-root> [--source-cache <directory>] [--offline-source-cache] [--require-source-locks] [--runtime-catalog-only|--reuse-runtime-catalog] [--import-staging <directory> --provided-package <recipe> ...] [--export-staging <new-directory>] [--package <recipe> ...]" >&2
+  echo 'SQLite recovery import: --import-recovered-sqlite <directory> --provided-package libsqlite3-0' >&2
   exit 64
 }
 [[ "$runtime_catalog_only" -eq 0 || "$reuse_runtime_catalog" -eq 0 ]] || {
@@ -268,7 +278,20 @@ if [[ -n "$staging_import_dir" ]]; then
   # by a package hook or leak into the next batch.
   staging_import_dir=$(cd -- "$staging_import_dir" && pwd)
   assert_staging_links_are_internal "$staging_import_dir"
-  if [[ -f "$staging_import_dir/tdvp-build-staging-receipt.json" ]]; then
+  if [[ "$recovered_sqlite_import" -eq 1 ]]; then
+    [[ "$platform_slug" == tdvp-k230-r1 && ${#provided_packages[@]} -eq 1 && "${provided_packages[0]}" == libsqlite3-0 ]] || {
+      echo 'SQLite recovery import requires exactly its declared runtime provider' >&2
+      exit 79
+    }
+    recovery_fetch_args=(--cache "$source_cache_root" --package-dir "$repo_root/packages/libsqlite3-0")
+    [[ "$offline_source_cache" == 1 ]] && recovery_fetch_args+=(--offline)
+    bash "$script_dir/fetch-source-cache.sh" "${recovery_fetch_args[@]}"
+    python3 "$script_dir/restore-sqlite-development.py" --mode verify --release "$release" \
+      --repo "$repo_root" --sdk "${TDVP_SDK_ROOT:?recovered staging requires the matched SDK}" \
+      --source-archive "$source_cache_root/sha256/ac992f7fca3989de7ed1fe99c16363f848794c8c32a158dafd4eb927a2e02fd5/sqlite-autoconf-3480000.tar.gz" \
+      --runtime-ipk "$feed_dir/libsqlite3-0_3.48.0-1_riscv64.ipk" --output "$staging_import_dir"
+    verified_recovery_provider=libsqlite3-0
+  elif [[ -f "$staging_import_dir/tdvp-build-staging-receipt.json" ]]; then
     receipt_provider_args=()
     for package in "${provided_packages[@]}"; do receipt_provider_args+=(--package "$package"); done
     python3 "$script_dir/build-staging-receipt.py" verify --repo "$repo_root" \
@@ -528,8 +551,8 @@ assert_provided_package() {
     echo "imported staging manifest does not match this platform/release: $imported_staging_manifest" >&2
     exit 78
   }
-  awk -F '\t' -v package="$package" -v version="$version" '
-    ($1 == "built-package" || $1 == "provided-package") && $2 == package && $3 == version { found = 1 }
+  awk -F '\t' -v package="$package" -v version="$version" -v recovered="$verified_recovery_provider" '
+    ($1 == "built-package" || $1 == "provided-package" || ($1 == "recovered-package" && recovered == package)) && $2 == package && $3 == version { found = 1 }
     END { exit !found }
   ' "$imported_staging_manifest" || {
     echo "imported staging manifest does not attest $package ($version)" >&2
@@ -869,6 +892,9 @@ if [[ -n "$staging_export_dir" ]]; then
       >>"$staging_export_dir/tdvp-build-staging-manifest.tsv"
   done
   assert_staging_links_are_internal "$staging_export_dir"
+  if [[ -f "$staging_root/tdvp-development-recovery.json" ]]; then
+    cp -- "$staging_root/tdvp-development-recovery.json" "$staging_export_dir/tdvp-development-recovery.json"
+  fi
   if [[ -n "$runtime_owner_map" ]]; then
     cp -- "$runtime_owner_map" "$staging_export_dir/tdvp-runtime-owners.tsv"
   fi

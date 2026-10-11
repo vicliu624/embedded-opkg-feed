@@ -28,3 +28,4 @@ packages/gstreamer-plugins-base/ogg-push-segment-seqnum.patch text eol=lf whites
 packages/gstreamer-plugins-bad/vp9-checked-bit-reader.patch text eol=lf whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab
 # Recovery provenance binds the tool bytes across Windows/Linux checkouts.
 scripts/restore-sqlite-development.py text eol=lf
+scripts/build-staging-receipt.py text eol=lf

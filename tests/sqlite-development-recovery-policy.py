@@ -20,4 +20,11 @@ compile(tool, 'restore-sqlite-development.py', 'exec')
 compile((repo / 'tests/sqlite-development-recovery-integration.py').read_text(),
         'sqlite-development-recovery-integration.py', 'exec')
 assert "assert not (output / 'tdvp-build-staging-receipt.json').exists()" in (repo / 'tests/sqlite-development-recovery-integration.py').read_text()
+builder = (repo / 'scripts/build-all.sh').read_text()
+assert '--import-recovered-sqlite)' in builder
+assert 'restore-sqlite-development.py" --mode verify --release "$release"' in builder
+assert 'verified_recovery_provider=libsqlite3-0' in builder
+receipt = (repo / 'scripts/build-staging-receipt.py').read_text()
+assert 'receipt["recovered_development"] = recovery' in receipt
+assert 'recovered development bytes changed' in receipt
 print('SQLite recovery policy: PASS pinned inputs, provenance, ELF ABI and separation from build receipts')

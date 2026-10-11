@@ -3272,3 +3272,21 @@ h2，目标 libsoup 明确检查 SOUP_HTTP_2_0、200 状态和精确正文，保
 通用开发 staging 缺少 libsoup 头文件，仍是完整开发闭包待汇集项。
 此次为旧安装根的新增功能回归，不代替 445 包整源安装后复核；未
 修改 runtime、设备配置或正式软件源。
+
+445 包实际安装完成：python-http2-445-opkg-acceptance.log 记录签名
+开启的整源求解、445 次逐包求解、全部候选版本安装配置成功，606 个
+包为 installed；libc/opkg/Labwc/image-base 保护文件未变，六个
+Audacious/NetSurf/Vim hooks 仍受离线根保护。索引使用隔离测试密钥，
+不代表正式发布签名或 stable 更新。
+新根 common-python-http2-445-opkg-plan/root 不引用新增 Python staging，
+原生构建机和 Ubuntu 24.04 均通过安装后 Python HTTP/2、libsoup TLS/
+ALPN HTTP/2、NetCDF DAP2/DAP4 与截断拒绝；原生安装根另通过 GSL
+数值、OpenBLAS LP64 LAPACKE、LAME/TwoLAME 独立解码回归。生成音频
+保留在 python-http2-installed-445.R28NNb。442 旧根暂保留，待其它
+媒体/网络/设备枚举回归后再清理，IPK/日志/SDK 不删除。
+libsoup 开发材料盘点：其原 staging 没有历史 receipt，39 个公共头
+与已审查源码目录字节相同，soup.h 的差异为安装时 flatten include，
+soup-version.h/soup-enum-types.h 为生成文件。不能直接将该目录标记
+为完整来源已证明的开发缓存；生成材料和汇集流程继续待验证。
+1b2a27f 的快速 CI 38123149218 成功；全源构建、完整法律/安全审查、
+配对实机安装和正式发布仍未完成，不以本次 445 包回归替代。

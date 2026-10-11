@@ -3098,3 +3098,12 @@ published-sdk-build 为 6d273a3，check-batch-build-policy 为 779b39c。
 输入集合并规范化 LF，131 个摘要全部匹配，原严格 verifier 通过
 11 包、2576 路径。该集合不声明来自某个完整 Git 提交。未重编库，
 未重写 receipt；当前 builder 的跨 producer 导入仍未实现。
+
+audit-reviewed-development.py 已对 Berkeley DB 原 producer 106 输入、
+11 开发路径、SDK 和当前包版本执行校验，4 个共享输入变化精确
+匹配 compatibility-reviews/libdb-b1f198b.json 的旧/新摘要及审查理由。
+原 build 路径差异涉及显式 SQLite 分支、新检查和可选 normalizer
+参数；libdb 配方未变。真实输入集成测试拒绝错误摘要、遗漏、重复、
+错误版本和私改允许导入状态，均通过。此工具明确输出
+import_authorized=false；未覆盖新 consumer 输入、未接入生产导入，
+不能当作完整跨 producer 复用通过。

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "kind": "tdvp-development-input-diff-review",
+  "package": "libdb",
+  "version": "18.1.40-1",
+  "producer_reference": "b1f198b",
+  "reviewed_at": "2026-10-11",
+  "status": "diff-reviewed-not-import-authorization",
+  "changed_inputs": [
+    {
+      "path": "scripts/build-all.sh",
+      "producer_sha256": "a08214a05c30ed345eb30bd8304910baf7c1a34c1077c69ab9042a64ac290e7b",
+      "consumer_sha256": "7b77406f3b0cbb392019c91aeab9fb7359b51e21b14987d80b70c4d34b888185",
+      "rationale": "Adds opt-in SQLite recovery; ordinary receipt import and libdb build path remain unchanged."
+    },
+    {
+      "path": "scripts/build-staging-receipt.py",
+      "producer_sha256": "6c88f151a5b9a01526a27e189552014a460aa487b3eb2a4b18daa4470577aad3",
+      "consumer_sha256": "648a7162d894ce7325d46ad4dfefa982ed96f719e63609f3e7425c5d9dcfc356",
+      "rationale": "Adds SQLite recovery provenance validation when that file exists; this libdb export has no recovery file."
+    },
+    {
+      "path": "scripts/check-batch-build-policy.sh",
+      "producer_sha256": "b03a1e585bd156ecab6528e28403a589d08981d63014102c5dcf843efdc4a06c",
+      "consumer_sha256": "e3726df55bfc7cba530f19e216fd33b09e5b2a903ae248ec2ddb01c9291a8d53",
+      "rationale": "Adds policy checks for unrelated newly introduced libraries; no compilation parameters are changed."
+    },
+    {
+      "path": "support/normalize-pkgconfig-build-paths.py",
+      "producer_sha256": "e817d94eabb95d148b5d85a91c88932f0010b3936d528dae4775549ed0a9014f",
+      "consumer_sha256": "d0a4d15d73f6df9bf098be0347b6fd51715dd9e51f7ad88535d856ccff905973",
+      "rationale": "Adds opt-in missing producer prefix handling; strict default remains unchanged."
+    }
+  ]
+}

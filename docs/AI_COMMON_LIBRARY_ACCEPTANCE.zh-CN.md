@@ -3488,3 +3488,13 @@ libubootenv-0 的 CC0-1.0.txt、LGPL-2.1-or-later.txt、MIT.txt 已按
 notice-complete-445-source-specific-audit.l7hbgg.json，未识别数 205，
 新载荷类别仅剩四个自研配置包；镜像引用／元数据／链接类别仍需
 独立材料审查，不能将该数当作许可证缺失或合规结论。
+
+notice-445-opkg-acceptance.2HsUtW 保存该完整候选的目标 opkg 验收。
+使用既有测试密钥签署隔离索引，签名校验开启；未使用正式发布密钥。
+构建机 QEMU 下真实镜像 opkg 的整源计划与 445 个单包计划全部通过，
+计划阶段保护基础文件及安装状态。实际安装／配置退出码 0，全部
+445 个候选版本已安装，隔离根共 606 个 installed 包；libc、opkg、
+Labwc 和 image-base.json 摘要未变。Audacious/NetSurf/Vim 六个维护
+hook 经离线根保护检查。安装根中的 43 份材料再次逐文件匹配源摘要。
+此结果是隔离根的新装验收，未证明旧 445 包根升级，也不是板上安装；
+正式签名、配方修订、实机验收和推广仍未执行。

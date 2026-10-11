@@ -3327,3 +3327,20 @@ pkg-config 在该 view 解析 3.6.6、输出编译链接参数，RISC-V 消费�
 环境均通过。此结果支持公共动态链接消费者；不声明 static link、
 CMake 元数据或全部 private development provider 的来源已完成，
 也不创建历史 receipt 或放宽普通 staging 导入。
+
+445 包随包 notice 盘点：原始 file-presence 审查器报告 219 个 IPK
+未识别到 notice，范围仅为特定路径下非空文件，不是许可充分性判定。
+补充 feed-application-notice-inventory.py 后识别 Audacious 应用数据
+目录 COPYING 和 npm-runtime 的 Node 模块 LICENSE，剩余 217 项细分为
+192 个仅镜像引用、8 个纯元包、1 个链接包 npm、15 个有新增 payload
+的包、1 个旧版本复用尚未分类项 libfft2d。当前不能把这些类别全部
+称作“新增代码缺少许可证”，也不能据此视为正式发布已获许可。
+15 项需逐项补查：archive-tools、dialog、htop、libsqlite3-0、
+libubootenv-0、libzstd、nano、ncdu、rsync、tdvp-dev-tools、
+tdvp-diagnostics、tdvp-nodejs-tools、tdvp-source-tools、tmux、wget。
+补充工具保持 shared scripts 不变，不影响已有开发 receipt 输入摘要；
+app/Node notice、空文件/代码文件排除及镜像/新 payload/元包/链接/
+旧复用分类夹具在原生与 Ubuntu 24.04 通过，并接入快速 CI。
+构建机 application-notice-inventory-445.json 保留实际完整结果。
+随包材料来源、对应源码和完整许可证/安全审查仍需继续核对，本次
+没有添加或修改 runtime payload，也未签名发布。

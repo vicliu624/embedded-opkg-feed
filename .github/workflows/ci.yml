@@ -47,6 +47,7 @@ jobs:
           python3 ./tests/python-wheel-install-policy.py
           python3 ./tests/python-meson-runtime-metadata.py
           python3 ./tests/python-http2-package-policy.py
+          python3 ./tests/feed-application-notice-integration.py
           python3 ./tests/declared-dependency-closure.py
           python3 ./tests/ipk-dependency-range-preservation.py
           python3 ./scripts/verify-ai-common-library-cohort.py

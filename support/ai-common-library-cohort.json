@@ -7,6 +7,7 @@
     "common-system-network": ["libcap-ng", "libattr", "libacl", "liburing", "libaio", "libssh2", "libnghttp3", "libngtcp2"],
     "common-event-data-network": ["libev", "libjansson", "libzip", "libmnl", "libnftnl", "liblzo2", "libxml2-16", "libxslt"],
     "common-glib-http": ["libsoup3"],
+    "common-python-http2": ["python3-h2", "python3-hpack", "python3-hyperframe"],
     "common-embedded-system": ["libserialport", "libfdt", "liblmdb"],
     "common-portability": ["libmd", "libbsd"],
     "common-network-database": ["libmaxminddb"],

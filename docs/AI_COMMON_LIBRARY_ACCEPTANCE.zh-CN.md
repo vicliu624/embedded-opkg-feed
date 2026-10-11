@@ -3234,3 +3234,25 @@ raw fixture 设置 checksum=false，checksum、TLS、认证和真实远程服务
 和 [OPeNDAP DAP2 数据服务](https://docs.opendap.org/index.php/DAP2%3A_Data_Service)。
 本轮未重编 runtime、未修改设备、未签名发布；验证文件位于构建机
 netcdf-dap-validation，原始数据仍来自 source-locked archive。
+
+补充常用 Python HTTP/2 provider：python3-h2 4.4.1-1、python3-hpack
+4.2.0-1、python3-hyperframe 6.1.0-1，均为 MIT，源码由 PyPI 发布
+SHA256 元数据与下载摘要交叉核对。PyPI advisory 列表为空不计为
+完整安全审查。三包沿用 hash-locked PEP 517 host、离线 source cache
+和目标 wheel 安装器，未使用上游预编译 wheel，未新增本地 ELF。
+h2 精确依赖 hpack/hyperframe，三包都显式依赖目标 Python provider。
+Ubuntu 24.04 正式配方生成独立 IPK，171 项 required recipe 清单通过。
+构建机 python-http2-build.SzhbtE 保留 IPK/staging；RISC-V Python 使用
+该 staging 与既有 442 包安装根，通过版本、HPACK 动态表/Huffman、
+帧往返、两条 HTTP/2 请求响应流、截断 HPACK/帧与非法 stream ID 拒绝。
+这轮尚未把新包安装进完整 445 包候选根，网络 TLS/ALPN 与 libsoup
+HTTP/2 交互也待验证；不记为整源安装或正式交付完成。
+
+三个 HTTP/2 IPK 另经 python-http2-ipk-audit.py 核对：唯一 control
+身份、精确 opkg 依赖、wheel Requires-Dist、源码 LICENSE 字节和无
+native ELF 均通过。完整 Ubuntu 24.04 shared batch preflight 通过。
+445 包 raw 候选位于 common-python-http2-original-raw.p3xeWm，包含旧
+442 包原始 IPK 的硬链接和三个新包，不从 image-backed 目录回填 raw。
+首次清单调用因误用 --index 参数停止；改用 --feed 后复用既有索引
+继续正式 finalize，没有重建或覆盖索引。最终合并流程仍在运行，
+签名开启的完整求解、安装和安装后回归尚未通过，不提前计为完成。

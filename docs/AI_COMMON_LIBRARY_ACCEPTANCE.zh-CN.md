@@ -3498,3 +3498,14 @@ Labwc 和 image-base.json 摘要未变。Audacious/NetSurf/Vim 六个维护
 hook 经离线根保护检查。安装根中的 43 份材料再次逐文件匹配源摘要。
 此结果是隔离根的新装验收，未证明旧 445 包根升级，也不是板上安装；
 正式签名、配方修订、实机验收和推广仍未执行。
+
+旧 445 包根的升级预检在 notice-445-opkg-upgrade.XfIVKD 复现失败，
+实际 upgrade 尚未执行。--noaction 失败后已确认副本与旧根安装状态
+摘要相同；日志保留原依赖选择错误，未使用强制忽略依赖。
+这两个 445 包候选均以 locked-feed-predecessor-common-346 为 predecessor，
+属于并行候选，尚未建立连续历史。真实目标 opkg compare-versions
+使用严格 >> 运算确认 Zstd/archive-tools 的新源修订更高，但 CFFI
+的源修订和 composition 修订仍相同，新摘要排序没有更高，因此
+升级候选选择不能保证成功。下一项应使用旧候选作为经过测试签名
+验证的 fixture predecessor 重组，并复验升级；不能把新装通过
+当作从任意并行候选升级的证明。正式发布 predecessor 锁未修改。

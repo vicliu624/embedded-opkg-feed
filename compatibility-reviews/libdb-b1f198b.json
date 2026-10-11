@@ -4,6 +4,7 @@
   "package": "libdb",
   "version": "18.1.40-1",
   "producer_reference": "b1f198b",
+  "consumer_input_layout": "LF-normalized validation snapshot; use libdb-59746cf.json for exact committed 59746cf bytes.",
   "reviewed_at": "2026-10-11",
   "status": "diff-reviewed-not-import-authorization",
   "consumer_shared_inputs_count": 108,

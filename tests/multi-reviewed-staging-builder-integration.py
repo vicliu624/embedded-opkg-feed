@@ -17,6 +17,7 @@ import tempfile
 parser = argparse.ArgumentParser()
 for name in ('sdk', 'image', 'staging', 'producer-repo', 'review', 'catalogue', 'runtime-directory'):
     parser.add_argument('--' + name, type=Path, required=True)
+parser.add_argument('--fixed-review', action='store_true', help='Require exact production review pins; never rebase the review')
 args = parser.parse_args()
 source = Path(__file__).resolve().parents[1]
 with tempfile.TemporaryDirectory(prefix='tdvp-multi-builder.') as temporary:
@@ -30,17 +31,29 @@ with tempfile.TemporaryDirectory(prefix='tdvp-multi-builder.') as temporary:
         shutil.copytree(source / 'packages' / name, repo / 'packages' / name,
                         ignore=shutil.ignore_patterns('root', '__pycache__'))
     for item in review['changed_inputs']:
-        item['consumer_sha256'] = hashlib.sha256((repo / item['path']).read_bytes()).hexdigest()
+        digest = hashlib.sha256((repo / item['path']).read_bytes()).hexdigest()
+        if args.fixed_review:
+            assert item['consumer_sha256'] == digest, 'fixed consumer input changed'
+        else:
+            item['consumer_sha256'] = digest
     shared = {}
     paths = list((repo / 'support').rglob('*')) + [p for p in (repo / 'scripts').iterdir() if p.suffix in ('.py', '.sh')]
     for path in sorted(set(paths)):
         if path == repo / 'support/ai-common-library-cohort.json' or path.is_dir() or path.suffix == '.pyc' or '__pycache__' in path.parts:
             continue
         shared[path.relative_to(repo).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
-    review['consumer_shared_inputs_count'] = len(shared)
-    review['consumer_shared_inputs_sha256'] = hashlib.sha256(json.dumps(shared, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    shared_digest = hashlib.sha256(json.dumps(shared, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    if args.fixed_review:
+        assert review['consumer_shared_inputs_count'] == len(shared)
+        assert review['consumer_shared_inputs_sha256'] == shared_digest, 'fixed shared input snapshot changed'
+    else:
+        review['consumer_shared_inputs_count'] = len(shared)
+        review['consumer_shared_inputs_sha256'] = shared_digest
     pinned = work / 'fixture-review.json'
-    pinned.write_text(json.dumps(review))
+    if args.fixed_review:
+        pinned.write_bytes(args.review.read_bytes())
+    else:
+        pinned.write_text(json.dumps(review))
     package = repo / 'packages/fixture-uv-client'
     package.mkdir()
     (package / 'package.env').write_text(

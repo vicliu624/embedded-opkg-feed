@@ -1,0 +1,309 @@
+{
+  "schema": 1,
+  "kind": "tdvp-development-input-diff-review",
+  "package": "libdb",
+  "version": "18.1.40-1",
+  "producer_reference": "b1f198b",
+  "reviewed_at": "2026-10-11",
+  "status": "diff-reviewed-not-import-authorization",
+  "consumer_shared_inputs_count": 108,
+  "consumer_shared_inputs_sha256": "8e44e17653a55640fc0a7a67c4ea37759ebfd5b4edc66ebdab9caf83b581e126",
+  "changed_inputs": [
+    {
+      "path": "scripts/audit-feed-notice-inventory.py",
+      "producer_sha256": "e7213a1c764b24d01763b251ffd983872340c8b020072c61a6215bc60be5b6b8",
+      "consumer_sha256": "9defa22d8fc7a5b45a7d5b8449df604a75a069e86305b4123c604d30b24227cc",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/build-all.sh",
+      "producer_sha256": "a08214a05c30ed345eb30bd8304910baf7c1a34c1077c69ab9042a64ac290e7b",
+      "consumer_sha256": "1a63399e2fe8ee173127e88fa6f65c7b459502e260f9a8a572702e3558a6b31a",
+      "rationale": "Adds explicit recovery and complete single/multi-provider historical import with original provenance, separate producer/consumer manifest versions, and all runtime file matching; ordinary receipt equality and the libdb source-build path remain unchanged."
+    },
+    {
+      "path": "scripts/build-staging-receipt.py",
+      "producer_sha256": "6c88f151a5b9a01526a27e189552014a460aa487b3eb2a4b18daa4470577aad3",
+      "consumer_sha256": "3018d14e8a5ff66502fa03dbc9915e7aab08b666c865a7e4e80f04bc6d3c3600",
+      "rationale": "Adds SQLite and single/multi-provider historical provenance validation, exact old closure and reviewed current versions; historical development bytes must stay unchanged and ordinary receipt equality remains required."
+    },
+    {
+      "path": "scripts/check-batch-build-policy.sh",
+      "producer_sha256": "b03a1e585bd156ecab6528e28403a589d08981d63014102c5dcf843efdc4a06c",
+      "consumer_sha256": "e3726df55bfc7cba530f19e216fd33b09e5b2a903ae248ec2ddb01c9291a8d53",
+      "rationale": "Adds policy checks for unrelated newly introduced libraries; no compilation parameters are changed."
+    },
+    {
+      "path": "scripts/compose_image_backed_feed.py",
+      "producer_sha256": "f092cd7fc05dfbf548b86294832acfdb8513678d9aa334ec4925c67ed5f009b6",
+      "consumer_sha256": "c9128a375b147e619499e402cb86f671905923c9d48386b07226efc208fff2ee",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/extract-published-rootfs.py",
+      "producer_sha256": "38929b8a11116d086ee233ffdab3cc49c3304ab15d902814157e6fac4f3293ad",
+      "consumer_sha256": "5dcfdc685ff574fd9510ee7da09541c6ea1151fcbb19734b4f4884d4e6624452",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/extract-split-provider.py",
+      "producer_sha256": "6a5c7c6c08dce561d1b455d6aefac82d1ca167a28b7ba6ab3a9da3d364e284d1",
+      "consumer_sha256": "ccd262511776baec89ee7426d0dd049ff6393b9e1179d47cf537633a5fb0914b",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/fetch-feed-predecessor.py",
+      "producer_sha256": "825bdded0d959f0609cc74a6becc89efa2c1018cdbb84aa4da021999bbccec3b",
+      "consumer_sha256": "d68909e93bb81cb2c8960ae49dcfc9075b4d8aea76ca431e2f309c821a6396c6",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/image_backed_payload.py",
+      "producer_sha256": "8732b4d8da39d6288eda2b373b16c70bb85bbfb2ac54c6836e934bfd1be4ea9f",
+      "consumer_sha256": "d02d23bf33d90589f5a87c44bad4132449f5363f7d3957cf1ebe7762b4b37de6",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/image_candidate_history.py",
+      "producer_sha256": "980751bb8e0cb2ea03290729a8e3afb489c7c017c615341bdcb1357b9f4d8040",
+      "consumer_sha256": "3811e55afa90474c53c8015a5686ac7dbbb28d60bbb8ce90e16774e59b2b6dfc",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/install-go-package-notices.py",
+      "producer_sha256": "94ac7e5a0485f0c9017f9ad182e356aa82c9fbe5a4015ca606feccccda66010e",
+      "consumer_sha256": "fb8150a7ddbe4c2673758ff163cda943dc247658950d423817bd0ef53290eb6e",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/install-python-wheel.py",
+      "producer_sha256": "c8fc50279df383630d461530d57efa12c96985bf560ddc31db0ef6eb7142c953",
+      "consumer_sha256": "36e7234fdddb98c1bc72e2a3920789a9261a9f69b568a36c7b63330188dfb678",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/materialize_image_references.py",
+      "producer_sha256": "0ad4fef5085fa391d4bccef0f722b6f9bc35f1cfdf0a3789bd86dd6dfa82583a",
+      "consumer_sha256": "18724d261f6dfe7b77dce37cab2696b8604e427dd791bac7df1aaf90068c5b5a",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/native-cmake-cache-key.py",
+      "producer_sha256": "d9ee839c955f3a4823375e6eb510dace63ac6f958a0beb4a1df18ebe08732756",
+      "consumer_sha256": "8199ae9f08d89991aaa24219a8d44cc9698b0c301f49e0f5010bb8967e3b99f8",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/onnxruntime-development-export.py",
+      "producer_sha256": "b0ec4d4615e94ebbb41bcd36d75d28f90df1a606a8980633511c077156ee9f22",
+      "consumer_sha256": "ab9bf6f71424f6c2d2ef5eb78ff706ddc6fbffbb61f4f059d356cea82f4ac883",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/register-runtime-owners.py",
+      "producer_sha256": "de66fb4604285f2a3457f8df9cbc15c8256158c0a5c0bcabde9f3571a9c3950b",
+      "consumer_sha256": "aba3b6a45726fdd437bce784eb79e7459aa669500c7bd207eaf230fc41e80890",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/verify-ai-common-library-cohort.py",
+      "producer_sha256": "5cad6951bfaba239a2c4126dd9a91743a3af4168aed8677b7c5dbaaf4e8f8077",
+      "consumer_sha256": "6db07f5cd4fba32243ce4661e255f90a8769ebed5872c4dc1e3f59393b0186df",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/verify-ai-package-sdk.py",
+      "producer_sha256": "d02cfcccd3b056c8724ae1d2c60f658f499148862d6d7a193f5bb321578ce051",
+      "consumer_sha256": "8e2e9916f79abc30e039a5284cfb63d1022aab51692fba295843609e2f6d78b2",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/verify-ai-python-host.py",
+      "producer_sha256": "80939d51b1b87e2d3bf4dfe53fbc17935ed109a7c2eda056c7e35bc488c6e872",
+      "consumer_sha256": "08e89ee1521ee5c866a9111020ab1310a73fd3dd6a633bf7753c97d00a9b540c",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/verify-declared-dependencies.py",
+      "producer_sha256": "f880a12554ebfb1d7dd08b47d10e1e0fa040722d2b88dda9749289d8df38020d",
+      "consumer_sha256": "5744968474153aab3339c768e7c1b3a34ae427d101d4d23e3a7518f6a28a228a",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/verify-historical-package-continuity.py",
+      "producer_sha256": "b6b0a91b7be3b870fda0402d6002559af0e4fe0e9f9926c26f09e7676c5d6965",
+      "consumer_sha256": "7c9d0e119189cfad31b4a02c0cb577341c6becea5bbe13f57cb04be465821bbe",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/verify-package-sdk.py",
+      "producer_sha256": "0c8a7c6dfff4b04c2c9067f0c96142e5db8a17a554ef4e86e1d554d4fd813b1a",
+      "consumer_sha256": "8f83940a1f34fa75ada356a8e59f932b0bcd6f1f72d7268349d3ee162bb15120",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/verify-published-sdk-payload.py",
+      "producer_sha256": "7fb6c1e535294ee6e683ba40bfe89d0c5d74dd25577aecb5337172b61d69041c",
+      "consumer_sha256": "30906b3f0e1edefb510d66638938070f16119e76ae0e953a8830d3c851ee1e5b",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "scripts/write-desktop-cache-hooks.py",
+      "producer_sha256": "8e2999a8dea2098925aa1eac30b555adae5cfa7277339d682ad4936d592ec891",
+      "consumer_sha256": "0005923268a9ab26bb200433a535604972932eb2e5a4ea7aacc84688d505c91a",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/audacious-buildroot/tdvp-audacious-plugins/Config.in",
+      "producer_sha256": "59b3ffeb09909170a1075a40c66dd52e2a03c22620b4aeb365e2d72510a7ac58",
+      "consumer_sha256": "a4a34966fe1e934ff8b47ca90c595853f427d504da4ebdfb07af4623a4390e6f",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/audacious-buildroot/tdvp-audacious-plugins/tdvp-audacious-plugins.hash",
+      "producer_sha256": "cccef5a16dcf618952cd19360fc18fbe72e7573e8479d4c08040011854c5129c",
+      "consumer_sha256": "6747dbec80578bd714eb231802652b803179dc77f266fd79424f4203a915ba86",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/audacious-buildroot/tdvp-audacious-plugins/tdvp-audacious-plugins.mk",
+      "producer_sha256": "4aa15a0c4db1d93e213346190ca79600d4bf3dc88be99a7e3dc398f3520fb66e",
+      "consumer_sha256": "8e630e346d9dc43832a6d2c9bcad2a4a15e06921d2b31c4ed6566202eb5e5b24",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/audacious-buildroot/tdvp-audacious/Config.in",
+      "producer_sha256": "6604914e9959abfa445737b6f1b70088822e3e0c29d97646a1f8f6b3d1655416",
+      "consumer_sha256": "7d27b1e91ad125eeaa996bb38e369ad809469e3bda08e425e9889747164dbe7c",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/audacious-buildroot/tdvp-audacious/tdvp-audacious.hash",
+      "producer_sha256": "7f44950f64a3e5df0df48f96d15f4052c6ca47722b8daf9a6c0100eebe2ec4f8",
+      "consumer_sha256": "1068e2b7842a70135e7414b1deb38b941082a02dbdd91fb5faf47aa6ca996332",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/audacious-buildroot/tdvp-audacious/tdvp-audacious.mk",
+      "producer_sha256": "59afc898d9df220b347b81a1b419dd58e5a88d43b7efbf5261a25f44b1011921",
+      "consumer_sha256": "4e4ea34493e1362a04c6cbf35c28c1b364f3f8dbb1b98d5adb1dce4e187de486",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/extract-source-copyright-notices.py",
+      "producer_sha256": "4f2a84736f8a036583e185e786ffc044e281094c64e47acf45a7ab3b4c755bd8",
+      "consumer_sha256": "3db1af78632d33fa02e6ac7ff8ee79d3ed5de78821a1ba882bdb18e0333a64f6",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/go-module-vendor-archive.go",
+      "producer_sha256": "b334472930f7b4fb9b90f1a178df7e08b0a4461615e3f1bb8e5c600d837649ed",
+      "consumer_sha256": "b7ab1194393cfeb39d95bd9df1cefb85f2493de901cad5238673af5c46f111a4",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/inference-framework-inputs.json",
+      "producer_sha256": "3f0cf506aa6e97c7a6d51e1084965082fb90bc52f989a061fe7b276b3355a4d2",
+      "consumer_sha256": "da7bc60aa1dda71307c3739e8f01f51af5fb732419d6fa33efaaffd7c042c8ba",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/install-archive-source-license.py",
+      "producer_sha256": "5ceceacd306588426cc4434c85a1dcb7cbd475a778aa63efcccfa69568bcbf40",
+      "consumer_sha256": "377fbbe70d704c77527aafa4b002e3356850179624c6247bd2a49128e4f262fd",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/install-provider-licenses.py",
+      "producer_sha256": "eed145ffc92bc74da20b3364bee1da08340f165358cc3261afd5224dcaf18efc",
+      "consumer_sha256": "c275258003c0a12abd3013bdd4be194c044d86e179972e5ce93ed903962f9a96",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/install-source-licenses.py",
+      "producer_sha256": "db515dc5428c6f6dc1e1aa26dfc6fab180f0d6922189f1a8803e7782e748ae4c",
+      "consumer_sha256": "384feb33a1c7d2cffba4e1787b958b65aba22c64bfb677e797647a8012211450",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/normalize-pkgconfig-build-paths.py",
+      "producer_sha256": "e817d94eabb95d148b5d85a91c88932f0010b3936d528dae4775549ed0a9014f",
+      "consumer_sha256": "e3b926745f6c7369ae3169bea60be105ac3c36243b840896e40e63eaf452fbac",
+      "rationale": "Adds opt-in missing producer prefix handling; strict default remains unchanged."
+    },
+    {
+      "path": "support/onnx-import-protobuf.cmake",
+      "producer_sha256": "da91152b522f794079ef9bbd1bdd09668e142b42e19d1255870d4985609530e6",
+      "consumer_sha256": "254846ca7f86e0f535720b2a052c61a2d52268d15b34237cbfb7577eac3dc5a8",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/onnxruntime-import-platform-dependencies.cmake",
+      "producer_sha256": "69618f70a80c7624782bffbf0d2684076592dd7585e422314111fe4bdde6a46f",
+      "consumer_sha256": "3ad6b2db9671ef41403149fb4ee9e169f5ce1bf095ee2d75f70e40a47ca75753",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/project-selinux-notices.py",
+      "producer_sha256": "925ad87636c025c5c4f108a9a1bd7190f2e6d9afb46eab18602a1e7a8d8acd34",
+      "consumer_sha256": "c6652db21fc2cbb368faa9f2e0835582a17ef71f565e94c9d6cb2f52aec660bb",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/python-meson-runtime-metadata.py",
+      "producer_sha256": "5cd222c3ee73dc3380db66110a953b3238e8b8249a61362ce0c40db52f2b1730",
+      "consumer_sha256": "3787c0c044c8e71558ee73bc84906a748138b4c3a4a5ac7af5038fdced60fedd",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/python-onnx-binding/CMakeLists.txt",
+      "producer_sha256": "1d4dfbb603cb266c35729f5e33164becc4f46ac70eac3ee3da6262741628e2fe",
+      "consumer_sha256": "83da2230b056b4b682baec810cc61a41001fcd83aa1a70a1d2f5cd398f4ce0b0",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/python-onnx-binding/version.py",
+      "producer_sha256": "aee5b8c911cf222a642ccafda568ae4f3884c57715f9610a4917860485dd36fe",
+      "consumer_sha256": "6ba314b0e71a81db0ec2107504689676284cf776c04d78cf96c4c72df67a315a",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/python-onnxruntime-binding/CMakeLists.txt",
+      "producer_sha256": "ebf32b686e08452200f3b036907b755e54c651664c6401b47ca48fcf663d7050",
+      "consumer_sha256": "7d32c5dc3c5bac0fa4dc067ec9858eefefa06dadb074694de6034166de63855f",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/python-onnxruntime-binding/build_and_package_info.py",
+      "producer_sha256": "a8e6e2af2e8ac19fcd544b5a31c2c62d831539d45721db8a720d0b2feb76c34c",
+      "consumer_sha256": "ce49fcafa72a1ece04323e0a1be11f23e8733a46f4e1366d0474734c3c2f8058",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/python-tflite-binding/CMakeLists.txt",
+      "producer_sha256": "d09b6acb62257f62387e7bc8612f47e541b8a7043c338dd2fc8f0a6c10474997",
+      "consumer_sha256": "8ae89d2ce01d8449c16ec3fe517b59631e4dd4efdfa4fa8d3d6e14fc25988bdf",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/python-tflite-binding/__init__.py",
+      "producer_sha256": "9c6daed842a85b4ce020b08f305ad7831dd0ab1fb3cdcf88ea36e2a460fa4767",
+      "consumer_sha256": "799d9fdc8bd3cdd3331e9bcdbedde4d2264277a60eb910d5426fa457a07311ee",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/python-wheel-host-requirements.txt",
+      "producer_sha256": "7fc9e522b42c5be33b8525749d585cdafa89fdd899e7d503612fed0cb027069e",
+      "consumer_sha256": "1c58ff5465a9cb616bb72c84cb7103f850779880973fc3d472dc1135a158a475",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    },
+    {
+      "path": "support/tflite-import-platform-dependencies.cmake",
+      "producer_sha256": "4e98b67e31e88573431efd3bc7b70f8d3e5cab5709a309789210632e76f27d06",
+      "consumer_sha256": "0bdd6adf2509de591b28d80be40e25349320db06fa6d6b734f66ecec3921a6f9",
+      "rationale": "Exact byte comparison after CRLF-to-LF normalization is identical; committed bytes are preserved and independently pinned."
+    }
+  ],
+  "consumer_revision": "59746cf360c9dc559f66df521f7c08281796b83f",
+  "consumer_input_layout": "Exact Git archive bytes, including committed CRLF files."
+}

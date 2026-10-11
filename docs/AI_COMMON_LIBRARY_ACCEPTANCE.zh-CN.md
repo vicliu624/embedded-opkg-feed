@@ -3373,3 +3373,14 @@ source-notice-terminal-review.cWgllM 保留三个输入和新 projected 目录�
 截至这里，六个第三方包已有 review 材料，其余聚合工具、nano、
 rsync、tmux、wget、libfft2d 及镜像材料仍需继续核对；随包打包和
 修订一致性尚未实施，不能据此减少 445 包候选 IPK 的缺口计数。
+
+nano/rsync/tmux 原始归档已匹配现有 source.lock，保存在
+source-notice-utility-review.zXFWtx。显式 --utilities 模式原样投影
+nano COPYING/COPYING.DOC、rsync COPYING/附带 popt COPYING、tmux
+COPYING 五份材料；同名文件用不同目标名保留，记录各自原 member
+和摘要，不把附带源码的条款等同为已交付 runtime 的许可判断。
+三种模式互斥，精确材料摘要、拒绝覆盖、源归档损坏不产生部分输出
+和冲突模式拒绝在回归中通过；core/terminal/utilities 均完成原生
+与 Ubuntu 24.04 检查。当前九个第三方包合计有 15 份 review 材料。
+IPK、包版本、运行字节和共享构建输入没有变化；聚合 archive-tools、
+wget、旧 libfft2d、镜像来源和正式材料打包仍待继续处理。

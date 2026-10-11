@@ -13,7 +13,9 @@ import tarfile
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--archives', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
-parser.add_argument('--terminal', action='store_true', help='Review dialog/htop/ncdu instead of the core three providers')
+selection = parser.add_mutually_exclusive_group()
+selection.add_argument('--terminal', action='store_true', help='Review dialog/htop/ncdu instead of the core three providers')
+selection.add_argument('--utilities', action='store_true', help='Review nano/rsync/tmux instead of the core three providers')
 args = parser.parse_args()
 output = args.output.resolve()
 assert not output.exists() and not output.is_symlink(), 'review output already exists'
@@ -31,6 +33,13 @@ if args.terminal:
                    ('dialog-1.3-20220117/COPYING', 'dialog-1.3-20220117/package/debian/copyright')),
         'htop': ('htop-3.3.0.tar.xz', 'a69acf9b42ff592c4861010fce7d8006805f0d6ef0e8ee647a6ee6e59b743d5c', ('htop-3.3.0/COPYING',)),
         'ncdu': ('ncdu-1.21.tar.gz', 'a894d3a9b46bce578a6039bef48f54533ec402fb589b0769bfbb1d1edf9601a6', ('ncdu-1.21/COPYING',)),
+    }
+if args.utilities:
+    providers = {
+        'nano': ('nano-8.2.tar.xz', 'd5ad07dd862facae03051c54c6535e54c7ed7407318783fcad1ad2d7076fffeb', ('nano-8.2/COPYING', 'nano-8.2/COPYING.DOC')),
+        'rsync': ('rsync-3.4.1.tar.gz', '2924bcb3a1ed8b551fc101f740b9f0fe0a202b115027647cf69850d65fd88c52',
+                  ('rsync-3.4.1/COPYING', 'rsync-3.4.1/popt/COPYING')),
+        'tmux': ('tmux-3.3a.tar.gz', 'e4fd347843bd0772c4f48d6dde625b0b109b7a380ff15db21e97c11a4dcdf93f', ('tmux-3.3a/COPYING',)),
     }
 planned = {}
 records = {}
@@ -52,6 +61,9 @@ for package, (filename, expected, members) in providers.items():
                 extraction = 'exact first header comment; includes core disclaimer, not Tcl-extension terms'
                 target = 'COPYRIGHT.sqlite3-header.txt'
             relative = 'usr/share/licenses/' + package + '/' + target
+            if relative in planned:
+                target = Path(name).parent.name + '-' + target
+                relative = 'usr/share/licenses/' + package + '/' + target
             assert relative not in planned
             planned[relative] = data
             files.append({'path': relative, 'source_member': name, 'sha256': hashlib.sha256(data).hexdigest(), 'extraction': extraction})

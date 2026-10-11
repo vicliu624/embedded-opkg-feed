@@ -42,6 +42,19 @@ for item in review['changed_inputs']:
     assert item['rationale'].strip()
     reviewed[name] = (item['producer_sha256'], item['consumer_sha256'])
 assert changes == reviewed, 'input differences do not match pinned review'
+consumer_inputs = {}
+paths = list((repo / 'support').rglob('*'))
+paths += [p for p in (repo / 'scripts').iterdir() if p.suffix in ('.py', '.sh')]
+for path in sorted(set(paths)):
+    if path == repo / 'support/ai-common-library-cohort.json':
+        continue
+    if path.is_dir() or path.suffix == '.pyc' or '__pycache__' in path.parts:
+        continue
+    assert path.is_file() and not path.is_symlink() and path.resolve().is_relative_to(repo), 'unsafe consumer input'
+    consumer_inputs[path.relative_to(repo).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
+consumer_inventory = hashlib.sha256(json.dumps(consumer_inputs, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+assert review.get('consumer_shared_inputs_sha256') == consumer_inventory, 'consumer shared input inventory differs'
+assert review.get('consumer_shared_inputs_count') == len(consumer_inputs), 'consumer shared input count differs'
 env = (repo / 'packages' / review['package'] / 'package.env').read_text()
 assert re.search(r"^VERSION='([^']+)'$", env, re.M)[1] == review['version'], 'consumer package version mismatch'
 for name, record in receipt['development_files'].items():
@@ -64,6 +77,8 @@ print(json.dumps({
     'reviewed_changes': sorted(changes),
     'producer_receipt_sha256': hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
     'review_sha256': hashlib.sha256(review_path.read_bytes()).hexdigest(),
+    'consumer_shared_inputs_sha256': consumer_inventory,
+    'consumer_shared_inputs_verified': len(consumer_inputs),
     'import_authorized': False,
-    'scope': 'Recorded producer inputs and development bytes; new consumer inputs and builder integration are separate gates.'
+    'scope': 'Recorded producer inputs, complete shared consumer input snapshot and development bytes; builder integration is a separate gate.'
 }, sort_keys=True))

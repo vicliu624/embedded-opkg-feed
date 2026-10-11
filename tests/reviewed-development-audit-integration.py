@@ -1,6 +1,7 @@
 """Test pinned producer-difference review against real development inputs."""
 import argparse
 import json
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -23,6 +24,12 @@ with tempfile.TemporaryDirectory(prefix='tdvp-review-negative.') as temporary:
     negative = command.copy()
     negative[negative.index('--review') + 1] = str(path)
     cases = []
+    wrong_inventory = json.loads(json.dumps(review))
+    wrong_inventory['consumer_shared_inputs_sha256'] = '0' * 64
+    cases.append(wrong_inventory)
+    missing_inventory = json.loads(json.dumps(review))
+    missing_inventory.pop('consumer_shared_inputs_sha256')
+    cases.append(missing_inventory)
     changed = json.loads(json.dumps(review))
     changed['changed_inputs'][0]['consumer_sha256'] = '0' * 64
     cases.append(changed)
@@ -42,4 +49,10 @@ with tempfile.TemporaryDirectory(prefix='tdvp-review-negative.') as temporary:
         path.write_text(json.dumps(changed))
         result = subprocess.run(negative, capture_output=True)
         assert result.returncode != 0, 'invalid review accepted'
+    consumer = Path(temporary) / 'consumer'
+    shutil.copytree(repo, consumer, symlinks=True)
+    (consumer / 'scripts/unreviewed-new-helper.py').write_text('print("unreviewed fixture")\n')
+    changed_command = command.copy()
+    changed_command[changed_command.index('--repo') + 1] = str(consumer)
+    assert subprocess.run(changed_command, capture_output=True).returncode != 0, 'new consumer input accepted'
 print('Reviewed development audit: PASS real inputs and hash/missing/duplicate/version/status rejection')

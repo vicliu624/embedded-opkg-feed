@@ -6,6 +6,8 @@
   "producer_reference": "b1f198b",
   "reviewed_at": "2026-10-11",
   "status": "diff-reviewed-not-import-authorization",
+  "consumer_shared_inputs_count": 106,
+  "consumer_shared_inputs_sha256": "e11bfb64c6d67d415dcd7cd159873cd5f98e1660862199edf2bfc6df73ecfd08",
   "changed_inputs": [
     {
       "path": "scripts/build-all.sh",

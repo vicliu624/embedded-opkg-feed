@@ -3107,3 +3107,10 @@ audit-reviewed-development.py 已对 Berkeley DB 原 producer 106 输入、
 错误版本和私改允许导入状态，均通过。此工具明确输出
 import_authorized=false；未覆盖新 consumer 输入、未接入生产导入，
 不能当作完整跨 producer 复用通过。
+
+审查补齐完整 consumer 共享输入 snapshot：从当前 Git 源码导出
+scripts/support 与 libdb 配方，覆盖 106 个共享输入的集合及摘要。
+current-development-audit-consumer.fV6y4g 核验通过；错误/缺失集合
+摘要以及实际新增的共享脚本均被拒绝。原生 Python 与离线 Ubuntu
+24.04/Python 3.12 集成测试均通过。该记录仍是 diff audit，生产
+导入器未接通，import_authorized 保持 false，旧 receipt 未改写。

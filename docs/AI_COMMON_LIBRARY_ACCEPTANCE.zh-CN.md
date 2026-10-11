@@ -3059,3 +3059,10 @@ OpenBLAS 开发文件缺口：当前 SDK 与聚合 staging 均未找到 lapacke.
 rv64,v=false。错误 archive 在 SHA256 阶段被拒绝。未重编 OpenBLAS，
 没有生成开发构建凭据，也尚未声称完成完整开发恢复和配置闭包。
 独立消费者证据 openblas-lapacke-consumer.mFxaJb。
+
+NetCDF HTTP byte-range 消费者 netcdf-remote-consumer.tTd5pY：依据上游
+docs/byterange.md 的 #mode=bytes，原生 loopback HTTP 服务提供真实
+CDF5 dataset，目标消费者通过网络读取精确数值，服务端确认收到
+带 Range 的 GET，rv64,v=false 通过。此时仍使用开发 staging，
+不能代替安装后的复验或 DAP2/DAP4 协议验收。
+442 包候选整合已完成，签名安装验收启动，尚无安装结果。

@@ -627,6 +627,11 @@ assert_provided_package() {
     tar -xOzf "$archive" ./control >"$control"
     if grep -Fqx "Package: $package" "$control" && grep -Fqx "Version: $version" "$control"; then
       matches=$((matches + 1))
+      if [[ "$reviewed_staging_import" -eq 1 || -f "$staging_root/tdvp-historical-development.json" ]] && \
+          [[ "${recipe_kind[$package]}" == shared-library ]]; then
+        python3 "$script_dir/verify-staging-runtime-match.py" --staging "$staging_root" \
+          --ipk "$ipk" --package "$package" --version "$version"
+      fi
     fi
     rm -f -- "$control" "$archive"
   done < <(find "$feed_dir" -maxdepth 1 -type f -name "${package}_*.ipk" -print | LC_ALL=C sort)

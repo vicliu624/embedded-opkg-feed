@@ -6,14 +6,14 @@
   "producer_reference": "b1f198b",
   "reviewed_at": "2026-10-11",
   "status": "diff-reviewed-not-import-authorization",
-  "consumer_shared_inputs_count": 106,
-  "consumer_shared_inputs_sha256": "acc41d07e58f94965e5416bd0e60caa319abce70462c0c7db1dbe2d546a12e59",
+  "consumer_shared_inputs_count": 107,
+  "consumer_shared_inputs_sha256": "a90966dc74249f67c2a21004e59d82f69d5f55f90aceb786d55f0c9d051d6c32",
   "changed_inputs": [
     {
       "path": "scripts/build-all.sh",
       "producer_sha256": "a08214a05c30ed345eb30bd8304910baf7c1a34c1077c69ab9042a64ac290e7b",
-      "consumer_sha256": "a7be341bb3c3173d2d89b9149acbc776c64163949204087714ba93b147704e09",
-      "rationale": "Adds explicit SQLite recovery and reviewed historical import with provenance preservation; ordinary import remains strict and the libdb source-build path is unchanged."
+      "consumer_sha256": "671275df348e82f2ff9ee85b2c472eb0508c59840d95a6aefc30bd025859d7d3",
+      "rationale": "Adds explicit recovery and reviewed historical import with provenance preservation and exact development/runtime matching; ordinary receipt equality and the libdb source-build path remain unchanged."
     },
     {
       "path": "scripts/build-staging-receipt.py",

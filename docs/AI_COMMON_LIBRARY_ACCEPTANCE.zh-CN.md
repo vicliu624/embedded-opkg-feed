@@ -3130,3 +3130,14 @@ reviewed-staging-builder-normal-reuse.log。普通 staging 集成回归及
 这项覆盖单包历史复用；Node/ICU 配方差异、多 producer 合并及全部
 开发闭包尚未完成。生产审查仍锁定具体输入摘要，后续源码变化会
 拒绝复用，必须重新核对差异；原 receipt 不允许就地改写。
+
+历史共享库 provided-package 校验新增 runtime byte gate：在显式
+reviewed import 或携带历史来源的普通复用中，待安装 IPK 内的
+共享库必须与开发 staging 字节一致，同时检查唯一 control 身份与
+RISC-V ELF。Berkeley DB 两个库正向匹配通过，修改库字节、缺失库和
+错误版本均被拒绝。普通无历史来源模式保持原行为。
+reviewed-staging-runtime-bound-builder.log 验证完整 consumer、来源
+导出、普通 receipt 再次复用和篡改拒绝通过，没有重编 provider。
+runtime-bound-import-full-preflight.log 的完整 Ubuntu 24.04 前置检查
+通过，旧普通 staging 集成回归也通过。当前共享输入快照包含 107
+路径，审查记录已按实际源码更新；仍未完成所有包的开发闭包。

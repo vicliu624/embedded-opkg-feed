@@ -2798,3 +2798,68 @@ finalization，完整安装和实机验收仍未完成。
 清理已验收且无进程引用的 430 测试根，状态归档到
 completed-installed-status，保留包与日志，最新 432/434 根保留；
 删除的是可重新生成的测试文件系统。
+
+TagLib 提交 a900d68 快速 CI 38109223659 成功。设备只读检查
+仍返回 image-base.json SHA256
+a8a53102d7ab54c75999e5e08d8802ffbe563c31ae2c9acc9ab38bcbd7babc31，
+与候选锁定 13cab004… 不同，未在该设备安装或改写候选源。
+
+下一项 libsoup 开发依赖核对：官方 3.6.6 源码与 sha256sum
+匹配，源码摘要
+51ed0ae06f9d5a40f401ff459e2e5f652f9a510b7730e1359ee66d14d4872740，
+目录 libsoup-source-review.6Pw20u。当前 SDK/聚合 staging 缺少
+SQLite 开发文件和 PSL/nghttp2 开发投影。找到旧开发产物
+libpsl-source-build.EU4wRotT/staging 与
+node-local-source.nbTt3Ffl/exported-staging-icu-license，其库用
+配对 strip --strip-unneeded 后与 434 安装根字节完全相同，
+目录 libsoup-existing-development-check.P9q84W。可复用这些
+产物而无需重编已有库，但开发 receipt/import 仍需完善；PSL
+旧 pkg-config Libs.private 还残留临时路径，不能直接当作正式
+可迁移导出。SQLite 开发材料尚未找到。libsoup 尚未构建，未
+增加配方或记为已交付，不能以源码下载成功替代依赖闭包验收。
+
+SQLite 开发文件恢复验证：按现有配方的锁定摘要下载
+sqlite-autoconf-3480000.tar.gz，核对
+ac992f7fca3989de7ed1fe99c16363f848794c8c32a158dafd4eb927a2e02fd5
+通过，目录 sqlite-development-source-review.ZyNDTp。源码包包含
+已生成的 sqlite3.h/sqlite3ext.h 和 sqlite3.pc.in，无须重新
+编译 runtime 才获得公共头文件。独立消费者
+sqlite-existing-runtime-consumer.rXlX6r 用这些头文件链接 434
+安装根原有 libsqlite3.so.0，在 rv64,v=false 下确认库/头版本
+均为 3.48.0，预处理 SQL、含零字节 binary BLOB 和 rollback
+通过。该测试尚未证明正式 development receipt/export/import
+路径完整，未手工伪造 receipt 或将聚合 staging 称为 SDK 交付。
+新增 tests/sqlite-development-consumer-smoke.c 保存回归源。
+
+436 验收完成：整批与 436 单包求解、实际安装配置全部通过，
+签名检查开启，受保护基础不变，597 个总安装包。安装后仅用
+安装根库路径复测 mpg123 解码/seek、TagLib C/C++ 中文标签持久化、
+Speex 三采样率、WavPack 精确无损、六条 VPX、八条 Good 与
+UDP 四实包，全通过，目录 media-metadata-installed-436.Vthtt9。
+没有将这些构建机模拟安装结果记为 K230 设备验收。
+
+正式开发恢复路径继续审查：build-all export/import 已验证
+build-staging-receipt 对 SDK、配方和开发文件进行身份/字节绑定；
+手工聚合目录不能当作正式 producer 输出。development IPK
+现有路径校验禁止符号链接，因此 SQLite 的公共头、pkg-config
+和 unversioned linker name 需要与 runtime provider 归属一起
+处理，不能通过放宽 receipt 或偷偷复制 runtime 绕过。
+
+独立恢复工具 scripts/restore-sqlite-development.py 新增：从锁定
+SQLite 3.48.0 源码和原始 libsqlite3-0 IPK 恢复公共头、pkg-config、
+内部 linker/SONAME 链接与 runtime 字节，输出独立 recovery
+provenance，绑定 SDK、源码、原始 IPK、runtime 和工具自身摘要。
+不生成 build-staging receipt，不改现有导入校验。产物
+sqlite-development-recovery.7MeYPj 经 byte cmp 与 436 安装根的
+runtime 完全相同；pkg-config 消费者编译与 SQL API 测试通过，
+未重编 runtime。该目录来自工具最初版本；后续增加工具摘要
+绑定后，应重新生成，不能沿用旧记录声称新版本 verify 通过。
+Ubuntu 24.04 容器的独立 integration 回归通过 write/verify、
+输出存在拒绝、头内容变化、多余文件、错误源码摘要拒绝，且
+验证没有伪造 build receipt。正式 producer/import 接入及 libsoup
+构建仍未完成。新增静态检查接入共享前置检查。
+
+恢复工具 integration 再补错误 SDK 摘要与错误 runtime provider
+版本拒绝检查，Ubuntu 24.04 离线容器回归通过；完整共享批次
+前置检查通过。此项没有修改 development IPK 的链接限制，也
+没有放宽旧 build-staging receipt 的身份校验。

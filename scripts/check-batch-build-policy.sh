@@ -71,4 +71,5 @@ python3 "$repo_root/tests/speex-library-policy.py"
 python3 "$repo_root/tests/wavpack-library-policy.py"
 python3 "$repo_root/tests/mpg123-library-policy.py"
 python3 "$repo_root/tests/taglib-library-policy.py"
+python3 "$repo_root/tests/sqlite-development-recovery-policy.py"
 echo 'Shared batch preflight: PASS'

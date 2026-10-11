@@ -96,6 +96,8 @@ jobs:
           python3 ./tests/notice-projection-lifetime.py
           bash ./tests/vim-plugin-notice-policy.sh
           bash ./tests/dev-tools-package-policy.sh
+          python3 ./tests/profile-readme-mit.py
+          python3 ./tests/eigen-header-only-policy.py
           bash scripts/check-batch-build-policy.sh
           bash ./tests/reuse-published-ipk-payload-policy.sh
           bash ./tests/feed-overlay-composition-policy.sh

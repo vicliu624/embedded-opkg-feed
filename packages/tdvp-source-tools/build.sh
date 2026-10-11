@@ -6,4 +6,6 @@ package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 payload_dir="$package_dir/root"
 rm -rf -- "$payload_dir"
 install -Dm 0644 "$package_dir/README" "$payload_dir/usr/share/doc/tdvp-source-tools/README"
+install -Dm 0644 "$package_dir/LICENSE" "$payload_dir/usr/share/licenses/tdvp-source-tools/LICENSE"
+printf '%s\n' 'MIT covers the TDVP-authored README only. Dependencies retain their own licenses.' >"$payload_dir/usr/share/licenses/tdvp-source-tools/SCOPE"
 echo "tdvp-source-tools profile payload ready: $payload_dir"

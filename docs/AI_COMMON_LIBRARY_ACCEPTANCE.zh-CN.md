@@ -2942,3 +2942,18 @@ runtime 或降低关闭断言；GitNexus 未索引新测试函数，人工
 PSL、HTTPS 正确 CA、无关 CA/主机名不符拒绝复测通过。没有
 引用开发 staging。WebSocket 双端均为目标 libsoup，未将该
 结果扩大为独立浏览器兼容认证。HTTP/2 和严格开发闭包仍待完成。
+
+新增 libtwolame 0.4.0-1。官方 SourceForge archive 与 Buildroot
+公开 package hash 一致，摘要
+cc35424f6019a88c6f52570b63e1baf50f62963a3eac52a03a800bb070d7c87d，
+目录 twolame-source-review.A7vhEQ。该摘要来自 Buildroot 维护者
+计算，不声称是上游独立签名。离线 Ubuntu 24.04 交叉构建、
+COPYING/AUTHORS 投影完成，关闭 sndfile frontend，实际 ABI
+libtwolame.so.0。消费者 twolame-codec-consumer.S2y1yc 在
+rv64,v=false 下编码 20 帧 MP2，再用已构建 mpg123 独立解码，
+验证 Layer II、48 kHz stereo、样本数量与双声道信号能量。
+有损编码不记录为精确 PCM 往返，未覆盖全部 bitrate/mode。
+未重编 mpg123。IPK 位于 twolame-ipk.C7F0lS，摘要
+a1117bbff2f0fd7b332aeb46c0a10c30beca8f53a1a82f64ff6800db2a2d097e，
+CPU0 ELF 策略及完整前置检查通过。候选整合、完整安装与
+设备验收仍未完成。

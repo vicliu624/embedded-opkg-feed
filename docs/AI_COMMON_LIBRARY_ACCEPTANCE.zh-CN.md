@@ -3536,3 +3536,18 @@ notice-upgraded-runtime-smoke.bBvofr 和 notice-upgraded-ubuntu-smoke.Jl7Fb4。
 这些运行链路复验只适用于测试根和指定消费者，不是全部库或设备
 验收；镜像自带 opkg 的升级失败仍未关闭。1399204 对应快速 CI
 38139165154 已成功，完整镜像构建和正式发布均未触发。
+
+后续源码审查以 r12-rc2 的锁定提交 0701ec63edf8f4811f4d8003b30b177167870163
+为基准，不能用当前 main 目录代替。该提交的四份 opkg 补丁已从
+GitHub 内容 API 逐份核对，与原型保存输入的 SHA256 完全相同。
+opkg-pinned-source-audit.e4FyET 保留锁定 opkg 0.7.0 归档及重放基线。
+旧 batch-preparation.patch 没覆盖原型的全部 refinements，严格审查
+首次拒绝；随后明确列出两个源文件中的全部差异：批量准备、重复
+请求前统一状态快照、候选去重及默认多包／全部升级批量入口。
+新增审查器在原生和 Ubuntu 24.04 重新重放锁定归档／四补丁，检查
+105 份 C、头文件和 Autotools 源文件，两份 C 文件之外均无差异。
+旧补丁加明确列出的 refinements 能逐字节重现这两份原型源文件。
+负向回归在两环境拒绝归档／补丁摘要变化、未审查源字节和额外源文件。
+结果保存在 source-audit-refined.native.json/source-audit-refined.ubuntu24.json。
+这不证明编译配置或二进制可复现性；完整镜像补丁尚未生成或集成，
+仍待用户授权。不能把旧补丁快照直接当作已通过 445 包测试的全部改动。

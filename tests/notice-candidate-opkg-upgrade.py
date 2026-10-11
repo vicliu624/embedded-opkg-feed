@@ -8,10 +8,15 @@ import shutil
 import subprocess
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--prototype-opkg', type=Path)
 for name in ('image', 'old-work', 'feed', 'signature', 'output'):
     parser.add_argument('--' + name, type=Path, required=True)
 args = parser.parse_args()
 image, old_work, feed = (path.resolve(strict=True) for path in (args.image, args.old_work, args.feed))
+opkg = args.prototype_opkg or image / 'usr/bin/opkg'
+opkg_digest = hashlib.sha256(opkg.read_bytes()).hexdigest()
+if args.prototype_opkg:
+    assert opkg_digest == 'd3c93827cb49091edb28b163226c5340b0ce656b119b5deddb57fb65b844a94a', 'unreviewed prototype binary'
 assert not args.output.exists() and not args.output.is_symlink()
 assert 'option check_signature 1' in (old_work / 'opkg.conf').read_text()
 old_root = old_work / 'root'
@@ -45,7 +50,7 @@ for block in (feed / 'Packages').read_text().split('\n\n'):
 assert len(entries) == 445
 for name in ('cache', 'tmp'):
     (args.output / name).mkdir()
-command = ['qemu-riscv64', '-L', str(image), str(image / 'usr/bin/opkg'), '-f', str(config),
+command = ['qemu-riscv64', '-L', str(image), str(opkg), '-f', str(config),
            '-o', str(root), '--cache-dir', str(args.output / 'cache'), '--host-cache-dir', '-t', str(args.output / 'tmp')]
 env = dict(os.environ, IPKG_INSTROOT=str(root), PKG_ROOT=str(root))
 for label, operation in (('plan', ['--noaction', '--combine', 'upgrade']),
@@ -74,5 +79,6 @@ assert len(added) == 43 and all(path.startswith('usr/share/licenses/') for path 
 assert hashlib.sha256((old_root / 'var/lib/opkg/status').read_bytes()).hexdigest() == original_status
 (args.output / 'acceptance.json').write_text(json.dumps({'schema': 1, 'candidate_packages': len(entries),
     'installed_packages': len(installed), 'protected_existing_paths': len(before),
-    'signature_enabled': True, 'old_root_unchanged': True, 'device_test': False}, indent=2) + '\n')
-print('Actual target opkg upgrade: PASS 445 candidate versions,', len(before), 'existing runtime paths unchanged; old root preserved')
+    'signature_enabled': True, 'old_root_unchanged': True, 'device_test': False,
+    'prototype_opkg': bool(args.prototype_opkg), 'opkg_sha256': opkg_digest}, indent=2) + '\n')
+print('Target opkg upgrade: PASS 445 candidate versions,', len(before), 'existing runtime paths unchanged; old root preserved; prototype=', bool(args.prototype_opkg))

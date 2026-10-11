@@ -10,15 +10,17 @@ import tempfile
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--notices', type=Path, required=True)
+parser.add_argument('--package', choices=('libfft2d', 'libubootenv-0'), default='libfft2d')
 args = parser.parse_args()
 tool = Path(__file__).with_name('feed-application-notice-inventory.py')
-original = {name: (args.notices / name).read_bytes() for name in ('readme.txt', 'readme2d.txt')}
+names = ('readme.txt', 'readme2d.txt') if args.package == 'libfft2d' else ('CC0-1.0.txt', 'LGPL-2.1-or-later.txt', 'MIT.txt')
+original = {name: (args.notices / name).read_bytes() for name in names}
 with tempfile.TemporaryDirectory(prefix='tdvp-reviewed-readme.') as directory:
     root = Path(directory)
     for mode in ('original', 'tampered', 'wrong-path', 'wrong-package'):
         feed = root / mode
         feed.mkdir()
-        package = 'unrelated' if mode == 'wrong-package' else 'libfft2d'
+        package = 'unrelated' if mode == 'wrong-package' else args.package
         control = feed / 'control.tar.gz'
         payload = feed / 'data.tar.gz'
         with tarfile.open(control, 'w:gz') as archive:
@@ -30,7 +32,7 @@ with tempfile.TemporaryDirectory(prefix='tdvp-reviewed-readme.') as directory:
             for name, data in original.items():
                 if mode == 'tampered':
                     data += b'changed'
-                prefix = 'usr/share/doc/libfft2d/' if mode == 'wrong-path' else 'usr/share/licenses/libfft2d/'
+                prefix = ('usr/share/doc/' if mode == 'wrong-path' else 'usr/share/licenses/') + args.package + '/'
                 member = tarfile.TarInfo('./' + prefix + name)
                 member.size = len(data)
                 archive.addfile(member, io.BytesIO(data))
@@ -42,5 +44,5 @@ with tempfile.TemporaryDirectory(prefix='tdvp-reviewed-readme.') as directory:
         assert row['notice_evidence'] is (mode == 'original'), mode
         assert report['missing_notice_count'] == (0 if mode == 'original' else 1)
         if mode == 'original':
-            assert len(row['notice_files']) == 2
-print('Reviewed README notice regression: PASS exact source material, tampered bytes, path and package boundaries')
+            assert len(row['notice_files']) == len(names)
+print('Reviewed source-specific notice regression: PASS', args.package, 'exact material, tampered bytes, path and package boundaries')

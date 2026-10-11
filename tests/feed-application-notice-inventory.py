@@ -24,6 +24,11 @@ reviewed_readmes = {
         'usr/share/licenses/libfft2d/readme.txt': '5b5e610da10394132a42d82ed6501fe1b83a1d19e1bb160c8ace10ed61708765',
         'usr/share/licenses/libfft2d/readme2d.txt': '0b2a2082537735a2a576dbec2e8f9c1a09812eac6df6a389502a6ba860072906',
     },
+    'libubootenv-0': {
+        'usr/share/licenses/libubootenv-0/CC0-1.0.txt': '0558101984550fa84d1d13c2af11d116c20079d2be58711e8d99cadce7009192',
+        'usr/share/licenses/libubootenv-0/LGPL-2.1-or-later.txt': 'dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551',
+        'usr/share/licenses/libubootenv-0/MIT.txt': '89807acf2309bd285f033404ee78581602f3cd9b819a16ac2f0e5f60ff4a473e',
+    },
 }
 for row in report['packages']:
     if row['notice_evidence']:

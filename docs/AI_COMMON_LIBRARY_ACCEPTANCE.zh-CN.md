@@ -3526,3 +3526,13 @@ notice-445-prototype-upgrade.kEQsAY：445 个候选版本一致，54,855 个
 镜像源码集成仍待用户授权；没有替换设备 opkg、重编镜像或发布。
 两份失败预检根已在无占用／无挂载及状态一致性核对后删除，各释放
 约 1.1 GiB；安装状态副本、配置和失败日志保留，可从旧根重建。
+
+批量原型升级根的功能复验在原生构建机和 Ubuntu 24.04 无网络容器
+均通过 Python HTTP/2（HPACK/Huffman、两条流及协议异常拒绝）、GSL
+（LU、积分、FFT、统计）、OpenBLAS LP64 LAPACKE（线性方程和特征值）、
+NetCDF CDF5/HDF5 数据写入与重读，以及 libsoup HTTP/2 TLS/ALPN、
+精确响应、错误 CA 和主机名拒绝。数据输出保存在
+notice-upgraded-runtime-smoke.bBvofr 和 notice-upgraded-ubuntu-smoke.Jl7Fb4。
+这些运行链路复验只适用于测试根和指定消费者，不是全部库或设备
+验收；镜像自带 opkg 的升级失败仍未关闭。1399204 对应快速 CI
+38139165154 已成功，完整镜像构建和正式发布均未触发。

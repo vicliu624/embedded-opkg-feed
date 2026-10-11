@@ -2985,3 +2985,25 @@ SDK 基础开发消费者 sdk-common-development-consumer.HS4aPR：直接使用
 网络或音频设备。此项覆盖六组库的头文件/链接/运行配对，不能替代
 所有库开发闭包或各协议功能验收。实际 SDK 中 sqlite3.h/sqlite3.pc
 仍缺失，继续使用已验证的显式恢复工具，不声称 SDK 已原生提供。
+
+439 包候选 paired-common-lame-439 的整批求解、439 次逐包求解及
+安装/configure 全部通过，包含基础包共 600 包，开启签名校验，
+受保护基础文件未变。日志 common-lame-439-opkg-acceptance.log。
+LAME 消费者仅使用 439 安装根运行库复验通过，未引用开发 staging。
+
+新增 libgudev 238-1，官方 GNOME archive SHA256 与 sidecar 一致：
+61266ab1afc9d73dbc60a8b2af73e99d2fdff47d99544d085760e4fa667b5dd1。
+SDK libudev 256 满足上游最低 251，复用 SDK 的 GLib/libudev。
+首次 Meson 找不到 glib-mkenums；显式声明 SDK 中的 Python generator
+后，离线构建、COPYING 投影和 ELF 策略通过。ABI libgudev-1.0.so.0。
+消费者 gudev-client-consumer.Ko4tqU 查询 /sys/class/mem/null，验证 name、
+subsystem 和对象生命周期。QEMU -L 最初查询到隔离根空 sysfs，随后
+路径重定向触发 libudev chase 断言；真正 chroot 中仍缺 procfs。
+在私有 mount namespace 提供只读 sysfs 和临时 procfs 后，静态 QEMU
+rv64,v=false 测试通过，原断言未放宽。挂载已释放。这个测试使用
+新库 payload 与 438 基础运行库，尚非完整安装后的 libgudev 验收。
+IPK gudev-ipk.o8Jz2p 摘要
+1680f604e561cef3f87985f8716f722e16b4b2ff86eedaa4948600883c6854eb。
+完整 shared batch preflight 通过；手工同步 owner 表的 CRLF 导致一次
+精确行断言失败，仅规范化 Linux 测试副本后重跑通过，检查未修改。
+440 包候选整合进行中，完整安装与设备验收待完成。

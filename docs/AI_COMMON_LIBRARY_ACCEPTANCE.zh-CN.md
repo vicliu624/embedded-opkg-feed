@@ -3290,3 +3290,26 @@ soup-version.h/soup-enum-types.h 为生成文件。不能直接将该目录标�
 为完整来源已证明的开发缓存；生成材料和汇集流程继续待验证。
 1b2a27f 的快速 CI 38123149218 成功；全源构建、完整法律/安全审查、
 配对实机安装和正式发布仍未完成，不以本次 445 包回归替代。
+
+445 新安装根的后续回归：六条 VPX 链路各观察到 3 个解码帧，八条
+GStreamer good 链路无 critical 且正常完成；UDP 验证 4 个真实 RTP
+包及 PCMA payload、序号、时间戳。NetCDF CDF5、HDF5 deflate、NCZarr
+文件创建/重开/值及 metadata 验证通过；GUdev 在私有 mount namespace
+和 true chroot 中查询只读宿主 sysfs，通过 mem/null 名称、子系统及
+对象生命周期，测试挂载已释放，不声明板载硬件枚举已通过。
+新根完成上述旧根回归后，已检查旧 442 根无打开文件和挂载、保留
+opkg status，清理 common-netcdf-442-opkg-plan/root 的 1.1 GiB 可再生成
+文件。旧 raw/paired IPK、日志、源码、镜像和 SDK 未删除，最新 445 根
+继续保留；清理后文件系统可用约 2.4 GiB。
+
+libsoup 开发头文件来源审查已补成可重复测试：直接校验 GNOME 锁定
+archive SHA256，重新解包源码，核对 39 个公共头及安装入口 include
+转换；运行锁定源码的版本生成器和配对 SDK 的 glib-mkenums，两个
+生成头与已有 staging 字节一致。SDK manifest 与 enum generator
+文件摘要分别固定，stage runtime 与原始 libsoup3 IPK 完全匹配。
+libsoup-development-source-audit.py 输出 42 个头文件通过，明确
+import_authorized=false、historical_build_receipt=false；不伪造旧
+构建凭据，也不覆盖 pkg-config/CMake 元数据和完整开发闭包。
+libsoup-development-source-audit-integration.py 的源码头、版本头、
+enum 头、入口头、额外头和 runtime 字节篡改拒绝，在原生构建机
+与 Ubuntu 24.04 均通过。runtime 未重编，已有 staging 未改写。

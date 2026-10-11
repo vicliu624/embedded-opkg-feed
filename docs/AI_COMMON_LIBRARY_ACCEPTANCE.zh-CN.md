@@ -2773,3 +2773,28 @@ IPK 位于 mpg123-ipk.miEZSS，摘要
 许可证 COPYING/AUTHORS 投影和 CPU0 ELF 策略通过，新增配方
 静态检查已接入共享前置检查，完整前置检查通过。mpg123 尚未
 纳入 434 候选或安装根验收，未正式发布。
+
+mpg123 提交 a12685b 已推送，快速 CI 38108967315 成功。
+434 隔离安装验收完成：整批与 434 单包求解、安装配置均通过，
+595 个总安装包，签名开启、受保护基础文件不变。仅使用安装根
+库路径复测 Speex 三模式、WavPack 精确 PCM 往返、六条 VPX、
+八条 Good 和 UDP 实包全部通过，目录 speech-installed-434。
+
+新增 libtag 2.3.2-1：官方 release 资产摘要
+3ca2d8afaa7f1cf7f6ed10e511ebc368bfacd6dcaa3dbfa690b89e502e8963dc
+与下载匹配，源码目录 taglib-source-review.0IN27v。C/C++ 接口
+共享库 ABI 分别 libtag_c.so.2/libtag.so.2，复用 SDK zlib，
+保留 COPYING.LGPL/COPYING.MPL/AUTHORS 与 bundled utfcpp/LICENSE。
+离线构建、CPU0 ELF 检查、许可证投影通过；消费者
+taglib-metadata-consumer.Qj1fMC 验证 MP3 中文 UTF-8 标题、轨号、
+年份的持久化，C/C++ 读写一致以及音频采样率/通道数。该测试
+未覆盖所有 TagLib 支持的文件格式或完整异常输入集合。
+IPK 位于 taglib-ipk.rvunpD，摘要
+57dfec580ef4a4eddc6ab15deb3538460b8b919ae0036cb78e4cc6b41ed07d4f。
+新增静态检查接入共享前置检查，完整前置检查通过。
+mpg123/TagLib 纳入 436 原始候选
+common-media-metadata-original-raw.Az7W9C，启动 production
+finalization，完整安装和实机验收仍未完成。
+清理已验收且无进程引用的 430 测试根，状态归档到
+completed-installed-status，保留包与日志，最新 432/434 根保留；
+删除的是可重新生成的测试文件系统。

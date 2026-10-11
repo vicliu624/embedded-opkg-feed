@@ -100,7 +100,17 @@ if historical_path.exists():
     assert hashlib.sha256(review_text.encode()).hexdigest() == audit["review_sha256"]
     producer_receipt = json.loads(producer_text)
     assert producer_receipt["sdk_manifest_sha256"] == sdk_identity, "historical SDK differs"
-    assert producer_receipt["packages"] == [audit["package"]] and audit["package"] in packages
+    historical_packages = sorted(audit['packages']) if 'packages' in audit else [audit['package']]
+    assert producer_receipt["packages"] == historical_packages
+    assert set(historical_packages) <= set(packages), "historical provider closure missing"
+    if 'packages' in audit:
+        assert audit['kind'] == 'tdvp-multi-historical-development-diff-audit'
+        review = json.loads(review_text)
+        assert review['packages'] == audit['packages'], "historical version mapping changed"
+        assert review['status'] == 'diff-reviewed-not-import-authorization'
+        for package, versions in audit['packages'].items():
+            env = (repo / 'packages' / package / 'package.env').read_text()
+            assert re.search(r"^VERSION='([^']+)'$", env, re.M)[1] == versions['consumer_version']
     for relative, record in producer_receipt["development_files"].items():
         assert files.get(relative) == record, "historical development bytes or links changed"
     receipt["historical_development"] = historical

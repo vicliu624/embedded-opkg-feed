@@ -6,20 +6,20 @@
   "producer_reference": "b1f198b",
   "reviewed_at": "2026-10-11",
   "status": "diff-reviewed-not-import-authorization",
-  "consumer_shared_inputs_count": 107,
-  "consumer_shared_inputs_sha256": "eb7082f72a250df12cf96c01c6bef851721523129446c8b5220bf3a087e2d677",
+  "consumer_shared_inputs_count": 108,
+  "consumer_shared_inputs_sha256": "2da217b96815617c3c83df79d3b3ac86b0f772e5f2e3570b743a0f520cdcf3de",
   "changed_inputs": [
     {
       "path": "scripts/build-all.sh",
       "producer_sha256": "a08214a05c30ed345eb30bd8304910baf7c1a34c1077c69ab9042a64ac290e7b",
-      "consumer_sha256": "1f43b3cff6ba27888cc50d35bdcd008ddef73c1964250bb1f13ce53878aff4fe",
-      "rationale": "Adds explicit recovery and reviewed historical import with provenance preservation and exact development/runtime matching; ordinary receipt equality and the libdb source-build path remain unchanged."
+      "consumer_sha256": "1a63399e2fe8ee173127e88fa6f65c7b459502e260f9a8a572702e3558a6b31a",
+      "rationale": "Adds explicit recovery and complete single/multi-provider historical import with original provenance, separate producer/consumer manifest versions, and all runtime file matching; ordinary receipt equality and the libdb source-build path remain unchanged."
     },
     {
       "path": "scripts/build-staging-receipt.py",
       "producer_sha256": "6c88f151a5b9a01526a27e189552014a460aa487b3eb2a4b18daa4470577aad3",
-      "consumer_sha256": "544168d67e239b241112db41b0134e8051f64828c6e23ea286742539305701d0",
-      "rationale": "Adds SQLite and historical provenance validation when present; historical development bytes must stay unchanged and ordinary receipt equality remains required."
+      "consumer_sha256": "3018d14e8a5ff66502fa03dbc9915e7aab08b666c865a7e4e80f04bc6d3c3600",
+      "rationale": "Adds SQLite and single/multi-provider historical provenance validation, exact old closure and reviewed current versions; historical development bytes must stay unchanged and ordinary receipt equality remains required."
     },
     {
       "path": "scripts/check-batch-build-policy.sh",

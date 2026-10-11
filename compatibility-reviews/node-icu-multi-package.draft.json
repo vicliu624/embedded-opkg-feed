@@ -57,113 +57,134 @@
     {
       "path": "packages/libicudata/package.env",
       "producer_sha256": "643ed1975d16ebe01ef8d10d250b90d989258e0e0eb5187d1f1e7c93712eaf7b",
-      "consumer_sha256": "92c6cecb5c6beb4c7ea4e594f0d3b152df681a9ee736cbe24b629ff441042317"
+      "consumer_sha256": "92c6cecb5c6beb4c7ea4e594f0d3b152df681a9ee736cbe24b629ff441042317",
+      "rationale": "Packaging revision and dependency pins; source locks unchanged and runtime payloads matched."
     },
     {
       "path": "packages/libicui18n/package.env",
       "producer_sha256": "573804302e9327b45fd01a5dc064190d2a35a96c647aa3e79baac1d59f3fd17b",
-      "consumer_sha256": "07f2fc0b3382be26fa9bc5ea03d6dca30d62f914f66d3320ea2b3d37c0e8af4b"
+      "consumer_sha256": "07f2fc0b3382be26fa9bc5ea03d6dca30d62f914f66d3320ea2b3d37c0e8af4b",
+      "rationale": "Packaging revision and dependency pins; source locks unchanged and runtime payloads matched."
     },
     {
       "path": "packages/libicuio/package.env",
       "producer_sha256": "374ab560d011a79ed4b8f110067751e7ee89663b7f02def4a58ecd6593df2611",
-      "consumer_sha256": "6ecfee200f699084bd5458d804b706694f22992bdd77f4f4aaf66d7b2597a918"
+      "consumer_sha256": "6ecfee200f699084bd5458d804b706694f22992bdd77f4f4aaf66d7b2597a918",
+      "rationale": "Packaging revision and dependency pins; source locks unchanged and runtime payloads matched."
     },
     {
       "path": "packages/libicuuc/package.env",
       "producer_sha256": "524e6c5152d924e743a01336cda4041590b83123e769817ba81fc238fbf63746",
-      "consumer_sha256": "9ba56d87d19d7959a6e89f23d0048ef97fc930178ebcfdad7f0bbf0d8b93cf9c"
+      "consumer_sha256": "9ba56d87d19d7959a6e89f23d0048ef97fc930178ebcfdad7f0bbf0d8b93cf9c",
+      "rationale": "Packaging revision and dependency pins; source locks unchanged and runtime payloads matched."
     },
     {
       "path": "packages/libnode/build.sh",
       "producer_sha256": "2715f2a76caf48d012888c017b02a91637b663387badbe970c479acce2c8f488",
-      "consumer_sha256": "80f6dc39583cd7b44c4bdf834dfdfe6099cb1fe541071f9e3f52a6d37f546455"
+      "consumer_sha256": "80f6dc39583cd7b44c4bdf834dfdfe6099cb1fe541071f9e3f52a6d37f546455",
+      "rationale": "Adds locked Node license text without changing compilation."
     },
     {
       "path": "packages/libnode/package.env",
       "producer_sha256": "61a6fb44129d86c812fe668c53ec450f1e17ae0bc229b15fbb7592f59e521f13",
-      "consumer_sha256": "09d286febf7d47ddc26e16a69bf62942add557e34dde188b549b715c33eb81ef"
+      "consumer_sha256": "09d286febf7d47ddc26e16a69bf62942add557e34dde188b549b715c33eb81ef",
+      "rationale": "Packaging revision and dependency pins; source locks unchanged and runtime payloads matched."
     },
     {
       "path": "packages/node/build.sh",
       "producer_sha256": "c3dc9b3bf773fbef0938ddd7566673eba71db365cff34ccc62775b03b0ddc50c",
-      "consumer_sha256": "a67c66f33de7b22e4129b87c7d76f3b67991457946e8150d1ee04c8e558f88ac"
+      "consumer_sha256": "a67c66f33de7b22e4129b87c7d76f3b67991457946e8150d1ee04c8e558f88ac",
+      "rationale": "Adds locked Node license text without changing compilation."
     },
     {
       "path": "packages/node/package.env",
       "producer_sha256": "b7a914c9c9c72f666beadd031a08b53291814cbbe282801afbbc823ef4371e36",
-      "consumer_sha256": "992fbdfd0c99954054fc97698971ad8ed6aa35e74feb90e2b08d9c4480ec252f"
+      "consumer_sha256": "992fbdfd0c99954054fc97698971ad8ed6aa35e74feb90e2b08d9c4480ec252f",
+      "rationale": "Packaging revision and dependency pins; source locks unchanged and runtime payloads matched."
     },
     {
       "path": "packages/npm-runtime/package.env",
       "producer_sha256": "8b9f896630d158a42c0fe643129889b087ba20388d33951740771f0b17dd1f37",
-      "consumer_sha256": "8e72949fa08e9afe8477e94a221f1a703f5a7127289b3ef222113ac026e22bd5"
+      "consumer_sha256": "8e72949fa08e9afe8477e94a221f1a703f5a7127289b3ef222113ac026e22bd5",
+      "rationale": "Packaging revision and dependency pins; source locks unchanged and runtime payloads matched."
     },
     {
       "path": "packages/npm/package.env",
       "producer_sha256": "87aad1825948b4b6674d7193c10ac836d8d1284bad29167709cc4bcdc8a7f3e7",
-      "consumer_sha256": "7e27a54174363c0e7d942757407fa1042829e1cfb8b93ada30905b700ea6472d"
+      "consumer_sha256": "7e27a54174363c0e7d942757407fa1042829e1cfb8b93ada30905b700ea6472d",
+      "rationale": "Packaging revision and dependency pins; source locks unchanged and runtime payloads matched."
     },
     {
       "path": "scripts/build-all.sh",
       "producer_sha256": "f24b4621f0c4b4bfe0ca15216cf6f4bd2a08fe60bb7c065bcf2fefd2c23e243f",
-      "consumer_sha256": "1f43b3cff6ba27888cc50d35bdcd008ddef73c1964250bb1f13ce53878aff4fe"
+      "consumer_sha256": "1f43b3cff6ba27888cc50d35bdcd008ddef73c1964250bb1f13ce53878aff4fe",
+      "rationale": "Explicit recovery/reviewed import and provenance preservation; ordinary strict import remains. Runtime payloads independently matched."
     },
     {
       "path": "scripts/build-staging-receipt.py",
       "producer_sha256": "6c88f151a5b9a01526a27e189552014a460aa487b3eb2a4b18daa4470577aad3",
-      "consumer_sha256": "544168d67e239b241112db41b0134e8051f64828c6e23ea286742539305701d0"
+      "consumer_sha256": "544168d67e239b241112db41b0134e8051f64828c6e23ea286742539305701d0",
+      "rationale": "Adds recovered/historical origin binding while retaining development file integrity checks."
     },
     {
       "path": "scripts/check-batch-build-policy.sh",
       "producer_sha256": "22483660141d62743e943e1c3c476f221306368de54d3a4cfe0da98fcba0d20d",
-      "consumer_sha256": "e3726df55bfc7cba530f19e216fd33b09e5b2a903ae248ec2ddb01c9291a8d53"
+      "consumer_sha256": "e3726df55bfc7cba530f19e216fd33b09e5b2a903ae248ec2ddb01c9291a8d53",
+      "rationale": "Adds preflight checks without changing compilation flags."
     },
     {
       "path": "support/buildroot-archive-library.sh",
       "producer_sha256": "f42612bea6ec376ced132b97dbd7763aa9a34748a2c3e8777689c738aa8a2439",
-      "consumer_sha256": "3f4a306b641c77304759250122acd831ea4d78feb80651fb62eeb127eb56292f"
+      "consumer_sha256": "3f4a306b641c77304759250122acd831ea4d78feb80651fb62eeb127eb56292f",
+      "rationale": "Adds installed notices after runtime sanitization."
     },
     {
       "path": "support/buildroot-command-package.sh",
       "producer_sha256": "66221c70d75735d3e77b74f5c65c6a34d494872f8f405196781a42dcdff93c22",
-      "consumer_sha256": "664baa5a107eef4f52669c6628aa451d38cef1e2bca4a8cdfc10795db213802b"
+      "consumer_sha256": "664baa5a107eef4f52669c6628aa451d38cef1e2bca4a8cdfc10795db213802b",
+      "rationale": "Adds installed notices after command payload generation."
     },
     {
       "path": "support/buildroot-node-inputs.sh",
       "producer_sha256": "0fabca2827d4e93a51e60dd9a55fada86ed60f6b4f042ff1f4c20eaeecd4abe3",
-      "consumer_sha256": "80d3d1ceee1258690da2e35f3c840c67f415b852a8c1a1c4cf13dd9b9571d912"
+      "consumer_sha256": "80d3d1ceee1258690da2e35f3c840c67f415b852a8c1a1c4cf13dd9b9571d912",
+      "rationale": "Adds ICU license projection after payload generation."
     },
     {
       "path": "support/cmake-source-library.sh",
       "producer_sha256": "e3149a7a10794a043a3c2004d71208bb92fc82f6d059f29821edbbc3084479e1",
-      "consumer_sha256": "bc96e1e1434bf28ea160f5c4291299939aa640d47fa662f33c68931e4d23027f"
+      "consumer_sha256": "bc96e1e1434bf28ea160f5c4291299939aa640d47fa662f33c68931e4d23027f",
+      "rationale": "Adds opt-in reproducible source paths and pkg-config normalization; outside Node compilation path."
     },
     {
       "path": "support/published-sdk-build.sh",
       "producer_sha256": "026797409ba55901308ca16b514af45014da5b20a8a5b1ef8db78cd97146ab8a",
-      "consumer_sha256": "fdf49a9b8e098e1cb05583373a5f00451c9cc9571e3aa7ba05edcd99f8dae860"
+      "consumer_sha256": "fdf49a9b8e098e1cb05583373a5f00451c9cc9571e3aa7ba05edcd99f8dae860",
+      "rationale": "Adds GNU Make lzip, which dispatch and license discovery; Node compilation branch unchanged."
     },
     {
       "path": "support/python3-source-build.sh",
       "producer_sha256": "5c56469f10471a930ea538164375a7f74d2e58a7ff37c81435773b042d82d835",
-      "consumer_sha256": "f6af42e35673054cadd7f3bad68aca80633c88ecf89cceb394081dc4cfd4c7e3"
+      "consumer_sha256": "f6af42e35673054cadd7f3bad68aca80633c88ecf89cceb394081dc4cfd4c7e3",
+      "rationale": "CPython license projection; outside Node closure."
     },
     {
       "path": "support/source-archive-library.sh",
       "producer_sha256": "03041c6da7f72551aa56282e23732f12d46f222d74b9c6d21a07d56f79ddc142",
-      "consumer_sha256": "58166587cc9f883d5090b78cdfc8ba9676bb8a6f313ddc10df1e31e75c80ed4f"
+      "consumer_sha256": "58166587cc9f883d5090b78cdfc8ba9676bb8a6f313ddc10df1e31e75c80ed4f",
+      "rationale": "Adds opt-in feed development/bootstrap and archive layout handling; locked sources and runtime byte matching constrain reuse."
     },
     {
       "path": "support/vim-plugin-build.sh",
       "producer_sha256": "3b7f5f001fac26e039181ffc718dafa839907f0d3bd1c11926ce03fe15cab334",
-      "consumer_sha256": "615173600250af2bdffd53bfbecdf23d47f111c4ba4024c6d6329b4a8db847f6"
+      "consumer_sha256": "615173600250af2bdffd53bfbecdf23d47f111c4ba4024c6d6329b4a8db847f6",
+      "rationale": "Vim plugin license notices; outside Node closure."
     }
   ],
   "remaining_gates": [
-    "Review each shared build-input difference",
-    "Implement exact multi-package closure and version mapping validation",
-    "Bind all runtime files, including Node/npm command and data payloads",
-    "Consumer build, export and normal receipt reuse regressions"
-  ]
+    "Bind production review mappings to the final tested consumer input snapshot",
+    "Reproduce the full production audit without fixture-only review rebasing",
+    "Keep production import disabled until all production review gates pass"
+  ],
+  "diff_review_completed": true
 }

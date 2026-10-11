@@ -121,8 +121,8 @@ done
   exit 64
 }
 if [[ "$reviewed_staging_import" -eq 1 ]]; then
-  [[ -n "$staging_producer_repo" && -n "$staging_input_review" && ${#provided_packages[@]} -eq 1 ]] || {
-    echo 'reviewed import requires producer inputs, pinned review and exactly one provided package' >&2
+  [[ -n "$staging_producer_repo" && -n "$staging_input_review" && ${#provided_packages[@]} -gt 0 ]] || {
+    echo 'reviewed import requires producer inputs, pinned review and the complete provided closure' >&2
     exit 64
   }
   [[ "$runtime_catalog_only" -eq 0 ]] || {
@@ -313,13 +313,21 @@ if [[ -n "$staging_import_dir" ]]; then
   staging_import_dir=$(cd -- "$staging_import_dir" && pwd)
   assert_staging_links_are_internal "$staging_import_dir"
   if [[ "$reviewed_staging_import" -eq 1 ]]; then
-    reviewed_audit=$(python3 "$script_dir/audit-reviewed-development.py" --repo "$repo_root" \
+    review_schema=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["schema"])' "$staging_input_review")
+    audit_tool=audit-reviewed-development.py
+    audit_extra=()
+    if [[ "$review_schema" == 2 ]]; then
+      audit_tool=audit-multi-reviewed-development.py
+      audit_extra=(--runtime-directory "$feed_dir")
+    fi
+    reviewed_audit=$(python3 "$script_dir/$audit_tool" --repo "$repo_root" \
       --producer-repo "$staging_producer_repo" --sdk "${TDVP_SDK_ROOT:?reviewed import requires matched SDK}" \
-      --staging "$staging_import_dir" --review "$staging_input_review")
-    python3 - "$reviewed_audit" "${provided_packages[0]}" <<'PY'
+      --staging "$staging_import_dir" --review "$staging_input_review" "${audit_extra[@]}")
+    python3 - "$reviewed_audit" "${provided_packages[@]}" <<'PY'
 import json, sys
 audit = json.loads(sys.argv[1])
-assert audit['package'] == sys.argv[2], 'provided package differs from audited closure'
+expected = sorted(audit['packages']) if 'packages' in audit else [audit['package']]
+assert sorted(sys.argv[2:]) == expected, 'provided packages differ from complete audited closure'
 assert audit['import_authorized'] is False, 'unexpected audit authority'
 PY
   elif [[ "$recovered_sqlite_import" -eq 1 ]]; then
@@ -590,7 +598,7 @@ for package in "${available_packages[@]}"; do
 done
 
 assert_provided_package() {
-  local package=$1 version ipk control archive matches=0
+  local package=$1 version manifest_version ipk control archive matches=0
   [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ ]] || {
     echo "invalid --provided-package value: $package" >&2
     exit 78
@@ -604,6 +612,20 @@ assert_provided_package() {
     exit 78
   }
   version=$(read_recipe_value "${recipe_dir[$package]}/package.env" VERSION)
+  manifest_version=$version
+  if [[ "$reviewed_staging_import" -eq 1 && -f "$staging_root/tdvp-historical-development.json" ]]; then
+    manifest_version=$(python3 - "$staging_root/tdvp-historical-development.json" "$package" "$version" <<'PY'
+import json, sys
+audit = json.load(open(sys.argv[1]))['audit']
+mapping = audit.get('packages', {})
+if sys.argv[2] in mapping:
+    assert mapping[sys.argv[2]]['consumer_version'] == sys.argv[3], 'historical consumer version changed'
+    print(mapping[sys.argv[2]]['producer_version'])
+else:
+    print(sys.argv[3])
+PY
+)
+  fi
   awk -F '\t' -v platform="$platform_slug" -v release="$release" '
     $1 == "format" && $2 == "1" { format = 1 }
     $1 == "platform" && $2 == platform { matching_platform = 1 }
@@ -613,7 +635,7 @@ assert_provided_package() {
     echo "imported staging manifest does not match this platform/release: $imported_staging_manifest" >&2
     exit 78
   }
-  awk -F '\t' -v package="$package" -v version="$version" -v recovered="$verified_recovery_provider" '
+  awk -F '\t' -v package="$package" -v version="$manifest_version" -v recovered="$verified_recovery_provider" '
     ($1 == "built-package" || $1 == "provided-package" || ($1 == "recovered-package" && recovered == package)) && $2 == package && $3 == version { found = 1 }
     END { exit !found }
   ' "$imported_staging_manifest" || {
@@ -627,10 +649,9 @@ assert_provided_package() {
     tar -xOzf "$archive" ./control >"$control"
     if grep -Fqx "Package: $package" "$control" && grep -Fqx "Version: $version" "$control"; then
       matches=$((matches + 1))
-      if [[ "$reviewed_staging_import" -eq 1 || -f "$staging_root/tdvp-historical-development.json" ]] && \
-          [[ "${recipe_kind[$package]}" == shared-library ]]; then
+      if [[ "$reviewed_staging_import" -eq 1 || -f "$staging_root/tdvp-historical-development.json" ]]; then
         python3 "$script_dir/verify-staging-runtime-match.py" --staging "$staging_root" \
-          --ipk "$ipk" --package "$package" --version "$version" --sdk "$TDVP_SDK_ROOT"
+          --ipk "$ipk" --package "$package" --version "$version" --sdk "$TDVP_SDK_ROOT" --include-runtime-data
       fi
     fi
     rm -f -- "$control" "$archive"

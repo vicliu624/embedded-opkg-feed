@@ -3166,3 +3166,35 @@ runtime-data-match-full-preflight.log 前置检查通过。
 node-icu-multi-package.draft.json 记录 11 包版本映射、21 输入差异
 和 unchanged source locks；状态 draft-not-importable，现有 schema-1
 工具实际拒绝该草稿。共享差异审查、多包导入仍未完成。
+
+2026-10-11 多包独立审查回归：新增 audit-multi-reviewed-development.py，
+要求精确覆盖历史 receipt 的全部 11 包，核对 131 个 producer 输入和
+2576 个开发路径，并使用当前 IPK 检查全部运行文件及启动链接。
+审查允许同一上游版本的包修订映射，source.lock 必须保持字节一致。
+真实缓存夹具在构建机原生 Python 和 Ubuntu 24.04 容器中均通过；
+缺包、多包、错误版本、草稿状态、错误共享输入摘要及遗漏差异均被拒绝。
+本轮使用隔离的固定审查夹具，生产草稿仍保持 draft-not-importable；
+审查器输出 import_authorized=false，未接入 production 多包导入，
+未修改历史 receipt，未签名发布、未在设备上安装这一轮候选。
+
+多包 production 导入第一版接入后，真实 Berkeley DB 单包回归仍通过：
+消费者在 QEMU 中运行、历史来源原文保留、导出 receipt 校验、篡改拒绝、
+普通 receipt 再次复用均成功。普通非 ELF staging 集成回归也通过。
+新 multi-reviewed-staging-builder-integration.py 使用完整 11 包缓存和
+空离线源码缓存，验证消费者构建及再次复用；原生构建机已通过完整
+首次导入、libuv 消费者构建、12 包导出 receipt 校验、历史 receipt 原文
+保留、普通缓存再次复用及目标 QEMU 运行。11 个 provider 未重编。
+首次 reviewed 导入按旧 manifest producer 版本核对，再导入已导出缓存
+按当前 manifest consumer 版本核对，避免旧版本映射干扰普通复用。
+生产草稿仍未获导入资格。上述通过限于隔离审查夹具的正向流程；
+Ubuntu 24.04 完整构建与新增版本映射篡改测试也已通过；容器首次运行
+缺少 QEMU，挂载构建机现有静态 QEMU 后完整重跑成功，不代表所有库
+功能、全部开发闭包、许可证材料或实机安装均已完成验收。
+
+随后复核新增配方文件的边界：当前真实 11 包输入集合与历史记录一致，
+新增严格配方输入集合 gate，拒绝未记录的 src/patches/files。
+这项最新 gate 的新增头文件/补丁拒绝测试已在原生构建机和 Ubuntu
+24.04 通过，固定 Berkeley DB 审查摘要已更新。最新完整构建快照
+已在 Ubuntu 24.04 完整重跑通过：包含最新集合校验、映射篡改拒绝、
+消费者构建、12 包 receipt 导出校验、普通复用及 QEMU 执行。
+生产 Node 草稿继续不可导入，正式签名、全源构建与实机验收未完成。

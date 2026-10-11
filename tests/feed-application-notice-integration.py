@@ -11,7 +11,8 @@ repo = Path(__file__).resolve().parents[1]
 fixtures = {
     'application': {'usr/share/application/COPYING': 'fixture notice'},
     'node': {'usr/lib/node_modules/example/LICENSE-MIT.txt': 'fixture notice'},
-    'code-only': {'usr/lib/node_modules/example/license.js': 'not a notice document', 'usr/share/example/LICENSE': ''},
+    'code-only': {'usr/lib/node_modules/example/license.js': 'not a notice document', 'usr/share/example/LICENSE': '',
+                  'usr/share/licenses/libfft2d/readme.txt': 'unreviewed README must not count'},
     'image-alias': {},
     'mixed': {},
     'metadata': {},

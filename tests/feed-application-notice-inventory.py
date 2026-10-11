@@ -4,6 +4,7 @@ This inventories nonempty files only. It is not license adequacy or clearance.
 The shared producer-input inventory script remains unchanged.
 """
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -18,6 +19,12 @@ args = parser.parse_args()
 repo = Path(__file__).resolve().parents[1]
 report = json.loads(subprocess.check_output([sys.executable, str(repo / 'scripts/audit-feed-notice-inventory.py'), str(args.feed)], text=True))
 added = {}
+reviewed_readmes = {
+    'libfft2d': {
+        'usr/share/licenses/libfft2d/readme.txt': '5b5e610da10394132a42d82ed6501fe1b83a1d19e1bb160c8ace10ed61708765',
+        'usr/share/licenses/libfft2d/readme2d.txt': '0b2a2082537735a2a576dbec2e8f9c1a09812eac6df6a389502a6ba860072906',
+    },
+}
 for row in report['packages']:
     if row['notice_evidence']:
         continue
@@ -32,6 +39,11 @@ for row in report['packages']:
                 lower = name.lower()
                 base = Path(lower).name
                 if not entry.isfile() or not entry.size:
+                    continue
+                expected = reviewed_readmes.get(row['package'], {}).get(name)
+                if expected:
+                    if entry.size < 1000000 and hashlib.sha256(archive.extractfile(entry).read()).hexdigest() == expected:
+                        added.setdefault(row['package'], []).append(name)
                     continue
                 if not lower.startswith(('usr/share/', 'usr/lib/node_modules/', 'lib/node_modules/')):
                     continue

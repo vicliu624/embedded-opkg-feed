@@ -224,7 +224,10 @@ jobs:
           [[ "$(value "$manifest" platform)" == tdvp-k230-r1 ]] || { echo 'prior layer targets another platform' >&2; exit 67; }
           [[ "$(value "$manifest" sdk_cache_key)" == "$TDVP_SDK_CACHE_IDENTITY" ]] || { echo 'prior layer has another SDK identity' >&2; exit 67; }
           [[ "$(value "$manifest" batch)" == "$expected_batch" ]] || { echo 'prior layer batch identity is invalid' >&2; exit 67; }
-          staging=$(find "$incoming_root" -type f -name tdvp-build-staging-manifest.tsv -printf '%h\n' -quit)
+          mapfile -t staging_archives < <(find "$incoming_root" -type f -name candidate-staging.tar.gz -print)
+          [[ ${#staging_archives[@]} -eq 1 ]] || { echo 'prior layer requires one portable staging archive' >&2; exit 68; }
+          staging="$RUNNER_TEMP/tdvp-restored-staging-$TDVP_DEPENDENCY_RUN_ID"
+          python3 scripts/staging-artifact.py unpack "${staging_archives[0]}" "$staging"
           [[ -n "$staging" && -d "$staging/usr" ]] || { echo 'prior Audacious layer has no usable private staging state' >&2; exit 68; }
           if [[ "$TDVP_REQUESTED_BATCH" == ai-common ]]; then
             test -f "$staging/tdvp-build-staging-receipt.json"
@@ -429,6 +432,15 @@ jobs:
           } >"$manifest"
           test -s "$manifest"
 
+      - name: Preserve portable private staging
+        if: inputs.batch == 'audacious-core' || inputs.batch == 'audacious-plugins' || inputs.batch == 'audacious-app' || inputs.batch == 'ai-common'
+        run: |
+          set -Eeuo pipefail
+          python3 scripts/staging-artifact.py pack candidate-staging candidate-staging.tar.gz
+          restored="$RUNNER_TEMP/tdvp-staging-upload-roundtrip"
+          python3 scripts/staging-artifact.py unpack candidate-staging.tar.gz "$restored"
+          python3 scripts/build-staging-receipt.py verify --repo . --sdk "$TDVP_SDK_ROOT" --staging "$restored"
+
       - name: Upload the unsigned incremental batch
         if: inputs.batch != 'audacious-foundation'
         uses: actions/upload-artifact@v4
@@ -436,7 +448,8 @@ jobs:
           name: tdvp-k230-r11-${{ inputs.batch }}-unsigned-${{ github.sha }}
           path: |
             candidate-dist
-            candidate-staging
+            candidate-staging.tar.gz
+            candidate-staging.tar.gz.sha256
           if-no-files-found: error
           retention-days: 14
           include-hidden-files: true

@@ -102,6 +102,7 @@ jobs:
           python3 ./tests/python3-locked-archive-permissions.py
           python3 ./tests/libzip-lzma-limit-policy.py
           python3 ./tests/install-link-relocation.py
+          python3 ./tests/staging-artifact-roundtrip.py
           bash scripts/check-batch-build-policy.sh
           bash ./tests/reuse-published-ipk-payload-policy.sh
           bash ./tests/feed-overlay-composition-policy.sh

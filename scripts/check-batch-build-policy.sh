@@ -5,6 +5,7 @@ repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 python3 "$repo_root/tests/sdk-provider-registration-integration.py"
 python3 "$repo_root/tests/python3-locked-archive-permissions.py"
 python3 "$repo_root/tests/libzip-lzma-limit-policy.py"
+python3 "$repo_root/tests/install-link-relocation.py"
 python3 "$repo_root/tests/common-seven-library-policy.py"
 python3 "$repo_root/tests/common-system-network-library-policy.py"
 python3 "$repo_root/tests/common-event-data-network-policy.py"

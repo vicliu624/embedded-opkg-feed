@@ -270,6 +270,9 @@ EOF
       fi
       ;;
   esac
+  # Upstream PREFIX installs can embed the disposable install root in links.
+  # Validate before that tree is projected into portable development staging.
+  python3 "$repo_root/support/relativize-install-links.py" "$install_root"
   # The calling recipe owns its staging projection and package split.
   for license in COPYING COPYING.txt COPYING.LESSER LICENSE LICENSE.txt LICENCE LICENCE.txt COPYRIGHT NOTICE PATENTS \
     License COPYRIGHT.txt COPYING.0BSD COPYING.GPLv2 COPYING.GPLv3 COPYING.LGPLv2.1 docs/COPYING; do

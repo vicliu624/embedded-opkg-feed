@@ -107,7 +107,10 @@ def unpack(source, output):
             # Paths, types, modes and link-parent writes were validated above.
             # Extract files and directories first, then links, without tar's
             # ownership restoration or version-dependent extraction filters.
-            for member in sorted(members, key=lambda item: (item.name.count("/"), item.name)):
+            # Keep payload reads in physical archive order. Sorting by depth
+            # makes gzip repeatedly rewind and decompress the same prefix.
+            # mkdir(parents=True) handles children preceding directory entries.
+            for member in members:
                 path = root / member.name
                 if member.isdir():
                     path.mkdir(parents=True, exist_ok=True)

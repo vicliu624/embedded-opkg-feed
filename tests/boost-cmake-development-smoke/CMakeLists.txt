@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.16)
+project(tdvp_boost_development_smoke LANGUAGES CXX)
+find_package(Boost 1.82.0 EXACT CONFIG REQUIRED COMPONENTS filesystem thread regex serialization locale)
+find_package(ICU 73.2 REQUIRED COMPONENTS uc i18n data)
+add_executable(consumer ../boost-common-runtime-smoke.cpp)
+target_compile_options(consumer PRIVATE -march=rv64imafdc -mabi=lp64d)
+target_link_options(consumer PRIVATE -march=rv64imafdc -mabi=lp64d)
+target_link_libraries(consumer PRIVATE Boost::filesystem Boost::thread Boost::regex Boost::serialization Boost::locale ICU::uc ICU::i18n ICU::data)

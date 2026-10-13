@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.20)
+project(tdvp_python_protobuf_interop LANGUAGES CXX)
+find_package(Protobuf CONFIG REQUIRED)
+add_executable(python-protobuf-interop ../../python-protobuf-interop.cpp)
+target_link_libraries(python-protobuf-interop PRIVATE protobuf::libprotobuf)
+target_compile_features(python-protobuf-interop PRIVATE cxx_std_17)

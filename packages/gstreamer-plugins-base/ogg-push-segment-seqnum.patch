@@ -1,0 +1,22 @@
+From: TDVP Device Team <devices@example.invalid>
+Subject: [PATCH] oggdemux: retain initial push segment sequence number
+
+An upstream muxer can deliver a TIME segment. The BYTES seek path is
+unchanged; retain the initial upstream sequence number in the other path
+so subsequently generated segment/EOS events do not receive INVALID.
+
+--- a/ext/ogg/gstoggdemux.c
++++ b/ext/ogg/gstoggdemux.c
+@@ -2534,6 +2534,12 @@
+           GST_PUSH_UNLOCK (ogg);
+         } else {
++          /* A push-mode muxer may supply a TIME segment. Preserve its
++           * sequence number without changing the BYTES seeking path. */
++          GST_PUSH_LOCK (ogg);
++          if (ogg->seqnum == GST_SEQNUM_INVALID)
++            ogg->seqnum = gst_event_get_seqnum (event);
++          GST_PUSH_UNLOCK (ogg);
+           GST_WARNING_OBJECT (ogg, "unexpected segment format: %s",
+               gst_format_get_name (segment.format));
+         }
+       }

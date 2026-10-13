@@ -20,6 +20,7 @@ source "$package_dir/../../support/buildroot-feed-session.sh"
 # shellcheck source=../../support/elf-runtime-policy.sh
 source "$package_dir/../../support/elf-runtime-policy.sh"
 
+if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
 if [[ -v TDVP_ARCHIVE_BUILDROOT_OUTPUT && -n "$TDVP_ARCHIVE_BUILDROOT_OUTPUT" ]]; then
   output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$TDVP_ARCHIVE_BUILDROOT_OUTPUT")
 else
@@ -38,6 +39,8 @@ grep -Fqx 'ZSTD_VERSION = 1.5.7' "$tree/package/zstd/zstd.mk"
 grep -Fqx 'ZIP_VERSION = 3.0' "$tree/package/zip/zip.mk"
 grep -Fqx 'UNZIP_VERSION = 6.0' "$tree/package/unzip/unzip.mk"
 grep -Fqx 'P7ZIP_VERSION = 17.05' "$tree/package/p7zip/p7zip.mk"
+fi
+readelf_tool="$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"
 
 download_dir=
 install_root=$(mktemp -d)
@@ -76,7 +79,21 @@ run_buildroot_install() {
     --target zip --target unzip --target p7zip
 }
 
-if [[ -f "$package_dir/source.lock" ]]; then
+if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  source "$package_dir/../../support/published-sdk-build.sh"
+  while IFS=' ' read -r component archive; do
+    TDVP_SDK_SOURCE_ARCHIVE="$archive" tdvp_sdk_install "$package_dir" "$sdk_root" "$component" "$install_root"
+  done <<'EOF'
+tar tar-1.35.tar.xz
+gzip gzip-1.13.tar.xz
+bzip2 bzip2-1.0.8.tar.gz
+xz xz-5.6.4.tar.bz2
+zstd zstd-1.5.7.tar.gz
+zip zip30.tar.gz
+unzip unzip_6.0.orig.tar.gz
+p7zip p7zip-17.05.tar.gz
+EOF
+elif [[ -f "$package_dir/source.lock" ]]; then
   download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
   run_buildroot_install --offline-download-dir "$download_dir"
 else

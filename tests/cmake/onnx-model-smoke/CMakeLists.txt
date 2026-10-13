@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.16)
+project(tdvp_onnx_model_smoke LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+find_package(Protobuf CONFIG REQUIRED)
+find_package(ONNX CONFIG REQUIRED)
+add_executable(ai-onnx-model-smoke ../../ai-onnx-model-smoke.cpp)
+target_link_libraries(ai-onnx-model-smoke PRIVATE ONNX::onnx)

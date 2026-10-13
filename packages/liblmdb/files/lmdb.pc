@@ -1,0 +1,11 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: LMDB
+Description: Lightning Memory-Mapped Database
+Version: 0.9.36
+Libs: -L${libdir} -llmdb
+Libs.private: -pthread
+Cflags: -I${includedir}

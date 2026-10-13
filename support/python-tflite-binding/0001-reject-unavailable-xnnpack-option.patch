@@ -1,0 +1,22 @@
+--- a/interpreter_wrapper.cc
++++ b/interpreter_wrapper.cc
+@@ -97,6 +97,7 @@
+ 
+   TfLiteDelegate* xnnpack_delegate = nullptr;
+   if (default_delegate_latest_features) {
++#if defined(TFLITE_WITH_XNNPACK)
+     auto opts = TfLiteXNNPackDelegateOptionsDefault();
+     opts.flags |= TFLITE_XNNPACK_DELEGATE_FLAG_ENABLE_LATEST_OPERATORS;
+     opts.flags |= TFLITE_XNNPACK_DELEGATE_FLAG_ENABLE_SUBGRAPH_RESHAPING;
+@@ -104,6 +105,11 @@
+     xnnpack_delegate = TfLiteXNNPackDelegateCreate(&opts);
++#else
++    model->error_reporter()->Report(
++        "This platform TFLite runtime does not provide XNNPACK");
++    return nullptr;
++#endif
+   }
+   std::unique_ptr<Interpreter> interpreter;
+   InterpreterOptions options;
+   options.SetPreserveAllTensors(preserve_all_tensors);
+   options.SetDisableDelegateClustering(disable_delegate_clustering);

@@ -15,6 +15,18 @@ fi
 sdk_root=$4
 [[ -d "$sdk_root" && ! -L "$sdk_root" ]] || { echo "Audacious foundation needs a regular SDK host directory: $sdk_root" >&2; exit 66; }
 sdk_root=$(cd -- "$sdk_root" && pwd)
+if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  evidence_dir=${TDVP_AUDACIOUS_FOUNDATION_EVIDENCE_DIR:?foundation evidence directory is required}
+  [[ ! -e "$evidence_dir" ]] || exit 70
+  for dependency in glib-2.0 gio-2.0 gtk+-3.0 alsa libpulse libavcodec libavformat libavutil zlib; do
+    "$sdk_root/bin/pkg-config" --exists "$dependency"
+  done
+  mkdir -p "$evidence_dir"
+  { printf 'format\t1\nplatform\ttdvp-k230-r1\n';
+    printf 'sdk_manifest_sha256\t%s\n' "$(sha256sum "$sdk_root/tdvp-sdk-manifest.json" | cut -d' ' -f1)";
+  } >"$evidence_dir/tdvp-audacious-foundation.tsv"
+  exit 0
+fi
 build_output=${TDVP_AUDACIOUS_BUILDROOT_OUTPUT:-$(cd -- "$sdk_root/.." && pwd)}
 [[ "$sdk_root" == "$build_output/host" && -f "$build_output/.config" && -f "$build_output/Makefile" && -d "$build_output/target" ]] || {
   echo 'TDVP_AUDACIOUS_BUILDROOT_OUTPUT must be a completed matching Buildroot output' >&2

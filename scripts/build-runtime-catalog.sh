@@ -215,10 +215,10 @@ from pathlib import PurePosixPath
 
 target_root, build_dir = map(os.path.realpath, sys.argv[1:3])
 claims = defaultdict(set)
-package_re = re.compile(r"[a-z0-9][a-z0-9+_.-]*\\Z")
+package_re = re.compile(r"[a-z0-9][a-z0-9+_.-]*\Z")
 
 def normalized_target_path(raw):
-    raw = raw.strip().replace("\\\\", "/")
+    raw = raw.strip().replace("\\", "/")
     if not raw or raw.startswith("/"):
         return None
     path = PurePosixPath(raw)
@@ -252,7 +252,7 @@ for current_root, _, files in os.walk(build_dir):
 
 for relative, owners in sorted(claims.items()):
     if len(owners) == 1:
-        print(f"{relative}\\t{owners.pop()}")
+        print(f"{relative}\t{owners.pop()}")
 PY
   )
   [[ ${#image_path_owner[@]} -gt 0 ]] || {
@@ -321,8 +321,9 @@ extra_owner_supports_release() {
 # source-built providers.
 while IFS='|' read -r soname package version; do
   soname=${soname%$'\r'}
+  version=${version%$'\r'}
   [[ -n "$soname" && "$soname" != \#* ]] || continue
-  [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ && -n "$version" ]] || {
+  [[ "$package" =~ ^[a-z0-9][a-z0-9+.-]*$ && "$version" =~ ^[A-Za-z0-9.+:~_-]+$ ]] || {
     echo "invalid extra runtime owner record: $soname" >&2
     exit 74
   }
@@ -358,6 +359,7 @@ done <"$extra_owner_manifest"
 # are known.  This file is private release evidence: build-all uses it to
 # defer a matching source recipe, and it is removed before publication.
 while IFS= read -r soname; do
+  [[ -n "$soname" ]] || continue
   package=${soname_package[$soname]}
   version=${target_provider_version[$soname]}
   printf '%s|%s|%s\n' "$soname" "$package" "$version" >>"$owner_map"
@@ -365,6 +367,9 @@ while IFS= read -r soname; do
 done < <(printf '%s\n' "${!soname_package[@]}" | LC_ALL=C sort)
 
 while IFS= read -r soname; do
+  # With zero source-built extra owners, Bash expands the associative-array
+  # key list to one empty record.  There is no package key for that record.
+  [[ -n "$soname" ]] || continue
   printf '%s|%s|%s\n' "$soname" "${extra_owner_package[$soname]}" "${extra_owner_version[$soname]}" >>"$owner_map"
 done < <(printf '%s\n' "${!extra_owner_package[@]}" | LC_ALL=C sort)
 
@@ -382,6 +387,9 @@ register_planned_data_file() {
   local package=$2
   local allow_existing=$3
   local relative=${source#"$target_root"}
+  # The inventory cannot hash itself. It belongs to the immutable image's
+  # identity, not a distributable runtime-data package.
+  [[ "$relative" != /usr/share/tdvp/opkg/image-base.json ]] || return 1
   if [[ -n "${planned_data_paths[$relative]:-}" ]]; then
     if [[ "$allow_existing" == 1 ]]; then
       return 1
@@ -642,6 +650,7 @@ copy_selector() {
   if [[ "$selector" == '@remaining-usr-share' ]]; then
     while IFS= read -r -d '' source; do
       relative=${source#"$target_root"}
+      [[ "$relative" != /usr/share/tdvp/opkg/image-base.json ]] || continue
       [[ -n "${claimed_paths[$relative]:-}" ]] && continue
       claim_path "$source" "$package"
       copy_path "$source" "$root"

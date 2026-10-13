@@ -60,6 +60,7 @@ expect_recipe_directory_identity() {
 core_env="$repo_root/packages/audacious-core/package.env"
 plugins_env="$repo_root/packages/audacious-plugins/package.env"
 app_env="$repo_root/packages/audacious/package.env"
+platform_sdk_providers="$repo_root/platforms/tdvp-k230-r1/sdk-development-providers.tsv"
 core_build_script="$repo_root/packages/audacious-core/build.sh"
 plugins_build_script="$repo_root/packages/audacious-plugins/build.sh"
 buildroot_support_dir="$repo_root/support/audacious-buildroot"
@@ -77,8 +78,10 @@ batch_workflow="$repo_root/.github/workflows/build-r10-batch-candidate.yml"
 expect_line "^PACKAGE='audacious-core'$" "$core_env"
 expect_line "^PACKAGE_KIND='shared-library'$" "$core_env"
 expect_line "^VERSION='4\\.6\\.1-1'$" "$core_env"
+expect_fixed_line "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libglib-2.0-0 libgtk-3-0'" "$core_env"
 expect_line "^PACKAGE='audacious-plugins'$" "$plugins_env"
 expect_line "^PACKAGE_DEPENDS='audacious-core \\(= 4\\.6\\.1-1\\)'$" "$plugins_env"
+expect_fixed_line "PACKAGE_SDK_DEVELOPMENT_DEPENDS='libglib-2.0-0 libgtk-3-0 libavcodec-58 libavformat-58'" "$plugins_env"
 expect_line "^PACKAGE='audacious'$" "$app_env"
 expect_line "^PACKAGE_DEPENDS='audacious-core \\(= 4\\.6\\.1-1\\), audacious-plugins \\(= 4\\.6\\.1-1\\), hicolor-icon-theme \\(= 2025\\.02\\.1-1\\)'$" "$app_env"
 expect_fixed_line 'TDVP_AUDACIOUS_VERSION = 4.6.1' "$core_buildroot_recipe"
@@ -208,6 +211,13 @@ expect_fixed_line 'player_height=480' "$layout_config"
 expect_fixed_line 'player_maximized=TRUE' "$layout_config"
 expect_fixed_line 'infoarea_show_vis=FALSE' "$layout_config"
 expect_fixed_line 'statusbar_visible=FALSE' "$layout_config"
+
+# These names come from the locked r10 target runtime catalogue.  They are
+# target SONAME-derived package identities, not source-recipe aliases.
+expect_fixed_line 'libglib-2.0-0|libglib-2.0.so.0|usr/include/glib-2.0/glib.h usr/lib/pkgconfig/glib-2.0.pc usr/lib/libglib-2.0.so' "$platform_sdk_providers"
+expect_fixed_line 'libgtk-3-0|libgtk-3.so.0|usr/include/gtk-3.0/gtk/gtk.h usr/lib/pkgconfig/gtk+-3.0.pc usr/lib/libgtk-3.so' "$platform_sdk_providers"
+expect_fixed_line 'libavcodec-58|libavcodec.so.58|usr/include/libavcodec/avcodec.h usr/lib/pkgconfig/libavcodec.pc usr/lib/libavcodec.so' "$platform_sdk_providers"
+expect_fixed_line 'libavformat-58|libavformat.so.58|usr/include/libavformat/avformat.h usr/lib/pkgconfig/libavformat.pc usr/lib/libavformat.so' "$platform_sdk_providers"
 
 for soname in libaudcore.so.6 libaudtag.so.4 libaudgui.so.7; do
   count=$(tr -d '\r' <"$owner_map" | grep -Ec "^${soname//./\\.}\\|audacious-core\\|4\\.6\\.1-1$")

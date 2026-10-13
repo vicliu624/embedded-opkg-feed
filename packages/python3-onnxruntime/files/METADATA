@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: onnxruntime
+Version: 1.21.0
+Requires-Python: >=3.13,<3.14
+Requires-Dist: onnx==1.17.0
+Requires-Dist: numpy>=1.21.6
+Requires-Dist: protobuf==5.29.3
+Requires-Dist: flatbuffers==24.12.23
+Requires-Dist: packaging
+Requires-Dist: coloredlogs
+Requires-Dist: sympy==1.14.0

@@ -5,7 +5,9 @@ IFS=$'\n\t'
 package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 sdk_root=$4
 source "$package_dir/../../support/buildroot-feed-session.sh"
+if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
 output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "${TDVP_DEVEL_BUILDROOT_OUTPUT:-}")
 for required_config in BR2_USE_MMU=y BR2_ENABLE_LOCALE=y BR2_PACKAGE_NCURSES=y; do grep -Fqx "$required_config" "$output/.config" || { echo "matching Buildroot output lacks required dialog feature: $required_config" >&2; exit 65; }; done
+fi
 source "$package_dir/../../support/buildroot-command-package.sh"
 tdvp_buildroot_command_package "$package_dir" "$sdk_root" "${TDVP_DEVEL_BUILDROOT_OUTPUT:-}" BR2_PACKAGE_DIALOG dialog 'DIALOG_VERSION = 1.3-20220117' 'dialog'

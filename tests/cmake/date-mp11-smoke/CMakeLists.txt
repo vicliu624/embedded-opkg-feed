@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.16)
+project(tdvp_date_mp11_smoke LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+find_package(date CONFIG REQUIRED)
+find_package(boost_mp11 CONFIG REQUIRED)
+add_executable(ai-date-mp11-smoke ../../ai-date-mp11-smoke.cpp)
+target_link_libraries(ai-date-mp11-smoke PRIVATE date::date-tz Boost::mp11)

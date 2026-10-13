@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "kind": "tdvp-locked-notice-review-inputs",
+  "archives": [
+    {
+      "package": "archive-tools",
+      "file": "tar-1.35.tar.xz",
+      "sha256": "4d62ff37342ec7aed748535323930c7cf94acf71c3591882b26a7ea50f3edc16",
+      "members": [
+        "tar-1.35/COPYING"
+      ]
+    },
+    {
+      "package": "archive-tools",
+      "file": "gzip-1.13.tar.xz",
+      "sha256": "7454eb6935db17c6655576c2e1b0fabefd38b4d0936e0f87f48cd062ce91a057",
+      "members": [
+        "gzip-1.13/COPYING"
+      ]
+    },
+    {
+      "package": "archive-tools",
+      "file": "bzip2-1.0.8.tar.gz",
+      "sha256": "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269",
+      "members": [
+        "bzip2-1.0.8/LICENSE"
+      ]
+    },
+    {
+      "package": "archive-tools",
+      "file": "xz-5.6.4.tar.bz2",
+      "sha256": "176d510c30d80a23b8050bbc048f2ecaacb823ae48b6821727ed6591f0df9200",
+      "members": [
+        "xz-5.6.4/COPYING",
+        "xz-5.6.4/COPYING.0BSD",
+        "xz-5.6.4/COPYING.GPLv2",
+        "xz-5.6.4/COPYING.GPLv3",
+        "xz-5.6.4/COPYING.LGPLv2.1"
+      ]
+    },
+    {
+      "package": "archive-tools",
+      "file": "zstd-1.5.7.tar.gz",
+      "sha256": "eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3",
+      "members": [
+        "zstd-1.5.7/COPYING",
+        "zstd-1.5.7/LICENSE"
+      ]
+    },
+    {
+      "package": "archive-tools",
+      "file": "zip30.tar.gz",
+      "sha256": "f0e8bb1f9b7eb0b01285495a2699df3a4b766784c1765a8f1aeedf63c0806369",
+      "members": [
+        "zip30/LICENSE"
+      ]
+    },
+    {
+      "package": "archive-tools",
+      "file": "unzip_6.0.orig.tar.gz",
+      "sha256": "036d96991646d0449ed0aa952e4fbe21b476ce994abc276e49d30e686708bd37",
+      "members": [
+        "unzip60/LICENSE",
+        "unzip60/COPYING.OLD"
+      ]
+    },
+    {
+      "package": "archive-tools",
+      "file": "unzip_6.0-27.debian.tar.xz",
+      "sha256": "67bde7c71d52afd61aa936d4415c8d12fd90ca26e9637a3cd67cae9b71298c12",
+      "members": [
+        "debian/copyright"
+      ]
+    },
+    {
+      "package": "archive-tools",
+      "file": "p7zip-17.05.tar.gz",
+      "sha256": "d2788f892571058c08d27095c22154579dfefb807ebe357d145ab2ddddefb1a6",
+      "members": [
+        "p7zip-17.05/C/brotli/LICENSE",
+        "p7zip-17.05/C/fast-lzma2/COPYING",
+        "p7zip-17.05/C/fast-lzma2/LICENSE",
+        "p7zip-17.05/C/lizard/LICENSE",
+        "p7zip-17.05/C/lz4/LICENSE",
+        "p7zip-17.05/C/lz5/LICENSE",
+        "p7zip-17.05/C/zstd/COPYING",
+        "p7zip-17.05/C/zstd/LICENSE",
+        "p7zip-17.05/C/zstdmt/LICENSE",
+        "p7zip-17.05/CPP/7zip/Compress/Lzham/LICENSE",
+        "p7zip-17.05/DOC/License.txt",
+        "p7zip-17.05/DOC/MANUAL/general/license.htm",
+        "p7zip-17.05/DOC/copying.txt"
+      ]
+    },
+    {
+      "package": "wget",
+      "file": "wget-1.25.0.tar.lz",
+      "sha256": "19225cc756b0a088fc81148dc6a40a0c8f329af7fd8483f1c7b2fe50f4e08a1f",
+      "members": [
+        "wget-1.25.0/COPYING"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+--- a/src/sounddevice.py
++++ b/src/sounddevice.py
+@@ -70,7 +70,11 @@
+         if _libname is not None:
+             break
+     else:
+-        raise OSError('PortAudio library not found')
++        # The opkg provider installs this ABI in the standard loader paths.
++        if _sys.platform.startswith('linux'):
++            _libname = 'libportaudio.so.2'
++        else:
++            raise OSError('PortAudio library not found')
+     _lib: ... = _ffi.dlopen(_libname)
+ except OSError:
+     if _platform.system() == 'Darwin':

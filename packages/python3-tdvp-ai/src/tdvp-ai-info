@@ -1,0 +1,17 @@
+#!/usr/bin/python3
+import argparse
+import json
+import pathlib
+from tdvp_ai import Client
+
+parser = argparse.ArgumentParser(description='CPU1 AI service diagnostics; no model or firmware mutation')
+parser.add_argument('--fft-self-test', action='store_true')
+args = parser.parse_args()
+status = dict(line.split('=', 1) for line in pathlib.Path('/sys/class/misc/tdvp-ai/status').read_text().splitlines() if '=' in line)
+if args.fft_self_test:
+    with Client() as client:
+        response, values = client.fft([(0, 0)] * 64)
+    if any(real or imaginary for real, imaginary in values):
+        raise SystemExit('CPU1 FFT zero-input result differs')
+    status['fft_test'] = {'result_id': response.id, 'output_bytes': response.output_bytes, 'passed': True}
+print(json.dumps(status, sort_keys=True, indent=2))

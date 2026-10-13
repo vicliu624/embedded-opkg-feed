@@ -8,4 +8,4 @@ source "$package_dir/package.env"
 # shellcheck source=../../support/source-archive-library.sh
 source "$package_dir/../../support/source-archive-library.sh"
 tdvp_build_direct_archive_library "$package_dir" "$4" "${TDVP_LIBCARES_BUILDROOT_OUTPUT:-}" \
-  'c-ares-1.34.2' 'libcares.so*' -- --with-random=/dev/urandom
+  'c-ares-1.34.8' 'libcares.so*' -- --with-random=/dev/urandom

@@ -99,9 +99,15 @@ while IFS= read -r ipk; do
   # a hard-link record, which would falsely report Mesa's swrast pair (and
   # any future deduplicated runtime object) as a content mismatch.
   ar p "$ipk" data.tar.gz | tar -xzf - -C "$payload_root"
+  if grep -q '^X-TDVP-Image-' "$control"; then
+    python3 "$script_dir/materialize_image_references.py" \
+      --control "$control" --payload-root "$payload_root" \
+      --image-root "$base_root" --report "$feed_dir/image-backed-report.json" \
+      --image-manifest-sha256 "${IMAGE_OWNERSHIP_MANIFEST_SHA256:-}"
+  fi
   package_root[$package]=$payload_root
 
-  # Feed data archives retain the leading ./ produced by tar -C root -czf.
+  # Audit extracted data together with strictly verified image references.
   # Only library runtime directories participate in this ownership audit;
   # application data may legitimately be regenerated from the same source.
   while IFS= read -r archive_path; do
@@ -117,7 +123,7 @@ while IFS= read -r ipk; do
         runtime_path_owner[$relative]=$package
         ;;
     esac
-  done < <(ar p "$ipk" data.tar.gz | tar -tzf -)
+  done < <(cd "$payload_root" && find . -mindepth 1 \( -type f -o -type l \) -print)
 done < <(find "$feed_dir" -maxdepth 1 -type f -name '*.ipk' -print | LC_ALL=C sort)
 
 [[ ${#package_archive[@]} -gt 0 ]] || {

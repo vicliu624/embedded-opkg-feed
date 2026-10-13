@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "purpose": "Reviewed upstream source inputs for pending inference framework recipes; not a runtime capability declaration",
+  "frameworks": {
+    "onnxruntime": {
+      "version": "1.21.0",
+      "url": "https://github.com/microsoft/onnxruntime/archive/refs/tags/v1.21.0.tar.gz",
+      "sha256": "b395c72e0e6c6cb28525f4617bc8477c99cf65659c20439fe955c511c2da2cd9",
+      "build_status": "dependency-integration-pending",
+      "upstream_dependency_metadata": "cmake/deps.txt",
+      "upstream_protobuf_version": "21.12",
+      "upstream_flatbuffers_version": "23.5.26",
+      "public_feed_protobuf_version": "29.3",
+      "public_feed_flatbuffers_version": "24.12.23",
+      "version_boundary_resolution": "pending; do not silently replace public providers or declare compatibility"
+    },
+    "tensorflow-lite": {
+      "version": "2.18.0",
+      "url": "https://github.com/tensorflow/tensorflow/archive/refs/tags/v2.18.0.tar.gz",
+      "sha256": "d7876f4bb0235cac60eb6316392a7c48676729860da1ab659fb440379ad5186d",
+      "build_status": "source-recipe-build-and-emulated-inference-passed; hardware-and-feed-acceptance-pending",
+      "schema_generator_version": "24.12.23",
+      "eigen_revision": "33d0937c6bdf5ec999939fb17f2a553183d14a74",
+      "cmake_source_subdirectory": "tensorflow/lite",
+      "required_native_generator": "flatc",
+      "dependency_modules": [
+        "absl", "Eigen3", "farmhash", "fft2d", "FlatBuffers",
+        "gemmlowp", "cpuinfo", "ml_dtypes", "ruy"
+      ],
+      "execution_target": "CPU0 Linux; CPU1 KPU remains a separately validated platform service"
+    }
+  }
+}

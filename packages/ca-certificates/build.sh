@@ -26,6 +26,7 @@ source "$package_dir/../../support/buildroot-feed-session.sh"
   echo 'ca-certificates needs a matching Buildroot SDK host directory' >&2
   exit 66
 }
+if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
 output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
 tree=$(tdvp_buildroot_tree_from_output "$output")
 tdvp_assert_buildroot_2025_02_1 "$tree"
@@ -45,7 +46,13 @@ host_rehash="$output/host/bin/c_rehash"
   exit 69
 }
 
-download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
+fi
+download_dir=
+if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  host_rehash=$(command -v c_rehash)
+else
+  download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
+fi
 install_root=$(mktemp -d)
 payload_dir=
 payload_link="$package_dir/root"
@@ -65,10 +72,15 @@ cleanup() {
 }
 trap cleanup EXIT
 
+if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  source "$package_dir/../../support/published-sdk-build.sh"
+  tdvp_sdk_install "$package_dir" "$sdk_root" ca-certificates "$install_root"
+else
 tdvp_buildroot_install "$output" "$install_root" \
   --offline-download-dir "$download_dir" \
   --enable BR2_PACKAGE_CA_CERTIFICATES \
   --target ca-certificates
+fi
 
 certificate_source="$install_root/usr/share/ca-certificates"
 [[ -d "$certificate_source" ]] || {
@@ -121,7 +133,12 @@ ln -s -- "$payload_dir" "$payload_link"
 mkdir -p -- "$payload_dir/etc" "$payload_dir/usr/share"
 cp -a -- "$install_root/etc/ssl" "$payload_dir/etc/ssl"
 cp -a -- "$certificate_source" "$payload_dir/usr/share/ca-certificates"
-install -Dm 0644 "$output/build/ca-certificates-20230311/debian/copyright" \
+if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  copyright="$install_root/usr/share/licenses/ca-certificates/copyright"
+else
+  copyright="$output/build/ca-certificates-20230311/debian/copyright"
+fi
+install -Dm 0644 "$copyright" \
   "$payload_dir/usr/share/licenses/ca-certificates/copyright"
 payload_ready=1
 echo "ca-certificates payload ready: $payload_dir"

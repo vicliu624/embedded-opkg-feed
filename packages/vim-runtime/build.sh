@@ -23,6 +23,7 @@ source "$package_dir/../../support/buildroot-feed-session.sh"
   echo 'vim-runtime needs the release staging root and matching Buildroot SDK' >&2
   exit 66
 }
+if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
 output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
 tree=$(tdvp_buildroot_tree_from_output "$output")
 tdvp_assert_buildroot_2025_02_1 "$tree"
@@ -35,7 +36,9 @@ grep -Fqx "sha256  $SOURCE_ARCHIVE_SHA256  $SOURCE_ARCHIVE" "$tree/package/vim/v
   exit 68
 }
 
-download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
+fi
+download_dir=
+[[ -f "$sdk_root/tdvp-sdk-manifest.json" ]] || download_dir=$(tdvp_prepare_locked_buildroot_download "$package_dir")
 install_root=$(mktemp -d)
 payload_dir=
 payload_link="$package_dir/root"
@@ -55,11 +58,16 @@ cleanup() {
 }
 trap cleanup EXIT
 
+if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  source "$package_dir/../../support/published-sdk-build.sh"
+  tdvp_sdk_install "$package_dir" "$sdk_root" vim "$install_root"
+else
 tdvp_buildroot_install "$output" "$install_root" \
   --offline-download-dir "$download_dir" \
   --enable BR2_PACKAGE_VIM \
   --enable BR2_PACKAGE_VIM_RUNTIME \
   --target vim
+fi
 
 [[ -x "$install_root/usr/bin/vim" && -d "$install_root/usr/share/vim" ]] || {
   echo 'Vim target install omitted its executable or runtime files' >&2
@@ -81,7 +89,12 @@ chmod 0755 -- "$payload_dir"
 ln -s -- "$payload_dir" "$payload_link"
 mkdir -p -- "$payload_dir/usr/share"
 cp -a -- "$install_root/usr/share/vim" "$payload_dir/usr/share/vim"
-install -Dm 0644 "$output/build/vim-9.1.0145/LICENSE" \
+if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  license="$install_root/usr/share/licenses/vim/LICENSE"
+else
+  license="$output/build/vim-9.1.0145/LICENSE"
+fi
+install -Dm 0644 "$license" \
   "$payload_dir/usr/share/licenses/vim-runtime/LICENSE"
 mkdir -p -- "$stage_root/usr"
 cp -a -- "$install_root/usr/." "$stage_root/usr/"

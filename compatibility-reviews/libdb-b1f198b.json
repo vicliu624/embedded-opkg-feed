@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "kind": "tdvp-development-input-diff-review",
+  "package": "libdb",
+  "version": "18.1.40-1",
+  "producer_reference": "b1f198b",
+  "consumer_input_layout": "LF-normalized validation snapshot; use libdb-59746cf.json for exact committed 59746cf bytes.",
+  "reviewed_at": "2026-10-11",
+  "status": "diff-reviewed-not-import-authorization",
+  "consumer_shared_inputs_count": 108,
+  "consumer_shared_inputs_sha256": "2da217b96815617c3c83df79d3b3ac86b0f772e5f2e3570b743a0f520cdcf3de",
+  "changed_inputs": [
+    {
+      "path": "scripts/build-all.sh",
+      "producer_sha256": "a08214a05c30ed345eb30bd8304910baf7c1a34c1077c69ab9042a64ac290e7b",
+      "consumer_sha256": "1a63399e2fe8ee173127e88fa6f65c7b459502e260f9a8a572702e3558a6b31a",
+      "rationale": "Adds explicit recovery and complete single/multi-provider historical import with original provenance, separate producer/consumer manifest versions, and all runtime file matching; ordinary receipt equality and the libdb source-build path remain unchanged."
+    },
+    {
+      "path": "scripts/build-staging-receipt.py",
+      "producer_sha256": "6c88f151a5b9a01526a27e189552014a460aa487b3eb2a4b18daa4470577aad3",
+      "consumer_sha256": "3018d14e8a5ff66502fa03dbc9915e7aab08b666c865a7e4e80f04bc6d3c3600",
+      "rationale": "Adds SQLite and single/multi-provider historical provenance validation, exact old closure and reviewed current versions; historical development bytes must stay unchanged and ordinary receipt equality remains required."
+    },
+    {
+      "path": "scripts/check-batch-build-policy.sh",
+      "producer_sha256": "b03a1e585bd156ecab6528e28403a589d08981d63014102c5dcf843efdc4a06c",
+      "consumer_sha256": "e3726df55bfc7cba530f19e216fd33b09e5b2a903ae248ec2ddb01c9291a8d53",
+      "rationale": "Adds policy checks for unrelated newly introduced libraries; no compilation parameters are changed."
+    },
+    {
+      "path": "support/normalize-pkgconfig-build-paths.py",
+      "producer_sha256": "e817d94eabb95d148b5d85a91c88932f0010b3936d528dae4775549ed0a9014f",
+      "consumer_sha256": "d0a4d15d73f6df9bf098be0347b6fd51715dd9e51f7ad88535d856ccff905973",
+      "rationale": "Adds opt-in missing producer prefix handling; strict default remains unchanged."
+    }
+  ]
+}

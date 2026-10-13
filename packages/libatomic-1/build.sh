@@ -25,6 +25,7 @@ source "$package_dir/../../support/buildroot-feed-session.sh"
 # shellcheck source=../../support/elf-runtime-policy.sh
 source "$package_dir/../../support/elf-runtime-policy.sh"
 
+if [[ ! -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
 output=$(tdvp_buildroot_output_from_sdk "$sdk_root" "$configured_output")
 tree=$(tdvp_buildroot_tree_from_output "$output")
 tdvp_assert_buildroot_2025_02_1 "$tree"
@@ -40,6 +41,7 @@ for required_config in BR2_TOOLCHAIN_EXTERNAL_GCC_14=y BR2_TOOLCHAIN_HAS_LIBATOM
   }
 done
 
+fi
 readelf_tool="$sdk_root/bin/riscv64-unknown-linux-gnu-readelf"
 compiler="$sdk_root/bin/riscv64-unknown-linux-gnu-gcc"
 [[ -x "$readelf_tool" && -x "$compiler" ]] || {
@@ -51,7 +53,7 @@ compiler="$sdk_root/bin/riscv64-unknown-linux-gnu-gcc"
   exit 69
 }
 
-target_library_dir="$output/target/usr/lib"
+target_library_dir="${TDVP_FEED_BASE_ROOT:-${output:-}/target}/usr/lib"
 target_library="$target_library_dir/$RUNTIME_LIBRARY_FILE"
 target_link="$target_library_dir/libatomic.so.1"
 [[ -f "$target_library" && ! -L "$target_library" ]] || {

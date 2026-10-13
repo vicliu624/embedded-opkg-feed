@@ -1,0 +1,77 @@
+From: ONNX upstream
+Subject: Backport version converter bounds checks to ONNX 1.17.0
+Upstream: https://github.com/onnx/onnx/pull/7813
+Commit: cd310408165ad47c3cd7eb2b86cb5b80aa2e4fdf
+Backport: Preserve 1.17 signatures and assertion terminators; softmax_13_12 absent.
+
+--- a/onnx/version_converter/adapters/cast_9_8.h
++++ b/onnx/version_converter/adapters/cast_9_8.h
+@@ -20,6 +20,7 @@
+   explicit Cast_9_8() : Adapter("Cast", OpSetID(9), OpSetID(8)) {}
+ 
+   void adapt_cast_9_8(std::shared_ptr<Graph>, Node* node) const {
++    ONNX_ASSERTM(node->inputs().size() >= 1, "Cast node must have at least 1 input");
+     if (node->inputs()[0]->elemType() == TensorProto_DataType_STRING || node->i(kto) == TensorProto_DataType_STRING)
+       ONNX_ASSERTM(false, "Casting From/To STRING data type is not supported")
+   }
+--- a/onnx/version_converter/adapters/group_normalization_20_21.h
++++ b/onnx/version_converter/adapters/group_normalization_20_21.h
+@@ -45,6 +45,7 @@
+   }
+ 
+   void adapt_group_normalization_20_21(std::shared_ptr<Graph> graph, Node* node) const {
++    ONNX_ASSERTM(node->inputs().size() >= 3, "GroupNormalization node must have at least 3 inputs");
+     // Perform following sequence of ops on scale/bias, effect is similar to numpy.repeat()
+     //
+     //   Shape<start=1,end=2>(input0) -- Div(Shape_out (C), num_groups)
+--- a/onnx/version_converter/adapters/softmax_12_13.h
++++ b/onnx/version_converter/adapters/softmax_12_13.h
+@@ -21,6 +21,7 @@
+   explicit Softmax_12_13(const std::string& op_name) : Adapter(op_name, OpSetID(12), OpSetID(13)) {}
+ 
+   void adapt_softmax_12_13(std::shared_ptr<Graph> graph, Node* node) const {
++    ONNX_ASSERTM(node->inputs().size() >= 1, "Softmax node must have at least 1 input");
+     int old_axis = node->hasAttribute(kaxis) ? node->i(kaxis) : 1;
+     int input_rank = node->inputs()[0]->sizes().size();
+ 
+--- a/onnx/version_converter/adapters/upsample_6_7.h
++++ b/onnx/version_converter/adapters/upsample_6_7.h
+@@ -21,6 +21,7 @@
+   explicit Upsample_6_7() : Adapter("Upsample", OpSetID(6), OpSetID(7)) {}
+ 
+   void adapt_upsample_6_7(std::shared_ptr<Graph>, Node* node) const {
++    ONNX_ASSERTM(node->inputs().size() >= 1, "Upsample node must have at least 1 input");
+     Symbol width_scale_symbol = Symbol("width_scale");
+     Symbol height_scale_symbol = Symbol("height_scale");
+     ONNX_ASSERTM(
+--- a/onnx/version_converter/adapters/upsample_9_10.h
++++ b/onnx/version_converter/adapters/upsample_9_10.h
+@@ -18,6 +18,7 @@
+   explicit Upsample_9_10() : Adapter("Upsample", OpSetID(9), OpSetID(10)) {}
+ 
+   Node* adapt_upsample_9_10(std::shared_ptr<Graph> graph, Node* node) const {
++    ONNX_ASSERTM(node->inputs().size() >= 2, "Upsample node must have at least 2 inputs");
+     std::string mode = node->hasAttribute(kmode) ? node->s(kmode) : "nearest";
+ 
+     // Replace the node with an equivalent Resize node
+--- a/onnx/version_converter/adapters/broadcast_forward_compatibility.h
++++ b/onnx/version_converter/adapters/broadcast_forward_compatibility.h
+@@ -74,6 +74,7 @@
+       node->removeAttribute(kaxis);
+     // Assert multi_broadcastable on inputs
+     const ArrayRef<Value*>& inputs = node->inputs();
++    assertInputsAvailable(inputs, name().c_str(), 2);
+     assert_numpy_multibroadcastable(inputs[0]->sizes(), inputs[1]->sizes());
+   }
+ 
+--- a/onnx/version_converter/adapters/upsample_9_8.h
++++ b/onnx/version_converter/adapters/upsample_9_8.h
+@@ -52,7 +52,7 @@
+     }
+ 
+     for (Node* op : graph->nodes()) {
+-      if (op->kind() == kConstant && op->outputs()[0]->uniqueName() == scale_input_name) {
++      if (op->kind() == kConstant && op->outputs().size() >= 1 && op->outputs()[0]->uniqueName() == scale_input_name) {
+         std::vector<float> value = ParseData<float>(&op->t(kvalue));
+         std::vector<double> d_values;
+         d_values.reserve(value.size());

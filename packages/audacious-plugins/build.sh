@@ -15,6 +15,9 @@ support_dir="$feed_root/support/audacious-buildroot"
 support_core_dir="$support_dir/tdvp-audacious"
 support_plugins_dir="$support_dir/tdvp-audacious-plugins"
 sdk_root=$4
+if [[ -f "$sdk_root/tdvp-sdk-manifest.json" ]]; then
+  exec bash "$feed_root/support/published-audacious-build.sh" "$package_dir" "$sdk_root"
+fi
 source "$package_dir/package.env"
 # shellcheck source=../../support/buildroot-feed-session.sh
 source "$feed_root/support/buildroot-feed-session.sh"

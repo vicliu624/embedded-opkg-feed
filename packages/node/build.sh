@@ -12,4 +12,6 @@ stage_root=${TDVP_FEED_STAGING_ROOT:-}
 payload_dir=$(tdvp_prepare_generated_payload_root "$package_dir")
 mkdir -p -- "$payload_dir/usr/bin"
 cp -a -- "$stage_root/usr/bin/node" "$payload_dir/usr/bin/node"
+python3 "$package_dir/../../support/install-archive-source-license.py" \
+  "$(tdvp_source_archive_locked_file "$package_dir")" "$package_dir" "$payload_dir" 'node-v22.23.2/LICENSE'
 echo "node payload ready: $payload_dir"

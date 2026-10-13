@@ -17,6 +17,7 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd -- "$script_dir/.." && pwd)
 # shellcheck source=feed-platform.sh
 source "$script_dir/feed-platform.sh"
+source "$repo_root/support/elf-runtime-policy.sh"
 tdvp_load_platform "$repo_root" "$platform_slug"
 
 [[ -d "$base_root" ]] || { echo "base target root is missing: $base_root" >&2; exit 65; }
@@ -96,6 +97,12 @@ while IFS= read -r ipk; do
   mkdir -p -- "$archive/control" "$archive/root"
   ar p "$ipk" control.tar.gz | tar -xzf - -C "$archive/control"
   ar p "$ipk" data.tar.gz | tar -xzf - -C "$archive/root"
+  if grep -q '^X-TDVP-Image-' "$archive/control/control"; then
+    python3 "$script_dir/materialize_image_references.py" \
+      --control "$archive/control/control" --payload-root "$archive/root" \
+      --image-root "$base_root" --report "$feed_dir/image-backed-report.json" \
+      --image-manifest-sha256 "${IMAGE_OWNERSHIP_MANIFEST_SHA256:-}"
+  fi
   package=$(read_control_field "$archive/control/control" Package)
   depends=$(read_control_field "$archive/control/control" Depends)
   [[ -n "$package" ]] || { echo "package control is missing Package: $ipk" >&2; exit 71; }
@@ -176,7 +183,7 @@ for package in "${!package_root[@]}"; do
         exit 78
       }
     done < <("$readelf_tool" -d "$elf" 2>/dev/null | sed -n 's/.*Shared library: \[\(.*\)\]/\1/p')
-    if "$readelf_tool" -d "$elf" 2>/dev/null | grep -Eq '\((RPATH|RUNPATH)\)'; then
+    if ! tdvp_assert_elf_without_runtime_search_path "$readelf_tool" "$elf" >/dev/null 2>&1; then
       # Current r4 packages transition byte-identical Buildroot runtime
       # objects into explicit feed owners.  Preserve an existing target RPATH
       # only when the exact same regular file is present in the locked base;

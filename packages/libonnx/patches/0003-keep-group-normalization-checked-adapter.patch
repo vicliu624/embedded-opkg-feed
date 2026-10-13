@@ -1,0 +1,18 @@
+From: TDVP package integration
+Subject: Preserve the checked GroupNormalization 20 to 21 adapter
+
+The later CompatibleAdapter registration replaces the dedicated converter
+under the same operator/from/to key, bypassing both its transformation and
+the upstream input-count check backported in 0001. Remove only the duplicate
+registration. This is a TDVP fix, not an upstream merged patch.
+
+--- a/onnx/version_converter/convert.h
++++ b/onnx/version_converter/convert.h
+@@ -631,7 +631,6 @@
+     registerAdapter(std::make_unique<CompatibleAdapter>("Transpose", OpSetID(20), OpSetID(21)));
+     registerAdapter(std::make_unique<CompatibleAdapter>("Unsqueeze", OpSetID(20), OpSetID(21)));
+-    registerAdapter(std::make_unique<CompatibleAdapter>("GroupNormalization", OpSetID(20), OpSetID(21)));
+ 
+     /******** 21 -> 20 ********/
+     const std::vector<TensorProto_DataType> q_dqmm_20_unallowed_types = {
+         TensorProto_DataType_BFLOAT16,

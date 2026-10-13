@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.16)
+project(tdvp_onnx_prerequisites_smoke LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+find_package(re2 CONFIG REQUIRED)
+find_package(Microsoft.GSL CONFIG REQUIRED)
+find_package(SafeInt CONFIG REQUIRED)
+add_executable(ai-onnx-prerequisites-smoke ../../ai-onnx-prerequisites-smoke.cpp)
+target_link_libraries(ai-onnx-prerequisites-smoke PRIVATE re2::re2 Microsoft.GSL::GSL SafeInt::SafeInt)

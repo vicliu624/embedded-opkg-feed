@@ -1,0 +1,45 @@
+From: TDVP Device Team <devices@example.invalid>
+Subject: [PATCH] reference: key schema lookup by domain and operator name
+
+Shared ONNX registries may contain a standard operator and an ORT custom
+operator with the same name. Preserve both domains and use the node domain
+when resolving reference evaluator schemas.
+
+--- a/onnx/reference/op_run.py
++++ b/onnx/reference/op_run.py
+@@ -68,17 +68,9 @@
+-def _build_schemas() -> dict[str, type]:
+-    res: dict[str, type] = {}
+-    for schema in get_all_schemas_with_history():
+-        # Multiple version can coexist. The last one is kept.
+-        if schema.name in res:
+-            if schema.domain != res[schema.name].domain:  # type: ignore
+-                raise NotImplementedError(
+-                    f"This function assumes every operator has a unique name {schema.name!r} "  # type: ignore
+-                    f"even accross multiple domains {schema.domain!r} and {res[schema.name].domain!r}."  # type: ignore
+-                )
+-            if schema.since_version > res[schema.name].since_version:  # type: ignore
+-                # We keep the most recent one.
+-                res[schema.name] = schema  # type: ignore
+-        else:
+-            res[schema.name] = schema  # type: ignore
+-        res[schema.name + "_" + str(schema.since_version)] = schema  # type: ignore
+-    return res
++def _build_schemas() -> dict[tuple[str, str], Any]:
++    res: dict[tuple[str, str], Any] = {}
++    for schema in get_all_schemas_with_history():
++        # Domains are part of operator identity, including public ORT schemas.
++        key = (schema.domain, schema.name)
++        if key not in res or schema.since_version > res[key].since_version:
++            res[key] = schema
++        res[(schema.domain, schema.name + "_" + str(schema.since_version))] = schema
++    return res
+@@ -185,4 +177,4 @@
+-            elif self.__class__.__name__ in _schemas:
+-                self._schema = _schemas[self.__class__.__name__]
+-            elif onnx_node.op_type in _schemas:
+-                self._schema = _schemas[onnx_node.op_type]
++            elif (onnx_node.domain, self.__class__.__name__) in _schemas:
++                self._schema = _schemas[(onnx_node.domain, self.__class__.__name__)]
++            elif (onnx_node.domain, onnx_node.op_type) in _schemas:
++                self._schema = _schemas[(onnx_node.domain, onnx_node.op_type)]

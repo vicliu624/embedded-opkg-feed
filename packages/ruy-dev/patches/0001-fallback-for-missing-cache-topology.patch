@@ -1,0 +1,44 @@
+From: TDVP Device Team
+Subject: [PATCH] ruy: tolerate unavailable CPU cache topology
+
+cpuinfo can initialize on RISC-V without reporting cache sizes. Use the
+existing conservative defaults for incomplete topology, as on discovery
+failure. This changes blocking heuristics only, not ISA capability flags.
+
+--- a/ruy/cpuinfo.cc
++++ b/ruy/cpuinfo.cc
+@@ -43,7 +43,10 @@
+ void QueryCacheParams(CpuCacheParams* cache_params) {
+   const int processors_count = cpuinfo_get_processors_count();
+-  RUY_DCHECK_GT(processors_count, 0);
++  if (processors_count <= 0) {
++    MakeDummyCacheParams(cache_params);
++    return;
++  }
+   int overall_local_cache_size = std::numeric_limits<int>::max();
+   int overall_last_level_cache_size = std::numeric_limits<int>::max();
+   for (int i = 0; i < processors_count; i++) {
+     int local_cache_size = 0;
+@@ -51,6 +54,10 @@
+     int last_level_cache_size = 0;
+     const cpuinfo_processor* processor = cpuinfo_get_processor(i);
++    if (!processor) {
++      MakeDummyCacheParams(cache_params);
++      return;
++    }
+     // Loop over cache levels. Ignoring L4 for now: it seems that in CPUs that
+     // have L4, we would still prefer to stay in lower-latency L3.
+     for (const cpuinfo_cache* cache :
+          {processor->cache.l1d, processor->cache.l2, processor->cache.l3}) {
+@@ -76,6 +83,11 @@
++    if (local_cache_size <= 0 || last_level_cache_size <= 0 ||
++        last_level_cache_size < local_cache_size) {
++      MakeDummyCacheParams(cache_params);
++      return;
++    }
+     RUY_DCHECK_GT(local_cache_size, 0);
+     RUY_DCHECK_GT(last_level_cache_size, 0);
+     RUY_DCHECK_GE(last_level_cache_size, local_cache_size);
+     overall_local_cache_size =
+         std::min(overall_local_cache_size, local_cache_size);
+     overall_last_level_cache_size =

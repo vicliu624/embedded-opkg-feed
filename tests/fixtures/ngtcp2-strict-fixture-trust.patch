@@ -1,0 +1,53 @@
+From: TDVP Device Team
+Subject: [PATCH] Enable strict CA and hostname verification in test client
+
+Upstream-Status: Test fixture only; not a shipped library patch
+The upstream example does not verify peers by default. Require explicit
+fixture CA and peer-name inputs so test downloads never silently skip trust.
+
+--- a/examples/tls_client_context_gnutls.cc
++++ b/examples/tls_client_context_gnutls.cc
+@@ -25,5 +25,7 @@
+ #include "tls_client_context_gnutls.h"
+ 
++#include <cstdlib>
++
+ #include <ngtcp2/ngtcp2_crypto_gnutls.h>
+ 
+ #include "client_base.h"
+@@ -55,6 +57,13 @@
+     return std::unexpected{Error::CRYPTO};
+   }
+ 
++  auto fixture_ca = std::getenv("TDVP_HTTP3_TEST_CA_FILE");
++  if (fixture_ca == nullptr ||
++      gnutls_certificate_set_x509_trust_file(cred_, fixture_ca,
++                                           GNUTLS_X509_FMT_PEM) <= 0) {
++    return std::unexpected{Error::CRYPTO};
++  }
++
+   if (private_key_file != nullptr && cert_file != nullptr) {
+     if (auto rv = gnutls_certificate_set_x509_key_file(
+           cred_, cert_file, private_key_file, GNUTLS_X509_FMT_PEM);
+--- a/examples/tls_client_session_gnutls.cc
++++ b/examples/tls_client_session_gnutls.cc
+@@ -25,5 +25,7 @@
+ #include "tls_client_session_gnutls.h"
+ 
++#include <cstdlib>
++
+ #include <cstring>
+ #include <fstream>
+ #include <array>
+@@ -171,5 +173,11 @@
+   // strip the first byte from H3_ALPN_V1
++  auto fixture_peer = std::getenv("TDVP_HTTP3_TEST_PEER_NAME");
++  if (fixture_peer == nullptr) {
++    return std::unexpected{Error::CRYPTO};
++  }
++  gnutls_session_set_verify_cert(session_, fixture_peer, 0);
++
+   gnutls_datum_t alpn{
+     .data = const_cast<uint8_t *>(&H3_ALPN_V1[1]),
+     .size = H3_ALPN_V1[0],
+   };

@@ -36,8 +36,12 @@ tdvp_prepare_pkg_config
 # The generated bindings are target-ABI neutral, but the scanner and XML must
 # come from the completed firmware Buildroot tree so a feed build never uses a
 # random release-builder protocol version.
-buildroot_output=$(tdvp_buildroot_output_from_sdk "$4" "${TDVP_GBA_BUILDROOT_OUTPUT:-}")
-scanner="$buildroot_output/host/bin/wayland-scanner"
+if [[ -f "$4/tdvp-sdk-manifest.json" ]]; then
+  scanner=$(command -v wayland-scanner)
+else
+  buildroot_output=$(tdvp_buildroot_output_from_sdk "$4" "${TDVP_GBA_BUILDROOT_OUTPUT:-}")
+  scanner="$buildroot_output/host/bin/wayland-scanner"
+fi
 [[ -x "$scanner" ]] || {
   echo "matching Buildroot wayland-scanner is missing: $scanner" >&2
   exit 66

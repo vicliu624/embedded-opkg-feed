@@ -23,6 +23,25 @@ tdvp_load_platform() {
   }
 }
 
+# Native generators are build-host requirements, separate from target libraries.
+# Keep recipe variables scoped to this check and split independently of caller IFS.
+tdvp_assert_package_host_dependencies() (
+  local package_dir=$1 dependency
+  local -a dependencies=()
+  source "$package_dir/package.env"
+  IFS=' ' read -r -a dependencies <<< "${PACKAGE_HOST_DEPENDS:-}"
+  for dependency in "${dependencies[@]}"; do
+    [[ "$dependency" =~ ^[A-Za-z0-9][A-Za-z0-9._+-]*$ ]] || {
+      echo "invalid build-host command for ${PACKAGE:-unknown}: $dependency" >&2
+      exit 78
+    }
+    command -v -- "$dependency" >/dev/null || {
+      echo "${PACKAGE:-unknown} requires build-host command: $dependency (PACKAGE_HOST_DEPENDS)" >&2
+      exit 78
+    }
+  done
+)
+
 tdvp_feed_release_path() {
   local release=$1
   case "$release" in

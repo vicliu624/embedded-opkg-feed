@@ -1,0 +1,17 @@
+--- a/scipy/special/__init__.py
++++ b/scipy/special/__init__.py
+@@ -807,6 +807,14 @@
+             dll_path = os.path.join(basedir, "libsf_error_state.dll")
+             if os.path.exists(dll_path):
+                 WinDLL(dll_path)
++    elif os.name == "posix":
++        # TDVP removes ELF runtime search paths from extension modules.
++        # Load the package-local shared error state by its exact location
++        # before any dependent extension is imported. Do not alter global
++        # loader paths or suppress errors from missing package files.
++        from ctypes import CDLL
++        library = os.path.join(os.path.dirname(__file__), "libsf_error_state.so")
++        CDLL(library)
+ 
+ 
+ _load_libsf_error_state()

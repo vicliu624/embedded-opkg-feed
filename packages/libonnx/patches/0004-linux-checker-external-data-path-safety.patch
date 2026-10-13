@@ -1,0 +1,68 @@
+From: TDVP package integration
+Subject: Validate Linux checker external paths through anchored descriptors
+Scope: Checker snapshot validation only; returned path is not a safe-open token.
+
+--- a/onnx/checker.cc
++++ b/onnx/checker.cc
+@@ -26,6 +26,10 @@
+ #else // POSIX
+ #include <sys/stat.h>
++#ifdef __linux__
++#include <fcntl.h>
++#include <unistd.h>
++#endif
+ #endif
+ 
+ namespace ONNX_NAMESPACE {
+ namespace checker {
+@@ -1022,6 +1026,50 @@
+   return wstring_to_utf8str(data_path);
++#elif defined(__linux__)
++  // Validate the current object through anchored descriptors, not stat paths.
++  // This API returns a path, not an fd: callers must not infer future-open safety.
++  if (location.empty() || location[0] == '/' || location.find('\\') != std::string::npos ||
++      location.find('\0') != std::string::npos) {
++    fail_check("External data location must be a normalized relative POSIX path: ", location);
++  }
++  struct ExternalDataFd {
++    int fd;
++    ~ExternalDataFd() {
++      if (fd >= 0) {
++        ::close(fd);
++      }
++    }
++  };
++  const int directory_flags = O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC;
++  ExternalDataFd directory{::open(base_dir.empty() ? "." : base_dir.c_str(), directory_flags)};
++  if (directory.fd < 0) {
++    fail_check("External data base directory cannot be opened without following a link: ", base_dir);
++  }
++  size_t begin = 0;
++  while (true) {
++    const size_t end = location.find('/', begin);
++    const std::string part = location.substr(begin, end == std::string::npos ? end : end - begin);
++    if (part.empty() || part == "." || part == "..") {
++      fail_check("External data location contains a disallowed component: ", location);
++    }
++    if (end == std::string::npos) {
++      ExternalDataFd data{::openat(directory.fd, part.c_str(), O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC)};
++      struct stat status;
++      if (data.fd < 0 || ::fstat(data.fd, &status) != 0 ||
++          !S_ISREG(status.st_mode) || status.st_nlink != 1) {
++        fail_check("External data must be an accessible regular file with exactly one link: ", location);
++      }
++      return path_join(base_dir, location);
++    }
++    const int child = ::openat(directory.fd, part.c_str(), directory_flags);
++    if (child < 0) {
++      fail_check("External data directory cannot be opened without following a link: ", location);
++    }
++    ::close(directory.fd);
++    directory.fd = child;
++    begin = end + 1;
++  }
+ #else // POSIX
+   if (location.empty()) {
+     fail_check("Location of external TensorProto ( tensor name: ", tensor_name, ") should not be empty.");
+   } else if (location[0] == '/') {
+     fail_check(
